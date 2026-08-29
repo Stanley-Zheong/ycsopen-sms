@@ -1,0 +1,24 @@
+{
+  "source_path": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/docs/PRD_REVIEW.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "PRD 检视记录（superpowers 式复盘）",
+  "summary": "复盘 ycsansms PRD 的需求缺口、既有实现应对、遗留缺陷、边界问题与容量假设。",
+  "scope": [
+    "注册验证码",
+    "系统模板",
+    "内容审核",
+    "投诉占比",
+    "试用额度",
+    "预付费计费",
+    "容量指标"
+  ],
+  "cross_refs": [
+    "PRD.md",
+    "core/docs/ROADMAP.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

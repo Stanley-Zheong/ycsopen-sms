@@ -1,0 +1,36 @@
+{
+  "source_path": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/docs/PRD.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "优创硕安短信平台系统（YCSAN-SMS）产品需求文档（PRD）",
+  "summary": "定义多租户短信平台的目标、角色、功能、界面、接口、数据模型、非功能要求、验收标准与运营流程。",
+  "scope": [
+    "YCSAN-SMS",
+    "平台管理后台",
+    "机构端",
+    "账号与权限",
+    "机构生命周期",
+    "签名与模板",
+    "上游短信通道",
+    "路由引擎",
+    "HTTP API",
+    "CMPP 网关",
+    "消息详单",
+    "计费与账务",
+    "投诉管理",
+    "上行短信",
+    "数据统计",
+    "告警与审计"
+  ],
+  "cross_refs": [
+    "ycsansms.md",
+    "短信平台功能列表.xlsx",
+    "短信手册 平台端.docx",
+    "短信手册 用户版.docx",
+    "Documents/codebases/ycsan-sms/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
