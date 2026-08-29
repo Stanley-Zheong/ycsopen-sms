@@ -1,0 +1,5 @@
+word,category,level,replacement,action
+赌博,ILLEGAL,HIGH,,BLOCK
+彩票,ILLEGAL,MEDIUM,,BLOCK
+贷款,FINANCIAL,MEDIUM,,BLOCK
+免费,MARKETING,LOW,超值,REPLACE

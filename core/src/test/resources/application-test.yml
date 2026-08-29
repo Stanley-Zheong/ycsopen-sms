@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ycsopen_sms_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+ycsopen:
+  security:
+    jwt:
+      secret: test-secret-not-for-production-0123456789
+    field-encryption:
+      key-base64: dGVzdC1rZXktMzItYnl0ZXMtcGFkZGVkLTAxMjM0NQ==

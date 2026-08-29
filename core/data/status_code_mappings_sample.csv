@@ -1,0 +1,4 @@
+channel_code,platform_code,meaning,suggestion
+DELIVRD,DELIVERED,短信已送达终端,无需处理
+UNDELIV,FAILED,终端不可达,建议核实号码有效性后重发
+EXPIRED,FAILED,短信在有效期内未送达,建议更换通道重试

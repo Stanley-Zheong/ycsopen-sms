@@ -1,0 +1,23 @@
+# --- core (Maven / Java) ---
+core/target/
+*.class
+*.jar
+!core/lib/**/*.jar
+
+# --- web (Node) ---
+web/node_modules/
+web/dist/
+web/.vite/
+*.log
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# --- secrets ---
+.env
+.env.*
+!.env.example
+web/tsconfig.tsbuildinfo

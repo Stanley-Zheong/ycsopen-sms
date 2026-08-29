@@ -1,0 +1,5 @@
+mobile_prefix,operator,province,city,area_code
+138000,MOBILE,北京,北京,010
+139000,MOBILE,上海,上海,021
+130000,UNICOM,广东,广州,020
+133000,TELECOM,浙江,杭州,0571

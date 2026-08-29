@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ycsopen_sms?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${DB_USERNAME:ycsopen}
+    password: ${DB_PASSWORD:ycsopen}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+logging:
+  level:
+    com.ycsopen.sms.core: DEBUG
