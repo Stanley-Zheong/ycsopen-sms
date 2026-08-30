@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { apiClient } from '@/api/client';
 
 /**
@@ -17,8 +18,9 @@ export default function SendPage() {
     try {
       const res = await apiClient.post('/sms/send', { phoneNumber, templateId, templateParams: {} });
       setResult(`提交成功，消息ID：${res.data.data.messageId}`);
-    } catch (err: any) {
-      setResult(`提交失败：${err.response?.data?.message ?? '未知错误'}`);
+    } catch (err: unknown) {
+      const message = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined;
+      setResult(`提交失败：${message ?? '未知错误'}`);
     }
   }
 

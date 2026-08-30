@@ -1,0 +1,44 @@
+{
+  "schema_version": "phase01-browser-source-probe-v1",
+  "phase": "01-engineering-verification-foundation",
+  "criterion_id": "ENTRY-02-GATE-D-CHROME-PROBES",
+  "probe_id": "chrome-151",
+  "status": "PASS",
+  "probe_scope": "identity-only; viewport cells are Plan 01-06 execution evidence",
+  "brand": "Google Chrome for Testing",
+  "full_version": "151.0.7922.138",
+  "major": 151,
+  "platform": "mac-arm64",
+  "source": {
+    "metadata_url": "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json",
+    "metadata_sha256": "d4140438a688ff83c3831f501232f7d3615b1fad21a465d0dc6bf0f78c3b7994",
+    "browser_url": "https://storage.googleapis.com/chrome-for-testing-public/151.0.7922.138/mac-arm64/chrome-mac-arm64.zip",
+    "browser_archive_sha256": "a75add0d61f398ac7ec51237a10a8369688e3b78e8467612c3cfa5205e29abef",
+    "driver_url": "https://storage.googleapis.com/chrome-for-testing-public/151.0.7922.138/mac-arm64/chromedriver-mac-arm64.zip",
+    "driver_archive_sha256": "7019d73dad20c0b85362930bce64fbb514d33f991020cafd83c0b67b1340b64d"
+  },
+  "runner": {
+    "adapter_id": "phase01-chrome-entry-producer-v1",
+    "mode": "local-direct",
+    "implementation": ".planning/tools/produce-phase-01-chrome-entry.rb",
+    "argv_policy": "fixed-code-owned",
+    "shell": false,
+    "profile_relative_path": "profiles/chrome-151"
+  },
+  "runtime": {
+    "browser_command_version": "Google Chrome for Testing 151.0.7922.138",
+    "driver_command_version": "ChromeDriver 151.0.7922.138",
+    "browser_executable_relative_path": "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "browser_executable_sha256": "4cdcd42f97d721e777660f7d73bb948cde781280932857d509ff55088ad15217",
+    "driver_executable_relative_path": "chromedriver-mac-arm64/chromedriver",
+    "driver_executable_sha256": "9a5b7f2ce6e84ca0f73d3e70dc0c7e3cbf61db2cb15bef6bdaa1391b79a60a10",
+    "webdriver": {
+      "session_created": true,
+      "session_id_sha256": "6418a56ced9cca2a0449e849ecf82df09ff4e69e81b34af0f807e01a59f025a7",
+      "browser_name": "chrome",
+      "browser_version": "151.0.7922.138",
+      "platform_name": "mac",
+      "chromedriver_version": "151.0.7922.138"
+    }
+  }
+}

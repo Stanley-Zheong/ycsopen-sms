@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "1.0.0",
+  "baseline": {
+    "routesPath": "src/routes.tsx",
+    "routesSource": "import { createBrowserRouter, Navigate } from 'react-router-dom';\nimport FixtureLayout from './FixtureLayout';\nimport FixturePage from './FixturePage';\nimport RowsPage from './RowsPage';\nexport const router = createBrowserRouter([\n  { path: '/', element: <Navigate to=\"/fixture/route\" replace /> },\n  {\n    path: '/fixture',\n    element: <FixtureLayout />,\n    children: [\n      { index: true, element: <Navigate to=\"route\" replace /> },\n      { path: 'route', element: <FixturePage /> },\n      { path: 'rows/:groupId', element: <RowsPage /> }\n    ]\n  }\n]);\n",
+    "componentSources": {
+      "src/FixtureLayout.tsx": "export default function FixtureLayout() { return <main>Fixture shell</main>; }\n",
+      "src/FixturePage.tsx": "export default function FixturePage() { return <button data-testid=\"fixture-page-primary-action\">Run</button>; }\n",
+      "src/RowsPage.tsx": "export default function RowsPage({ rows = [{ reference: 'fixture-order-reference' }] }) { return <ul>{rows.map((row) => <li key={row.reference} data-testid=\"fixture-list-row\" data-row-key={row.reference}>{row.reference}</li>)}</ul>; }\n"
+    },
+    "playwrightSources": {
+      "tests/ui.spec.ts": "import { test, expect } from '@playwright/test';\ntest('PW-FOUND-UI-DRIFT-001 CASE-FOUND-UI-DRIFT-001 OBL-FOUND-UI-DRIFT-001', async ({ page }) => { await page.goto('/fixture/route'); await page.getByTestId('fixture-page-primary-action').click(); });\ntest('PW-FOUND-UI-DRIFT-002 CASE-FOUND-UI-DRIFT-002 OBL-FOUND-UI-DRIFT-002', async ({ page }) => { await page.goto('/fixture/rows/:groupId'); await expect(page.getByTestId('fixture-list-row')).toBeVisible(); });\n"
+    },
+    "manifest": {
+      "schemaVersion": "1.0.0",
+      "scope": { "mode": "synthetic-contract", "routePrefixes": ["/fixture"] },
+      "playwrightSources": ["tests/ui.spec.ts"],
+      "redirects": [
+        { "from": "/", "to": "/fixture/route", "index": false },
+        { "from": "/fixture", "to": "/fixture/route", "index": true }
+      ],
+      "pages": [
+        {
+          "pageId": "fixture-primary",
+          "route": "/fixture/route",
+          "relationKind": "verified-selector-closure",
+          "component": { "symbol": "FixturePage", "source": "src/FixturePage.tsx" },
+          "selectors": [
+            {
+              "dataTestId": "fixture-page-primary-action",
+              "source": "src/FixturePage.tsx",
+              "repeated": false,
+              "obligationIds": ["OBL-FOUND-UI-DRIFT-001"],
+              "requirementIds": ["PROJECT-UI-CONTRACT"],
+              "behaviorIds": ["engineering-verification-foundation-05"],
+              "catalogTest": "T-FOUND-UI-DRIFT-001:static",
+              "caseId": "CASE-FOUND-UI-DRIFT-001",
+              "playwrightId": "PW-FOUND-UI-DRIFT-001",
+              "rowContract": null
+            }
+          ]
+        },
+        {
+          "pageId": "fixture-rows",
+          "route": "/fixture/rows/:groupId",
+          "relationKind": "verified-selector-closure",
+          "component": { "symbol": "RowsPage", "source": "src/RowsPage.tsx" },
+          "selectors": [
+            {
+              "dataTestId": "fixture-list-row",
+              "source": "src/RowsPage.tsx",
+              "repeated": true,
+              "obligationIds": ["OBL-FOUND-UI-DRIFT-002"],
+              "requirementIds": ["PROJECT-UI-CONTRACT"],
+              "behaviorIds": ["engineering-verification-foundation-05"],
+              "catalogTest": "T-FOUND-UI-DRIFT-002:static",
+              "caseId": "CASE-FOUND-UI-DRIFT-002",
+              "playwrightId": "PW-FOUND-UI-DRIFT-002",
+              "rowContract": { "keyAttribute": "data-row-key", "keyClass": "synthetic-business-key", "keyExpression": "row.reference" }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cases": [
+    { "id": "known-good-nested-index-redirect-parameter", "mutation": "none", "expectedStatus": "PASS", "expectedDiagnostic": "ui_drift=PASS" },
+    { "id": "manifest-page-stale", "mutation": "remove-source-route", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PAGE_STALE_IN_MANIFEST" },
+    { "id": "source-page-missing-manifest", "mutation": "add-source-route", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PAGE_MISSING_FROM_MANIFEST" },
+    { "id": "missing-redirect", "mutation": "remove-source-index-redirect", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_REDIRECT_MISSING_FROM_SOURCE" },
+    { "id": "stale-redirect", "mutation": "add-source-redirect", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_REDIRECT_STALE_IN_SOURCE" },
+    { "id": "wrong-redirect-target", "mutation": "wrong-source-redirect-target", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_REDIRECT_MISSING_FROM_SOURCE" },
+    { "id": "computed-route", "mutation": "computed-source-route", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "malformed-typescript", "mutation": "malformed-route-source", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SOURCE_PARSE_ERROR" },
+    { "id": "route-object-spread", "mutation": "route-object-spread", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "computed-redirect-target", "mutation": "computed-redirect-target", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "component-missing", "mutation": "wrong-manifest-component", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_COMPONENT_MISSING_FROM_SOURCE" },
+    { "id": "component-stale", "mutation": "wrong-manifest-component", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_COMPONENT_STALE_IN_SOURCE" },
+    { "id": "dom-selector-missing", "mutation": "remove-dom-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SELECTOR_MISSING_FROM_DOM" },
+    { "id": "dom-selector-stale", "mutation": "add-dom-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SELECTOR_STALE_IN_DOM" },
+    { "id": "comment-string-fake", "mutation": "comment-string-selector-fake", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SELECTOR_MISSING_FROM_DOM" },
+    { "id": "route-comment-string-fake", "mutation": "comment-string-route-fake", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROUTE_MISSING_FROM_SOURCE" },
+    { "id": "selector-prefix-collision", "mutation": "selector-prefix-collision", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SELECTOR_MISSING_FROM_DOM" },
+    { "id": "computed-test-id", "mutation": "computed-test-id", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "template-test-id", "mutation": "template-test-id", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "jsx-attribute-spread", "mutation": "jsx-attribute-spread", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "duplicate-manifest-tuple", "mutation": "duplicate-manifest-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SELECTOR_DUPLICATE_MANIFEST" },
+    { "id": "dead-component", "mutation": "dead-component-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_COMPONENT_MISSING_FROM_SOURCE" },
+    { "id": "component-source-outside-root", "mutation": "component-source-outside-root", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SOURCE_OUTSIDE_ROOT" },
+    { "id": "component-source-symlink-outside-root", "mutation": "component-source-symlink-outside-root", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_SOURCE_OUTSIDE_ROOT" },
+    { "id": "playwright-locator-missing", "mutation": "remove-playwright-locator", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PLAYWRIGHT_RELATION_MISSING" },
+    { "id": "playwright-comment-string-fake", "mutation": "comment-string-playwright-fake", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PLAYWRIGHT_RELATION_MISSING" },
+    { "id": "playwright-locator-stale", "mutation": "add-playwright-locator", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PLAYWRIGHT_RELATION_STALE" },
+    { "id": "playwright-wrong-route", "mutation": "wrong-playwright-route", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PLAYWRIGHT_RELATION_MISSING" },
+    { "id": "playwright-dead-locator", "mutation": "dead-playwright-locator", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_PLAYWRIGHT_DEAD_LOCATOR" },
+    { "id": "computed-playwright-selector", "mutation": "computed-playwright-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "route-without-selector-closure", "mutation": "remove-manifest-selector", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROUTE_SELECTOR_CLOSURE_MISSING" },
+    { "id": "row-contract-missing", "mutation": "remove-row-contract", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_CONTRACT_MISSING" },
+    { "id": "row-not-actually-repeated", "mutation": "static-row-source", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_NOT_REPEATED_SOURCE" },
+    { "id": "row-key-attribute-missing", "mutation": "remove-row-key-attribute", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_ATTRIBUTE_MISSING" },
+    { "id": "row-key-expression-mismatch", "mutation": "row-key-expression-mismatch", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_EXPRESSION_MISMATCH" },
+    { "id": "row-key-sensitive-source-property", "mutation": "row-key-sensitive-source-property", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_PROPERTY_FORBIDDEN" },
+    { "id": "row-key-computed-call", "mutation": "row-key-computed-call", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_UNSUPPORTED_SYNTAX" },
+    { "id": "row-phone-class-forbidden", "mutation": "row-class-phone-number", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_CLASS_FORBIDDEN" },
+    { "id": "row-database-id-class-forbidden", "mutation": "row-class-database-id", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_CLASS_FORBIDDEN" },
+    { "id": "row-localized-label-class-forbidden", "mutation": "row-class-localized-label", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_CLASS_FORBIDDEN" },
+    { "id": "row-mutable-name-class-forbidden", "mutation": "row-class-mutable-name", "expectedStatus": "FAIL", "expectedDiagnostic": "UI_ROW_KEY_CLASS_FORBIDDEN" }
+  ]
+}

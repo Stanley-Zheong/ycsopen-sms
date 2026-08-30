@@ -1,0 +1,24 @@
+spring:
+  main:
+    banner-mode: "off"
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-init-sql: SET time_zone = 'Asia/Shanghai'
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # V1 contains the literal template marker `${var}` in a SQL comment.
+    # It is message-domain text, not a Flyway configuration placeholder.
+    placeholder-replacement: false
+  data:
+    redis:
+      connect-timeout: 5s
+      timeout: 5s
+
+logging:
+  level:
+    root: WARN

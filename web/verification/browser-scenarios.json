@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "scenario": {
+    "id": "LOGIN-SMOKE-V1",
+    "route": "/login",
+    "selectors": {
+      "page": "shared-auth-login-page",
+      "card": "shared-auth-login-card",
+      "username": "shared-auth-login-username",
+      "password": "shared-auth-login-password",
+      "remember": "shared-auth-login-remember",
+      "submit": "shared-auth-login-submit",
+      "error": "shared-auth-login-error"
+    },
+    "actions": [
+      { "kind": "submit-empty", "target": "submit", "assert": "native-required-validation" },
+      { "kind": "fill", "target": "username", "value": "phase01.synthetic.user" },
+      { "kind": "fill", "target": "password", "value": "Phase01-Synthetic-Only!" },
+      { "kind": "check", "target": "remember" },
+      { "kind": "assert-checked", "target": "remember" },
+      { "kind": "click", "target": "submit" },
+      { "kind": "await-response", "target": "mapped-responder" },
+      { "kind": "assert-visible", "target": "error" }
+    ],
+    "responder": {
+      "canonicalPath": "/console/auth/login",
+      "mappedPaths": ["/console/auth/login", "/api/v1/console/auth/login"],
+      "method": "POST",
+      "status": 401,
+      "contentType": "application/json",
+      "marker": { "name": "X-YCS-Scenario", "value": "LOGIN-SMOKE-V1" },
+      "body": { "code": "AUTH_INVALID_CREDENTIALS", "message": "用户名或密码错误" },
+      "uiErrorText": "用户名或密码错误，或账号已被锁定"
+    },
+    "errorPolicy": {
+      "console": "fail-on-unexpected-warning-or-error",
+      "page": "fail-on-pageerror",
+      "network": "fail-on-unexpected-request-or-failed-response",
+      "wait": "event-bound-no-sleep",
+      "artifacts": "screenshot-sha256-and-visual-observations"
+    },
+    "visualRule": {
+      "id": "LOGIN-CARD-IN-VIEWPORT-V2",
+      "requiredSelectorKeys": ["page", "card", "username", "password", "remember", "submit"],
+      "viewport": { "minimumWidth": 1366, "minimumHeight": 768 },
+      "rectangle": { "positive": true, "fullyInsideViewport": true },
+      "computedStyleFailures": {
+        "display": ["none"],
+        "visibility": ["hidden", "collapse"],
+        "contentVisibility": ["hidden"],
+        "effectiveOpacityAtMost": 0,
+        "clipPathExcept": ["none"],
+        "maskImageExcept": ["none"]
+      },
+      "ancestorClipping": {
+        "overflowValues": ["hidden", "clip", "scroll", "auto"],
+        "box": "padding-box",
+        "requiredCoverage": "full-target-border-box",
+        "axisSpecific": true
+      },
+      "hitTest": {
+        "points": ["center", "top-left", "top-right", "bottom-left", "bottom-right"],
+        "insetPixels": 12,
+        "acceptedHit": "target-or-descendant"
+      },
+      "intersectionObserver": "corroboration-only",
+      "descendantClipping": "excluded"
+    }
+  },
+  "digests": {
+    "scenarioSha256": "98415469dd74730e29a7bafa82cd8dafe016ea8247a6a0b78463a3437922b67a",
+    "visualRuleSha256": "4e67aaa77fb9649f2d665d036465be02dced712d0f8e98fb84ad3c2d554c4062"
+  }
+}

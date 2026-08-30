@@ -71,6 +71,7 @@ GitHub issue 中的 Jarvis 触发、分支和 PR 交付边界以根目录 `AGENT
 - JDK 21、Maven 3.9+
 - MySQL 8、Redis 6+
 - Node.js 20+、npm 10+
+- 仅支持本机当前安装的桌面版 Google Chrome；自动化验证直接使用标准安装路径中的当前版本，不下载额外浏览器。Edge、Safari、Firefox、IE、Chromium 等其他浏览器不在支持范围内
 - Git；生成开发密钥时需要 OpenSSL
 
 ### 2. 初始化数据库与后端
@@ -177,6 +178,7 @@ npm run build
 ## 文档
 
 - [`docs/使用手册.md`](docs/使用手册.md)：安装、部署、配置、默认开发凭据、使用、升级与排障。
+- [`docs/项目规划索引.md`](docs/项目规划索引.md)：GSD 路线图、各 Phase 计划、TODO、决策、迭代、检查与证据的可见入口。
 - [`core/docs/API.md`](core/docs/API.md)：当前后端 API。
 - [`core/docs/ARCHITECTURE.md`](core/docs/ARCHITECTURE.md)：后端结构与核心设计。
 - [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md)：后端真实实现边界。
