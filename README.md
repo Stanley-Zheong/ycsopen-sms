@@ -96,17 +96,16 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 curl -fsS http://localhost:8080/actuator/health
 ```
 
-### 3. 初始化本地管理员
+### 3. 本地管理员
 
-Flyway 当前只建表，不会自动植入应用账号。首次本地启动后，按
-[`使用手册的管理员初始化步骤`](docs/使用手册.md#初始化本地管理员账号)执行一次 SQL，得到以下开发登录凭据：
+Flyway 在首次以 `dev` profile 启动时会自动创建 Web 控制台管理员，开发登录凭据如下：
 
 | 用途 | 用户名 | 密码 | 说明 |
 |---|---|---|---|
 | MySQL 应用账号 | `ycsopen` | `ycsopen` | 仅限本地开发，来自 `application-dev.yml` |
-| Web 控制台管理员 | `admin` | `Admin@123456` | 仅在执行手册中的初始化 SQL 后存在 |
+| Web 控制台管理员 | `admin` | `Admin@123456` | 仅 `dev` profile 自动创建，角色为 `ADMIN` |
 
-以上密码严禁用于对外环境。仓库没有生产默认账号，也没有自动植入生产密码。
+以上默认密码严禁直接用于对外环境。非 `dev` profile 不会自动创建默认账号。
 
 ### 4. 启动前端
 
