@@ -1,0 +1,62 @@
+<!--
+  共享组件：列表页表格工具栏
+  上半部分：搜索/组合筛选 + 新增按钮
+  下半部分：选中行后浮出的批量操作条（默认隐藏，选中数据后显示，可加 class="visible"）
+-->
+<style>
+  .table-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-3); }
+  .table-filters { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  .search-box { display: flex; align-items: center; gap: var(--space-2); width: 240px; height: 32px; padding: 0 var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-card); }
+  .search-box .icon { width: 16px; height: 16px; color: var(--color-text-3); }
+  .search-box input { border: none; outline: none; flex: 1; font-size: var(--font-size-base); }
+  .filter-select { height: 32px; padding: 0 var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-size-base); color: var(--color-text-2); background: var(--color-bg-card); }
+
+  .batch-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-primary-bg);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  .batch-bar.visible { display: flex; }
+  .batch-bar-count { color: var(--color-primary); font-size: var(--font-size-base); }
+  .batch-bar-actions { display: flex; gap: var(--space-3); }
+</style>
+
+<div class="table-toolbar" data-testid="shared-list-page-toolbar-region">
+  <div class="table-filters">
+    <div class="search-box">
+      <svg class="icon"><use href="../components/icons.svg#icon-search"/></svg>
+      <input type="search" aria-label="搜索关键词" placeholder="搜索关键词" data-testid="shared-list-page-toolbar-search-input" />
+    </div>
+    <select class="filter-select" aria-label="状态筛选" data-testid="shared-list-page-toolbar-status-select"><option>状态：全部</option></select>
+    <select class="filter-select" aria-label="时间范围" data-testid="shared-list-page-toolbar-time-range-select"><option>时间范围</option></select>
+    <button class="btn btn-default" type="button" data-testid="shared-list-page-toolbar-more-filter-button">
+      <svg class="icon" style="width:14px;height:14px;"><use href="../components/icons.svg#icon-filter"/></svg>
+      更多筛选
+    </button>
+  </div>
+  <div style="display:flex; gap: var(--space-3);">
+    <button class="btn btn-default" type="button" data-testid="shared-list-page-toolbar-export-button">
+      <svg class="icon" style="width:14px;height:14px;"><use href="../components/icons.svg#icon-download"/></svg>
+      导出
+    </button>
+    <button class="btn btn-primary" type="button" data-testid="shared-list-page-toolbar-create-button">
+      <svg class="icon" style="width:14px;height:14px;"><use href="../components/icons.svg#icon-plus"/></svg>
+      新建
+    </button>
+  </div>
+</div>
+
+<!-- 选中数据后显示（加 class="visible"），替代"每行塞一堆操作按钮"的做法 -->
+<div class="batch-bar" data-testid="shared-list-page-batch-action-region">
+  <div class="batch-bar-count" role="status" aria-live="polite" data-testid="shared-list-page-batch-selection-count">已选中 <b>3</b> 项</div>
+  <div class="batch-bar-actions">
+    <button class="btn btn-text" type="button" data-testid="shared-list-page-batch-assign-button">批量分配</button>
+    <button class="btn btn-text" type="button" data-testid="shared-list-page-batch-export-button">批量导出</button>
+    <button class="btn btn-danger-text" type="button" data-testid="shared-list-page-batch-delete-button">批量删除</button>
+  </div>
+</div>

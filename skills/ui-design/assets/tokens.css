@@ -1,0 +1,184 @@
+/*
+  ycsopen-sms UI design tokens.
+  Brand values are reconciled with the ycsan-web visual language; phase
+  prototypes copy this file once and all pages reuse it.
+*/
+
+:root {
+  /* 品牌色 */
+  --color-primary: #0C85E8;
+  --color-primary-hover: #4EAFFF;
+  --color-primary-active: #0B61AA;
+  --color-primary-bg: #EAF5FF;
+
+  --color-success: #0D8779;
+  --color-success-bg: #E7F8F5;
+  --color-warning: #FF9C00;
+  --color-warning-bg: #FFF5E6;
+  --color-danger: #E5484D;
+  --color-danger-bg: #FDEBEC;
+  --color-link: #0C85E8;
+  --color-accent-teal: #31C9B6;
+
+  /* 中性色阶：深 -> 浅 */
+  --color-text-1: #123250; /* 一级文字/标题 */
+  --color-text-2: #425D75; /* 二级文字/正文 */
+  --color-text-3: #5F7389; /* 三级文字/辅助说明 */
+  --color-border: #C7D6E5;
+  --color-border-light: #DBE5EF;
+  --color-bg-page: #F6FAFF;
+  --color-bg-block: #EEF5FF;
+  --color-bg-card: #FFFFFF;
+
+  /* 深色侧边栏可选变量 */
+  --color-sidebar-dark-bg: #123250;
+  --color-sidebar-dark-text: #DBE5EF;
+  --color-sidebar-dark-text-active: #FFFFFF;
+
+  /* 字体 */
+  --font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-xxl: 28px;
+
+  /* 间距（4px基准） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 阴影：只用于浮起元素（卡片hover/下拉/弹窗） */
+  --shadow-sm: 0 1px 3px rgba(17, 57, 92, 0.08);
+  --shadow-md: 0 10px 26px rgba(17, 57, 92, 0.10);
+  --shadow-lg: 0 18px 44px rgba(12, 133, 232, 0.16);
+
+  /* 布局尺寸 */
+  --sidebar-width: 232px;
+  --sidebar-width-collapsed: 64px;
+  --header-height: 60px;
+
+  /* 响应式断点（供媒体查询参考值，CSS变量本身不能用于@media，仅作文档基准） */
+  --breakpoint-mobile: 768px;
+  --breakpoint-tablet: 1280px;
+}
+
+/* ============ 基础重置与通用样式 ============ */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  color: var(--color-text-2);
+  background: var(--color-bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p { margin: 0; }
+a { color: var(--color-link); text-decoration: none; }
+a:hover { color: var(--color-primary-hover); }
+
+.page-title { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-text-1); }
+.section-title { font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-1); }
+.text-secondary { color: var(--color-text-3); font-size: var(--font-size-sm); }
+
+/* 布局骨架 */
+.app-shell { display: flex; min-height: 100vh; }
+.app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.app-content { flex: 1; padding: var(--space-6); }
+
+/* 卡片 */
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 32px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn-default { background: #fff; border-color: var(--color-border); color: var(--color-text-2); }
+.btn-default:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-text { background: transparent; color: var(--color-text-2); }
+.btn-text:hover { color: var(--color-primary); }
+.btn-danger-text { background: transparent; color: var(--color-danger); }
+
+/* 表格 */
+.data-table { width: 100%; border-collapse: collapse; background: var(--color-bg-card); }
+.data-table th {
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-3);
+  font-weight: 500;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-block);
+}
+.data-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--font-size-base);
+  color: var(--color-text-2);
+}
+.data-table tr:hover td { background: var(--color-bg-block); }
+
+/* 标签/状态 */
+.tag { display: inline-flex; align-items: center; padding: 0 var(--space-2); height: 22px; border-radius: var(--radius-sm); font-size: var(--font-size-xs); }
+.tag-success { background: var(--color-success-bg); color: var(--color-success); }
+.tag-warning { background: var(--color-warning-bg); color: var(--color-warning); }
+.tag-danger { background: var(--color-danger-bg); color: var(--color-danger); }
+.tag-default { background: var(--color-bg-block); color: var(--color-text-3); }
+
+/* 权限标注（仅供设计阶段可视化标记，不代表最终产品需要保留） */
+.perm-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* 输入框/表单 */
+.form-item { margin-bottom: var(--space-4); }
+.form-label { display: block; font-size: var(--font-size-base); color: var(--color-text-1); margin-bottom: var(--space-2); }
+.form-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text-1);
+}
+.form-input:focus { outline: none; border-color: var(--color-primary); }
+.form-error { color: var(--color-danger); font-size: var(--font-size-xs); margin-top: 4px; }
+
+/* 空态/加载态 */
+.empty-state, .skeleton-block { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-8) 0; color: var(--color-text-3); }

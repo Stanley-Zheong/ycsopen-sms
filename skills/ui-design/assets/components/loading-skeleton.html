@@ -1,0 +1,15 @@
+<!-- 共享组件：骨架屏。用于表格/卡片区域的异步加载态，不要用单纯的转圈loading代替结构化区块的加载态 -->
+<style>
+  @keyframes skeleton-pulse { 0% { opacity: 1; } 50% { opacity: .4; } 100% { opacity: 1; } }
+  .skeleton-row { display: flex; gap: var(--space-4); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-light); }
+  .skeleton-block {
+    height: 14px; border-radius: var(--radius-sm); background: var(--color-bg-block);
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+</style>
+
+<div class="skeleton-table" role="status" aria-label="正在加载" data-testid="shared-console-loading-skeleton-region">
+  <div class="skeleton-row"><div class="skeleton-block" style="width:20%"></div><div class="skeleton-block" style="width:30%"></div><div class="skeleton-block" style="width:15%"></div><div class="skeleton-block" style="width:20%"></div></div>
+  <div class="skeleton-row"><div class="skeleton-block" style="width:20%"></div><div class="skeleton-block" style="width:30%"></div><div class="skeleton-block" style="width:15%"></div><div class="skeleton-block" style="width:20%"></div></div>
+  <div class="skeleton-row"><div class="skeleton-block" style="width:20%"></div><div class="skeleton-block" style="width:30%"></div><div class="skeleton-block" style="width:15%"></div><div class="skeleton-block" style="width:20%"></div></div>
+</div>

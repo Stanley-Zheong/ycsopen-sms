@@ -1,0 +1,16 @@
+<!-- 共享组件：空状态。用于列表页无数据/搜索无结果场景 -->
+<style>
+  .empty-state .icon { width: 64px; height: 64px; color: var(--color-border); margin-bottom: var(--space-4); }
+  .empty-state-title { font-size: var(--font-size-base); color: var(--color-text-2); margin-bottom: var(--space-2); }
+  .empty-state-desc { font-size: var(--font-size-sm); color: var(--color-text-3); margin-bottom: var(--space-4); }
+</style>
+
+<div class="empty-state" aria-labelledby="shared-empty-title" aria-describedby="shared-empty-desc" data-testid="shared-console-empty-state-region">
+  <svg class="icon"><use href="../components/icons.svg#icon-empty"/></svg>
+  <div id="shared-empty-title" class="empty-state-title" data-testid="shared-console-empty-state-title">暂无数据</div>
+  <div id="shared-empty-desc" class="empty-state-desc" data-testid="shared-console-empty-state-description">当前筛选条件下没有找到相关记录，试试调整筛选条件</div>
+  <button class="btn btn-primary" type="button" data-testid="shared-console-empty-state-primary-action-button">
+    <svg class="icon" style="width:14px;height:14px;"><use href="../components/icons.svg#icon-plus"/></svg>
+    立即创建
+  </button>
+</div>
