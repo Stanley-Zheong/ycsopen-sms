@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "name_prefix": "test-",
+  "skills": [
+    {
+      "name": "test-lifecycle",
+      "path": "skills/v2/test-lifecycle",
+      "output": "bounded task contract and one owner",
+      "handoff": [
+        "test-case-generation",
+        "test-case-review",
+        "test-calibration-workflow",
+        "test-automation-contract",
+        "test-fixture-plan",
+        "test-fixture-provision",
+        "test-spec-generation",
+        "test-spec-review",
+        "test-execution",
+        "test-failure-triage",
+        "test-delivery-review",
+        "test-knowledge-query",
+        "test-knowledge-publish"
+      ]
+    },
+    {
+      "name": "test-case-generation",
+      "path": "skills/v2/test-case-generation",
+      "output": "source-backed testcase and TEST-MATRIX row",
+      "handoff": ["test-case-review"]
+    },
+    {
+      "name": "test-case-review",
+      "path": "skills/v2/test-case-review",
+      "output": "findings or approved testcase",
+      "handoff": ["test-case-generation", "test-calibration-workflow", "test-automation-contract"]
+    },
+    {
+      "name": "test-calibration-workflow",
+      "path": "skills/v2/test-calibration-workflow",
+      "output": "reviewed six-axis readiness record",
+      "handoff": ["test-case-review", "test-automation-contract"]
+    },
+    {
+      "name": "test-automation-contract",
+      "path": "skills/v2/test-automation-contract",
+      "output": "executable automation contract",
+      "handoff": ["test-fixture-plan", "test-spec-generation"]
+    },
+    {
+      "name": "test-fixture-plan",
+      "path": "skills/v2/test-fixture-plan",
+      "output": "mutation-free fixture plan",
+      "handoff": ["test-fixture-provision", "test-spec-generation", "test-automation-contract"]
+    },
+    {
+      "name": "test-fixture-provision",
+      "path": "skills/v2/test-fixture-provision",
+      "output": "verified fixture manifest",
+      "handoff": ["test-spec-generation", "test-failure-triage"]
+    },
+    {
+      "name": "test-spec-generation",
+      "path": "skills/v2/test-spec-generation",
+      "output": "Playwright spec and generation evidence",
+      "handoff": ["test-spec-review", "test-failure-triage"]
+    },
+    {
+      "name": "test-spec-review",
+      "path": "skills/v2/test-spec-review",
+      "output": "spec findings or approval",
+      "handoff": ["test-execution", "test-spec-generation", "test-failure-triage"]
+    },
+    {
+      "name": "test-execution",
+      "path": "skills/v2/test-execution",
+      "output": "run manifest, artifacts, and raw failure ledger",
+      "handoff": ["test-failure-triage", "test-delivery-review"]
+    },
+    {
+      "name": "test-failure-triage",
+      "path": "skills/v2/test-failure-triage",
+      "output": "classified failure ledger or bounded test repair",
+      "handoff": ["test-spec-review", "test-delivery-review"]
+    },
+    {
+      "name": "test-delivery-review",
+      "path": "skills/v2/test-delivery-review",
+      "output": "read-only pass, block, or advisory verdict",
+      "handoff": []
+    },
+    {
+      "name": "test-knowledge-query",
+      "path": "skills/v2/test-knowledge-query",
+      "output": "cited read-only knowledge results",
+      "handoff": []
+    },
+    {
+      "name": "test-knowledge-publish",
+      "path": "skills/v2/test-knowledge-publish",
+      "output": "reviewed publication and readback evidence",
+      "handoff": ["test-knowledge-query"]
+    }
+  ]
+}

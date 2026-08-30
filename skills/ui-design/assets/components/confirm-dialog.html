@@ -1,0 +1,19 @@
+<!-- 共享组件：二次确认弹窗。所有删除/批量操作/驳回等破坏性操作统一复用这个结构，只换标题/正文/按钮文案 -->
+<style>
+  .dialog-mask { position: fixed; inset: 0; background: rgba(29,33,41,.4); display: flex; align-items: center; justify-content: center; }
+  .dialog-box { width: 400px; background: var(--color-bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: var(--space-6); }
+  .dialog-title { font-size: var(--font-size-md); font-weight: 600; color: var(--color-text-1); margin-bottom: var(--space-3); }
+  .dialog-desc { font-size: var(--font-size-base); color: var(--color-text-2); margin-bottom: var(--space-6); line-height: 1.6; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-3); }
+</style>
+
+<div class="dialog-mask" data-testid="shared-console-confirm-dialog-mask">
+  <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="shared-confirm-title" aria-describedby="shared-confirm-desc" data-testid="shared-console-confirm-dialog-panel">
+    <div id="shared-confirm-title" class="dialog-title" data-testid="shared-console-confirm-dialog-title">确认删除该记录？</div>
+    <div id="shared-confirm-desc" class="dialog-desc" data-testid="shared-console-confirm-dialog-description">删除后数据将移入回收站，30天内可恢复，超期将无法找回。（根据实际业务改为物理删除/软删除对应的文案）</div>
+    <div class="dialog-actions">
+      <button class="btn btn-default" type="button" data-testid="shared-console-confirm-dialog-cancel-button">取消</button>
+      <button class="btn btn-primary" type="button" style="background: var(--color-danger);" data-testid="shared-console-confirm-dialog-confirm-button">确认删除</button>
+    </div>
+  </div>
+</div>

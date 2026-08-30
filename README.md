@@ -34,8 +34,10 @@
 
 ```
 ycsopen-sms/
+├── .planning/       GSD 路线图、原子 PRD obligation、阶段门禁、UI/Playwright 合同与验证工具
 ├── docs/            全局文档：使用手册、PRD、PRD 检视记录
-├── skill/           预留给 jarvis（本仓库所有者的自动编程框架）的技能定义，见 skill/README.md
+├── skill/           历史目录规范中的预留占位，见 skill/README.md
+├── skills/          当前可调用的仓库工程、UI 与测试工作流技能，见 skills/README.md
 ├── core/            后端：Spring Boot 3 + Java 21 + MySQL 8
 │   ├── src/main     业务代码（按 F 模块分包，见 core/docs/ARCHITECTURE.md）
 │   ├── src/test     单元测试（JUnit 5 + Mockito + AssertJ）
@@ -56,6 +58,8 @@ ycsopen-sms/
 `core` 与 `web` 都在各自目录下有完整的 `src/test/docs/skill/data/tools/lib` 七件套——
 这是应用方明确要求的目录规范，其中部分目录（如两边的 `skill/`、`web/tools/`、`web/data/`）
 目前只有说明性 README，因为暂无实际内容可填，没有为了"看起来完整"塞入无意义的占位文件。
+根目录复数形式的 `skills/` 是实际 repo-local skill 目录，与上述历史占位目录职责不同。
+GitHub issue 中的 Jarvis 触发、分支和 PR 交付边界以根目录 `AGENTS.md` 为准。
 
 ## 安装、部署与使用
 
@@ -178,6 +182,7 @@ npm run build
 - [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md)：后端真实实现边界。
 - [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)：前端真实页面与占位页面边界。
 - [`docs/PRD.md`](docs/PRD.md)：产品需求。
+- [`skills/README.md`](skills/README.md)：仓库工程、UI 与测试技能目录及迁移审计结论。
 
 ## License
 
