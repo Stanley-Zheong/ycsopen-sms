@@ -1,9 +1,20 @@
 # ycsopen-sms
 
-优创硕安短信平台系统（YCSAN-SMS）的开源实现（重新起草，非对内部 `ycsan-sms` 代码库的直接复制）。
+优创硕安短信平台系统（YCSAN-SMS）的开放源码实现（重新起草，非对内部 `ycsan-sms` 代码库的直接复制）。
 多租户、多通道、可运营的短信中台——上游对接多家运营商/通道商（CMPP/SGIP/SMGP/HTTP），
 下游为企业客户提供 HTTP API 与 CMPP 两种接入方式；支持预付费/后付费计费、签名模板审核、
 黑名单与内容审核路由、机构全生命周期管理。
+
+## ⚠️ 商业授权须知
+
+本项目开放源码，但采用的是 **Apache License 2.0 with Commons Clause License Condition v1.0**，
+属于源码可用（Source-Available）许可，并非不受商业限制的开源协议。
+
+- **允许**：个人学习、技术交流、修改，以及个人或企业内部非销售性质的免费部署与使用。
+- **禁止**：将本项目或其衍生版本向第三方交付、打包销售、有偿外包开发，或作为收费商业代运营服务的主要组成部分。
+
+如需用于任何第三方商业交付，必须先取得项目版权方的书面商业授权。完整条款见
+[`LICENSE.md`](LICENSE.md)。
 
 > **实现程度请先读这句话**：本仓库是一次"完整实现"尝试的**第一阶段成果**，不是全功能
 > 生产系统。核心的路由引擎（黑名单/内容审核/频控/通道选择）、预付费计费、机构注册/试用、
@@ -23,7 +34,7 @@
 
 ```
 ycsopen-sms/
-├── docs/            全局文档：PRD、PRD 检视记录
+├── docs/            全局文档：使用手册、PRD、PRD 检视记录
 ├── skill/           预留给 jarvis（本仓库所有者的自动编程框架）的技能定义，见 skill/README.md
 ├── core/            后端：Spring Boot 3 + Java 21 + MySQL 8
 │   ├── src/main     业务代码（按 F 模块分包，见 core/docs/ARCHITECTURE.md）
@@ -46,26 +57,92 @@ ycsopen-sms/
 这是应用方明确要求的目录规范，其中部分目录（如两边的 `skill/`、`web/tools/`、`web/data/`）
 目前只有说明性 README，因为暂无实际内容可填，没有为了"看起来完整"塞入无意义的占位文件。
 
-## 快速开始
+## 安装、部署与使用
 
-### core（需要 JDK 21 + MySQL 8 + Redis）
+完整的本地安装、配置项、管理员初始化、JAR/静态资源部署、Nginx、systemd、升级和排障说明见
+[`docs/使用手册.md`](docs/使用手册.md)。下面是源码开发环境的最短可执行路径。
+
+### 1. 环境要求
+
+- JDK 21、Maven 3.9+
+- MySQL 8、Redis 6+
+- Node.js 20+、npm 10+
+- Git；生成开发密钥时需要 OpenSSL
+
+### 2. 初始化数据库与后端
 
 ```bash
-cd core
-./tools/init-db.sh          # 建库建账号
-mvn test                    # 跑单元测试，验证环境正常（不需要 MySQL/Redis）
+git clone https://github.com/Stanley-Zheong/ycsopen-sms.git
+cd ycsopen-sms/core
+
+./tools/init-db.sh
+export JWT_SECRET="$(openssl rand -base64 48 | tr -d '\n')"
+export FIELD_ENCRYPTION_KEY="$(openssl rand -base64 32 | tr -d '\n')"
+
+mvn test
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-### web（需要 Node 20+）
+`init-db.sh` 使用本机 MySQL root 免密或 socket 登录方式，创建 `ycsopen_sms` 数据库及
+`ycsopen/ycsopen` 开发账号。root 需要密码或 MySQL 位于其他主机时，请使用手册中的手工 SQL。
+
+后端启动后验证：
 
 ```bash
-cd web
-npm install
-npm run build   # 类型检查 + 生产构建
-npm test        # Vitest 单元测试
-npm run dev     # 本地开发服务器，代理 /api 到 http://localhost:8080
+curl -fsS http://localhost:8080/actuator/health
 ```
+
+### 3. 初始化本地管理员
+
+Flyway 当前只建表，不会自动植入应用账号。首次本地启动后，按
+[`使用手册的管理员初始化步骤`](docs/使用手册.md#初始化本地管理员账号)执行一次 SQL，得到以下开发登录凭据：
+
+| 用途 | 用户名 | 密码 | 说明 |
+|---|---|---|---|
+| MySQL 应用账号 | `ycsopen` | `ycsopen` | 仅限本地开发，来自 `application-dev.yml` |
+| Web 控制台管理员 | `admin` | `Admin@123456` | 仅在执行手册中的初始化 SQL 后存在 |
+
+以上密码严禁用于对外环境。仓库没有生产默认账号，也没有自动植入生产密码。
+
+### 4. 启动前端
+
+另开终端：
+
+```bash
+cd ycsopen-sms/web
+npm ci
+npm test
+npm run dev
+```
+
+访问 <http://localhost:5173/login>。Vite 会把 `/api` 代理到
+<http://localhost:8080>。平台角色进入 `/admin`，机构角色进入 `/tenant`。
+
+### 5. 构建部署产物
+
+```bash
+cd core
+mvn clean package
+# 后端产物：core/target/ycsopen-sms-core.jar
+
+cd ../web
+npm ci
+npm run build
+# 前端产物：web/dist/
+```
+
+部署时使用外部 MySQL/Redis/KMS、显式设置所有密钥，将后端 JAR 作为受限系统服务运行，
+并由 Nginx 托管 `web/dist/`、把 `/api/` 同源代理到后端。可直接复制的配置示例见
+[`docs/使用手册.md`](docs/使用手册.md#部署后端-jar)。
+
+### 6. 当前可用范围
+
+登录后可查看已有真实页面和占位导航。控制台登录、机构注册/试用、通道基础管理、HTTP 单条发送、
+路由/预付费核心服务及投诉占比看板已有实现；其他模块的真实完成边界以
+[`core/docs/ROADMAP.md`](core/docs/ROADMAP.md)和
+[`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)为准。
+
+> 当前控制台 JWT 过滤器与开放 API HMAC 验签仍有明确未完成项。不要把当前代码直接暴露到生产网络。
 
 ## 验证状态（截至 2026-08-29，本仓库首次提交）
 
@@ -93,6 +170,17 @@ npm run dev     # 本地开发服务器，代理 /api 到 http://localhost:8080
   [itcastopen/itcast-sms-web](https://github.com/itcastopen/itcast-sms-web)、
   [liuyanning/sms_platform](https://github.com/liuyanning/sms_platform)
 
+## 文档
+
+- [`docs/使用手册.md`](docs/使用手册.md)：安装、部署、配置、默认开发凭据、使用、升级与排障。
+- [`core/docs/API.md`](core/docs/API.md)：当前后端 API。
+- [`core/docs/ARCHITECTURE.md`](core/docs/ARCHITECTURE.md)：后端结构与核心设计。
+- [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md)：后端真实实现边界。
+- [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)：前端真实页面与占位页面边界。
+- [`docs/PRD.md`](docs/PRD.md)：产品需求。
+
 ## License
 
-暂未附加开源许可证（版权保留），如需开源分发协议请后续按需补充 `LICENSE` 文件。
+本项目采用带有 Commons Clause License Condition v1.0 附加条款的 Apache License 2.0。
+允许学习、修改和内部免费自用，禁止未经书面授权的第三方商业交付、销售、收费外包或商业代运营。
+详见 [`LICENSE.md`](LICENSE.md)。
