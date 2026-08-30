@@ -1,0 +1,53 @@
+version: 1
+case_ids:
+  - WEB-AUTH-001
+  - WEB-AUTH-002
+  - WEB-AUTH-003
+  - WEB-AUTH-004
+  - WEB-AUTH-005
+  - WEB-AUTH-006
+  - WEB-AUTH-007
+  - WEB-DASH-001
+  - WEB-DASH-002
+  - WEB-TENANT-001
+  - WEB-CHANNEL-001
+  - WEB-CHANNEL-002
+  - WEB-SEND-001
+  - WEB-SEND-002
+seed_strategy: reuse_existing
+target_environment: Playwright-managed local Vite server at http://127.0.0.1:4173
+target_account_alias: none; login sessions are deterministic response objects, never real credentials
+objects:
+  - name: session fixtures
+    ownership: new_this_run
+    values: ADMIN, OPERATOR, TENANT_ADMIN tenantId=7, TENANT_USER tenantId=7
+  - name: complaint ratio fixtures
+    ownership: new_this_run
+    values: channel IDs 11/12 and tenant ID 7 with the exact fields in automation-contracts.yaml
+  - name: tenant lifecycle fixture
+    ownership: new_this_run
+    values: tenant ID 7 transitions PENDING/SUBMITTED to VERIFIED/TRIAL after the approval route
+  - name: channel lifecycle fixture
+    ownership: new_this_run
+    values: channel ID 11 transitions NORMAL to PAUSED or PAUSED to NORMAL after its mutation route
+  - name: send response fixtures
+    ownership: new_this_run
+    values: success messageId msg-001 or HTTP 400 message 余额不足
+setup_steps:
+  - Create a fresh Playwright browser context for every test.
+  - Register only the API routes required by that test before page navigation.
+  - Keep mutation counters and current states inside the test closure.
+  - Start the application through Playwright webServer using npm run dev -- --host 127.0.0.1 --port 4173.
+readback_checks:
+  - Assert request method, path, query, and body at each mutation boundary.
+  - Fulfill the subsequent list GET from the closure's updated state.
+  - Assert the UI row after React Query invalidation, not only the mutation response.
+  - Assert role state indirectly by successful role landing before same-SPA cross-role navigation.
+ownership: Every fixture exists only in the current test process and browser context; no customer or shared environment data is read or written.
+isolation: Tests are parallel-safe because contexts, route handlers, counters, dialogs, and mock states are per test; no storageState file or shared account is used.
+cleanup_restore: Playwright closes each context and discards all in-memory route state; no remote cleanup is needed.
+env_dependencies:
+  - Node.js 20 or newer
+  - npm dependencies from web/package-lock.json
+  - Playwright Chromium installed for runtime execution
+  - No backend, database, credentials, or network access
