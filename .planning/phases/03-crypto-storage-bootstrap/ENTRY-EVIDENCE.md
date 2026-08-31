@@ -1,6 +1,6 @@
 # Phase 03 Entry Evidence
 
-Review subject commit: `20d427a61159354aa018300769209279466db581`
+Review subject commit: `f97cf61d399b7e48269ac1a1dc2c54f685f81e8e`
 Evidence recorder identity: /root/phase3_research
 Tool boundary: independent read-only inspection of the committed subject and local deterministic command execution; only ENTRY-EVIDENCE.md and ENTRY-REVIEW.md are written after capture; no implementation edit, service mutation, download, secret access, or claimed SoftHSM execution
 Identity assurance: orchestration provenance only; deterministic commands, transcript digest, mandatory flag and separate main-agent reproduction are the acceptance boundary; no cryptographic process-identity claim is made
@@ -11,7 +11,7 @@ Command:
 
 ```sh
 set -e
-expected=20d427a61159354aa018300769209279466db581
+expected=f97cf61d399b7e48269ac1a1dc2c54f685f81e8e
 subject=$(git rev-parse HEAD)
 test "${#subject}" -eq 40
 test "$subject" = "$expected"
@@ -23,8 +23,8 @@ printf 'subject=%s\ntree=%s\nworktree=clean\n' "$subject" "$tree"
 Raw stdout:
 
 ```text
-subject=20d427a61159354aa018300769209279466db581
-tree=e5d1cb9574dc390ebf45757a9b87add0575e99ce
+subject=f97cf61d399b7e48269ac1a1dc2c54f685f81e8e
+tree=06ae577a06e39593fab3aac460e0ddad26670025
 worktree=clean
 ```
 
@@ -73,12 +73,12 @@ Command:
 Raw stdout:
 
 ```text
-planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression
+planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_invocation_scope+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,entry_evidence_subject_missing,entry_evidence_recorder_missing,entry_evidence_tool_boundary_missing,entry_evidence_identity_assurance_missing,entry_evidence_transcript_incomplete,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression
 ```
 
 Exit status: `0`
 
-The positive list explicitly contains `mandatory_entry_evidence_binding` and `rg_alternation_canary`; the negative list explicitly contains `entry_evidence_flag_omitted`, `entry_evidence_digest_mismatch`, and `plan_rg_escaped_alternation`.
+The positive list explicitly contains `mandatory_entry_evidence_binding`, `rg_invocation_scope` and `rg_alternation_canary`; the negative list explicitly covers missing subject/recorder/tool-boundary/identity-assurance/transcript evidence, flag omission, digest mismatch and escaped `rg` alternation.
 
 ## Transcript 05 — Current 30-plan PlanningValidatorSupport graph
 
@@ -243,10 +243,8 @@ Raw combined output:
 
 ```text
 observed_exit=1
-phase_entry=BLOCKED errors=3
+phase_entry=BLOCKED errors=1
 - OPTION_ENTRY_EVIDENCE_REQUIRED: existing=/Users/laosanzheong/Documents/codebases/ycsopen-sms/.planning/phases/03-crypto-storage-bootstrap/ENTRY-EVIDENCE.md
-- ENTRY_REVIEW_BLOCKER: criterion=ENTRY-03-12-COMPLETE-GATE
-- ENTRY_REVIEW_FINAL_VERDICT_MISSING: /Users/laosanzheong/Documents/codebases/ycsopen-sms/.planning/phases/03-crypto-storage-bootstrap/ENTRY-REVIEW.md
 ```
 
 The wrapper exited successfully only after proving the validator itself returned nonzero and emitted `OPTION_ENTRY_EVIDENCE_REQUIRED`.

@@ -1,17 +1,40 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli-2.1.238
-session: 10474e7e-9667-4a10-b9c4-bc6df217df79
+session: acb3c3d6-8bd4-43d0-863e-0e3d09a48d79
 mode: tool-less-phase-patch-review
-attempt: 3
-status: blocked
+attempt: 4
+status: authorized-with-warnings
 blocker: 0
-high: 1
-warning: 3
+high: 0
+warning: 2
 info: 3
 ---
 
 # Phase 03 Claude plan and entry review
+
+## Attempt 4 verdict
+
+`AUTHORIZED WITH WARNINGS` — Claude closed every Attempt 3 BLOCKER/HIGH concern and authorized execution. The two remaining validator warnings were accepted as non-blocking, but were corrected before execution rather than carried forward.
+
+### Attempt 4 findings
+
+| ID | Severity | Affected contract | Finding | Correction before execution |
+| --- | --- | --- | --- | --- |
+| PH03-R4-W01 | WARNING | `validate_entry_evidence` destructive coverage | Subject, recorder, tool-boundary, identity-assurance and successful-transcript-count failure branches lacked dedicated mutation fixtures. | Added digest-bound negative fixtures for every branch and retained the missing-digest plus omitted-flag cases. |
+| PH03-R4-W02 | WARNING | `PLAN_RG_ESCAPED_ALTERNATION` scope | The rejection inspected an entire automated block, so an unrelated command's escaped pipe could be mistaken for an `rg` argument. | Restricted inspection to shell segments from the actual `rg` invocation onward and added a positive unrelated-`sed` escaped-pipe fixture. |
+
+### Attempt 4 confirmed corrections
+
+Claude explicitly closed the escaped-alternation HIGH, mandatory evidence flag, fail-fast transcript/subject sequencing and non-cryptographic identity-disclosure findings. It also reconfirmed the prior schema, DAG, storage, key, migration, upload and atomic-CAS corrections.
+
+### Attempt 4 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none; the returned review disclosed static/manual tracing limits.
+- Session: `acb3c3d6-8bd4-43d0-863e-0e3d09a48d79`.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 2, INFO 3.
+- Execution authorization: AUTHORIZED by severity threshold; repository policy still requires the two known warnings to be closed and re-reviewed before execution.
 
 ## Attempt 3 verdict
 
