@@ -20,8 +20,8 @@ Every checked item must cite executable evidence.
 - [x] GSD verification has no unresolved blocking finding — Evidence: `02-VERIFICATION.md` is PASS with score 4/4, 83/83 formally closable and 0 BLOCKER/HIGH/WARNING; it independently matched all 80 JSON targets to 252 executed Playwright evidence steps.
 - [x] GSD code review has no unresolved blocking finding — Evidence: `02-REVIEW.md` is PASS with 0 BLOCKER/HIGH/WARNING after official validators, 83 runners, Chrome sampling, Pencil inspection and the fabricated-assertion negative test.
 - [x] Claude review has no unresolved blocking finding — Evidence: `CLAUDE-REVIEW.md` records the tool-less `claude -p` convergence verdict PASS with 0 BLOCKER/HIGH and explicit closure of the report-derived assertion finding.
-- [ ] Scoped TODO query is empty after this item is closed — Evidence: `Pending`
-- [ ] Atomic commit is visible on the configured GitHub remote — Evidence: `Pending`
+- [x] Scoped TODO query is empty after this item is closed — Evidence: `rg '^\\s*- \\[ \\]' .planning/phases/02-console-design-system-prototype-foundation/TODO.md` returns no matches after closing both delivery rows.
+- [x] Atomic commit is visible on the configured GitHub remote — Evidence: `git ls-remote --heads origin refs/heads/phase/02-console-design-system-prototype-foundation` returned `f601a7801155c10a3537bccf2e2c0e771feab268`, exactly matching the local Phase 2 delivery commit at verification time.
 
 ## Owned obligations
 # Mandatory checklist by owned obligation
