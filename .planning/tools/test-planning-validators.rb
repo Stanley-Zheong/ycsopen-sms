@@ -105,11 +105,64 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   write(
     File.join(phase_dir, "02-01-PLAN.md"),
     <<~PLAN
+      ---
+      phase: 02-console-design-system-prototype-foundation
+      plan: "01"
+      wave: 0
+      depends_on: []
+      files_modified:
+        - web/src/fixture.tsx
+        - web/src/generated-contract.json
+      ---
+
       <task type="auto">
         <files>web/src/fixture.tsx</files>
         <action>Implement fixture behavior.</action>
         <verify>Run fixture verification.</verify>
         <done>Fixture evidence is deterministic.</done>
+      </task>
+    PLAN
+  )
+  write(
+    File.join(phase_dir, "02-02-PLAN.md"),
+    <<~PLAN
+      ---
+      phase: 02-console-design-system-prototype-foundation
+      plan: "02"
+      wave: 1
+      depends_on: [02-01]
+      files_modified:
+        - web/src/fixture.css
+      ---
+
+      <task type="auto">
+        <files>web/src/fixture.css</files>
+        <read_first>
+          - web/src/generated-contract.json
+        </read_first>
+        <action>Style fixture behavior.</action>
+        <verify>Run fixture style verification.</verify>
+        <done>Fixture style evidence is deterministic.</done>
+      </task>
+    PLAN
+  )
+  write(
+    File.join(phase_dir, "02-03-PLAN.md"),
+    <<~PLAN
+      ---
+      phase: 02-console-design-system-prototype-foundation
+      plan: "03"
+      wave: 2
+      depends_on: [02-02]
+      files_modified:
+        - web/src/fixture.test.tsx
+      ---
+
+      <task type="auto">
+        <files>web/src/fixture.test.tsx</files>
+        <action>Verify fixture behavior.</action>
+        <verify>Run fixture regression verification.</verify>
+        <done>Fixture regression evidence is deterministic.</done>
       </task>
     PLAN
   )
@@ -182,6 +235,45 @@ Dir.mktmpdir("planning-validator-test-") do |root|
 
   run_validator(root, ui_command, expected_success: true, expected_token: "ui_contract=PASS")
   run_validator(root, phase_command, expected_success: true, expected_token: "phase_entry=PASS")
+
+  plan_01_path = File.join(phase_dir, "02-01-PLAN.md")
+  plan_02_path = File.join(phase_dir, "02-02-PLAN.md")
+  plan_01_body = File.read(plan_01_path)
+  plan_02_body = File.read(plan_02_path)
+
+  write(plan_02_path, plan_02_body.sub("depends_on: [02-01]", "depends_on: [02-99]"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_DEPENDENCY_UNKNOWN")
+  write(plan_02_path, plan_02_body.sub("depends_on: [02-01]", "depends_on: [02-02]"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_DEPENDENCY_SELF")
+  write(plan_02_path, plan_02_body)
+
+  write(plan_02_path, plan_02_body.sub("depends_on: [02-01]", "depends_on: []"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_ARTIFACT_DEPENDENCY_MISSING")
+  write(plan_02_path, plan_02_body)
+  run_validator(root, phase_command, expected_success: true, expected_token: "phase_entry=PASS")
+
+  write(plan_01_path, plan_01_body.sub("depends_on: []", "depends_on: [02-02]"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_DEPENDENCY_CYCLE")
+  write(plan_01_path, plan_01_body)
+
+  write(plan_02_path, plan_02_body.sub("wave: 1", "wave: 0"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_DEPENDENCY_WAVE_NOT_EARLIER")
+  write(
+    plan_02_path,
+    plan_02_body
+      .sub("wave: 1", "wave: 0")
+      .sub("depends_on: [02-01]", "depends_on: []")
+      .sub("web/src/fixture.css", "web/src/fixture.tsx")
+  )
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_SAME_WAVE_FILE_OVERLAP")
+  write(plan_02_path, plan_02_body)
+
+  write(plan_02_path, plan_02_body.sub("depends_on: [02-01]", "depends_on: [02-01"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_FRONTMATTER_YAML_INVALID")
+  write(plan_02_path, plan_02_body.sub('plan: "02"', 'plan: "09"'))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_ID_FILENAME_MISMATCH")
+  write(plan_02_path, plan_02_body)
+
   run_validator(
     root,
     [RbConfig.ruby, ui_validator, "--phase", "02", "--package", "console-design-system-prototype-foundation"],
@@ -468,5 +560,5 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   abort "template implementation source regression" unless implementation_example.include?("web/src/") && !implementation_example.include?("web/e2e/")
   abort "template Playwright source regression" unless playwright_example.include?("web/e2e/") && playwright_example.match?(/\.spec\.(?:ts|tsx|js|jsx)/)
 
-  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+open_current_todo negative=missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
+  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+open_current_todo+deterministic_plan_graph+planned_artifact_dependency negative=plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
 end
