@@ -528,9 +528,33 @@ module Phase01
       descriptor_json, config_image_json, image_id = stdout.strip.split("|", 3)
       descriptor = JSON.parse(descriptor_json)
       config_image = JSON.parse(config_image_json)
+      unless config_image.is_a?(String) && image_id.is_a?(String) && !image_id.empty?
+        raise CheckError.new("SERVICE_CONTAINER_IMAGE_IDENTITY_MALFORMED", "container image identity was malformed")
+      end
+      unless config_image == reference
+        raise CheckError.new("SERVICE_CONTAINER_IMAGE_IDENTITY_MISMATCH", "running container does not retain the approved image reference")
+      end
+
+      # Classic Docker image stores expose a nil ImageManifestDescriptor. In
+      # that mode `.Image` is the immutable config digest, so bind it to the
+      # config already proven by the code-owned index -> child -> config chain.
+      if descriptor.nil?
+        unless image_id == image_identity.fetch("config_digest")
+          raise CheckError.new("SERVICE_CONTAINER_IMAGE_IDENTITY_MISMATCH", "classic image store did not retain the approved config digest")
+        end
+        return {
+          "digest" => image_identity.fetch("platform_image_digest"),
+          "config_image" => config_image,
+          "platform" => image_identity.fetch("platform")
+        }
+      end
+      unless descriptor.is_a?(Hash)
+        raise CheckError.new("SERVICE_CONTAINER_IMAGE_IDENTITY_MALFORMED", "container image descriptor was malformed")
+      end
+
       descriptor_platform = "#{descriptor.dig('platform', 'os')}/#{descriptor.dig('platform', 'architecture')}"
       unless descriptor["digest"] == image_identity.fetch("platform_image_digest") &&
-             descriptor_platform == image_identity.fetch("platform") && config_image == reference &&
+             descriptor_platform == image_identity.fetch("platform") &&
              [image_identity.fetch("platform_image_digest"), image_identity.fetch("config_digest")].include?(image_id)
         raise CheckError.new("SERVICE_CONTAINER_IMAGE_IDENTITY_MISMATCH", "running container is not bound to the approved platform child manifest")
       end

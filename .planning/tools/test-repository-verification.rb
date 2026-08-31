@@ -122,10 +122,14 @@ def mutate(root, mutation, manifest_relative, manifest, envelope)
   when "entry_evidence_version_mismatch"
     path = File.join(root, entry_evidence)
     document = JSON.parse(File.read(path))
+    previous_digest = Digest::SHA256.file(path).hexdigest
     document["chrome"]["version_output"] = "Google Chrome 999.1.2.3"
     document["chrome"]["full_version"] = "999.1.2.3"
     document["chrome"]["major"] = 999
     File.write(path, JSON.pretty_generate(document) + "\n")
+    current_digest = Digest::SHA256.file(path).hexdigest
+    review_path = File.join(root, entry_review)
+    File.write(review_path, File.read(review_path).gsub(previous_digest, current_digest))
   when "entry_evidence_mode_drift"
     File.chmod(0o600, File.join(root, entry_evidence))
   when "entry_review_digest_mismatch"
@@ -206,7 +210,16 @@ mutations.each do |fixture|
       subject_manifest_path: manifest_relative
     )
     if fixture.fetch("id") == "entry_evidence_version_mismatch"
-      errors.concat(VerificationEvidence.validate_entry_boundary(root, require_live: true))
+      errors.concat(
+        VerificationEvidence.validate_entry_boundary(
+          root,
+          require_live: true,
+          live_file_validator: ->(_document) { [] },
+          version_probe: -> { ["Google Chrome 151.0.7922.174\n", true] }
+        )
+      )
+      assert(errors.none? { |error| error.start_with?("ENTRY_REVIEW_EVIDENCE_DIGEST_MISSING") },
+             "version mutation also invalidated the entry-review checksum")
     end
     token = fixture.fetch("error_id")
     assert(!errors.empty?, "mutation #{fixture.fetch('id')} unexpectedly passed")
@@ -228,8 +241,25 @@ Dir.mktmpdir("repository-verification-portable-entry-") do |root|
   File.write(review_path, File.read(review_path).gsub(previous_digest, current_digest))
   portable = VerificationEvidence.validate_subject_manifest(root: root, manifest: manifest, registries: fixture_registry)
   assert(portable.empty?, "portable entry validation touched live Chrome: #{portable.join(';')}")
-  live = VerificationEvidence.validate_entry_boundary(root, require_live: true)
+  live = VerificationEvidence.validate_entry_boundary(
+    root,
+    require_live: true,
+    live_file_validator: ->(_document) { [] },
+    version_probe: -> { ["Google Chrome 151.0.7922.174\n", true] }
+  )
   assert(live.any? { |error| error.start_with?("ENTRY_EVIDENCE_LIVE_VERSION_MISMATCH") }, "local live entry accepted foreign Chrome version")
+end
+
+Dir.mktmpdir("repository-verification-missing-live-chrome-") do |root|
+  create_fixture(root)
+  live = VerificationEvidence.validate_entry_boundary(
+    root,
+    require_live: true,
+    live_file_validator: ->(_document) { [] },
+    version_probe: -> { raise Errno::ENOENT, "synthetic missing Chrome" }
+  )
+  assert(live.any? { |error| error.start_with?("ENTRY_EVIDENCE_LIVE_VERSION_FAILED") },
+         "missing live Chrome did not fail closed")
 end
 
 assert(VerificationEvidence.reduce_statuses(%w[PASS PASS]) == "PASS", "all PASS did not reduce to PASS")

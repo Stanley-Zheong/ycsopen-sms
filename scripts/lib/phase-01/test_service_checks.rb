@@ -100,6 +100,8 @@ module Phase01
         assert(mysql.fetch("config_digest") == ServiceChecks.image_contract(:mysql, "linux/amd64").fetch("config_digest"),
                "amd64 image config digest changed")
 
+        assert_container_identity_modes
+
         set_fake_platform(server: "linux/arm64", image: "linux/arm64")
         arm64_redis = ServiceChecks.image_contract(:redis, "linux/arm64").fetch("reference")
         redis = ServiceChecks.inspect_image!(:redis, arm64_redis, expected_platform: "linux/arm64")
@@ -264,7 +266,10 @@ module Phase01
         "PHASE01_FAKE_DOCKER_SERVER_OS" => ENV["PHASE01_FAKE_DOCKER_SERVER_OS"],
         "PHASE01_FAKE_DOCKER_SERVER_ARCH" => ENV["PHASE01_FAKE_DOCKER_SERVER_ARCH"],
         "PHASE01_FAKE_DOCKER_IMAGE_OS" => ENV["PHASE01_FAKE_DOCKER_IMAGE_OS"],
-        "PHASE01_FAKE_DOCKER_IMAGE_ARCH" => ENV["PHASE01_FAKE_DOCKER_IMAGE_ARCH"]
+        "PHASE01_FAKE_DOCKER_IMAGE_ARCH" => ENV["PHASE01_FAKE_DOCKER_IMAGE_ARCH"],
+        "PHASE01_FAKE_DOCKER_CONTAINER_DESCRIPTOR" => ENV["PHASE01_FAKE_DOCKER_CONTAINER_DESCRIPTOR"],
+        "PHASE01_FAKE_DOCKER_CONTAINER_CONFIG_IMAGE" => ENV["PHASE01_FAKE_DOCKER_CONTAINER_CONFIG_IMAGE"],
+        "PHASE01_FAKE_DOCKER_CONTAINER_IMAGE_ID" => ENV["PHASE01_FAKE_DOCKER_CONTAINER_IMAGE_ID"]
       }
       Dir.mktmpdir("phase01-fake-docker-") do |directory|
         executable = File.join(directory, "docker")
@@ -278,6 +283,10 @@ module Phase01
             image_id = reference.split("@", 2).fetch(1)
             puts([JSON.generate([reference]), image_id, ENV.fetch("PHASE01_FAKE_DOCKER_IMAGE_OS"),
                   ENV.fetch("PHASE01_FAKE_DOCKER_IMAGE_ARCH")].join("|"))
+          elsif ARGV[0, 2] == ["container", "inspect"]
+            puts([ENV.fetch("PHASE01_FAKE_DOCKER_CONTAINER_DESCRIPTOR"),
+                  JSON.generate(ENV.fetch("PHASE01_FAKE_DOCKER_CONTAINER_CONFIG_IMAGE")),
+                  ENV.fetch("PHASE01_FAKE_DOCKER_CONTAINER_IMAGE_ID")].join("|"))
           elsif ARGV[0] == "version"
             puts([ENV.fetch("PHASE01_FAKE_DOCKER_SERVER_OS"), ENV.fetch("PHASE01_FAKE_DOCKER_SERVER_ARCH")].join("|"))
           elsif ARGV[0] == "pull"
@@ -303,6 +312,73 @@ module Phase01
       ENV["PHASE01_FAKE_DOCKER_SERVER_ARCH"] = server_arch
       ENV["PHASE01_FAKE_DOCKER_IMAGE_OS"] = image_os
       ENV["PHASE01_FAKE_DOCKER_IMAGE_ARCH"] = image_arch
+    end
+
+    def set_fake_container_identity(descriptor:, config_image:, image_id:)
+      ENV["PHASE01_FAKE_DOCKER_CONTAINER_DESCRIPTOR"] = descriptor
+      ENV["PHASE01_FAKE_DOCKER_CONTAINER_CONFIG_IMAGE"] = config_image
+      ENV["PHASE01_FAKE_DOCKER_CONTAINER_IMAGE_ID"] = image_id
+    end
+
+    def assert_container_identity_modes
+      %i[mysql redis].each do |service|
+        contract = ServiceChecks.image_contract(service, "linux/amd64")
+        reference = contract.fetch("reference")
+        identity = {
+          "platform_image_digest" => reference.split("@", 2).fetch(1),
+          "config_digest" => contract.fetch("config_digest"),
+          "platform" => "linux/amd64"
+        }
+        set_fake_container_identity(
+          descriptor: "null", config_image: reference, image_id: contract.fetch("config_digest")
+        )
+        classic = ServiceChecks.verify_container_image_identity!("phase01-fixture", reference, identity)
+        assert(classic.fetch("digest") == identity.fetch("platform_image_digest"),
+               "#{service} classic-store identity lost the approved platform digest")
+        assert(classic.fetch("platform") == "linux/amd64",
+               "#{service} classic-store identity lost its proven platform")
+
+        set_fake_container_identity(
+          descriptor: "null", config_image: "#{service}@sha256:#{'0' * 64}",
+          image_id: contract.fetch("config_digest")
+        )
+        assert_error("SERVICE_CONTAINER_IMAGE_IDENTITY_MISMATCH") do
+          ServiceChecks.verify_container_image_identity!("phase01-fixture", reference, identity)
+        end
+        set_fake_container_identity(descriptor: "null", config_image: reference, image_id: "sha256:#{'0' * 64}")
+        assert_error("SERVICE_CONTAINER_IMAGE_IDENTITY_MISMATCH") do
+          ServiceChecks.verify_container_image_identity!("phase01-fixture", reference, identity)
+        end
+
+        descriptor = {
+          "digest" => identity.fetch("platform_image_digest"),
+          "platform" => { "os" => "linux", "architecture" => "amd64" }
+        }
+        set_fake_container_identity(
+          descriptor: JSON.generate(descriptor), config_image: reference,
+          image_id: identity.fetch("platform_image_digest")
+        )
+        described = ServiceChecks.verify_container_image_identity!("phase01-fixture", reference, identity)
+        assert(described.fetch("digest") == identity.fetch("platform_image_digest"),
+               "#{service} descriptor-store identity lost its platform digest")
+      end
+
+      mysql_contract = ServiceChecks.image_contract(:mysql, "linux/amd64")
+      mysql_reference = mysql_contract.fetch("reference")
+      mysql_identity = {
+        "platform_image_digest" => mysql_reference.split("@", 2).fetch(1),
+        "config_digest" => mysql_contract.fetch("config_digest"),
+        "platform" => "linux/amd64"
+      }
+      [JSON.generate([]), JSON.generate("unexpected"), "{bad-json"].each do |descriptor|
+        set_fake_container_identity(
+          descriptor: descriptor, config_image: mysql_reference,
+          image_id: mysql_contract.fetch("config_digest")
+        )
+        assert_error("SERVICE_CONTAINER_IMAGE_IDENTITY_MALFORMED") do
+          ServiceChecks.verify_container_image_identity!("phase01-fixture", mysql_reference, mysql_identity)
+        end
+      end
     end
 
     def run_redis

@@ -359,7 +359,11 @@ def build_fixture(workspace, mutation)
   when :lightweight_tag
     run!("git", "--git-dir", remote, "update-ref", TAG_REF, commit)
   when :moved_tag
-    moved = run!("git", "--git-dir", remote, "commit-tree", tree, "-p", commit, stdin_data: "moved\n").strip
+    moved = run!(
+      "git", "--git-dir", remote,
+      "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+      "commit-tree", tree, "-p", commit, stdin_data: "moved\n"
+    ).strip
     moved_tree = run!("git", "--git-dir", remote, "rev-parse", "#{moved}^{tree}").strip
     write_annotated_tag(remote, moved, moved_tree, subject_manifest_digest, tested_subject_digest, evidence_digest, :none)
   end

@@ -756,7 +756,8 @@ module VerificationEvidence
     }
   end
 
-  def validate_entry_boundary(root, require_live: false, max_bytes: nil)
+  def validate_entry_boundary(root, require_live: false, max_bytes: nil,
+                              live_file_validator: nil, version_probe: nil)
     errors = []
     evidence_snapshot = verified_local_file(root, ENTRY_EVIDENCE_PATH, errors, "ENTRY_EVIDENCE", max_bytes: max_bytes)
     review_snapshot = verified_local_file(root, ENTRY_REVIEW_PATH, errors, "ENTRY_REVIEW", max_bytes: max_bytes)
@@ -771,9 +772,16 @@ module VerificationEvidence
     evidence = JSON.parse(evidence_snapshot.bytes)
     Phase01ChromeEntryContract.validate_entry(evidence).each { |error| errors << "ENTRY_EVIDENCE_SCHEMA_INVALID: #{error}" }
     if require_live
-      Phase01ChromeEntryContract.validate_live_file(evidence).each { |error| errors << "ENTRY_EVIDENCE_#{error}" }
-      stdout, _stderr, status = Open3.capture3(Phase01ChromeEntryContract::CHROME_PATH, "--version")
-      if !status.success?
+      validate_live_file = live_file_validator || lambda do |document|
+        Phase01ChromeEntryContract.validate_live_file(document)
+      end
+      probe_version = version_probe || lambda do
+        stdout, _stderr, status = Open3.capture3(Phase01ChromeEntryContract::CHROME_PATH, "--version")
+        [stdout, status.success?]
+      end
+      validate_live_file.call(evidence).each { |error| errors << "ENTRY_EVIDENCE_#{error}" }
+      stdout, succeeded = probe_version.call
+      if !succeeded
         errors << "ENTRY_EVIDENCE_LIVE_VERSION_FAILED"
       elsif evidence.dig("chrome", "version_output") != stdout.strip
         errors << "ENTRY_EVIDENCE_LIVE_VERSION_MISMATCH"
