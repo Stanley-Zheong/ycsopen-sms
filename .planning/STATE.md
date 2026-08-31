@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: YCSOpen SMS v1.0
-status: planning
-last_updated: "2026-08-31T16:55:01.702Z"
+status: ready_to_execute
+last_updated: "2026-09-01T00:00:00+08:00"
 completion_metric: scoped_todo_empty
 ---
 
@@ -20,18 +20,18 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: The 30-plan package is under Claude Attempt 2 correction. Cross-wave shared-file ownership, durable entry evidence, schema-only blind-index inventory, bounded upload admission and concurrent manifest-pair CAS proof are the current planning gate.
-**Execution authorization**: Not granted. The prior entry PASS is invalidated until all current corrections receive an independent plan check, a distinct entry review and a Claude review with zero BLOCKER/HIGH.
+**Current plan**: Execute the authorized 30-plan Phase 03 package in dependency wave order until the Phase 03 scoped TODO is empty.
+**Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 No schedule, effort, staffing, velocity, completion-date, progress-bar, or percentage status is maintained.
 
 ## Next executable transition
 
-1. Close every Claude Attempt 2 planning finding with an executable contract and destructive validator coverage.
-2. Attach current-subject entry command evidence and obtain a distinct independent 12-criterion entry review.
-3. Run Claude convergence review and require zero BLOCKER/HIGH before Phase 3 execution.
-4. Execute Phase 3 plans until the owner-scoped TODO query is empty, then complete independent verification, review, commit and delivery attestation.
+1. Execute Phase 03 plans in declared dependency-wave order.
+2. Keep all Phase 03 TODO rows open until implementation evidence proves each obligation.
+3. Run code review, independent goal verification, Claude completion review and the scoped TODO query.
+4. Commit, push and record the Phase 03 delivery attestation only after the scoped TODO is empty.
 
 ## Accumulated decisions
 
@@ -82,10 +82,9 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Blockers
 
-- Phase 1 entry is no longer blocked. Remaining plans must keep the local-Chrome entry, six-consumer regression suite, and 13-plan bootstrap green.
-- No current entry, reseal, GSD-review, or Claude-review BLOCKER/HIGH is known. Phase 1 exit still requires verified TODO closure, one atomic commit/push, the PR check, deterministic annotated tag, and live remote/target-tree attestation. Historical reports cannot authorize completion.
-- Atomic obligation, phase-entry, UI, and schema-registry validator self-tests pass; Phase 1 remains responsible for integrating those commands into repository verification and recording real evidence before any business phase can enter execution.
-- The real Phase 2 directory does not exist; its Ruby entry command currently returns `phase_entry=BLOCKED`, so no UI design or implementation entry is authorized.
+- No Phase 03 execution-entry blocker remains; independent entry review and Claude Attempt 5 are authorized.
+- Real SoftHSM execution is intentionally still open implementation work owned by Plan 03-03; it was not represented as completed entry evidence.
+- Phase 03 completion remains blocked until its scoped TODO is empty, independent verification passes, and commit/push delivery attestation is recorded.
 
 ## Coverage state
 
@@ -98,6 +97,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/ROADMAP.md`, Phase 1.
+**Resume from**: `.planning/ROADMAP.md`, Phase 3 Wave 0.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
