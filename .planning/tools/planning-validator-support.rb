@@ -293,6 +293,7 @@ module PlanningValidatorSupport
     errors << "ENTRY_EVIDENCE_SUBJECT_MISSING: #{path}" unless body.match?(/^Review subject commit: `[0-9a-f]{40}`$/)
     errors << "ENTRY_EVIDENCE_RECORDER_MISSING: #{path}" unless body.match?(/^Evidence recorder identity: \S.+$/)
     errors << "ENTRY_EVIDENCE_TOOL_BOUNDARY_MISSING: #{path}" unless body.match?(/^Tool boundary: \S.+$/)
+    errors << "ENTRY_EVIDENCE_IDENTITY_ASSURANCE_MISSING: #{path}" unless body.match?(/^Identity assurance: \S.+$/)
     successful_commands = body.scan(/^Exit status: `0`$/).length
     errors << "ENTRY_EVIDENCE_COMMAND_TRANSCRIPT_INCOMPLETE: #{path} successful=#{successful_commands}" if successful_commands < 4
 
@@ -319,6 +320,10 @@ module PlanningValidatorSupport
           if match.nil? || match[1].strip.empty?
             errors << "PLAN_TASK_FIELD_MISSING: plan=#{path} task=#{index + 1} field=#{field}"
           end
+        end
+        automated = task[/<automated>\s*(.*?)\s*<\/automated>/m, 1]
+        if automated&.match?(/\brg\b/) && automated.include?("\\|")
+          errors << "PLAN_RG_ESCAPED_ALTERNATION: plan=#{path} task=#{index + 1}"
         end
       end
     end

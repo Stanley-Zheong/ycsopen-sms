@@ -161,7 +161,7 @@ Dir.mktmpdir("planning-validator-test-") do |root|
       <task type="auto">
         <files>web/src/fixture.test.tsx</files>
         <action>Verify fixture behavior.</action>
-        <verify>Run fixture regression verification.</verify>
+        <verify><automated>! rg -n 'alpha|beta' web/src</automated></verify>
         <done>Fixture regression evidence is deterministic.</done>
       </task>
     PLAN
@@ -243,6 +243,7 @@ Dir.mktmpdir("planning-validator-test-") do |root|
     Review subject commit: `#{'c' * 40}`
     Evidence recorder identity: fixture-independent-reviewer
     Tool boundary: read-only repository and local command execution; no implementation edits
+    Identity assurance: orchestration provenance only; deterministic commands, digest binding and separate reproduction are the acceptance boundary
 
     Exit status: `0`
     Exit status: `0`
@@ -255,10 +256,12 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   entry_review_body = File.read(entry_review_path)
   write(entry_review_path, entry_review_body.sub("# Entry Review", "# Entry Review\n\nENTRY-EVIDENCE-SHA256: #{entry_evidence_digest}"))
   evidence_phase_command = phase_command + ["--entry-evidence", relative.call(entry_evidence_path)]
+  run_validator(root, phase_command, expected_success: false, expected_token: "OPTION_ENTRY_EVIDENCE_REQUIRED")
   run_validator(root, evidence_phase_command, expected_success: true, expected_token: "phase_entry=PASS")
   write(entry_review_path, File.read(entry_review_path).sub(entry_evidence_digest, "0" * 64))
   run_validator(root, evidence_phase_command, expected_success: false, expected_token: "ENTRY_EVIDENCE_DIGEST_MISSING")
   write(entry_review_path, entry_review_body)
+  File.delete(entry_evidence_path)
 
   plan_01_path = File.join(phase_dir, "02-01-PLAN.md")
   plan_02_path = File.join(phase_dir, "02-02-PLAN.md")
@@ -294,6 +297,10 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   write(plan_03_path, plan_03_shared_body.sub("depends_on: [02-02]", "depends_on: []"))
   run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_SHARED_FILE_DEPENDENCY_MISSING")
   write(plan_01_path, plan_01_body)
+  write(plan_03_path, plan_03_body)
+
+  write(plan_03_path, plan_03_body.sub("alpha|beta", "alpha\\|beta"))
+  run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_RG_ESCAPED_ALTERNATION")
   write(plan_03_path, plan_03_body)
 
   write(plan_01_path, plan_01_body.sub("depends_on: []", "depends_on: [02-02]"))
@@ -604,5 +611,10 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   abort "template implementation source regression" unless implementation_example.include?("web/src/") && !implementation_example.include?("web/e2e/")
   abort "template Playwright source regression" unless playwright_example.include?("web/e2e/") && playwright_example.match?(/\.spec\.(?:ts|tsx|js|jsx)/)
 
-  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency negative=entry_evidence_digest_mismatch,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
+  rg_plain_stdout, rg_plain_stderr, rg_plain_status = Open3.capture3("rg", "-q", "alpha|beta", stdin_data: "beta\n")
+  abort "rg alternation canary failed: #{rg_plain_stdout}#{rg_plain_stderr}" unless rg_plain_status.success?
+  _rg_escaped_stdout, _rg_escaped_stderr, rg_escaped_status = Open3.capture3("rg", "-q", "alpha\\|beta", stdin_data: "beta\n")
+  abort "rg escaped alternation unexpectedly matched" if rg_escaped_status.success?
+
+  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
 end

@@ -1,17 +1,44 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli-2.1.238
-session: f8c93610-08b4-49a9-8f64-6fa5824b28a2
+session: 10474e7e-9667-4a10-b9c4-bc6df217df79
 mode: tool-less-phase-patch-review
-attempt: 2
+attempt: 3
 status: blocked
-blocker: 1
+blocker: 0
 high: 1
-warning: 4
+warning: 3
 info: 3
 ---
 
 # Phase 03 Claude plan and entry review
+
+## Attempt 3 verdict
+
+`BLOCKED` — execution remains unauthorized. Claude confirmed all six Attempt 2 findings were substantively resolved, then challenged the executable negative scans and evidence mechanics.
+
+### Attempt 3 findings
+
+| ID | Severity | Affected contract | Finding | Required correction |
+| --- | --- | --- | --- | --- |
+| PH03-R3-H01 | HIGH | plan `<automated>` `rg` scans | Claude interpreted alternation as escaped literal-pipe patterns, which would make security absence scans vacuous. Repository source inspection shows the committed plans actually contain plain `|`, but this ambiguity is not itself guarded. | Add a plan validator that rejects literal `\|` inside `rg` automated commands, a destructive mutation, and an actual `rg` seeded alternation canary; retain plain `|` commands. |
+| PH03-R3-W01 | WARNING | phase-entry CLI | `--entry-evidence` is optional even when the phase has a durable evidence file. | Fail when `ENTRY-EVIDENCE.md` exists and the flag is omitted; add a destructive fixture. |
+| PH03-R3-W02 | WARNING | `ENTRY-EVIDENCE.md` Transcript 01 | The command used `;` rather than fail-fast `&&`, and its pinned subject preceded the evidence commit. | Regenerate evidence against the next clean committed plan/tool subject; use `&&`/explicit failure and bind that exact subject/tree. |
+| PH03-R3-W03 | WARNING | reviewer identity text | Process identity labels are not cryptographic authentication. | Disclose identity labels as orchestration provenance only and make deterministic commands, evidence digest plus separate reproduction the acceptance boundary; do not claim cryptographic identity assurance. |
+
+### Attempt 3 confirmed corrections
+
+Claude explicitly accepted cross-wave shared-file reachability, schema-only risk-log classification, real milestone metadata, bounded upload admission and concurrent manifest-pair CAS. It also reconfirmed the earlier envelope, snapshot, object, KEK, trust-anchor, CLI, wrap and token-digest corrections.
+
+### Attempt 3 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none.
+- Session: `10474e7e-9667-4a10-b9c4-bc6df217df79`.
+- Returned counts: BLOCKER 0, HIGH 1, WARNING 3, INFO 3.
+- Execution authorization: NOT AUTHORIZED.
+
+## Attempt 2 record
 
 ## Attempt 2 verdict
 

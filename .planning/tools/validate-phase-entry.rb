@@ -43,6 +43,9 @@ if errors.empty?
   errors << "ROADMAP_PHASE_PACKAGE_MISMATCH: phase=#{phase_number} expected=#{expected_package || '-'} actual=#{package}" unless expected_package == package
   errors << "ENTRY_REVIEW_PATH_MISMATCH: expected=#{expected_entry_review} actual=#{entry_review_path}" unless entry_review_path == expected_entry_review
   entry_evidence_path = options[:entry_evidence].to_s.empty? ? nil : File.expand_path(options[:entry_evidence], root)
+  if entry_evidence_path.nil? && File.file?(expected_entry_evidence)
+    errors << "OPTION_ENTRY_EVIDENCE_REQUIRED: existing=#{expected_entry_evidence}"
+  end
   if entry_evidence_path && entry_evidence_path != expected_entry_evidence
     errors << "ENTRY_EVIDENCE_PATH_MISMATCH: expected=#{expected_entry_evidence} actual=#{entry_evidence_path}"
   end
