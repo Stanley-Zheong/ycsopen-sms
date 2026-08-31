@@ -1,22 +1,30 @@
 # Phase 03 Entry Evidence
 
-Review subject commit: `f3749bd41b37f622b2f809ee2af8f2a2e6ff4218`
-Evidence recorder identity: /root/phase3_validation_map
-Tool boundary: independent read-only inspection of the committed subject and local command execution; only ENTRY-EVIDENCE.md and ENTRY-REVIEW.md are written after capture; no implementation edit, service mutation, download, secret access, or claimed SoftHSM execution
+Review subject commit: `20d427a61159354aa018300769209279466db581`
+Evidence recorder identity: /root/phase3_research
+Tool boundary: independent read-only inspection of the committed subject and local deterministic command execution; only ENTRY-EVIDENCE.md and ENTRY-REVIEW.md are written after capture; no implementation edit, service mutation, download, secret access, or claimed SoftHSM execution
+Identity assurance: orchestration provenance only; deterministic commands, transcript digest, mandatory flag and separate main-agent reproduction are the acceptance boundary; no cryptographic process-identity claim is made
 
-## Transcript 01 — Git subject and tree
+## Transcript 01 — Git subject and clean tree
 
 Command:
 
 ```sh
-subject=$(git rev-parse HEAD); tree=$(git rev-parse HEAD^{tree}); test "$subject" = f3749bd41b37f622b2f809ee2af8f2a2e6ff4218; test -z "$(git status --porcelain)"; printf 'subject=%s\ntree=%s\nworktree=clean\n' "$subject" "$tree"
+set -e
+expected=20d427a61159354aa018300769209279466db581
+subject=$(git rev-parse HEAD)
+test "${#subject}" -eq 40
+test "$subject" = "$expected"
+test -z "$(git status --porcelain)"
+tree=$(git rev-parse HEAD^{tree})
+printf 'subject=%s\ntree=%s\nworktree=clean\n' "$subject" "$tree"
 ```
 
 Raw stdout:
 
 ```text
-subject=f3749bd41b37f622b2f809ee2af8f2a2e6ff4218
-tree=8e0ea6dfd0d81a94bee419383e5d9105bfa810af
+subject=20d427a61159354aa018300769209279466db581
+tree=e5d1cb9574dc390ebf45757a9b87add0575e99ce
 worktree=clean
 ```
 
@@ -65,10 +73,12 @@ Command:
 Raw stdout:
 
 ```text
-planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency negative=entry_evidence_digest_mismatch,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression
+planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression
 ```
 
 Exit status: `0`
+
+The positive list explicitly contains `mandatory_entry_evidence_binding` and `rg_alternation_canary`; the negative list explicitly contains `entry_evidence_flag_omitted`, `entry_evidence_digest_mismatch`, and `plan_rg_escaped_alternation`.
 
 ## Transcript 05 — Current 30-plan PlanningValidatorSupport graph
 
@@ -137,7 +147,9 @@ Exit status: `0`
 Command:
 
 ```sh
-docker image inspect mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb --format 'mysql={{index .RepoDigests 0}} id={{.Id}}' && docker image inspect minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e --format 'minio={{index .RepoDigests 0}} id={{.Id}}'
+set -e
+docker image inspect mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb --format 'mysql={{index .RepoDigests 0}} id={{.Id}}'
+docker image inspect minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e --format 'minio={{index .RepoDigests 0}} id={{.Id}}'
 ```
 
 Raw stdout:
@@ -151,12 +163,18 @@ Exit status: `0`
 
 ## Transcript 08 — SoftHSM execution-prerequisite probe
 
-This is an availability probe, not a SoftHSM conformance PASS. The absent runtime remains an open execution prerequisite owned by Plan 03-03.
+This is an availability probe, not a SoftHSM conformance PASS. The absent runtime remains an OPEN execution prerequisite owned by Plan 03-03.
 
 Command:
 
 ```sh
-if command -v softhsm2-util >/dev/null 2>&1; then printf 'softhsm_runtime=present path=%s\n' "$(command -v softhsm2-util)"; exit 1; else printf 'softhsm_runtime=absent execution_prerequisite=OPEN owner=03-03\n'; fi
+set -e
+if command -v softhsm2-util >/dev/null 2>&1; then
+  printf 'softhsm_runtime=present path=%s execution_prerequisite=REVIEW_REQUIRED\n' "$(command -v softhsm2-util)"
+  exit 1
+else
+  printf 'softhsm_runtime=absent execution_prerequisite=OPEN owner=03-03\n'
+fi
 ```
 
 Raw stdout:
@@ -167,27 +185,7 @@ softhsm_runtime=absent execution_prerequisite=OPEN owner=03-03
 
 Exit status: `0`
 
-## Transcript 09 — Attempt-2 correction ownership extraction
-
-Command:
-
-```sh
-rg -n 'MIGRATABLE_SCHEMA_ONLY|maximum three per purpose|fifteen per session|concurrent CAS races|milestone_name: YCSOpen SMS v1\.0' .planning/phases/03-crypto-storage-bootstrap/{03-DECISIONS.md,03-17-PLAN.md,03-27-PLAN.md} .planning/STATE.md
-```
-
-Raw stdout:
-
-```text
-.planning/phases/03-crypto-storage-bootstrap/03-DECISIONS.md:60:- **Migration:** the exact current legacy-index targets are `mobile_portability.mobile_hash`, `blacklist_entries.mobile_hash`, `third_party_risk_check_logs.mobile_hash`, `message_tasks.mobile_hash`, and `unsubscribe_records.mobile_hash`; protected mobile columns without a `mobile_hash` are field-encryption targets but not invented equality indexes. `third_party_risk_check_logs.mobile_hash` is a V1 `CHAR(64)` indexed `MIGRATABLE_SCHEMA_ONLY` surface: current Java has no reader/writer, but deployed databases may contain historical rows, so it remains in migration/scrub evidence and its writer fence must prove no unknown external writer. Each target advances `DISCOVERED -> BACKFILLED -> VERIFIED -> CUTOVER -> SCRUBBED -> COMPLETE`. Backfill inserts metadata idempotently; cutover requires a compatible deployed-writer fence; scrub replaces legacy `CHAR(64)` raw digests with non-queryable row-binding locators and atomically updates any locator-based metadata binding. Blacklist and portability targets must prove query hits before backfill, during dual-read compatibility, and after HMAC-only cutover on real MySQL. Concurrent legacy writes, checkpoint drift, duplicate key-version rows, or missing bindings block advancement and leave the earlier reader mode intact.
-.planning/phases/03-crypto-storage-bootstrap/03-27-PLAN.md:60:  <action>No repository analog exists, so implement DR-P03-008 exactly with constructor-injected final collaborators and sanitized stable failures. Define closed schemas for `ycs-writer-fence/v1` and `ycs-encrypted-snapshot/v1`; both require identical canonical `migration_set_id`, environment, database-instance fingerprint, schema, Flyway-set digest, unsigned global sequence and `signer_key_version`, with bounded strings and no unknown fields. The writer role owns issued/expiry markers and unique compatible writer records. The snapshot role owns canonical snapshot ID, recovery key reference, completed marker, totals and an ordered array of at most 104858 chunk records, each containing zero-based index, exactly one terminal final flag, plaintext size at most 10485760, envelope size at most 10485905 and SHA-256 digest; enforce the 1 TiB plaintext, 1099526832186-byte ciphertext and 33554432-byte manifest bounds from `ENVELOPE-CONTRACT.md`. Read only bounded canonical regular files at explicit canonical paths and reject symlinks, duplicates and noncanonical JSON. Compute each canonical role digest and the exact DR-P03-008 pair digest. Verify the writer role signature over role byte `0x01` and the snapshot role signature over `0x02`, both committing the same pair digest and their role digest under the same configured signer version. Configure exactly one ACTIVE and explicit RETIRING Ed25519 X.509 fingerprints. Only ACTIVE may atomically CAS a higher global sequence with both role digests and pair digest; RETIRING may reverify only the exact accepted tuple. Test missing/duplicate/reordered/truncated/extra/post-final/size-total mismatch chunks, migration-set/subject/sequence/signer mismatch, cross-pair splice, individual replay, same-sequence digest change, simulated half-write, unknown/retired/revoked signer, rollout, old-anchor removal, compromise invalidation and recovery through one fresh higher-sequence pair. Add concurrent CAS races: identical tuples may produce one insert plus idempotent exact re-verifications; different higher-sequence or same-sequence/different-digest pairs have exactly one winner and every loser leaves the accepted tuple unchanged; no race can expose one role or half a pair. Every rejection or losing competitor asserts zero lease, checkpoint, event and business-table mutations.</action>
-.planning/phases/03-crypto-storage-bootstrap/03-17-PLAN.md:55:  <action>No repository object-upload analog exists, so implement DR-P03-009 and `ENVELOPE-CONTRACT.md` using constructor injection, before-allocation bounded input handling, stable errors and MVC/service tests per `03-PATTERNS.md`. `POST /api/v1/console/tenants/registration-object-sessions` returns opaque session ID, one `regup_v1_` session-bound upload token and expiry marker. Generate a nonsecret lookup ID plus 32-byte CSPRNG secret, use only `OpaqueTokenDigestPort` purpose `REGISTRATION_UPLOAD` with tenant-draft/session binding, and store its ACTIVE key version plus 32-byte digest. Every upload verifies the stored ACTIVE/RETIRING version in constant time; it never calls `BlindIndexPort` or accepts an object-capability token. The same token may upload all five purposes sequentially and replace the current STAGED object for one purpose while that exact tenant-draft/session is OPEN; it never crosses session or tenant draft. After media/size validation and before encryption/store work, atomically reserve an admitted-attempt slot only while OPEN: maximum three per purpose and fifteen per session. Concurrent callers cannot exceed either bound; any provider/store/reconciliation failure after reservation burns the slot and stable HTTP 429 `REGISTRATION_UPLOAD_LIMIT_REACHED` is returned at the boundary. Explicit close, successful claim or expiry invalidates it. Upload accepts exactly one multipart part `file` plus `X-Registration-Upload-Token` and returns only `pobj_v1_*`, purpose and expiry. Enforce exact content limits and before-allocation checks for all five purposes; reconcile replaced objects by operation ID. Document routes, token format/purpose/version policy, repeat-use/admission scope, terminal invalidation, states, errors, limits, privacy and legacy rejection; tests compare docs to runtime constants and cover attempts 2/3 and session 14/15/16, concurrent reservations, burned post-reservation failure, ACTIVE/RETIRING rotation, revoked/unknown version and cross-domain rejection.</action>
-.planning/phases/03-crypto-storage-bootstrap/03-17-PLAN.md:57:  <acceptance_criteria>One token sequentially uploads five purposes and replaces one only inside its OPEN binding; atomic admission never exceeds three attempts per purpose or fifteen per session even under concurrency/failure; claim/close/expiry/cross-session/cross-tenant-draft reuse fails; all exact size/envelope boundaries and documents match runtime; no endpoint accepts a URL, bucket, key or public/presigned reference.</acceptance_criteria>
-.planning/STATE.md:4:milestone_name: YCSOpen SMS v1.0
-```
-
-Exit status: `0`
-
-## Transcript 10 — Test matrix, TODO and schema-claim audit
+## Transcript 09 — Test matrix, TODO and schema-claim audit
 
 Command:
 
@@ -200,5 +198,57 @@ Raw stdout:
 ```text
 entry_artifact_audit=PASS matrix_rows=4 obligations=4 ui_stage=not-applicable todo_open=22 todo_checked=0 todo_owned_once=4 schema_claims=declared
 ```
+
+Exit status: `0`
+
+## Transcript 10 — V1 third-party-risk schema and Java fail-fast audit
+
+Command:
+
+```sh
+/usr/bin/env ruby -e 'schema=File.read("core/src/main/resources/db/migration/V1__init_schema.sql"); block=schema[/CREATE TABLE third_party_risk_check_logs\s*\(.*?\) ENGINE=.*?;/m] or abort("missing third_party_risk_check_logs DDL"); abort("missing mobile_hash CHAR(64)") unless block.match?(/mobile_hash\s+CHAR\(64\)\s+NOT NULL/); abort("missing idx_mobile_hash") unless block.match?(/KEY idx_mobile_hash \(mobile_hash\)/); java=Dir["core/src/main/java/**/*.java"].map{|p|[p,File.read(p)]}; hits=java.select{|_,body| body.match?(/third_party_risk_check_logs|ThirdPartyRiskCheckLog/)}; abort("unexpected Java reader/writer: #{hits.map(&:first).join(",")}") unless hits.empty?; decisions=File.read(".planning/phases/03-crypto-storage-bootstrap/03-DECISIONS.md"); abort("missing MIGRATABLE_SCHEMA_ONLY classification") unless decisions.include?("`third_party_risk_check_logs.mobile_hash` is a V1 `CHAR(64)` indexed `MIGRATABLE_SCHEMA_ONLY` surface"); puts "third_party_risk_surface=PASS ddl_table=present mobile_hash=CHAR(64) index=idx_mobile_hash java_reader_writer=0 classification=MIGRATABLE_SCHEMA_ONLY"'
+```
+
+Raw stdout:
+
+```text
+third_party_risk_surface=PASS ddl_table=present mobile_hash=CHAR(64) index=idx_mobile_hash java_reader_writer=0 classification=MIGRATABLE_SCHEMA_ONLY
+```
+
+Exit status: `0`
+
+This fail-fast check requires the V1 table, exact indexed `CHAR(64)` field, zero current Java table/entity reader-writer matches, and the explicit schema-only migration classification to be true together.
+
+## Transcript 11 — Mandatory entry-evidence flag omission negative test
+
+Command:
+
+```sh
+set -e
+if output=$(/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 03 --package crypto-storage-bootstrap --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/03-crypto-storage-bootstrap/ENTRY-REVIEW.md 2>&1); then
+  printf 'unexpected_zero_exit\n'
+  exit 1
+else
+  result_code=$?
+fi
+test "$result_code" -ne 0
+case "$output" in
+  *OPTION_ENTRY_EVIDENCE_REQUIRED*) ;;
+  *) printf '%s\n' "$output"; exit 1 ;;
+esac
+printf 'observed_exit=%s\n%s\n' "$result_code" "$output"
+```
+
+Raw combined output:
+
+```text
+observed_exit=1
+phase_entry=BLOCKED errors=3
+- OPTION_ENTRY_EVIDENCE_REQUIRED: existing=/Users/laosanzheong/Documents/codebases/ycsopen-sms/.planning/phases/03-crypto-storage-bootstrap/ENTRY-EVIDENCE.md
+- ENTRY_REVIEW_BLOCKER: criterion=ENTRY-03-12-COMPLETE-GATE
+- ENTRY_REVIEW_FINAL_VERDICT_MISSING: /Users/laosanzheong/Documents/codebases/ycsopen-sms/.planning/phases/03-crypto-storage-bootstrap/ENTRY-REVIEW.md
+```
+
+The wrapper exited successfully only after proving the validator itself returned nonzero and emitted `OPTION_ENTRY_EVIDENCE_REQUIRED`.
 
 Exit status: `0`
