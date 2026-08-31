@@ -12,7 +12,7 @@ Delivery required check: `Phase 01 portable registry`
 ## Scope and intent
 
 - GitHub issue: `#13` — Phase 1 engineering verification and drift-control foundation.
-- Delivery contains one atomic Phase 1 implementation commit on the issue-scoped branch.
+- Delivery uses the issue-scoped branch and binds its final reviewed commit with the deterministic annotated delivery tag. Corrective commits are permitted until the TODO set is empty; the tag target is the delivered Phase 1 state.
 - The PR trigger is the explicit GitHub Actions `pull_request` event. The required portable registry runs on Ubuntu and must pass without launching or downloading a browser.
 - The external annotated tag is the final source of truth for commit, tree, PR check locator, actor, and PASS status.
 - Phase 1 closes only its seven engineering-foundation obligations. Phase 56 product acceptance, business modules, and unsupported-browser coverage remain outside this delivery.
@@ -21,14 +21,14 @@ Delivery required check: `Phase 01 portable registry`
 
 - Subject manifest path: `.planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json`
 - Subject inputs: 194 — implementation 103, test 31, config 13, contract 35, validator 12.
-- Subject manifest digest: `5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6`
-- Tested subject digest: `9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54`
+- Subject manifest digest: `94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53`
+- Tested subject digest: `c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4`
 - Evidence manifest path: `.planning/phases/01-engineering-verification-foundation/EVIDENCE/evidence-manifest.json`
-- Evidence manifest SHA-256: `18db7794e68b8305103380c537710e32d07b76ecd0f9760a68f1b73e0d1243c4`
-- Local Chrome runtime SHA-256: `dbd8e12d14a731fdd6b643fb887518885f744a211447852ea4cf226830eba3c3`
-- GSD goal verification SHA-256: `f25f2125983a088d570f1ca141b9dcca1979f7729bafde6f571271c3833de4fe`
-- GSD code review SHA-256: `9ad8b386cff71f9efbafbe6418fa394ec8b261249d19a9fa758ec522780e0e05`
-- Claude review SHA-256: `634a9bf1220731e44ea9da5103b7925481a4f822885d8f29b95a9642a4b850b9`
+- Evidence manifest SHA-256: `7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579`
+- Local Chrome runtime SHA-256: `05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde`
+- GSD goal verification SHA-256: `e896e8d42686fc7a70efa88d5ac393d3a33feec9cf66edcbc54db106c0cf968a`
+- GSD code review SHA-256: `7721fda63366691d91ab35ad547d00d87d920ded37d9a0cdb4455e6d95f9772c`
+- Claude review SHA-256: `fdeab34ef761726981b345e34c069fb23b58ae55151798485b9039f3d29a615d`
 
 All seven exact obligation summaries are PASS and are checksum-bound by the evidence manifest.
 
@@ -56,7 +56,7 @@ The only real-browser acceptance evidence is the currently installed standard-pa
 
 ## Known limitations retained
 
-- The GitHub-hosted portable run and real target-tree Ripper extraction are delivery-stage facts and are not claimed until the remote validator passes.
+- GitHub Actions run `33352694672` executed the portable registry on Ubuntu and passed 19 checks before correctly blocking on stale committed input hashes. Corrective commit `2223234` then passed the complete required check in run `33363729675`, job `99400024900`.
 - The bounded synthetic screenshot policy needs an explicit superseding decision before reuse as a later-phase evidence convention.
 - The three minimal schema validators, OCI pin recapture workflow, and platform-conditional Chrome-denial automation remain maintainability improvements, not current acceptance claims.
 - Existing dependency advisories and the recorded Flyway/MySQL support warning are not represented as resolved by Phase 1.

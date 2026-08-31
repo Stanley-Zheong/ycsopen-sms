@@ -82,9 +82,9 @@ The revised plan explicitly added evidence-kernel ownership. Its implementation 
 The first Plan 11 GSD attempt invalidated the original 105-input seal. Later review cycles produced and hardened a 193-input seal. Claude Attempt 1 then proved that `login-scenario-contract` was labelled as a validator but unconditionally launched the standard-path macOS Chrome, invalidating the portable claim and all review bindings. The current correction physically separates a pure structural CI file from a dedicated local visual file, binds exact argv/scopes/layers for both scenario commands and the structural server, and content-addresses the complete five-file portable scenario call graph. Any byte drift in the validator, its validation dependency, the server, the bounded probe helper, or the server helper blocks the registry until an explicit reviewed rebind. The structural validator/server and portable artifact all pass under an OS sandbox that denies Chrome reads and execution. `File::NOFOLLOW` absence now fails closed. The other execution/evidence hardening remains intact: TRACE-004 inputs are complete; lifecycle and delivery dispatch the exact-seven schema; portable runtime facts independently bind durable subject content, manifest/subject digests, exact-seven checksums, the verified runtime snapshot SHA/size/path, and fixed CI locators; path components use a stable `O_NOFOLLOW` descriptor snapshot; PNG, OCI, Java descendant cleanup, browser cleanup, redaction, static containment, and explicit CLI roots fail closed.
 
 - Subject manifest: `.planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json`
-- `subject_manifest_digest`: `5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6`
-- `tested_subject_digest`: `9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54`
-- Evidence manifest SHA-256: `18db7794e68b8305103380c537710e32d07b76ecd0f9760a68f1b73e0d1243c4`
+- `subject_manifest_digest`: `94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53`
+- `tested_subject_digest`: `c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4`
+- Evidence manifest SHA-256: `7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579`
 
 The code-owned subject union excludes generated summaries/manifests, Plan 06 runtime evidence, TODO/SUMMARY/review/delivery state, and all superseded browser-source artifacts. It includes the new producer, destructive suite, both schemas, runner, evidence kernel, CLI, matrix, and every registered implementation/test/config/contract/validator input.
 
@@ -92,13 +92,13 @@ The code-owned subject union excludes generated summaries/manifests, Plan 06 run
 
 | Obligation | Summary SHA-256 | Result |
 | --- | --- | --- |
-| OBL-FOUND-TRACE-001 | `ea269c21aa9f086fd5af089a1f244c135bef1661bec7964c82c0424f9602037f` | PASS |
-| OBL-FOUND-TRACE-002 | `06f47d3a707f95558b1ec6997a512a1bb143ef6d1108a7f53a33d94ecd5f0cf7` | PASS |
-| OBL-FOUND-TRACE-003 | `5e894fe633ddce694b1e62dd28af4713950020bc9d01573d0c4a560fe97641f4` | PASS |
-| OBL-FOUND-TRACE-004 | `9c93e3426a319b4562bede7b1a73ad94dc96beaddeb0476a407994850170d6ae` | PASS |
-| OBL-FOUND-UI-DRIFT-001 | `08a68943f4821e17c4fab63e9d1b80f265266ef493dc1c643f46df45f6679f58` | PASS |
-| OBL-FOUND-UI-DRIFT-002 | `da28c5b57415032ed1c76c9cc0a5ce7abc11f09769f6d6886e133bbe4b57443c` | PASS |
-| OBL-NFR-BROWSER | `a11ef1aeb1ac3c7ede6b1dcb61be2c21b01f006496a47730e24ac37fc3eacf47` | PASS |
+| OBL-FOUND-TRACE-001 | `c7f2843aa382354b5e31e2686642380905d1f13515ae6dc7c66cc87d7ee68231` | PASS |
+| OBL-FOUND-TRACE-002 | `4f7b44e049a9a0bbbaff5a33053b3a449e5f0a29da91fbea43cac68457e639b1` | PASS |
+| OBL-FOUND-TRACE-003 | `1e3b569a2a266451d056537278cadae3fc3503dc7b4f8a7f36ce470dd6f28b5d` | PASS |
+| OBL-FOUND-TRACE-004 | `61b7fa432f8812f61db83042793227ff1365d11d6d3b974458a9e36ca5744e26` | PASS |
+| OBL-FOUND-UI-DRIFT-001 | `cd1cf54ce9c99463a0b7e9ad1a64acc508741a41e424dca73a23c6dd401da053` | PASS |
+| OBL-FOUND-UI-DRIFT-002 | `f1345158bd5a9ad43f3eb64247c94004029e0d91554c90c1bd13d7207e03579c` | PASS |
+| OBL-NFR-BROWSER | `4a68849a2ef397105476df4e61f815669497d984aadce1d9f493cf4ccd767087` | PASS |
 
 TRACE-001 and TRACE-002 each include the destructive trace-closure result and a real owner query proving `selected=7`. TRACE-004 retains the ordered lifecycle and delivery child outcome. TRACE-003 includes Java unit/integration, npm install/lint/test/build, structural HTTP scenario, exact browser-bearing Chinese-copy command, real MySQL/Redis, timezone, and local-Chrome contract results. Chinese copy/export and timezone remain supporting contract results only; no Phase 56 product acceptance was asserted.
 
@@ -109,7 +109,7 @@ TRACE-001 and TRACE-002 each include the destructive trace-closure result and a 
 - Viewport: `1440x900`.
 - Scenario: `LOGIN-SMOKE-V1`; visual rule: `LOGIN-CARD-IN-VIEWPORT-V2`.
 - Browser-observed response: HTTP 401 with the fixed safe body digest and `X-YCS-Scenario: LOGIN-SMOKE-V1` marker.
-- Runtime artifact SHA-256: `dbd8e12d14a731fdd6b643fb887518885f744a211447852ea4cf226830eba3c3`.
+- Runtime artifact SHA-256: `05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde`.
 - Fresh structural browser command: 9/9 Playwright tests PASS against the standard-path local Chrome, with real loopback HTTP.
 - No Chrome, ChromeDriver, Chromium bundle, alternate browser, or version matrix was downloaded.
 

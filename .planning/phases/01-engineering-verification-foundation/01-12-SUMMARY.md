@@ -26,10 +26,10 @@ All evidence-backed Phase 1 TODO rows are closed. The only physically unchecked 
 
 - Pre-push lifecycle: PASS with `--require-gsd-clear --require-claude-clear --allow-reserved-delivery`.
 - Physical unchecked TODO rows: exactly one, the reserved remote-delivery row.
-- Subject manifest: 194 inputs, digest `5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6`.
-- Tested subject digest: `9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54`.
-- Evidence manifest SHA-256: `18db7794e68b8305103380c537710e32d07b76ecd0f9760a68f1b73e0d1243c4`.
-- Runtime artifact SHA-256: `dbd8e12d14a731fdd6b643fb887518885f744a211447852ea4cf226830eba3c3`.
+- Subject manifest: 194 inputs, digest `94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53`.
+- Tested subject digest: `c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4`.
+- Evidence manifest SHA-256: `7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579`.
+- Runtime artifact SHA-256: `05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde`.
 - GSD goal/code and Claude review: PASS, no BLOCKER/HIGH.
 - Git diff whitespace validation: PASS.
 
@@ -46,8 +46,8 @@ The commit itself contains no predicted commit SHA. After the PR check passes, t
 
 ## Delivery invariants
 
-- One Phase 1 implementation commit contains the code, tests, plans, evidence, reviews, TODO state, and both summaries.
-- No amend, force-push, direct push to `main`, movable/lightweight tag, or second Phase 1 implementation commit is allowed.
+- The final annotated tag binds the complete reviewed Phase 1 target tree. Corrective commits may precede that target while TODOs remain open.
+- No amend, force-push, direct push to `main`, or movable/lightweight delivery tag is allowed.
 - The deterministic annotated tag is created only after the required check succeeds.
 - The reserved TODO row remains physically unchecked in the target tree; its external attestation is what closes it effectively.
 - Browser scope remains only the installed Google Chrome `151.0.7922.174` at `1440x900`; remote CI does not launch or download Chrome.
