@@ -72,7 +72,7 @@ Schema migrations: declared
 
 - Key: `PREPARED -> ACTIVE -> ROTATION_REQUIRED -> DECRYPT_ONLY -> RETIRED`, with `COMPROMISED` as a fail-closed terminal policy state. Activation atomically moves the previous ACTIVE key to DECRYPT_ONLY. `KeyProtectionPort.wrap` is the only caller-visible operation; its production adapter alone reserves and permanently consumes one counter, then generates the wrap nonce and invokes the provider. The codec receives the immutable result and cannot double-reserve, supply a nonce or retry; no caller crosses the hard ceiling.
 - Blind-index target: `DISCOVERED -> BACKFILLED -> VERIFIED -> CUTOVER -> SCRUBBED -> COMPLETE`. No raw legacy fallback is reachable at COMPLETE.
-- Registration session: `OPEN -> CLAIMED/CLOSED/EXPIRED`. Its keyed upload-token digest is reusable only for sequential purpose uploads and same-purpose replacement in that exact OPEN tenant-draft/session. Claim, explicit close, expiry and terminal state invalidate it.
+- Registration session: `OPEN -> CLAIMED/CLOSED/EXPIRED`. Its keyed upload-token digest is reusable only for sequential purpose uploads and same-purpose replacement in that exact OPEN tenant-draft/session. Atomic admission before encryption/store permits at most three attempts per purpose and fifteen per session; a post-reservation failure consumes the slot and concurrent overrun returns `REGISTRATION_UPLOAD_LIMIT_REACHED`. Claim, explicit close, expiry and terminal state invalidate it.
 - Registration object: `STAGED -> CLAIMED` or `STAGED -> REPLACED/EXPIRED/ORPHANED -> DELETED`; failed tenant persistence preserves a deterministic reconciliation path.
 - Migration admission: two schema-valid manifests → same migration-set/subject/sequence/signer → canonical role-separated pair signatures → one atomic accepted pair tuple. No role is admitted separately.
 - Migration run: atomically accepted pair digest → leased bounded batch → verified row outcome/checkpoint; pause/abort stops new claims without reverting ciphertext to plaintext.
@@ -118,7 +118,7 @@ Schema migrations: declared
 | Key state | ACTIVE, DECRYPT_ONLY, RETIRING index, missing, compromised, concurrent activation, premature retirement |
 | Migration state | fresh, valid envelope, approved legacy, corrupt magic, ambiguous encoding, restart, duplicate worker, drift, conflict |
 | Object state | staged, replaced, claimed, expired, closed-session, reused-after-claim, revoked, tampered, orphaned, deleted |
-| Registration purpose | sequential five-purpose upload, same-purpose replacement, required/optional set, exact 5 MiB/10 MiB boundary, media signature mismatch, oversize, wrong session/tenant-draft/purpose, partial claim, legacy URL |
+| Registration purpose | sequential five-purpose upload, same-purpose replacement, per-purpose 2/3/4 and session 14/15/16 concurrent admission boundaries, burned post-reservation failure, required/optional set, exact 5 MiB/10 MiB boundary, media signature mismatch, oversize, wrong session/tenant-draft/purpose, partial claim, legacy URL |
 | Envelope header/allocation | every header field, provider/key reference, declared/actual length mismatch, u32 overflow, purpose envelope ceiling, domain-prefix swap |
 | External failure | PKCS#11 outage, MySQL rollback, MinIO split success, manifest forgery/replay, cleanup failure |
 | Diagnostics | business exception, unexpected exception, provider failure, CR/LF, token/URL/key/payload canaries |

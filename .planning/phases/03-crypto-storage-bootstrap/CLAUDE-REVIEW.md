@@ -1,17 +1,46 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli-2.1.238
-session: 83dc0072-0511-4869-b562-3038e3732489
+session: f8c93610-08b4-49a9-8f64-6fa5824b28a2
 mode: tool-less-phase-patch-review
-attempt: 1
+attempt: 2
 status: blocked
-blocker: 4
-high: 3
+blocker: 1
+high: 1
 warning: 4
 info: 3
 ---
 
 # Phase 03 Claude plan and entry review
+
+## Attempt 2 verdict
+
+`BLOCKED` — execution remains unauthorized. Claude reviewed the complete committed Phase 03 patch from Phase 02 closure `68ae156d2f705fa9f3df853ecd13378cd926e557` through the current 30-plan entry approval in tool-less mode. It confirmed every Attempt 1 product/security correction except the findings below.
+
+### Attempt 2 findings
+
+| ID | Severity | Affected contract | Finding | Required correction |
+| --- | --- | --- | --- | --- |
+| PH03-R2-B01 | BLOCKER | `ENTRY-REVIEW.md` | Load-bearing command outputs and external identities are narrated without an attached durable transcript/artifact; the entry review does not disclose the independent reviewer execution boundary. | Attach a current-subject reproducible entry-evidence artifact containing exact commands, exit status and stdout, bind it from the review, disclose reviewer/main-agent execution, and revalidate independently. |
+| PH03-R2-H01 | HIGH | `planning-validator-support.rb`, plan DAG | Planned-artifact wiring skips files that already exist, so cross-wave modifications to the same existing file can be ordered only incidentally by wave without a dependency path; `03-08` and `03-29` both own `Tenant.java` without an edge. | Enforce dependency reachability for every cross-wave shared file, add destructive tests, add the minimal missing edges, and rerun all graph checks. |
+| PH03-R2-W01 | WARNING | DR-P03-007, inventory/research | The exact-five blind-index list includes `third_party_risk_check_logs.mobile_hash` without corroboration in the current-surface/research inventories. | Trace the real schema and writer/reader, then add complete ownership evidence or remove the unsupported target. |
+| PH03-R2-W02 | WARNING | `.planning/STATE.md` | `milestone_name: milestone` is a placeholder. | Replace it with the actual milestone name. |
+| PH03-R2-W03 | WARNING | DR-P03-009, registration upload plans | An OPEN session can replace a purpose without an explicit per-purpose/session admission ceiling, allowing unbounded encryption/storage/reconciliation churn inside `PT24H`. | Add an atomic bounded attempt contract and concurrent boundary/cleanup tests. |
+| PH03-R2-W04 | WARNING | `03-27-PLAN.md` | The atomic writer/snapshot pair CAS fault matrix lacks a named concurrent-admission race test. | Add same/different sequence concurrent CAS cases and assert one winner or exact idempotent tuple with no half-admission. |
+
+### Attempt 2 confirmed corrections
+
+Claude explicitly confirmed schema ordering for new artifacts, authenticated header/AAD, real encrypted snapshot plus fresh-schema streaming restore, object allocation bounds, no-index target disposition, KEK operation ceiling, trust-anchor rotation, repository-wide `HashUtil` removal, machine-readable migration CLI, session-bound repeat-use semantics, purpose-separated token digests and atomic pair-signing design.
+
+### Attempt 2 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none; the static limitation was disclosed in the returned review.
+- Session: `f8c93610-08b4-49a9-8f64-6fa5824b28a2`.
+- Returned counts: BLOCKER 1, HIGH 1, WARNING 4, INFO 3.
+- Execution authorization: NOT AUTHORIZED.
+
+## Attempt 1 record
 
 ## Verdict
 

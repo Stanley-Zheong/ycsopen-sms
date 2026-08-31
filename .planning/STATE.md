@@ -1,8 +1,8 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: ready_to_execute
+milestone_name: YCSOpen SMS v1.0
+status: planning
 last_updated: "2026-08-31T16:55:01.702Z"
 completion_metric: scoped_todo_empty
 ---
@@ -19,19 +19,19 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-**Current phase**: Phase 1 — Engineering verification and drift-control foundation
-**Current plan**: `01-12` pre-push closure is complete. The final 194-input subject, local 19/19 matrix, portable 20/20 matrix, current local-Chrome runtime, exact-seven evidence, GSD goal verification, GSD code review, Claude review, and pre-push lifecycle all pass with no BLOCKER/HIGH. The only remaining effective TODO is the reserved remote commit/PR/check/tag attestation.
-**Execution authorization**: Granted. The second independent review records `8 PASS / 0 BLOCKER`, and the real bootstrap exits zero for seven owned obligations and 13 plans. The former CfT source-chain verdict and JSON remain superseded history and do not enter current subject/evidence.
+**Current phase**: Phase 3 — Crypto storage bootstrap
+**Current plan**: The 30-plan package is under Claude Attempt 2 correction. Cross-wave shared-file ownership, durable entry evidence, schema-only blind-index inventory, bounded upload admission and concurrent manifest-pair CAS proof are the current planning gate.
+**Execution authorization**: Not granted. The prior entry PASS is invalidated until all current corrections receive an independent plan check, a distinct entry review and a Claude review with zero BLOCKER/HIGH.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 No schedule, effort, staffing, velocity, completion-date, progress-bar, or percentage status is maintained.
 
 ## Next executable transition
 
-1. Create and push the single atomic Phase 1 implementation commit on `refs/heads/phase/01-engineering-verification`.
-2. Open the issue-#13 PR at the committed locator and require `Phase 01 portable registry` to pass.
-3. Publish `refs/tags/ycsopen-sms/phase-01/delivery` as an annotated tag targeting that exact commit.
-4. Run live target-tree, subject, evidence, review, PR/check, and effective-TODO attestation. `SUMMARY.md` records locators rather than its own final SHA.
+1. Close every Claude Attempt 2 planning finding with an executable contract and destructive validator coverage.
+2. Attach current-subject entry command evidence and obtain a distinct independent 12-criterion entry review.
+3. Run Claude convergence review and require zero BLOCKER/HIGH before Phase 3 execution.
+4. Execute Phase 3 plans until the owner-scoped TODO query is empty, then complete independent verification, review, commit and delivery attestation.
 
 ## Accumulated decisions
 

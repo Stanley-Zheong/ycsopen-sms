@@ -38,7 +38,7 @@ Accepted. Writer and encrypted-snapshot manifests use machine-readable schemas, 
 
 ## DR-P03-009 — Staged tenant evidence
 
-Accepted. Registration evidence uses an opaque session, a session-bound repeat-use upload token, purpose-bound multipart uploads, opaque protected-object IDs and atomic single claim. One token supports sequential upload of all five purposes and same-purpose replacement only inside its OPEN tenant-draft/session; expiry, explicit close or successful claim invalidates it. The five purpose/media/size/required rules, configured `PT24H` expiry, orphan reconciliation and stable errors are part of runtime/API-document parity. Legacy URL fields and URL-shaped values are rejected and never fetched.
+Accepted. Registration evidence uses an opaque session, a session-bound repeat-use upload token, purpose-bound multipart uploads, opaque protected-object IDs and atomic single claim. One token supports sequential upload of all five purposes and same-purpose replacement only inside its OPEN tenant-draft/session; an atomic reservation before encryption/store caps admitted attempts at three per purpose and fifteen per session, burns post-reservation failures and returns `REGISTRATION_UPLOAD_LIMIT_REACHED` on concurrent overrun. Expiry, explicit close or successful claim invalidates it. The five purpose/media/size/required rules, configured `PT24H` expiry, orphan reconciliation and stable errors are part of runtime/API-document parity. Legacy URL fields and URL-shaped values are rejected and never fetched.
 
 ## Completion and ownership rule
 

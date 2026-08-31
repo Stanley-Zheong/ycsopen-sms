@@ -473,6 +473,7 @@ module PlanningValidatorSupport
     end
 
     validate_planned_artifact_wiring(nodes, by_id, errors)
+    validate_shared_file_dependency_wiring(nodes, by_id, errors)
 
     nodes.group_by(&:wave).sort.each do |wave, wave_nodes|
       owners = Hash.new { |hash, key| hash[key] = [] }
@@ -484,6 +485,32 @@ module PlanningValidatorSupport
         next unless unique_ids.length > 1
 
         errors << "PLAN_SAME_WAVE_FILE_OVERLAP: wave=#{wave} file=#{file} plans=#{unique_ids.join(',')}"
+      end
+    end
+  end
+
+  # Every file with owners in multiple waves is an incremental ownership chain,
+  # regardless of whether the file already exists in the repository. Wave order
+  # alone is not an executable prerequisite: each later owner must be able to
+  # reach the immediately preceding owner through depends_on. Chaining adjacent
+  # owners makes all earlier mutations transitively reachable without requiring
+  # a redundant complete graph.
+  def validate_shared_file_dependency_wiring(nodes, by_id, errors)
+    owners = Hash.new { |hash, key| hash[key] = [] }
+    nodes.each do |node|
+      node.files.each { |file| owners[file] << node }
+    end
+
+    owners.sort.each do |file, file_nodes|
+      ordered = file_nodes.uniq { |node| node.id }.sort_by { |node| [node.wave, node.id] }
+      next unless ordered.length > 1
+
+      ordered.each_cons(2) do |earlier, later|
+        # Same-wave ambiguity is reported by PLAN_SAME_WAVE_FILE_OVERLAP.
+        next unless earlier.wave < later.wave
+        next if plan_dependency_reachable?(later.id, earlier.id, by_id)
+
+        errors << "PLAN_SHARED_FILE_DEPENDENCY_MISSING: file=#{file} earlier=#{earlier.id} earlier_wave=#{earlier.wave} later=#{later.id} later_wave=#{later.wave}"
       end
     end
   end
