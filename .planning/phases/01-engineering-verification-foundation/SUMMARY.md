@@ -26,8 +26,8 @@ Delivery required check: `Phase 01 portable registry`
 - Evidence manifest path: `.planning/phases/01-engineering-verification-foundation/EVIDENCE/evidence-manifest.json`
 - Evidence manifest SHA-256: `7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579`
 - Local Chrome runtime SHA-256: `05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde`
-- GSD goal verification SHA-256: `e896e8d42686fc7a70efa88d5ac393d3a33feec9cf66edcbc54db106c0cf968a`
-- GSD code review SHA-256: `7721fda63366691d91ab35ad547d00d87d920ded37d9a0cdb4455e6d95f9772c`
+- GSD goal verification SHA-256: `b9d51a8b619594498e472c6e49c41946dd81281c8a448cda33f51f9293d4e3f8`
+- GSD code review SHA-256: `3f095b61dc1fd9a5bfed75cba396deb5054dfb9fe006d3eb252926935be684a1`
 - Claude review SHA-256: `fdeab34ef761726981b345e34c069fb23b58ae55151798485b9039f3d29a615d`
 
 All seven exact obligation summaries are PASS and are checksum-bound by the evidence manifest.

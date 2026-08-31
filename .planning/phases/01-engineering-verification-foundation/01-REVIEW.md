@@ -99,14 +99,6 @@ The previous obfuscation bypasses were independently replayed and rejected by th
 
 Portable subject/evidence binding, path and descriptor integrity, bounded JSON/base64/PNG handling, Java/Ruby process cleanup, exact-seven reduction, and the current-installed-Chrome-only scope were also re-reviewed. No BLOCKER, HIGH, WARNING, security vulnerability, correctness defect, or test-reliability defect was proven in the reviewed scope.
 
-## Review Binding
-
-This final 194-input seal starts a fresh bounded review cycle. Only the current manifest is authoritative in this table.
-
-| Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
-| --- | ---: | ---: | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53 | c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4 | PASS |
-
 ## Seal Binding
 
 | Bound object | Expected | Independently observed | Status |
@@ -141,7 +133,7 @@ The structural server's direct standalone replay after cleanup correctly stopped
 
 All 60 reviewed files meet the Phase 1 correctness, security, portability, and test-reliability standards at deep review depth. No issues found.
 
-## Final Verdict
+## Final verdict
 
 PASS
 
@@ -152,3 +144,11 @@ Overall Attempt 8 has **0 BLOCKER and 0 HIGH**. The current 194-input evidence c
 _Reviewed: 2026-08-31T05:59:30Z_
 _Reviewer: `phase1_gsd_code_review_attempt8` (`gsd-code-reviewer`)_
 _Depth: deep_
+
+## Review Binding
+
+This final 194-input seal starts a fresh bounded review cycle. Only the current manifest is authoritative in this table. This protocol table is intentionally the final table in the document so target-tree delivery parsing has one unambiguous row set.
+
+| Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
+| --- | ---: | ---: | --- | --- | --- | --- | --- |
+| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53 | c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4 | PASS |

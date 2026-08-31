@@ -45,14 +45,6 @@ The current reseal achieves the Phase 1 goal. I independently recomputed the can
 
 This verdict establishes goal achievement only. It does not alter `TODO.md` or authorize Phase 1 completion: the authoritative TODO still contains the open remote-delivery item, and this review closes no checkbox.
 
-## Review Binding
-
-The remote-CI stale-seal finding opened this bounded evidence cycle. All earlier reports and digests are historical only and cannot authorize this cycle.
-
-| Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
-| --- | ---: | ---: | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53 | c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4 | PASS |
-
 ## Seal Binding
 
 | Bound object | Independent observation | Status |
@@ -164,3 +156,14 @@ The phase is not yet workflow-complete because `TODO.md` still has one unchecked
 _Verified: 2026-08-31T06:02:51Z_
 _Verifier: `phase1_gsd_verification_attempt8`_
 _Overall historical attempt: 8; current resealed 194-input evidence cycle attempt: 1_
+
+## Final verdict
+PASS
+
+## Review Binding
+
+The remote-CI stale-seal finding opened this bounded evidence cycle. All earlier reports and digests are historical only and cannot authorize this cycle. This protocol table is intentionally the final table in the document so target-tree delivery parsing has one unambiguous row set.
+
+| Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
+| --- | ---: | ---: | --- | --- | --- | --- | --- |
+| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53 | c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4 | PASS |
