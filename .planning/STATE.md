@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 1 of 30
+Plan: 2 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute the authorized 30-plan Phase 03 package in dependency wave order until the Phase 03 scoped TODO is empty.
+**Current plan**: Execute `03-02-PLAN.md` in Wave 0; `03-01-PLAN.md` has a committed summary and all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -99,6 +99,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/ROADMAP.md`, Phase 3 Wave 0.
+**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-02-PLAN.md`, Phase 3 Wave 0.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
