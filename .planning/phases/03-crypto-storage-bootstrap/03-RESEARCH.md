@@ -195,7 +195,7 @@ flowchart LR
 ```text
 core/src/main/java/com/ycsopen/sms/core/common/security/
 ├── envelope/        # EnvelopeCodec, EnvelopeHeader, ProtectionContext, algorithms
-├── key/             # KeyProtectionPort, BlindIndexPort, key state and rotation service
+├── key/             # KeyProtectionPort, BlindIndexPort, OpaqueTokenDigestPort, key state/rotation
 ├── key/pkcs11/      # production SunPKCS11 adapter and fail-closed configuration
 ├── persistence/     # ProtectedFieldCodec and explicit repository adapters
 ├── object/          # PrivateObjectStorePort, S3 adapter, capability service
@@ -226,53 +226,33 @@ core/src/test/java/com/ycsopen/sms/core/common/security/
 
 ## Ciphertext Envelope Contract
 
-### Binary format `YCSE/v1`
+`ENVELOPE-CONTRACT.md` is the single canonical YCSE/v1 binary, authenticated-header,
+domain-separated AAD, capacity, bounded-read and parser contract. The research
+supports that contract with NIST SP 800-38D, ASVS V11 and the row-swap analysis;
+it does not define a second layout.
 
-The format is length-delimited, rejects unknown required flags, validates all lengths before allocation, rejects trailing bytes, and has a hard configured envelope size. No Java serialization, JSON polymorphism, or delimiter splitting is allowed. [CITED: https://github.com/OWASP/ASVS/blob/master/5.0/en/0x20-V11-Cryptography.md, accessed 2026-08-31]
+The contract authenticates the exact serialized 19-byte header, including all
+declared lengths, followed by provider ID and key reference, in both data and
+DEK-wrap AAD. Exact `YCSE-DATA-AAD\0` and `YCSE-WRAP-AAD\0` prefixes provide
+domain separation. Header-field substitution, provider/key-reference changes,
+declared/actual length mismatch, u32/checked-add overflow, truncation and
+trailing bytes fail before length-derived allocation. [CITED:
+https://csrc.nist.gov/pubs/sp/800/38/d/final, accessed 2026-08-31]
 
-| Order | Field | Encoding | v1 value/invariant |
-| --- | --- | --- | --- |
-| 1 | magic | 4 bytes | ASCII `YCSE` |
-| 2 | envelope version | unsigned byte | `1` |
-| 3 | data algorithm | unsigned byte | `1 = AES_256_GCM_TAG_128` |
-| 4 | wrap algorithm | unsigned byte | `1 = HSM_AES_256_GCM_TAG_128` |
-| 5 | AAD schema | unsigned byte | `1` |
-| 6 | flags | unsigned byte | `0`; unknown non-optional bits fail |
-| 7 | provider ID length | unsigned byte | bounded nonzero UTF-8 length |
-| 8 | key reference length | unsigned byte | bounded nonzero UTF-8 length |
-| 9 | wrap nonce length | unsigned byte | exactly `12` |
-| 10 | data nonce length | unsigned byte | exactly `12` |
-| 11 | wrapped DEK length | unsigned short | exactly `48` for a 32-byte DEK plus GCM tag |
-| 12 | ciphertext length | unsigned int | bounded and at least the tag length |
-| 13 | provider ID | bytes | `pkcs11` in the production adapter |
-| 14 | key reference | bytes | opaque alias/version, never key material |
-| 15 | wrap nonce | bytes | fresh per wrap under the KEK |
-| 16 | wrapped DEK | bytes | AES-GCM ciphertext plus tag |
-| 17 | data nonce | bytes | fresh per data encryption under the DEK |
-| 18 | ciphertext | bytes | AES-GCM ciphertext plus tag |
-
-AES-GCM is an authenticated-encryption-with-associated-data mode. The existing 96-bit nonce and 128-bit tag choices are retained, but nonce uniqueness is now tested independently for data encryption and KEK wrapping. [CITED: https://csrc.nist.gov/pubs/sp/800/38/d/final, accessed 2026-08-31]
-
-### Canonical AAD v1
-
-Encode each item as `u16 length || UTF-8 bytes`, preceded by AAD schema byte. Do not join with punctuation. [VERIFIED: design inference from row-swap threat and Jakarta converter limitation]
-
-1. purpose: `database-field` or `protected-object`
-2. logical owner/package
-3. logical table/object class
-4. field/content role
-5. tenant scope (`tenant:<id>` or the literal `global`)
-6. immutable resource identity (application-generated business ID preferred; legacy numeric PK during migration)
-
-The same exact AAD bytes authenticate both data encryption and, with a distinct prefix `dek-wrap`, DEK wrapping. This prevents cross-tenant, cross-field, cross-record, and wrap-context substitution. Authentication failure is one external error category; no response distinguishes wrong key, wrong AAD, malformed tag, or tamper. [CITED: https://csrc.nist.gov/pubs/sp/800/38/d/final, accessed 2026-08-31]
-
-### Compatibility rules
-
-- `YCSE/v1` is write-current and read-supported. A new format gets a new envelope version; never reinterpret v1 bytes. [VERIFIED: crypto-agility requirement in ASVS V11.2.2]
-- A payload beginning with `YCSE` but failing strict v1 parse is corrupt and quarantined; it must not fall back to plaintext. [VERIFIED: fail-closed design]
-- A payload without magic is legacy plaintext only when its manifest entry explicitly permits legacy classification and its source encoding/shape validator passes. [VERIFIED: migration requirement]
-- Unknown provider, key reference, algorithm, AAD schema, or required flag fails closed and emits only sanitized identifiers/correlation. [VERIFIED: `03-CONTEXT.md`]
-- Ciphertext and wrapped DEK are safe to persist, but are not logged or copied into evidence because leak evidence should contain only hashes/counts/status. [CITED: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html, accessed 2026-08-31]
+The same contract fixes the 145-byte maximum overhead, 110-byte database-field
+plaintext ceiling, 5 MiB/10 MiB registration-object limits and exact
+complete-envelope bounds. It also defines production MySQL recovery as a
+bounded stream of independently authenticated 10 MiB
+`mysql-encrypted-snapshot-chunk` envelopes, with a 1 TiB plaintext,
+104,858-chunk and 1,099,526,832,186-byte total-envelope hard ceiling. Chunk AAD
+binds migration set, snapshot, zero-based index and final marker; the signed
+snapshot inventory binds every ordered chunk digest/size and checked totals.
+Whole-dump `readAllBytes()`, plaintext dump files, missing/duplicate/reordered/
+post-final chunks and untrusted-length allocation are forbidden. A payload
+beginning with `YCSE` but failing strict parse is corrupt and never falls back
+to plaintext. A nonmagic payload is legacy only under an explicit manifest
+rule. Authentication failure is one external category and evidence contains
+only hashes/counts/status.
 
 ## DEK, KEK, HSM, and Blind-Index Design
 
@@ -297,9 +277,17 @@ The port returns no KEK or blind-index key bytes. Production configuration names
 
 1. Configure the Java 21 `SunPKCS11` provider dynamically from an allowlisted native library path and token identity. [CITED: https://docs.oracle.com/en/java/javase/21/security/pkcs11-reference-guide1.html, accessed 2026-08-31]
 2. Load an opaque AES-256 KEK and a separate opaque HMAC-SHA256 blind-index key from `KeyStore("PKCS11")`; reject missing, duplicate, extractable, wrong-use, or wrong-size keys. [CITED: same Oracle guide; mechanism support is token-dependent]
-3. Perform DEK wrapping as AES-256-GCM inside the provider using a fresh wrap nonce and wrap AAD. The KEK never leaves the token; the plaintext DEK exists only in bounded application memory for data encryption/decryption and is overwritten after use wherever the platform permits. [CITED: Oracle PKCS#11 AES-GCM support; NIST SP 800-38D]
+3. Expose one caller-visible `KeyProtectionPort.wrap` operation. Its production adapter alone durably reserves the V1200 operation count, then generates the fresh wrap nonce, then performs AES-256-GCM wrapping inside the provider and returns the key reference, nonce and wrapped DEK as one immutable result. The codec supplies the DEK plus authenticated header/context, but cannot reserve, provide a nonce or retry the failed operation. The KEK never leaves the token; the plaintext DEK exists only in bounded application memory for data encryption/decryption and is overwritten after use wherever the platform permits. [CITED: Oracle PKCS#11 AES-GCM support; NIST SP 800-38D]
 4. Perform blind indexes using `Mac.HmacSHA256` with the opaque HSM key. [CITED: Oracle PKCS#11 supported algorithms table]
 5. Startup in production profile fails if the PKCS#11 provider, expected mechanisms, active key aliases, or token login is unavailable. It must never select the in-memory adapter as fallback. [VERIFIED: locked context decision]
+
+Because YCSE/v1 uses random 96-bit GCM nonces for KEK wrapping, DR-P03-002
+adopts a project-conservative ceiling of 1,048,576 reserved wrap operations per
+KEK reference and marks the key `ROTATION_REQUIRED` at 983,040. V1200 persists
+and atomically increments the count before nonce generation; failed operations
+consume their reservation and the count never decrements. Concurrent and
+restarted callers therefore cannot exceed the hard ceiling. [CITED:
+https://csrc.nist.gov/pubs/sp/800/38/d/final, accessed 2026-08-31]
 
 SoftHSM is a software PKCS#11 implementation, not a physical HSM. Passing its integration test proves provider configuration, opaque-key API use, mechanism compatibility, alias rotation, and failure handling; it does not prove physical tamper resistance or a production token's certification. [CITED: https://github.com/softhsm/SoftHSMv2/blob/main/README.md, accessed 2026-08-31]
 
@@ -313,11 +301,19 @@ Canonical input is `index-schema || field-purpose || tenant-scope || normalized-
 
 During blind-index key rotation, compute both active and retiring versions until every declared target has the active version. Queries supply version plus digest and never compare across versions implicitly. Existing `mobile_hash CHAR(64)` is legacy SHA-256 and must not be described as protected; migrate it only if the active phase can do so without legacy DDL, otherwise record the later owning-module adoption TODO. [VERIFIED: `HashUtil.java`; locked deferred decisions]
 
+`bulk_sending_items.mobile_encrypted` and `uplink_records.mobile_encrypted` are
+still protected-field and migration targets, but V1 supplies no companion
+`mobile_hash` and current source supplies no equality-query contract. They are
+therefore explicit no-index inventory rows, not missing targets. The inventory
+and evidence union must reject their silent omission.
+
 ## Rotation, Recovery, and Fault Model
 
 ### Key state
 
-The Phase-3 metadata table stores only provider ID, key reference, purpose, state, activation/retirement metadata, and sanitized audit identity. Allowed states are `PREPARED`, `ACTIVE`, `DECRYPT_ONLY`, `RETIRED`, and `COMPROMISED`; exactly one key per purpose may be `ACTIVE`. No key bytes, PINs, DEKs, environment snapshots, or provider responses are stored. [VERIFIED: locked context; inferred state machine]
+The Phase-3 metadata table stores only provider ID, key reference, purpose, state, activation/retirement metadata, monotonic reserved-wrap count, rotation-required marker, and sanitized audit identity. Allowed states are `PREPARED`, `ACTIVE`, `ROTATION_REQUIRED`, `DECRYPT_ONLY`, `RETIRED`, and `COMPROMISED`; exactly one key per purpose may accept new writes. No key bytes, PINs, DEKs, environment snapshots, or provider responses are stored. [VERIFIED: locked context; inferred state machine]
+
+Capability and registration-upload credentials do not reuse the mobile blind-index contract. `OpaqueTokenDigestPort` owns two purpose-separated, versioned HmacSHA256 families (`OBJECT_CAPABILITY` and `REGISTRATION_UPLOAD`) with distinct nonextractable PKCS11 aliases and domain `YCS-OPAQUE-TOKEN-DIGEST/v1`. A canonical tenant/subject/resource-or-session binding and the 32-byte random token secret are authenticated. Only ACTIVE issues; stored ACTIVE/RETIRING versions verify through constant-time comparison. Cross-domain, unknown, retired or revoked versions fail. Since plaintext token secrets are never retained, retiring token-digest keys cannot be backfilled and retire only after live capability/OPEN-session reference counts for that exact purpose/version reach zero. [VERIFIED: DR-P03-005/009; OWASP secret-storage and constant-time comparison guidance]
 
 ### Rotation sequence
 
@@ -376,7 +372,7 @@ Other mapped protected fields must either adopt the same boundary in this phase 
 2. Encrypt bytes with the same `YCSE/v1` envelope and `protected-object` AAD before sending them to S3.
 3. Put ciphertext into a private bucket using a least-privilege application credential; store only object ID, opaque key, envelope/key reference metadata, ciphertext checksum, sanitized media type, size, tenant scope, and state in Phase-3-owned MySQL tables.
 4. Anonymous/direct GET must fail. Bucket/key never appears in an API response, log, screenshot, or evidence payload.
-5. Issue an opaque random capability URL from the application. Persist only a keyed digest of the capability with object, tenant/subject binding, stated purpose, expiry, revocation/consumption state.
+5. Issue an opaque random capability URL from the application. Persist only a keyed digest of the capability with object, tenant/subject binding, stated purpose, expiry, revocation/consumption state. Registration upload credentials are separate: one keyed token digest is bound to one OPEN tenant-draft/session and may be reused for sequential five-purpose uploads and same-purpose replacement until claim, explicit close or expiry.
 6. On access, validate capability and current authorization hook, fetch ciphertext privately, fully authenticate the GCM tag, then return bytes. Never stream unauthenticated plaintext to the caller.
 
 S3 Block Public Access provides an independent deny layer over bucket/object policies, and MinIO denies operations not explicitly authorized. [CITED: https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html, accessed 2026-08-31] [CITED: https://min.io/docs/minio/linux/administration/identity-access-management.html, accessed 2026-08-31]
@@ -449,7 +445,7 @@ DDL is expand-only. MySQL online DDL can still wait on metadata locks, including
 
 Changing a V1 legacy table requires a `SCHEMA-CLAIMS.md` row whose owner remains `engineering-verification-foundation`, whose migration is in `V0001-V0999`, and whose approval is a stable `DR-*` in Phase 3 `DECISIONS.md`. The current locked context allows only Phase-3 objects and `V1200-V1299`, so the plan must not create such DDL unless a new developer decision explicitly changes the contract. [VERIFIED: `planning-validator-support.rb` lines enforcing owner/range/approval]
 
-The default executable migration therefore updates existing V1 cell contents without altering the legacy schema. If a target column cannot hold the strict envelope or a required blind-index version cannot fit, mark that target `DEFERRED_OWNER` or escalate the schema conflict; truncation, alternate envelopes, or hidden side tables are forbidden. [VERIFIED: locked phase boundary]
+The default executable migration therefore updates existing V1 cell contents without altering the legacy schema. If a current or migratable target column cannot hold the strict envelope or a required blind-index representation cannot fit, mark it `BLOCKING` and escalate the schema conflict; it cannot become `DEFERRED_OWNER`. Truncation, alternate envelopes, or hidden side tables are forbidden. [VERIFIED: locked phase boundary]
 
 ### Idempotent migration algorithm
 
@@ -471,7 +467,7 @@ Single-table MySQL `UPDATE` supports ordered bounded changes, but the Java runne
 - Integrity proof compares pre-encryption and post-decryption HMAC fingerprints; evidence stores target/run IDs, counts, envelope/key versions, and aggregate digest only. [CITED: FIPS 198-1 HMAC]
 - A failed row leaves its source and checkpoint unchanged. A failed batch transaction rolls back all row/checkpoint effects in that transaction. [VERIFIED: Spring/MySQL transaction design]
 - Pause/abort stops new claims and leaves committed envelopes readable. Resume is the same run and manifest digest. [VERIFIED: idempotency requirement]
-- Rollback is forward fix or restored encrypted snapshot. Reintroducing plaintext is not a rollback. [VERIFIED: registry rollback policy]
+- Rollback is forward fix or restored encrypted snapshot. Reintroducing plaintext is not a rollback. Manifest acceptance alone is insufficient: the real MySQL lane must stream the fixed-argument dump through canonical independently authenticated snapshot chunks, prove every raw chunk omits a seeded canary, validate ordered chunk digests/sizes/totals and the atomic writer/snapshot pair, stream authenticated plaintext directly into a fresh disposable schema, and assert rows, envelopes, blind-index metadata and checkpoints. Whole-dump allocation and plaintext dump files are forbidden. [VERIFIED: registry rollback policy]
 - Contract/removal is not placed in the same automatic Flyway startup as expand/backfill. It requires reader/writer compatibility evidence and an empty migration TODO first. [CITED: https://documentation.red-gate.com/flyway/deploying-database-changes-using-flyway/rolling-out-updates-from-a-single-schema-to-multiple-production-databases, accessed 2026-08-31]
 
 ## Validation Architecture
@@ -657,9 +653,9 @@ No architectural claim is left as training-only. The following items are deliber
 
 All planning decisions below are locked for Phase 3 and recorded as `DR-P03-*` rows in `03-DECISIONS.md`. Execution may prove a prerequisite false, but it may not replace the decision with a weaker format, mock, silent exemption, or deferred current writer.
 
-### 1. YCSE/v1 capacity is fixed and computed
+### 1. YCSE/v1 capacity is fixed by the canonical contract
 
-The production provider ID is exactly the six UTF-8 bytes `pkcs11`; the v1 key reference is canonical ASCII `[a-z0-9][a-z0-9._-]{0,31}` and therefore at most 32 bytes. The fixed header is 19 bytes. The maximum non-plaintext body is provider `6` + key reference `32` + wrap nonce `12` + wrapped 32-byte DEK with tag `48` + data nonce `12` + data tag `16`. Therefore the maximum v1 overhead is `19 + 6 + 32 + 12 + 48 + 12 + 16 = 145` bytes, and every `VARBINARY(255)` target has exactly `110` bytes available for plaintext.
+`ENVELOPE-CONTRACT.md` exclusively owns the provider/key-reference grammar, byte layout, authenticated lengths, overhead calculation and before-allocation rules. The inventory table below consumes its derived database limits; it is not an alternate wire-format definition.
 
 | V1 protected target group | Targets | Declared plaintext bound | Maximum envelope | Classification |
 | --- | --- | ---: | ---: | --- |
@@ -704,11 +700,11 @@ Phase 3 defines a server-side `ObjectAccessAuthorizationPort` over object ID, te
 
 ### 7. Writer and snapshot admission uses signed canonical manifests
 
-`DR-P03-008` resolves the preflight trust source. Production adapters verify bounded canonical JSON plus detached Ed25519 signatures against a configured non-secret public-key fingerprint. Writer and encrypted-snapshot manifests bind the environment, schema, Flyway subject, monotonic sequence, freshness markers, and exact deployment/snapshot identity. Empty, unknown, stale, replayed, forged, or mismatched inputs fail before any lease, checkpoint, event, or business-table update. `phase03-migration preflight` exposes fixed nonzero exit categories and is exercised as a real command against MySQL.
+`DR-P03-008` resolves the preflight trust source. Production adapters validate both machine-readable JSON schemas and canonical bytes, require the same `migration_set_id`, environment/database/schema/Flyway subject, global sequence and `signer_key_version`, then compute the individual manifest digests and one domain-separated canonical pair digest. Each detached Ed25519 signature covers that pair digest, its manifest-role byte and its role digest, so a valid writer or snapshot cannot be spliced into another pair. One Phase-owned compare-and-set atomically persists signer/fingerprint/sequence, both role digests and pair digest only after both schemas, signatures, shared subject and ordered snapshot chunks pass. Separate replay, same-sequence digest change, role-only admission and half-commit fail before any lease, checkpoint, event or business-table update. A pinned versioned set has exactly one ACTIVE and explicit RETIRING anchors; RETIRING can only reverify an exact accepted pair and cannot advance state. Compromise revokes the signer and invalidates its accepted pair until one fresh higher-sequence inseparable pair arrives under a non-revoked ACTIVE anchor. A checked-in CLI contract owns golden `--help`, options and exit categories; the real command is exercised against MySQL.
 
 ### 8. Tenant evidence is a staged object-ID contract
 
-`DR-P03-009` resolves the live registration request format. Clients create a protected-object session, upload five purpose-bound objects through a fixed multipart endpoint, and submit only opaque protected-object IDs in registration JSON. Required/optional fields, media signatures, byte ceilings, single-claim semantics, expiry, atomic claim, orphan reconciliation, and stable errors are fixed before implementation. Legacy URL fields fail with `LEGACY_OBJECT_URL_NOT_ACCEPTED`; they are never fetched or silently converted.
+`DR-P03-009` resolves the live registration request format. Clients create a protected-object session and reuse its session-bound token to upload all five purpose-bound objects sequentially and replace a current STAGED object for a purpose while that same tenant-draft/session is OPEN. Claim, explicit close or expiry invalidates the token; it never crosses sessions or tenant drafts. Registration submits only opaque protected-object IDs. Required/optional fields, media signatures, exact 5 MiB/10 MiB plaintext and envelope ceilings, single-claim semantics, expiry, atomic claim, orphan reconciliation, and stable errors are fixed before implementation. Legacy URL fields fail with `LEGACY_OBJECT_URL_NOT_ACCEPTED`; they are never fetched or silently converted.
 
 ## Sources
 
