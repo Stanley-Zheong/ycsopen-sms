@@ -41,6 +41,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +61,7 @@ class Phase01MySqlIntegrationTest {
 
     private static final String EXPECTED_MIGRATION_SHA256 =
             "fcea0ad774f8b0e245484c435ce951e0b4337b8ef837d959e2a7b184058e08a9";
+    private static final Pattern VERSIONED_MIGRATION = Pattern.compile("^V([1-9][0-9]*)__.+\\.sql$");
     private static Phase01ServiceSession mysql;
 
     @DynamicPropertySource
@@ -87,7 +89,7 @@ class Phase01MySqlIntegrationTest {
     Flyway flyway;
 
     @Test
-    void appliesExistingV1AndBindsRealServerAndSessionIdentity() throws Exception {
+    void appliesDeclaredMigrationsWithImmutableV1AndBindsRealServerIdentity() throws Exception {
         assertThat(jdbcTemplate.queryForObject("SELECT 1", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT DATABASE()", String.class)).isEqualTo("phase01");
         assertThat(jdbcTemplate.queryForObject("SELECT CURRENT_USER()", String.class))
@@ -96,16 +98,21 @@ class Phase01MySqlIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT @@character_set_connection", String.class))
                 .isEqualTo("utf8mb4");
 
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT version FROM flyway_schema_history WHERE success = 1 ORDER BY installed_rank DESC LIMIT 1",
-                String.class)).isEqualTo("1");
+        Path migrationDirectory = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/src/main/resources/db/migration");
+        List<String> declaredVersions = declaredMigrationVersions(migrationDirectory);
+        List<String> appliedVersions = jdbcTemplate.queryForList(
+                "SELECT version FROM flyway_schema_history " +
+                        "WHERE success = 1 AND version IS NOT NULL ORDER BY installed_rank",
+                String.class);
+        assertThat(declaredVersions).contains("1");
+        assertThat(appliedVersions).containsExactlyElementsOf(declaredVersions);
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT checksum FROM flyway_schema_history WHERE version = '1' AND success = 1",
                 Integer.class)).isNotNull();
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
 
-        Path migration = Phase01ServiceHarness.repositoryRoot()
-                .resolve("core/src/main/resources/db/migration/V1__init_schema.sql");
+        Path migration = migrationDirectory.resolve("V1__init_schema.sql");
         assertThat(sha256(migration)).isEqualTo(EXPECTED_MIGRATION_SHA256);
         assertThat(mysql.migrationSha256()).isEqualTo(EXPECTED_MIGRATION_SHA256);
         assertThat(mysql.imageDigest()).isEqualTo(
@@ -138,6 +145,26 @@ class Phase01MySqlIntegrationTest {
 
     private static String sha256(Path path) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path)));
+    }
+
+    private static List<String> declaredMigrationVersions(Path migrationDirectory) throws IOException {
+        try (Stream<Path> files = Files.list(migrationDirectory)) {
+            List<String> versions = files
+                    .filter(Files::isRegularFile)
+                    .map(path -> path.getFileName().toString())
+                    .filter(name -> name.startsWith("V") && name.endsWith(".sql"))
+                    .map(VERSIONED_MIGRATION::matcher)
+                    .peek(matcher -> {
+                        if (!matcher.matches()) {
+                            throw new IllegalStateException("Unsupported versioned Flyway migration filename");
+                        }
+                    })
+                    .map(matcher -> matcher.group(1))
+                    .sorted((left, right) -> Integer.compare(Integer.parseInt(left), Integer.parseInt(right)))
+                    .toList();
+            assertThat(versions).doesNotHaveDuplicates();
+            return versions;
+        }
     }
 
     @SpringBootConfiguration
