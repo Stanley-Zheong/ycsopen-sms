@@ -254,12 +254,31 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   entry_evidence_digest = Digest::SHA256.file(entry_evidence_path).hexdigest
   entry_review_path = File.join(phase_dir, "ENTRY-REVIEW.md")
   entry_review_body = File.read(entry_review_path)
-  write(entry_review_path, entry_review_body.sub("# Entry Review", "# Entry Review\n\nENTRY-EVIDENCE-SHA256: #{entry_evidence_digest}"))
+  write_bound_entry_evidence = lambda do |body|
+    write(entry_evidence_path, body)
+    digest = Digest::SHA256.file(entry_evidence_path).hexdigest
+    write(entry_review_path, entry_review_body.sub("# Entry Review", "# Entry Review\n\nENTRY-EVIDENCE-SHA256: #{digest}"))
+    digest
+  end
+  write_bound_entry_evidence.call(entry_evidence_body)
   evidence_phase_command = phase_command + ["--entry-evidence", relative.call(entry_evidence_path)]
   run_validator(root, phase_command, expected_success: false, expected_token: "OPTION_ENTRY_EVIDENCE_REQUIRED")
   run_validator(root, evidence_phase_command, expected_success: true, expected_token: "phase_entry=PASS")
   write(entry_review_path, File.read(entry_review_path).sub(entry_evidence_digest, "0" * 64))
   run_validator(root, evidence_phase_command, expected_success: false, expected_token: "ENTRY_EVIDENCE_DIGEST_MISSING")
+
+  {
+    "Review subject commit: `#{'c' * 40}`" => ["Review subject commit: missing", "ENTRY_EVIDENCE_SUBJECT_MISSING"],
+    "Evidence recorder identity: fixture-independent-reviewer" => ["Evidence recorder identity: ", "ENTRY_EVIDENCE_RECORDER_MISSING"],
+    "Tool boundary: read-only repository and local command execution; no implementation edits" => ["Tool boundary: ", "ENTRY_EVIDENCE_TOOL_BOUNDARY_MISSING"],
+    "Identity assurance: orchestration provenance only; deterministic commands, digest binding and separate reproduction are the acceptance boundary" => ["Identity assurance: ", "ENTRY_EVIDENCE_IDENTITY_ASSURANCE_MISSING"]
+  }.each do |valid_line, (invalid_line, expected_error)|
+    write_bound_entry_evidence.call(entry_evidence_body.sub(valid_line, invalid_line))
+    run_validator(root, evidence_phase_command, expected_success: false, expected_token: expected_error)
+  end
+  write_bound_entry_evidence.call(entry_evidence_body.sub("Exit status: `0`\n", ""))
+  run_validator(root, evidence_phase_command, expected_success: false, expected_token: "ENTRY_EVIDENCE_COMMAND_TRANSCRIPT_INCOMPLETE")
+
   write(entry_review_path, entry_review_body)
   File.delete(entry_evidence_path)
 
@@ -301,6 +320,8 @@ Dir.mktmpdir("planning-validator-test-") do |root|
 
   write(plan_03_path, plan_03_body.sub("alpha|beta", "alpha\\|beta"))
   run_validator(root, phase_command, expected_success: false, expected_token: "PLAN_RG_ESCAPED_ALTERNATION")
+  write(plan_03_path, plan_03_body.sub("! rg -n 'alpha|beta' web/src", "sed -n 's/a\\|b/c/p' web/src/fixture.tsx && ! rg -n 'alpha|beta' web/src"))
+  run_validator(root, phase_command, expected_success: true, expected_token: "phase_entry=PASS")
   write(plan_03_path, plan_03_body)
 
   write(plan_01_path, plan_01_body.sub("depends_on: []", "depends_on: [02-02]"))
@@ -616,5 +637,5 @@ Dir.mktmpdir("planning-validator-test-") do |root|
   _rg_escaped_stdout, _rg_escaped_stderr, rg_escaped_status = Open3.capture3("rg", "-q", "alpha\\|beta", stdin_data: "beta\n")
   abort "rg escaped alternation unexpectedly matched" if rg_escaped_status.success?
 
-  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
+  puts "planning_validator_self_test=PASS positive=design_ui+production_ui+phase_entry_design+mandatory_entry_evidence_binding+open_current_todo+deterministic_plan_graph+planned_artifact_dependency+shared_file_dependency+rg_invocation_scope+rg_alternation_canary negative=entry_evidence_digest_mismatch,entry_evidence_flag_omitted,entry_evidence_subject_missing,entry_evidence_recorder_missing,entry_evidence_tool_boundary_missing,entry_evidence_identity_assurance_missing,entry_evidence_transcript_incomplete,plan_rg_escaped_alternation,plan_unknown_dependency,plan_self_dependency,plan_cycle,plan_same_wave_dependency,plan_same_wave_file_overlap,plan_artifact_dependency_missing,plan_shared_file_dependency_missing,plan_bad_yaml,plan_id_mismatch,missing_stage,missing_artifact,foreign_obligation,missing_selector,ui_placeholder,free_text_test_matrix,missing_atomic_row,missing_atomic_link,wrong_behavior,wrong_requirement,wrong_catalog_test,current_todo_missing_owned,current_todo_prechecked,dependency_todo_unchecked,prototype_as_production,missing_pw_id,missing_case_id,missing_obl_id,metadata_token_boundary,unrelated_smoke,no_goto,no_action_or_assertion,dead_component_without_browser_closure,execution_missing,execution_fail,execution_checksum,fake_react_txt,fake_playwright_txt,comment_only_react,string_only_react,schema_conflict,template_path_regression"
 end

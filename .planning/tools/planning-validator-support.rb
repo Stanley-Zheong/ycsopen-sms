@@ -322,7 +322,13 @@ module PlanningValidatorSupport
           end
         end
         automated = task[/<automated>\s*(.*?)\s*<\/automated>/m, 1]
-        if automated&.match?(/\brg\b/) && automated.include?("\\|")
+        rg_invocation_with_escaped_alternation = automated&.lines&.any? do |line|
+          line.split(/\s*(?:&&|\|\||;)\s*/).any? do |invocation|
+            rg_command = invocation[/\brg\b.*\z/]
+            rg_command&.include?("\\|")
+          end
+        end
+        if rg_invocation_with_escaped_alternation
           errors << "PLAN_RG_ESCAPED_ALTERNATION: plan=#{path} task=#{index + 1}"
         end
       end
