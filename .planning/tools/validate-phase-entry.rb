@@ -9,11 +9,12 @@ require_relative "planning-validator-support"
 
 options = { ui: false }
 OptionParser.new do |parser|
-  parser.banner = "Usage: ruby .planning/tools/validate-phase-entry.rb --phase NN --package ID --obligations PATH --entry-review PATH [--ui]"
+  parser.banner = "Usage: ruby .planning/tools/validate-phase-entry.rb --phase NN --package ID --obligations PATH --entry-review PATH [--entry-evidence PATH] [--ui]"
   parser.on("--phase NN") { |value| options[:phase] = value }
   parser.on("--package ID") { |value| options[:package] = value }
   parser.on("--obligations PATH") { |value| options[:obligations] = value }
   parser.on("--entry-review PATH") { |value| options[:entry_review] = value }
+  parser.on("--entry-evidence PATH") { |value| options[:entry_evidence] = value }
   parser.on("--ui") { options[:ui] = true }
 end.parse!
 
@@ -34,12 +35,17 @@ if errors.empty?
   obligation_path = File.expand_path(options[:obligations], root)
   entry_review_path = File.expand_path(options[:entry_review], root)
   expected_entry_review = File.join(phase_dir, "ENTRY-REVIEW.md")
+  expected_entry_evidence = File.join(phase_dir, "ENTRY-EVIDENCE.md")
 
   phases = PlanningValidatorSupport.roadmap_packages(roadmap_path, errors)
   dependency_map = PlanningValidatorSupport.roadmap_dependencies(roadmap_path, errors)
   expected_package = phases[phase_number]
   errors << "ROADMAP_PHASE_PACKAGE_MISMATCH: phase=#{phase_number} expected=#{expected_package || '-'} actual=#{package}" unless expected_package == package
   errors << "ENTRY_REVIEW_PATH_MISMATCH: expected=#{expected_entry_review} actual=#{entry_review_path}" unless entry_review_path == expected_entry_review
+  entry_evidence_path = options[:entry_evidence].to_s.empty? ? nil : File.expand_path(options[:entry_evidence], root)
+  if entry_evidence_path && entry_evidence_path != expected_entry_evidence
+    errors << "ENTRY_EVIDENCE_PATH_MISMATCH: expected=#{expected_entry_evidence} actual=#{entry_evidence_path}"
+  end
   errors << "PHASE_DIRECTORY_MISSING: #{phase_dir}" unless File.directory?(phase_dir)
   PlanningValidatorSupport.validate_dependency_evidence(
     root,
@@ -89,6 +95,7 @@ if errors.empty?
   plan_paths = File.directory?(phase_dir) ? Dir.glob(File.join(phase_dir, "#{phase_token}-*-PLAN.md")).sort : []
   PlanningValidatorSupport.validate_plans(plan_paths, errors)
   PlanningValidatorSupport.validate_entry_review(entry_review_path, errors)
+  PlanningValidatorSupport.validate_entry_evidence(entry_evidence_path, entry_review_path, errors) if entry_evidence_path
   PlanningValidatorSupport.validate_todo(
     File.join(phase_dir, "TODO.md"),
     errors,

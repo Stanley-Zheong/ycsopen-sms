@@ -286,6 +286,24 @@ module PlanningValidatorSupport
     errors << "ENTRY_REVIEW_FINAL_VERDICT_MISSING: #{path}" unless body.match?(/^## Verdict\s*\n+PASS\s*$/)
   end
 
+  def validate_entry_evidence(path, review_path, errors)
+    body = read(path, errors, "entry evidence")
+    return if body.empty?
+
+    errors << "ENTRY_EVIDENCE_SUBJECT_MISSING: #{path}" unless body.match?(/^Review subject commit: `[0-9a-f]{40}`$/)
+    errors << "ENTRY_EVIDENCE_RECORDER_MISSING: #{path}" unless body.match?(/^Evidence recorder identity: \S.+$/)
+    errors << "ENTRY_EVIDENCE_TOOL_BOUNDARY_MISSING: #{path}" unless body.match?(/^Tool boundary: \S.+$/)
+    successful_commands = body.scan(/^Exit status: `0`$/).length
+    errors << "ENTRY_EVIDENCE_COMMAND_TRANSCRIPT_INCOMPLETE: #{path} successful=#{successful_commands}" if successful_commands < 4
+
+    digest = Digest::SHA256.file(path).hexdigest
+    review = read(review_path, errors, "entry review")
+    errors << "ENTRY_EVIDENCE_DIGEST_MISSING: expected=#{digest}" unless review.include?("ENTRY-EVIDENCE-SHA256: #{digest}")
+  rescue Errno::ENOENT, Errno::EACCES
+    # read/Digest diagnostics are normalized above or by this fallback.
+    errors << "ENTRY_EVIDENCE_DIGEST_UNAVAILABLE: #{path}" unless errors.any? { |error| error.include?(path) }
+  end
+
   def validate_plans(plan_paths, errors)
     errors << "PLAN_MISSING: expected at least one plan" if plan_paths.empty?
     nodes = []

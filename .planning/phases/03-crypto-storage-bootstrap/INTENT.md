@@ -31,7 +31,7 @@ mvn -f core/pom.xml test
 mvn -f core/pom.xml -Pphase03-integration test
 ./scripts/verify-phase-03 --all --result-root core/target/phase03/results
 /usr/bin/env ruby .planning/tools/validate-phase-03-crypto-evidence.rb --phase-dir .planning/phases/03-crypto-storage-bootstrap --require-owner crypto-storage-bootstrap
-/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 03 --package crypto-storage-bootstrap --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/03-crypto-storage-bootstrap/ENTRY-REVIEW.md
+/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 03 --package crypto-storage-bootstrap --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/03-crypto-storage-bootstrap/ENTRY-REVIEW.md --entry-evidence .planning/phases/03-crypto-storage-bootstrap/ENTRY-EVIDENCE.md
 ```
 
 结果必须区分 deterministic adapter、真实 MySQL、真实 SoftHSM 和真实 MinIO。任一真实边界缺失时，对应 TODO 保持开放。
