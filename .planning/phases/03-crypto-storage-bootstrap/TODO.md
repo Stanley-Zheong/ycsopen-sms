@@ -5,7 +5,7 @@ Every item is open at entry. A checkbox may close only with the cited executable
 ## Entry gate
 
 - [ ] Dependency Phase 1 live delivery attestation and empty effective TODO are revalidated — Evidence: not recorded.
-- [ ] Required phase artifacts, 23 executable plans and V1200 schema claim pass machine validation — Evidence: not recorded.
+- [ ] Required phase artifacts, 30 executable plans and V1200 schema claim pass machine validation — Evidence: not recorded.
 - [ ] Independent entry reviewer records criterion-level PASS with no blocker — Evidence: not recorded.
 - [ ] Exact execution-entry command exits zero after independent review — Evidence: not recorded.
 
