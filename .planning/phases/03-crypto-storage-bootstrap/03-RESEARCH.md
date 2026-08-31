@@ -1,14 +1,14 @@
 # Phase 3: Cryptographic storage and migration bootstrap - Research
 
-**Researched:** 2026-08-31  
-**Domain:** Java 21 application-layer envelope encryption, PKCS#11 HSM integration, protected persistence, private object storage, and restartable MySQL migration  
+**Researched:** 2026-08-31
+**Domain:** Java 21 application-layer envelope encryption, PKCS#11 HSM integration, protected persistence, private object storage, and restartable MySQL migration
 **Confidence:** HIGH for the architecture and repository findings; MEDIUM for the unexecuted SoftHSM and MinIO adapter paths
 
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
-- The verified scoped TODO set is the only completion signal; schedules, effort estimates, velocity and percentage status are forbidden.
+- The verified scoped TODO set is the only completion signal.
 - The four `crypto-storage-bootstrap` atomic obligations are the authoritative completion units.
 - The phase owns only `ycs.sms.crypto-storage-bootstrap.*` schema objects and Flyway versions `V1200-V1299` under expand-migrate-contract rules.
 - Master keys must never be stored in application data, source, logs or evidence. Production key access crosses a KMS/HSM adapter boundary; executable tests use a deterministic in-memory adapter without weakening production configuration validation.
@@ -297,7 +297,7 @@ The port returns no KEK or blind-index key bytes. Production configuration names
 
 1. Configure the Java 21 `SunPKCS11` provider dynamically from an allowlisted native library path and token identity. [CITED: https://docs.oracle.com/en/java/javase/21/security/pkcs11-reference-guide1.html, accessed 2026-08-31]
 2. Load an opaque AES-256 KEK and a separate opaque HMAC-SHA256 blind-index key from `KeyStore("PKCS11")`; reject missing, duplicate, extractable, wrong-use, or wrong-size keys. [CITED: same Oracle guide; mechanism support is token-dependent]
-3. Perform DEK wrapping as AES-256-GCM inside the provider using a fresh wrap nonce and wrap AAD. The KEK never leaves the token; the plaintext DEK exists only in bounded application memory for data encryption/decryption and is overwritten best-effort after use. [CITED: Oracle PKCS#11 AES-GCM support; NIST SP 800-38D]
+3. Perform DEK wrapping as AES-256-GCM inside the provider using a fresh wrap nonce and wrap AAD. The KEK never leaves the token; the plaintext DEK exists only in bounded application memory for data encryption/decryption and is overwritten after use wherever the platform permits. [CITED: Oracle PKCS#11 AES-GCM support; NIST SP 800-38D]
 4. Perform blind indexes using `Mac.HmacSHA256` with the opaque HSM key. [CITED: Oracle PKCS#11 supported algorithms table]
 5. Startup in production profile fails if the PKCS#11 provider, expected mechanisms, active key aliases, or token login is unavailable. It must never select the in-memory adapter as fallback. [VERIFIED: locked context decision]
 
@@ -460,7 +460,7 @@ The default executable migration therefore updates existing V1 cell contents wit
 5. For each row: strict-parse envelope; validate already-encrypted rows by decrypt/re-encrypt-independent keyed fingerprint; classify valid legacy plaintext only through the manifest; quarantine corrupt/ambiguous rows.
 6. Build row-bound AAD, encrypt, decrypt immediately, and compare a dedicated HMAC integrity fingerprint in constant time.
 7. Update with an optimistic predicate over PK plus original-cell digest; update sanitized counters/event/checkpoint in the same transaction.
-8. Commit, clear plaintext buffers best-effort, and continue from the committed cursor.
+8. Commit, clear plaintext buffers wherever the platform permits, and continue from the committed cursor.
 9. On restart, use run/manifest/checkpoint identity; already-encrypted rows validate and count as stable, not newly rewritten.
 10. Completion requires every manifest target resolved, no quarantined/ambiguous row, no stale writer capable of plaintext output, and the leak/inventory query returning no prohibited plaintext.
 
@@ -653,28 +653,62 @@ No architectural claim is left as training-only. The following items are deliber
 | Legacy schema handling | No legacy DDL; in-place content migration only where current column capacity/type passes preflight | Shadow-column rollout requires cross-owner approval and a namespace decision that conflicts with locked context. |
 | Blind-index output | one version byte plus 32-byte HMAC | Existing `CHAR(64)` fields need adoption/migration ownership; truncation is forbidden. |
 
-## Open Questions and Required Planning Decisions
+## Open Questions (RESOLVED)
 
-1. **Can every current V1 protected column hold the full v1 envelope?**
-   - Known: many are `VARBINARY(255)` and current JPA mappings use `String`. [VERIFIED]
-   - Required action: compute worst-case envelope size per manifest target and verify Connector/J binary binding on MySQL.
-   - Gate: if any target fails, do not shrink crypto metadata; escalate the locked schema/cross-owner conflict.
+All planning decisions below are locked for Phase 3 and recorded as `DR-P03-*` rows in `03-DECISIONS.md`. Execution may prove a prerequisite false, but it may not replace the decision with a weaker format, mock, silent exemption, or deferred current writer.
 
-2. **Which production HSM vendor/token will supply the PKCS#11 module?**
-   - Known: SunPKCS11 requires a native PKCS#11 implementation and mechanism support is token-dependent. [CITED: Oracle]
-   - Recommended phase decision: ship the standard PKCS#11 adapter and SoftHSM conformance test; record vendor certification/HA provisioning as deployment evidence, not as a code assumption.
+### 1. YCSE/v1 capacity is fixed and computed
 
-3. **What deployed legacy writers exist outside this repository?**
-   - Known: source contains one plaintext message writer; live deployments were not inspected. [VERIFIED]
-   - Required action: rollout preflight inventories application versions/writer identities. Final plaintext migration cannot close while an old writer can reintroduce plaintext.
+The production provider ID is exactly the six UTF-8 bytes `pkcs11`; the v1 key reference is canonical ASCII `[a-z0-9][a-z0-9._-]{0,31}` and therefore at most 32 bytes. The fixed header is 19 bytes. The maximum non-plaintext body is provider `6` + key reference `32` + wrap nonce `12` + wrapped 32-byte DEK with tag `48` + data nonce `12` + data tag `16`. Therefore the maximum v1 overhead is `19 + 6 + 32 + 12 + 48 + 12 + 16 = 145` bytes, and every `VARBINARY(255)` target has exactly `110` bytes available for plaintext.
 
-4. **Which ambiguous V1 fields are protected by policy?**
-   - Known: the PRD marks explicit `🔒` fields but names/addresses, social credit code, callbacks, and raw provider payloads may contain sensitive content. [VERIFIED]
-   - Recommended phase decision: require reviewed manifest rows; do not broaden or exempt silently.
+| V1 protected target group | Targets | Declared plaintext bound | Maximum envelope | Classification |
+| --- | --- | ---: | ---: | --- |
+| Phone/mobile | `users.phone_encrypted`, `tenants.contact_phone_encrypted`, `signatures.applicant_phone_encrypted`, `mobile_portability.mobile_encrypted`, `blacklist_entries.mobile_encrypted`, `message_tasks.mobile_encrypted`, `bulk_sending_items.mobile_encrypted`, `uplink_records.mobile_encrypted`, `unsubscribe_records.mobile_encrypted` | 11 ASCII bytes | 156 | FITS |
+| Identity number | `tenants.legal_rep_id_no_encrypted`, `tenants.contact_id_no_encrypted`, `signatures.applicant_id_no_encrypted` | 18 ASCII bytes | 163 | FITS |
+| Channel credentials | `channels.account_encrypted`, `channels.password_encrypted` | Phase-3 in-place policy: at most 110 UTF-8 bytes | 255 | REQUIRES_IN_PLACE_REPRESENTATION_DECISION — resolved by the 110-byte input ceiling; any existing longer row is BLOCKING |
+| Tenant API secret | `tenant_api_keys.app_secret_encrypted` | Phase-3 in-place policy: at most 110 UTF-8 bytes | 255 | REQUIRES_IN_PLACE_REPRESENTATION_DECISION — resolved by the 110-byte input ceiling; any existing longer row is BLOCKING |
+| Tenant protocol credentials | `tenant_protocol_credentials.account_encrypted`, `tenant_protocol_credentials.password_encrypted` | Phase-3 in-place policy: at most 110 UTF-8 bytes | 255 | REQUIRES_IN_PLACE_REPRESENTATION_DECISION — resolved by the 110-byte input ceiling; any existing longer row is BLOCKING |
 
-5. **How is application capability authorization integrated before Phase 6 RBAC exists?**
-   - Known: Phase 3 owns storage and expiring access; Phase 6 owns current permission/reveal audit. [VERIFIED]
-   - Recommended boundary: Phase 3 implements tenant/subject/purpose/expiry/revocation port and deny-by-default hook; Phase 6 supplies role/reveal policy later. Phase-3 tests use an explicit allow/deny authorization fixture, not an always-allow production bean.
+No current protected `VARBINARY` target exceeds the computed representation when its declared bound is honored. Migration preflight must measure actual byte lengths before mutation. A row over 110 bytes, a noncanonical key reference, or a Connector/J capacity mismatch is a blocking TODO and prevents OBL-CRYPTO-STORAGE-001/004 evidence; it is never `DEFERRED_OWNER`. Object-reference columns store an opaque `pobj_v1_<base32-id>` of at most 64 ASCII bytes, so all current `VARCHAR(255)` object-reference targets fit without legacy DDL. Legacy URL conversion still requires the referenced bytes to be available and verified.
+
+### 2. Production key adapter is SunPKCS11/PKCS#11
+
+Phase 3 ships Java 21 SunPKCS11 as the production port and requires an operator-supplied PKCS#11 module, token identity, nonextractable AES KEK, and separate nonextractable HMAC key. SoftHSM 2.7.0 is local protocol-conformance evidence only and is not physical-HSM certification. The admitted source is `https://codeload.github.com/softhsm/SoftHSMv2/tar.gz/refs/tags/2.7.0`, release commit `13e6e86`, archive SHA-256 `be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573`. Production vendor/module/HA/access-policy binding is deployment configuration validated through the same startup port; it does not change or weaken the Phase-3 adapter contract.
+
+### 3. Current executable repository readers and writers are enumerated
+
+Source search found the following executable surfaces. Every row is either adopted in Phase 3 or remains a blocking TODO. `DEFERRED_OWNER` is valid only for a future surface with no executable reader or writer in the current repository.
+
+| Executable surface | Current protected interaction | Required Phase-3 disposition |
+| --- | --- | --- |
+| `MessageSubmitService` -> `MessageTaskRepository` | Writes phone plaintext to `message_tasks.mobile_encrypted` and raw SHA-256 to `mobile_hash` | ADOPT: explicit message protection adapter, YCSE bytes, versioned HMAC index, raw-MySQL proof |
+| `TenantController` / `TenantRegistrationRequest` / `TenantService` -> `TenantRepository` | Accepts identity/contact fields and five proof-object inputs; currently drops identity/contact/front/back values and writes three raw URL fields | ADOPT: protect all three identity/contact values and store all five proof inputs through protected object IDs; no raw URL survives |
+| `AuthService` -> `UserRepository` | Hydrates and writes a `User` entity while `users.phone_encrypted` is mapped as `String` | ADOPT: opaque binary mapping, no raw getter/JSON exposure, exact-byte writeback regression; no Phase-5 password behavior change |
+| `HmacAuthInterceptor` -> `TenantApiKeyRepository` | Hydrates `app_secret_encrypted` although the current path does not use it | ADOPT: current lookup projection excludes the secret; future HMAC verification must use the protected boundary |
+| `BlacklistChecker` -> `BlacklistEntryRepository` | Hydrates `mobile_encrypted` although lookup uses `mobile_hash` | ADOPT: lookup projection excludes ciphertext and consumes only the versioned blind index/status fields |
+| `TenantService` / `ComplaintRatioService` -> `TenantRepository` | Hydrates/saves tenant entities containing protected fields and object references | ADOPT: opaque binary hidden mappings, protected object IDs, safe serialization, exact-byte preservation, ID-only analytics projection |
+
+The inventory validator must repeat this source search and fail when a new current reader/writer has no explicit boundary. Deployment preflight separately requires an allowlisted running writer-version set; an unknown or stale external writer keeps migration and OBL-001 evidence blocked.
+
+### 4. Ambiguous inventory policy is fail closed
+
+The manifest uses no final `REVIEW_REQUIRED` rows. Explicit PRD `🔒` identity/contact/mobile/credential fields and evidence/proof objects are `PROTECTED`. Password hashes are `EXCLUDED_PHASE_5_HASH` and cannot be treated as reversible encrypted data. Social-credit code, names, and addresses are `NOT_PROTECTED_WITH_REASON` because the PRD encryption list excludes them; masking/access policy remains Phase 6. Callback/push URLs are `NOT_PROTECTED_WITH_REASON` only after validation forbids embedded user-info, query credentials, and secret fragments; otherwise the row is `BLOCKING`. Raw provider payloads and business-module fields with no current executable surface may be `DEFERRED_OWNER` with a concrete future package, but any executable or migratable target cannot. Any unknown candidate, capacity conflict, current writer/reader, or ambiguous runtime row is `BLOCKING`. OBL-CRYPTO-STORAGE-001 evidence production rejects `REVIEW_REQUIRED`, a current/migratable `DEFERRED_OWNER`, or any blocking row.
+
+### 5. Pre-Phase-6 object authorization is a narrow deny-by-default port
+
+Phase 3 defines a server-side `ObjectAccessAuthorizationPort` over object ID, tenant, subject, purpose, capability state, and expiry. The production default denies. Phase-3 tests install explicit allow/deny adapters and prove denial occurs before object fetch; there is no always-allow bean, UI permission, RBAC, full-reveal, or privileged-audit completion claim. Phase 6 later binds real RBAC/reveal policy to the same port.
+
+### 6. Blind-index compatibility uses Phase-owned multi-version metadata
+
+`DR-P03-007` resolves the legacy `CHAR(64)` conflict without editing V1. Queryable HMAC values live only in `ycs_crypto_blind_indexes`, one row per target and key version. The canonical HMAC input is the in-memory historical mobile SHA-256 plus target/field/purpose context, so rows that retain only the legacy digest remain migratable without recovering plaintext from an absent column. ACTIVE and RETIRING versions are queried as a set. Raw SHA fallback is target-checkpoint gated and forbidden after `COMPLETE`; scrub replaces raw digests with non-queryable row locators. No legacy cell contains multiple HMAC values.
+
+### 7. Writer and snapshot admission uses signed canonical manifests
+
+`DR-P03-008` resolves the preflight trust source. Production adapters verify bounded canonical JSON plus detached Ed25519 signatures against a configured non-secret public-key fingerprint. Writer and encrypted-snapshot manifests bind the environment, schema, Flyway subject, monotonic sequence, freshness markers, and exact deployment/snapshot identity. Empty, unknown, stale, replayed, forged, or mismatched inputs fail before any lease, checkpoint, event, or business-table update. `phase03-migration preflight` exposes fixed nonzero exit categories and is exercised as a real command against MySQL.
+
+### 8. Tenant evidence is a staged object-ID contract
+
+`DR-P03-009` resolves the live registration request format. Clients create a protected-object session, upload five purpose-bound objects through a fixed multipart endpoint, and submit only opaque protected-object IDs in registration JSON. Required/optional fields, media signatures, byte ceilings, single-claim semantics, expiry, atomic claim, orphan reconciliation, and stable errors are fixed before implementation. Legacy URL fields fail with `LEGACY_OBJECT_URL_NOT_ACCEPTED`; they are never fetched or silently converted.
 
 ## Sources
 

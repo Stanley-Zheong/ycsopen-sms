@@ -10,7 +10,7 @@ completion_metric: scoped_todo_empty
 
 # Phase 03 — Validation Strategy
 
-> Phase 3 的逐任务反馈与最终证据合同。完成只由 `crypto-storage-bootstrap` 权威 TODO 是否为空决定，不使用时间、工期或百分比指标。
+> Phase 3 的逐任务反馈与最终证据合同。完成只由 `crypto-storage-bootstrap` 权威 TODO 是否为空决定。
 
 ## Test Infrastructure
 
@@ -47,12 +47,24 @@ No validation command may pull a moving browser, container, native package, Mave
 | 03-07 redaction-and-leak-scan | OBL-CRYPTO-STORAGE-001..003 | P03-T07 sensitive log/evidence leakage | Sensitive values, URLs, ciphertext and key material do not appear in logs, DB metadata, object metadata or evidence | Captured-log tests and seeded canary scans across repository-owned output surfaces | pending |
 | 03-08 rotation-recovery-closure | OBL-CRYPTO-STORAGE-001..004 | P03-T08 rotation loss or false closure | Interrupted rotation resumes, retiring keys remain readable until safe retirement, evidence and TODO closure are truthful | Full fault suite, real adapters, obligation/evidence/schema validators, independent reviews | pending |
 
+## Revision-Resolved Contract Checks
+
+| Contract | Owning plans | Required automated proof |
+| --- | --- | --- |
+| Multi-version blind index | 03-05, 03-08 through 03-14, 03-20 through 03-22 | V1200 metadata constraints; per-target backfill/checkpoint/cutover/scrub; ACTIVE+RETIRING union; checkpoint-gated raw fallback; zero single-cell dual write; real-MySQL blacklist and portability hit parity before/during/after cutover |
+| Signed migration preflight | 03-12 through 03-14, 03-22 | Canonical Ed25519 writer/snapshot manifests; public-key fingerprint, environment/schema/Flyway/database binding, monotonic sequence and freshness; command exit-code matrix; missing/stale/unknown/replay/forged inputs leave every UPDATE count at zero on real MySQL |
+| Staged tenant evidence API | 03-16 through 03-17, 03-21 through 03-22 | Session/upload/register DTO/controller/service tests; five purpose/media/byte/required rules; single atomic claim; expiry/orphan reconciliation; explicit legacy-URL 422; API/user-document parity; real MySQL/MinIO/PKCS11 storage proof |
+| Project construction patterns | 03-04 through 03-22 | Every applicable task reads `03-PATTERNS.md`, names the nearest repository analog or the exact research contract when no analog exists, and applies constructor injection, transaction, safe-error/logging, and smallest truthful test-layer rules |
+
 ## Wave 0 Requirements
 
 - [ ] Extend `skills/flyway-migration/scripts/next_flyway_version.py` with owner-range selection and tests proving Phase 3 resolves to `V1200` rather than `V2`.
 - [ ] Add Phase 3 test profiles and exact-path fixtures for real MySQL, MinIO and SoftHSM without moving downloads.
 - [ ] Provision or locate an approved SoftHSM executable/library and verify its exact version before running the PKCS#11 lane.
 - [ ] Define the protected-data inventory manifest schema, validator and seeded canaries before application integration begins.
+- [ ] Define `ycs_crypto_blind_indexes`, its per-target checkpoint contract, ACTIVE/RETIRING query set, compatibility fallback, and raw-digest scrub proof before replacing `HashUtil`.
+- [ ] Define and destructively test signed writer-fence and encrypted-snapshot manifest schemas plus the fixed preflight CLI exit matrix before migration execution.
+- [ ] Freeze and document the registration-object session/upload/claim API, five object rules, legacy-URL rejection and docs/runtime parity before changing the live registration DTO.
 - [ ] Replace Phase 1's “latest Flyway version is 1” assertion with an immutable-V1 plus declared-migration-set assertion.
 - [ ] Create Phase 3 evidence schema/validator stubs tied one-to-one to the four authoritative obligations.
 
