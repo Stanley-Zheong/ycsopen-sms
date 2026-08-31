@@ -1,178 +1,166 @@
 ---
 phase: 01-engineering-verification-foundation
-verified: "2026-08-30T22:35:18Z"
+verified: "2026-08-31T06:02:51Z"
 status: passed
 score: 7/7 must-haves verified
 overrides_applied: 0
 reviewer:
-  identity: phase1_gsd_verification_attempt7
+  identity: phase1_gsd_verification_attempt8
   method: independent-goal-backward-re-verification
-  attempt: 7
+  attempt: 8
+finding_counts:
+  blocker: 0
+  high: 0
 digests:
   subject_manifest_path: .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json
-  subject_manifest_digest: 5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6
-  tested_subject_digest: 9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54
-  evidence_manifest_sha256: 18db7794e68b8305103380c537710e32d07b76ecd0f9760a68f1b73e0d1243c4
-  local_chrome_runtime_sha256: dbd8e12d14a731fdd6b643fb887518885f744a211447852ea4cf226830eba3c3
+  subject_manifest_digest: 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53
+  tested_subject_digest: c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4
+  evidence_manifest_sha256: 7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579
+  local_chrome_runtime_sha256: 05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde
 re_verification:
   previous_status: passed
   previous_score: 7/7
-  reason: "Claude CL-01/CL-02 and subsequent adversarial preflight invalidated the prior 193-input reviews; Attempt 7 verifies only the final 194-input exact-source/argv correction seal."
+  reason: "Remote CI proved the previously reviewed seal stale; this attempt independently verifies only the current resealed 194-input subject and its current local/portable execution evidence."
   gaps_closed:
-    - "Structural CI, structural server, and local visual checks have exact ID/layer/argv/scope bindings; every CI command rejects both local-Chrome flags."
-    - "The previously accepted login-scenario-server --run-playwright mutation now fails with CHECK_SCENARIO_SERVER_BINDING_INVALID."
-    - "The complete five-file repository-local portable scenario call graph is opened through verified_local_file and bound to exact SHA-256; byte, dependency, obfuscated-import, spawn, and local-file drift fail closed."
-    - "File::NOFOLLOW absence returns a stable fail-closed diagnostic."
+    - "The current subject manifest recomputes without path, mode, content, role, missing-input, or extra-input drift."
+    - "Fresh local and portable aggregates bind the current subject and match the exact all=19 and ci=20 registries."
   gaps_remaining: []
   regressions: []
 ---
 
-# Phase 1: Engineering Verification Foundation — Attempt 7 Verification
+# Phase 1: Engineering Verification Foundation — Attempt 8 Verification
 
 **Phase Goal:** All repository verification layers return deterministic pass/fail output and preserve diagnostic evidence.
 
-**Verified:** 2026-08-30T22:35:18Z
+**Verified:** 2026-08-31T06:02:51Z
 **Status:** `passed`
-**Verifier:** `phase1_gsd_verification_attempt7`
-**Attempt:** Overall historical Attempt 7; current 194-input evidence cycle Attempt 1
+**Verifier:** `phase1_gsd_verification_attempt8`
+**Attempt:** Overall historical Attempt 8; current resealed 194-input evidence cycle Attempt 1
 
 ## Verdict
 
-The final 194-input correction seal achieves the Phase 1 goal. The canonical subject and tested-subject digests recompute exactly, all seven formal summaries validate, CI/local registry selection is exactly 20/19, and the current standard-path Chrome runtime remains bound without adding another browser or delivery mechanism. CL-01/02 are closed at both current-execution and future-drift boundaries: structural validator/server commands are exact and flag-free in CI, local visual execution is a separate `all/browser` file, both local-browser flags are forbidden from every CI argv, and the full five-file portable scenario call graph is content-addressed.
+The current reseal achieves the Phase 1 goal. I independently recomputed the canonical source subject, validated every formal evidence binding, reconciled the exact-seven summaries to the complete local registry, and inspected the current per-check aggregates rather than accepting SUMMARY claims. The local execution is **19/19 PASS**, the portable CI execution is **20/20 PASS**, and the seven owned obligations are **7/7 VERIFIED**.
 
-The prior independent bypass now returns `CHECK_SCENARIO_SERVER_BINDING_INVALID`. **BLOCKER 0, HIGH 0, 7/7 verified.**
+**PASS — BLOCKER 0, HIGH 0, 7/7.**
 
-This is a goal-verification PASS, not Phase 1 completion. Owned obligations, GSD goal/code review, Claude re-review, TEST-MATRIX closure, TODO-empty, commit/PR/tag and live attestation remain open in `TODO.md`; this report closes none of them.
+This verdict establishes goal achievement only. It does not alter `TODO.md` or authorize Phase 1 completion: the authoritative TODO still contains the open remote-delivery item, and this review closes no checkbox.
 
 ## Review Binding
 
-I-038 and the final Plan 10 correction opened this bounded cycle. Historical Attempts 1–6 and all earlier digests are background only.
+The remote-CI stale-seal finding opened this bounded evidence cycle. All earlier reports and digests are historical only and cannot authorize this cycle.
 
 | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
 | --- | ---: | ---: | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6 | 9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54 | PASS |
+| 1 | 0 | 0 | no | .planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json | 94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53 | c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4 | PASS |
 
 ## Seal Binding
 
-| Bound object | Independently observed | Status |
+| Bound object | Independent observation | Status |
 | --- | --- | --- |
-| Subject manifest path/input set | expected durable path; 194 unique inputs: implementation 103, test 31, config 13, contract 35, validator 12 | MATCH |
-| Subject manifest digest | canonical recomputation `5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6` | MATCH |
-| Tested subject digest | live path/mode/content validation zero errors; recomputation `9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54` | MATCH |
-| Formal evidence manifest | raw SHA-256 `18db7794e68b8305103380c537710e32d07b76ecd0f9760a68f1b73e0d1243c4` | MATCH |
-| Runtime artifact | raw SHA-256 `dbd8e12d14a731fdd6b643fb887518885f744a211447852ea4cf226830eba3c3` | MATCH |
-| Registry cardinality | `ci=20`, `all=19` | MATCH |
+| Canonical subject | 194 unique inputs: implementation 103, test 31, config 13, contract 35, validator 12; live validation errors 0 | MATCH |
+| Subject manifest digest | `94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53` | MATCH |
+| Tested subject digest | `c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4` | MATCH |
+| Formal evidence manifest | raw SHA-256 `7174fecb6ac826a1f91b3a0b3f9fb0d9ae8280674c52f4fbdd1cfe5d8c606579` | MATCH |
+| Local Chrome runtime | raw SHA-256 `05535c103fda9308f5dde454a8dbbf311f25292311c6dba399afbb9541d1bfde`, size 83,793 bytes | MATCH |
+| CI locators | `.github/workflows/ci.yml` = `fa666888...c08588`; `scripts/verify-phase-01` = `22e60d4d...ae454` | MATCH |
+| Registry cardinality | current code registry selects `all=19`, `ci=20` | MATCH |
 
-`validate-verification-evidence.rb` returned `verification_evidence=PASS`. The portable artifact returned `portable_runtime_validation=PASS live_browser_launched=false` and `portable_chrome_artifact=PASS runtime_claim=false live_browser_launched=false`.
+The formal validator returned `verification_evidence=PASS`. The portable Chrome artifact validation returned `portable_runtime_validation=PASS live_browser_launched=false` and `portable_chrome_artifact=PASS runtime_claim=false live_browser_launched=false`.
 
 ## Goal Achievement
 
-### Exact-Seven Obligations
+### Exact-Seven Owned Obligations
 
-| # | Obligation | Status | Current evidence |
+| # | Obligation | Status | Current summary SHA-256 and evidence |
 | ---: | --- | --- | --- |
-| 1 | `OBL-FOUND-TRACE-001` | VERIFIED / PASS | summary SHA `ea269c21aa9f086fd5af089a1f244c135bef1661bec7964c82c0424f9602037f`; required-field/owner closure |
-| 2 | `OBL-FOUND-TRACE-002` | VERIFIED / PASS | summary SHA `06f47d3a707f95558b1ec6997a512a1bb143ef6d1108a7f53a33d94ecd5f0cf7`; orphan/duplicate closure |
-| 3 | `OBL-FOUND-TRACE-003` | VERIFIED / PASS | summary SHA `5e894fe633ddce694b1e62dd28af4713950020bc9d01573d0c4a560fe97641f4`; deterministic stack, server not-run, local visual 15 |
-| 4 | `OBL-FOUND-TRACE-004` | VERIFIED / PASS | summary SHA `9c93e3426a319b4562bede7b1a73ad94dc96beaddeb0476a407994850170d6ae`; lifecycle/delivery plus exact registry/source drift gates |
-| 5 | `OBL-FOUND-UI-DRIFT-001` | VERIFIED / PASS | summary SHA `08a68943f4821e17c4fab63e9d1b80f265266ef493dc1c643f46df45f6679f58` |
-| 6 | `OBL-FOUND-UI-DRIFT-002` | VERIFIED / PASS | summary SHA `da28c5b57415032ed1c76c9cc0a5ce7abc11f09769f6d6886e133bbe4b57443c` |
-| 7 | `OBL-NFR-BROWSER` | VERIFIED / PASS | summary SHA `a11ef1aeb1ac3c7ede6b1dcb61be2c21b01f006496a47730e24ac37fc3eacf47`; Chrome 151.0.7922.174, 1440x900 |
+| 1 | `OBL-FOUND-TRACE-001` | VERIFIED / PASS | `c7f2843aa382354b5e31e2686642380905d1f13515ae6dc7c66cc87d7ee68231`; malformed/missing catalog fields fail closed |
+| 2 | `OBL-FOUND-TRACE-002` | VERIFIED / PASS | `4f7b44e049a9a0bbbaff5a33053b3a449e5f0a29da91fbea43cac68457e639b1`; orphan and duplicate relations are distinguished |
+| 3 | `OBL-FOUND-TRACE-003` | VERIFIED / PASS | `1e3b569a2a266451d056537278cadae3fc3503dc7b4f8a7f36ce470dd6f28b5d`; 14 deterministic repository layers with diagnostics |
+| 4 | `OBL-FOUND-TRACE-004` | VERIFIED / PASS | `61b7fa432f8812f61db83042793227ff1365d11d6d3b974458a9e36ca5744e26`; lifecycle, review, TODO, registry, and delivery gates fail closed |
+| 5 | `OBL-FOUND-UI-DRIFT-001` | VERIFIED / PASS | `cd1cf54ce9c99463a0b7e9ad1a64acc508741a41e424dca73a23c6dd401da053`; bidirectional route/page/DOM/test-ID/Playwright drift detection |
+| 6 | `OBL-FOUND-UI-DRIFT-002` | VERIFIED / PASS | `f1345158bd5a9ad43f3eb64247c94004029e0d91554c90c1bd13d7207e03579c`; stable semantic selector and separate row-key enforcement |
+| 7 | `OBL-NFR-BROWSER` | VERIFIED / PASS | `4a68849a2ef397105476df4e61f815669497d984aadce1d9f493cf4ccd767087`; standard-path Google Chrome 151.0.7922.174 at 1440x900 |
 
 **Score:** 7/7. No override was used.
 
-### Roadmap Truths
+The authoritative catalog query independently returned `validation=PASS`, nine fields per row, 522 obligations, 108/108 requirements, 56/56 owners, zero unknown/duplicate IDs, and exactly seven obligations selected for `engineering-verification-foundation`.
 
-| Truth | Status | Evidence |
+### Roadmap Observable Truths
+
+| Truth | Status | Goal-backward evidence |
 | --- | --- | --- |
-| Verification layers return deterministic results and durable diagnostics | VERIFIED | current exact-seven subject/manifest/runtime reconcile and focused checks emit stable markers |
-| UI route/page/selector/row/Playwright drift fails bidirectionally | VERIFIED | both UI obligations pass from AST/relation and mutation evidence |
-| Atomic lifecycle/review/delivery and portable-browser gates fail closed | VERIFIED | TRACE-004 plus runner 40; prior server flag bypass now rejects |
-| Copy/timezone contracts remain reusable without Phase 1 product-acceptance leakage | VERIFIED | supporting results retain foundation-only scope and later ownership |
+| Repository verification layers are deterministic and retain diagnostics | VERIFIED | current local and CI aggregates contain the exact registered check IDs, PASS envelopes, per-envelope paths and SHA-256 values; all envelope files exist, validate, and bind the current two subject digests |
+| Route/page/DOM/test-ID/dynamic-row/Playwright drift is detected bidirectionally | VERIFIED | both UI-DRIFT obligations are current PASS summaries; relation and mutation evidence is checksum-bound by the formal manifest |
+| Atomic obligation and TODO/lifecycle queries fail on invalid ownership, trace, evidence, review, or checked-item state | VERIFIED | TRACE-001/002/004 current summaries PASS; repository and lifecycle destructive cases are part of the tested subject and exact execution evidence |
+| Copy/export and UTC+8/IANA contracts are reusable without claiming future product acceptance | VERIFIED | TRACE-003 contains the versioned copy and timezone checks, while `product_acceptance_claims` is empty and Phase 56 remains the product-level owner |
 
-## CL-01 / CL-02 Correction Verification
+## Local 19/19 and Portable 20/20
 
-| Claim | Evidence | Status |
+| Execution | Current aggregate | Registry reconciliation | Envelope verification | Status |
+| --- | --- | --- | --- | --- |
+| Local `all` | `phase01-20260831T054030-cc3699159e28`, subject `94d9...d53`, tested `c311...8e4` | 19 actual IDs = 19 exact current `all` definitions | 19/19 files present; aggregate SHA matches; envelope status PASS; both subject bindings match | PASS 19/19 |
+| Portable `ci` | `phase01-20260831T054259-73701249f97e`, subject `94d9...d53`, tested `c311...8e4` | 20 actual IDs = 20 exact current `ci` definitions | 20/20 files present; aggregate SHA matches; envelope status PASS; both subject bindings match | PASS 20/20 |
+
+The seven formal summaries contain 19 unique `check_results`; their IDs exactly equal the current local registry and every result is PASS. This proves that the seven-obligation reduction neither omits nor invents a local check. The portable aggregate separately proves the full CI selector, including its four CI-only structural/copy checks, without a browser launch.
+
+## Browser Evidence and Scope
+
+The checksum-bound runtime records:
+
+- canonical executable `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`;
+- brand `Google Chrome`, version `151.0.7922.174`;
+- a successful headless launch that was closed;
+- exactly `1440x900`, scenario `LOGIN-SMOKE-V1`, HTTP 401 with the fixed marker/body binding, and visual rule `LOGIN-CARD-IN-VIEWPORT-V2`;
+- visual runner evidence `cases=15`, no DOM visual failures, and stable screenshot/DOM/transcript/console checksums.
+
+Only the current standard-path desktop Google Chrome is supported and evidenced. No browser was started during this verification. No browser, ChromeDriver, alternate Chromium, Edge, Safari, Firefox, provider, tunnel, secret, VM, or version matrix was downloaded, inspected, or added. The portable CI evidence explicitly records `live_browser_launched=false`.
+
+## Required Artifacts and Key Links
+
+| Artifact or link | Status | Evidence |
 | --- | --- | --- |
-| Structural CI and local visual are separate physical files | `test-browser-scenario-validator.mjs` and `test-browser-scenario-visual-local-chrome.mjs` have distinct exact argv/scope/layer contracts | VERIFIED |
-| CI structural validator is browser-free | direct run: `cases=3 local_google_chrome=not-run viewport=not-run`; direct source forbids browser primitives | VERIFIED |
-| CI structural server is flag-free | exact `SCENARIO_SERVER_ARGV`, `integration`, `ci/all`; formal TRACE003 says `local_google_chrome=not-run` | VERIFIED |
-| Local visual remains local | exact sole `--run-local-chrome` argv, `all/browser`; formal evidence says `cases=15 local_google_chrome=151.0.7922.174` | VERIFIED |
-| Server Playwright flag cannot drift into CI | independent mutation appending `--run-playwright` returns `CHECK_SCENARIO_SERVER_BINDING_INVALID`; runner also covers flag and assignment variants in other CI commands | VERIFIED |
-| Registry totals and layers | registry contract PASS, CI 20, all 19; CI contains no browser-layer definition or local flag | VERIFIED |
-
-## Five-File Portable Call Graph
-
-All files are read with `VerificationEvidence.verified_local_file`, a 256 KiB ceiling, component/final NOFOLLOW checks, and exact SHA-256 comparison before registry acceptance.
-
-| File | Expected and actual SHA-256 | Status |
-| --- | --- | --- |
-| `test-browser-scenario-validator.mjs` | `0f557d3b27639623e5be81c12dfd80cceef23f2d19a4fe533d092f2d213e70f0` | MATCH |
-| `validate-browser-scenario.mjs` | `026d21b5716e3c293cf1ad45a0c0ff856c1013810277f0aae40dadf6a85609eb` | MATCH |
-| `test-browser-scenario-server.mjs` | `ff6f1dddd316a9dceb75553800e956692790f5d0f2f0deeeae24fc0c7886c779` | MATCH |
-| `probe-local-chrome.mjs` | `9f0179270e857f05cb882a35394ace896611ddc21e577e3b35b07ddaf1f6e4e5` | MATCH |
-| `serve-browser-scenario.mjs` | `a67c65346e8abd68bd131e1551b6d15f1f7cb5fc7d056b1c52dbc1376d0d80d8` | MATCH |
-
-Runner fixtures reject single-byte, dependency, extra static/dynamic/obfuscated import, spawn, local-file and missing-source drift. The exact hashes intentionally require an explicit reviewed rebind for any dependency change.
+| `tested-inputs.json` → live repository files | VERIFIED / WIRED | path/mode/content/role recomputation: 194 inputs, zero errors |
+| root runner → fixed `all` and `ci` registries | VERIFIED / WIRED | exact 19/20 ID order and current aggregate reconciliation |
+| per-check envelope → aggregate | VERIFIED / WIRED | every referenced file exists and matches its aggregate SHA; all current bindings PASS |
+| local 19 results → seven obligation summaries | VERIFIED / WIRED | exact set equality, 19 unique results, no conflicting duplicate result |
+| seven summaries → `evidence-manifest.json` | VERIFIED / WIRED | exact owner set, path, status, summary SHA, subject, runtime, and CI locator validation PASS |
+| browser obligation → runtime artifact | VERIFIED / FLOWING | runtime path/version/viewport/scenario/artifact facts flow into the current browser summary and manifest checksum |
+| TEST-MATRIX/catalog → seven owners | VERIFIED / WIRED | catalog query selects exactly 7 and formal entries bind their behavior/case/test/evidence fields |
 
 ## Behavioral Spot-Checks
 
-| Check | Result | Status |
+| Behavior | Result | Status |
 | --- | --- | --- |
-| Prior server argv bypass | append `--run-playwright`; rejected with `CHECK_SCENARIO_SERVER_BINDING_INVALID` | PASS |
-| Runner contract suite | `cases=40 ... scenario-ci-local-split` | PASS |
-| Repository/descriptor suite | mutations 19, redaction 10, path boundary 12 including NOFOLLOW unavailable | PASS |
-| Structural validator | cases 3, `local_google_chrome=not-run` | PASS |
-| Portable runtime/artifact | both PASS, `live_browser_launched=false` | PASS |
-| Normal CI logical set | 16 shared formal results plus four CI-only checks reconcile to 20/20; validator/server say `local_google_chrome=not-run`, portable says `live_browser_launched=false` | PASS |
-| Exact-seven and subject | 194 live inputs, zero errors, seven summaries PASS | PASS |
-| Chrome-denial structural | sandbox denies standard Chrome; structural validator still PASS/not-run | PASS |
-| Chrome-denial portable artifact | sandbox denies standard Chrome; portable validation still PASS/not-run | PASS |
-| Chrome-denial server persistent proof | final exact source/argv formal run PASS/not-run; five-file hashes and flag mutations preserve the denial property | PASS |
-| Local current-Chrome evidence | formal local 19/19 and visual 15/15 bind Chrome 151.0.7922.174 | PASS |
+| Canonical source validation | 194 inputs, expected role counts, zero errors, both digests recomputed exactly | PASS |
+| Exact-seven formal validation | manifest and all seven closed-field summaries validate; current raw checksums match | PASS |
+| Local registry completeness | exact 19 registered IDs, 19 valid PASS envelopes, seven-summary set equality | PASS |
+| Portable registry completeness | exact 20 registered IDs, 20 valid PASS envelopes, no local-browser execution claim | PASS |
+| Chrome evidence | Google Chrome 151.0.7922.174, 1440x900, launch succeeded/closed, visual cases 15 | PASS |
+| Owned catalog | exact selected owner set 7, unique and fully traced | PASS |
 
-The sandbox server command was not re-executed after cleanup because `web/dist` was intentionally removed as transient output; an attempted rerun stopped at that missing build artifact before any Chrome path. This is INFO, not uncertainty about browser isolation: the pre-cleanup final exact source/argv run is checksum-bound in TRACE003, and the source/argv gates independently exclude the browser branch from CI.
+No full `--all` command, browser process, service, network operation, or state-mutating command was run by this verifier. The current run artifacts were checked byte-for-byte and structurally against live code-owned registries.
 
-## Required Artifacts and Wiring
+## Requirements Coverage
 
-| Artifact/link | Status | Detail |
-| --- | --- | --- |
-| root wrapper → fixed registry | WIRED | explicit argv, scope, layer, result and evidence propagation |
-| CI selector → structural validator/server | WIRED / FAIL-CLOSED | exact flag-free commands and exact five-source graph |
-| local selector → visual/runtime Chrome | WIRED | separate all/browser entries only |
-| subject → exact-seven/runtime/CI locators | WIRED | current digests and checksums reconcile |
-| `verified_local_file` → NOFOLLOW | WIRED / FAIL-CLOSED | unavailable constant returns `*_NOFOLLOW_UNAVAILABLE` |
-| TEST-MATRIX/catalog → seven obligations | WIRED | no missing, duplicate, or orphan owner |
+| Requirement | Source | Status | Evidence |
+| --- | --- | --- | --- |
+| `REQ-NFR-COMPATIBILITY` Phase 1 verification foundation | ROADMAP, SPEC, TEST-MATRIX, `OBL-NFR-BROWSER` and TRACE-003 | SATISFIED | current Chrome-only runtime plus reusable copy/export and timezone contracts |
+| Product-wide Chinese/timezone acceptance | explicitly Phase 56 | DEFERRED (not a gap) | Phase 1 summaries contain no product-acceptance claim and do not steal later ownership |
 
-## Browser Scope
+## Anti-Patterns and Human Verification
 
-Only `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`, observed version 151.0.7922.174, and one 1440x900 scenario are supported and evidenced. Active checks do not download a browser, use ChromeDriver, select another version/browser, or require a provider, tunnel, secret, VM, or browser matrix. Edge, Safari, Firefox, Chromium and other browsers remain unsupported and untested.
+No missing artifact, stub, orphaned key link, contradictory result, or unreferenced implementation debt marker was found. The literal `TBD` tokens inside lifecycle validation are test patterns, and ROADMAP `Plans: TBD` entries belong to later unplanned phases; neither is a Phase 1 implementation marker.
 
-## Requirements and Anti-Patterns
-
-| Check | Result |
-| --- | --- |
-| `REQ-NFR-COMPATIBILITY` Phase 1 foundation | SATISFIED by current standard-path Chrome plus reusable copy/timezone gates |
-| Product-wide Chinese/timezone acceptance | correctly deferred to Phase 56 |
-| Unreferenced TBD/FIXME/XXX in reviewed implementation | none |
-| Summary treated as implementation proof | no; code, formal JSON, hashes, commands and mutations were checked |
-| Old digest authorized current cycle | no; Review Binding contains only final 194-input digests |
-| TODO/review/delivery falsely closed | no; authoritative TODO items remain open |
-
-## Probe and Human Verification
-
-No declared `probe-*.sh` exists. No browser was started, no full `--all` was run, and no network operation was performed. Visual/runtime evidence was checksum- and subject-verified rather than regenerated.
-
-Human verification required: none. The in-scope truths are machine-verifiable contracts; subjective visual design and broader product acceptance are out of Phase 1.
+Human verification required: none. The in-scope Phase 1 outcome is a machine-verifiable foundation. Subjective visual-design approval and unsupported-browser compatibility are outside this phase.
 
 ## Gaps Summary
 
-No BLOCKER, HIGH, failed must-have, missing/stub artifact, broken key link, regression, or human-only item remains for the Phase 1 goal on the final 194-input cycle.
+No BLOCKER, HIGH, failed must-have, missing/stub artifact, broken key link, regression, or human-only verification item remains for the current resealed subject.
 
-Open TODOs remain the authoritative workflow boundary. This PASS does not skip GSD code review, Claude re-review, TEST-MATRIX/TODO closure, or remote delivery.
+The phase is not yet workflow-complete because `TODO.md` still has one unchecked remote-delivery item. This verification does not close or rewrite it.
 
 ---
 
-_Verified: 2026-08-30T22:35:18Z_
-_Verifier: `phase1_gsd_verification_attempt7`_
-_Overall historical attempt: 7; current 194-input evidence cycle attempt: 1_
+_Verified: 2026-08-31T06:02:51Z_
+_Verifier: `phase1_gsd_verification_attempt8`_
+_Overall historical attempt: 8; current resealed 194-input evidence cycle attempt: 1_

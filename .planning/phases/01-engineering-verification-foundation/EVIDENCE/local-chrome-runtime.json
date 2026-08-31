@@ -1,6 +1,6 @@
 {
   "schemaVersion": "phase01-local-chrome-runtime-v1",
-  "generatedAt": "2026-08-30T22:28:46.531Z",
+  "generatedAt": "2026-08-31T05:42:28.588Z",
   "status": "PASS",
   "diagnostic": null,
   "run": {
@@ -45,12 +45,12 @@
     "scenario": {
       "subject": {
         "manifestPath": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json",
-        "manifestDigest": "5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6",
-        "testedSubjectDigest": "9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54",
+        "manifestDigest": "94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53",
+        "testedSubjectDigest": "c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4",
         "health": {
           "scenario_id": "LOGIN-SMOKE-V1",
-          "subject_manifest_digest": "5380d59434c456cf1b8ab35e2485b5b75fcfbae8ef12720f2644f136119763b6",
-          "tested_subject_digest": "9fcb0d747c9b2123212be7b1e5d812c9dff8568db6ea0cb0234549d44afa0e54",
+          "subject_manifest_digest": "94d9fa6dabd318e7e651a622182e357ec11c539ab25505d59eae9da475b5dd53",
+          "tested_subject_digest": "c3118bfde865d59b918c3032ae93570fc946d32eda043aed21801405963098e4",
           "scenario_contract_digest": "98415469dd74730e29a7bafa82cd8dafe016ea8247a6a0b78463a3437922b67a"
         }
       },
@@ -62,7 +62,7 @@
         "visualRuleDigest": "4e67aaa77fb9649f2d665d036465be02dced712d0f8e98fb84ad3c2d554c4062"
       },
       "server": {
-        "origin": "http://127.0.0.1:55861",
+        "origin": "http://127.0.0.1:58106",
         "healthObservedByRunner": true
       },
       "route": "/login",
