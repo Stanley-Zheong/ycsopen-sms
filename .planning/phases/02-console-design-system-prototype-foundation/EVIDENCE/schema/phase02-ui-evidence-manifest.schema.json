@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Phase 2 UI evidence manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "phase",
+    "owner",
+    "status",
+    "generated_from",
+    "run",
+    "sources",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "phase02-ui-evidence-manifest-v1"
+    },
+    "phase": {
+      "const": "02-console-design-system-prototype-foundation"
+    },
+    "owner": {
+      "const": "console-design-system-prototype-foundation"
+    },
+    "status": {
+      "const": "PASS"
+    },
+    "generated_from": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "report_path",
+        "report_sha256",
+        "started_at",
+        "duration_ms",
+        "browser",
+        "browser_version",
+        "executable_path",
+        "viewport",
+        "expected",
+        "passed",
+        "failed",
+        "skipped",
+        "flaky"
+      ],
+      "properties": {
+        "report_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "started_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "browser": {
+          "const": "Google Chrome"
+        },
+        "browser_version": {
+          "type": "string",
+          "pattern": "^[0-9]+(?:\\.[0-9]+){3}$"
+        },
+        "executable_path": {
+          "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        },
+        "viewport": {
+          "type": "object",
+          "required": [
+            "width",
+            "height"
+          ],
+          "properties": {
+            "width": {
+              "const": 1440
+            },
+            "height": {
+              "const": 900
+            }
+          },
+          "additionalProperties": false
+        },
+        "expected": {
+          "const": 83
+        },
+        "passed": {
+          "const": 83
+        },
+        "failed": {
+          "const": 0
+        },
+        "skipped": {
+          "const": 0
+        },
+        "flaky": {
+          "const": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 83,
+      "maxItems": 83,
+      "items": {
+        "type": "object",
+        "required": [
+          "obligation_id",
+          "path",
+          "media_type",
+          "sha256",
+          "size",
+          "status",
+          "case_id",
+          "playwright_id",
+          "behavior_id",
+          "catalog_test",
+          "report_path",
+          "report_sha256"
+        ],
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^OBL-[A-Z0-9-]+$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "media_type": {
+            "enum": [
+              "application/json",
+              "image/png"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "const": "PASS"
+          },
+          "case_id": {
+            "type": "string"
+          },
+          "playwright_id": {
+            "type": "string"
+          },
+          "behavior_id": {
+            "type": "string"
+          },
+          "catalog_test": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "report_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

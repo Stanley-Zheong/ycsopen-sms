@@ -1,0 +1,111 @@
+# Authoritative Phase TODO
+
+Every checked item must cite executable evidence.
+
+
+## Entry gate
+- [x] Phase entry command and artifact completeness are verified — Evidence: `validate-phase-entry.rb` PASS with 83 obligations, 4 plans, 1 live-attested dependency and design-stage UI validation; `.planning/phases/02-console-design-system-prototype-foundation/ENTRY-REVIEW.md` is PASS.
+
+## Spec and design
+- [x] All owned obligations are represented in SPEC trace and design registry — Evidence: `validate-prd-obligations.rb --owner console-design-system-prototype-foundation --assert-unique --assert-traced` PASS with selected=83; `UI-ELEMENTS.md` includes the canonical 83 rows plus the exhaustive shared structural/action/state inventory.
+
+## Implementation
+- [x] Prototype IA, shell, and contract assets are synchronized with design matrix and evidence — Evidence: saved Pencil source contains five named top-level boards with zero layout/placeholder findings; real checked-in HTML implements 82 routes; `validate-phase-02-obligation-evidence.rb` PASS targets=83 json=80 png=3.
+
+## Tests and verification
+- [x] UI artifact contract validates in design stage — Evidence: `validate-ui-contract.rb --phase 02 --package console-design-system-prototype-foundation --stage design` PASS selectors=186 routes=82 owned_elements=3 owned_pages=79.
+- [x] Playwright contract matrix covers every owned obligation and case mapping — Evidence: installed Chrome 151.0.7922.174 loaded checked-in `prototype.html` and `/tokens.css`, passed 83/83 with zero skipped/unexpected/flaky, and asserted stylesheet content type plus computed brand/warning/error styles; JSON assertion claims are derived from named successful Playwright report steps rather than producer constants; canonical report is checksum-bound in `EVIDENCE/evidence-manifest.json`; validator self-test is 10 runs/28 assertions PASS and all 83 case-runner commands PASS.
+
+## Reviews and delivery
+- [x] GSD verification has no unresolved blocking finding — Evidence: `02-VERIFICATION.md` is PASS with score 4/4, 83/83 formally closable and 0 BLOCKER/HIGH/WARNING; it independently matched all 80 JSON targets to 252 executed Playwright evidence steps.
+- [x] GSD code review has no unresolved blocking finding — Evidence: `02-REVIEW.md` is PASS with 0 BLOCKER/HIGH/WARNING after official validators, 83 runners, Chrome sampling, Pencil inspection and the fabricated-assertion negative test.
+- [x] Claude review has no unresolved blocking finding — Evidence: `CLAUDE-REVIEW.md` records the tool-less `claude -p` convergence verdict PASS with 0 BLOCKER/HIGH and explicit closure of the report-derived assertion finding.
+- [ ] Scoped TODO query is empty after this item is closed — Evidence: `Pending`
+- [ ] Atomic commit is visible on the configured GitHub remote — Evidence: `Pending`
+
+## Owned obligations
+# Mandatory checklist by owned obligation
+
+- [x] OBL-DESIGN-SYSTEM-001 — Evidence: `EVIDENCE/OBL-DESIGN-SYSTEM-001.png` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-DESIGN-SYSTEM-001` both return PASS.
+- [x] OBL-DESIGN-SYSTEM-002 — Evidence: `EVIDENCE/OBL-DESIGN-SYSTEM-002.png` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-DESIGN-SYSTEM-002` both return PASS.
+- [x] OBL-DESIGN-SYSTEM-003 — Evidence: `EVIDENCE/OBL-DESIGN-SYSTEM-003.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-DESIGN-SYSTEM-003` both return PASS.
+- [x] OBL-DESIGN-SYSTEM-004 — Evidence: `EVIDENCE/OBL-DESIGN-SYSTEM-004.png` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-DESIGN-SYSTEM-004` both return PASS.
+- [x] OBL-DESIGN-SYSTEM-005 — Evidence: `EVIDENCE/OBL-DESIGN-SYSTEM-005.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-DESIGN-SYSTEM-005` both return PASS.
+- [x] OBL-IA-ADMIN-LOGIN — Evidence: `EVIDENCE/OBL-IA-ADMIN-LOGIN.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-LOGIN` both return PASS.
+- [x] OBL-IA-ADMIN-DASH-REALTIME — Evidence: `EVIDENCE/OBL-IA-ADMIN-DASH-REALTIME.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DASH-REALTIME` both return PASS.
+- [x] OBL-IA-ADMIN-DASH-KPI — Evidence: `EVIDENCE/OBL-IA-ADMIN-DASH-KPI.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DASH-KPI` both return PASS.
+- [x] OBL-IA-ADMIN-DASH-ALERT — Evidence: `EVIDENCE/OBL-IA-ADMIN-DASH-ALERT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DASH-ALERT` both return PASS.
+- [x] OBL-IA-ADMIN-DASH-CONFIG — Evidence: `EVIDENCE/OBL-IA-ADMIN-DASH-CONFIG.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DASH-CONFIG` both return PASS.
+- [x] OBL-IA-ADMIN-USERS — Evidence: `EVIDENCE/OBL-IA-ADMIN-USERS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-USERS` both return PASS.
+- [x] OBL-IA-ADMIN-TENANTS — Evidence: `EVIDENCE/OBL-IA-ADMIN-TENANTS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TENANTS` both return PASS.
+- [x] OBL-IA-ADMIN-TENANT-TRIAL-CONTRACT — Evidence: `EVIDENCE/OBL-IA-ADMIN-TENANT-TRIAL-CONTRACT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TENANT-TRIAL-CONTRACT` both return PASS.
+- [x] OBL-IA-ADMIN-TENANT-TERMINATION — Evidence: `EVIDENCE/OBL-IA-ADMIN-TENANT-TERMINATION.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TENANT-TERMINATION` both return PASS.
+- [x] OBL-IA-ADMIN-TENANT-ACCESS — Evidence: `EVIDENCE/OBL-IA-ADMIN-TENANT-ACCESS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TENANT-ACCESS` both return PASS.
+- [x] OBL-IA-ADMIN-TENANT-RECHARGE — Evidence: `EVIDENCE/OBL-IA-ADMIN-TENANT-RECHARGE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TENANT-RECHARGE` both return PASS.
+- [x] OBL-IA-ADMIN-ROLES — Evidence: `EVIDENCE/OBL-IA-ADMIN-ROLES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-ROLES` both return PASS.
+- [x] OBL-IA-ADMIN-CHANNEL-CONFIG — Evidence: `EVIDENCE/OBL-IA-ADMIN-CHANNEL-CONFIG.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-CHANNEL-CONFIG` both return PASS.
+- [x] OBL-IA-ADMIN-CHANNEL-MONITOR — Evidence: `EVIDENCE/OBL-IA-ADMIN-CHANNEL-MONITOR.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-CHANNEL-MONITOR` both return PASS.
+- [x] OBL-IA-ADMIN-ROUTING — Evidence: `EVIDENCE/OBL-IA-ADMIN-ROUTING.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-ROUTING` both return PASS.
+- [x] OBL-IA-ADMIN-PORTABILITY — Evidence: `EVIDENCE/OBL-IA-ADMIN-PORTABILITY.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-PORTABILITY` both return PASS.
+- [x] OBL-IA-ADMIN-SEND-MONITOR — Evidence: `EVIDENCE/OBL-IA-ADMIN-SEND-MONITOR.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-SEND-MONITOR` both return PASS.
+- [x] OBL-IA-ADMIN-API-STATUS — Evidence: `EVIDENCE/OBL-IA-ADMIN-API-STATUS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-API-STATUS` both return PASS.
+- [x] OBL-IA-ADMIN-TASK-MONITOR — Evidence: `EVIDENCE/OBL-IA-ADMIN-TASK-MONITOR.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TASK-MONITOR` both return PASS.
+- [x] OBL-IA-ADMIN-SIGNATURE-REVIEW — Evidence: `EVIDENCE/OBL-IA-ADMIN-SIGNATURE-REVIEW.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-SIGNATURE-REVIEW` both return PASS.
+- [x] OBL-IA-ADMIN-TEMPLATE-REVIEW — Evidence: `EVIDENCE/OBL-IA-ADMIN-TEMPLATE-REVIEW.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-TEMPLATE-REVIEW` both return PASS.
+- [x] OBL-IA-ADMIN-EXEMPTIONS — Evidence: `EVIDENCE/OBL-IA-ADMIN-EXEMPTIONS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-EXEMPTIONS` both return PASS.
+- [x] OBL-IA-ADMIN-BLACKLIST — Evidence: `EVIDENCE/OBL-IA-ADMIN-BLACKLIST.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-BLACKLIST` both return PASS.
+- [x] OBL-IA-ADMIN-RISK-PROVIDER — Evidence: `EVIDENCE/OBL-IA-ADMIN-RISK-PROVIDER.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-RISK-PROVIDER` both return PASS.
+- [x] OBL-IA-ADMIN-FREQUENCY — Evidence: `EVIDENCE/OBL-IA-ADMIN-FREQUENCY.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-FREQUENCY` both return PASS.
+- [x] OBL-IA-ADMIN-CONTENT — Evidence: `EVIDENCE/OBL-IA-ADMIN-CONTENT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-CONTENT` both return PASS.
+- [x] OBL-IA-ADMIN-NUMBER — Evidence: `EVIDENCE/OBL-IA-ADMIN-NUMBER.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-NUMBER` both return PASS.
+- [x] OBL-IA-ADMIN-COMPLAINTS — Evidence: `EVIDENCE/OBL-IA-ADMIN-COMPLAINTS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-COMPLAINTS` both return PASS.
+- [x] OBL-IA-ADMIN-UPLINK — Evidence: `EVIDENCE/OBL-IA-ADMIN-UPLINK.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-UPLINK` both return PASS.
+- [x] OBL-IA-ADMIN-UNSUBSCRIBE — Evidence: `EVIDENCE/OBL-IA-ADMIN-UNSUBSCRIBE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-UNSUBSCRIBE` both return PASS.
+- [x] OBL-IA-ADMIN-DETAIL-SUBMIT — Evidence: `EVIDENCE/OBL-IA-ADMIN-DETAIL-SUBMIT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DETAIL-SUBMIT` both return PASS.
+- [x] OBL-IA-ADMIN-DETAIL-BULK — Evidence: `EVIDENCE/OBL-IA-ADMIN-DETAIL-BULK.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DETAIL-BULK` both return PASS.
+- [x] OBL-IA-ADMIN-DETAIL-UPLINK — Evidence: `EVIDENCE/OBL-IA-ADMIN-DETAIL-UPLINK.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DETAIL-UPLINK` both return PASS.
+- [x] OBL-IA-ADMIN-DETAIL-RECEIPT — Evidence: `EVIDENCE/OBL-IA-ADMIN-DETAIL-RECEIPT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DETAIL-RECEIPT` both return PASS.
+- [x] OBL-IA-ADMIN-DETAIL-ERROR — Evidence: `EVIDENCE/OBL-IA-ADMIN-DETAIL-ERROR.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-DETAIL-ERROR` both return PASS.
+- [x] OBL-IA-ADMIN-EXPORT — Evidence: `EVIDENCE/OBL-IA-ADMIN-EXPORT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-EXPORT` both return PASS.
+- [x] OBL-IA-ADMIN-STATS — Evidence: `EVIDENCE/OBL-IA-ADMIN-STATS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-STATS` both return PASS.
+- [x] OBL-IA-ADMIN-REPORTS — Evidence: `EVIDENCE/OBL-IA-ADMIN-REPORTS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-REPORTS` both return PASS.
+- [x] OBL-IA-ADMIN-RECONCILIATION — Evidence: `EVIDENCE/OBL-IA-ADMIN-RECONCILIATION.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-RECONCILIATION` both return PASS.
+- [x] OBL-IA-ADMIN-SETTLEMENT — Evidence: `EVIDENCE/OBL-IA-ADMIN-SETTLEMENT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-SETTLEMENT` both return PASS.
+- [x] OBL-IA-ADMIN-INVOICE — Evidence: `EVIDENCE/OBL-IA-ADMIN-INVOICE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-INVOICE` both return PASS.
+- [x] OBL-IA-ADMIN-PROFIT — Evidence: `EVIDENCE/OBL-IA-ADMIN-PROFIT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-PROFIT` both return PASS.
+- [x] OBL-IA-ADMIN-FEE-WARNING — Evidence: `EVIDENCE/OBL-IA-ADMIN-FEE-WARNING.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-FEE-WARNING` both return PASS.
+- [x] OBL-IA-ADMIN-ALERT-RULES — Evidence: `EVIDENCE/OBL-IA-ADMIN-ALERT-RULES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-ALERT-RULES` both return PASS.
+- [x] OBL-IA-ADMIN-ALERT-HISTORY — Evidence: `EVIDENCE/OBL-IA-ADMIN-ALERT-HISTORY.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-ALERT-HISTORY` both return PASS.
+- [x] OBL-IA-ADMIN-NOTIFICATION-TARGETS — Evidence: `EVIDENCE/OBL-IA-ADMIN-NOTIFICATION-TARGETS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-NOTIFICATION-TARGETS` both return PASS.
+- [x] OBL-IA-ADMIN-SHORTLINKS — Evidence: `EVIDENCE/OBL-IA-ADMIN-SHORTLINKS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-SHORTLINKS` both return PASS.
+- [x] OBL-IA-ADMIN-STATUS-CODES — Evidence: `EVIDENCE/OBL-IA-ADMIN-STATUS-CODES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-STATUS-CODES` both return PASS.
+- [x] OBL-IA-ADMIN-PREFIXES — Evidence: `EVIDENCE/OBL-IA-ADMIN-PREFIXES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-PREFIXES` both return PASS.
+- [x] OBL-IA-ADMIN-JOBS — Evidence: `EVIDENCE/OBL-IA-ADMIN-JOBS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-JOBS` both return PASS.
+- [x] OBL-IA-ADMIN-ACCOUNTS — Evidence: `EVIDENCE/OBL-IA-ADMIN-ACCOUNTS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-ACCOUNTS` both return PASS.
+- [x] OBL-IA-ADMIN-LOGS — Evidence: `EVIDENCE/OBL-IA-ADMIN-LOGS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-ADMIN-LOGS` both return PASS.
+- [x] OBL-IA-TENANT-LOGIN — Evidence: `EVIDENCE/OBL-IA-TENANT-LOGIN.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-LOGIN` both return PASS.
+- [x] OBL-IA-TENANT-REGISTER — Evidence: `EVIDENCE/OBL-IA-TENANT-REGISTER.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-REGISTER` both return PASS.
+- [x] OBL-IA-TENANT-ACCOUNT — Evidence: `EVIDENCE/OBL-IA-TENANT-ACCOUNT.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-ACCOUNT` both return PASS.
+- [x] OBL-IA-TENANT-QUALIFICATION — Evidence: `EVIDENCE/OBL-IA-TENANT-QUALIFICATION.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-QUALIFICATION` both return PASS.
+- [x] OBL-IA-TENANT-ADMINS — Evidence: `EVIDENCE/OBL-IA-TENANT-ADMINS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-ADMINS` both return PASS.
+- [x] OBL-IA-TENANT-OVERVIEW — Evidence: `EVIDENCE/OBL-IA-TENANT-OVERVIEW.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-OVERVIEW` both return PASS.
+- [x] OBL-IA-TENANT-SEND — Evidence: `EVIDENCE/OBL-IA-TENANT-SEND.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-SEND` both return PASS.
+- [x] OBL-IA-TENANT-BULK — Evidence: `EVIDENCE/OBL-IA-TENANT-BULK.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-BULK` both return PASS.
+- [x] OBL-IA-TENANT-SCHEDULE — Evidence: `EVIDENCE/OBL-IA-TENANT-SCHEDULE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-SCHEDULE` both return PASS.
+- [x] OBL-IA-TENANT-SEND-RECORDS — Evidence: `EVIDENCE/OBL-IA-TENANT-SEND-RECORDS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-SEND-RECORDS` both return PASS.
+- [x] OBL-IA-TENANT-TEMPLATES — Evidence: `EVIDENCE/OBL-IA-TENANT-TEMPLATES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-TEMPLATES` both return PASS.
+- [x] OBL-IA-TENANT-SIGNATURES — Evidence: `EVIDENCE/OBL-IA-TENANT-SIGNATURES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-SIGNATURES` both return PASS.
+- [x] OBL-IA-TENANT-BALANCE — Evidence: `EVIDENCE/OBL-IA-TENANT-BALANCE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-BALANCE` both return PASS.
+- [x] OBL-IA-TENANT-RECHARGE — Evidence: `EVIDENCE/OBL-IA-TENANT-RECHARGE.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-RECHARGE` both return PASS.
+- [x] OBL-IA-TENANT-STATEMENTS — Evidence: `EVIDENCE/OBL-IA-TENANT-STATEMENTS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-STATEMENTS` both return PASS.
+- [x] OBL-IA-TENANT-INVOICES — Evidence: `EVIDENCE/OBL-IA-TENANT-INVOICES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-INVOICES` both return PASS.
+- [x] OBL-IA-TENANT-BLACKLIST — Evidence: `EVIDENCE/OBL-IA-TENANT-BLACKLIST.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-BLACKLIST` both return PASS.
+- [x] OBL-IA-TENANT-WEBHOOK — Evidence: `EVIDENCE/OBL-IA-TENANT-WEBHOOK.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-WEBHOOK` both return PASS.
+- [x] OBL-IA-TENANT-API-KEYS — Evidence: `EVIDENCE/OBL-IA-TENANT-API-KEYS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-API-KEYS` both return PASS.
+- [x] OBL-IA-TENANT-CMPP — Evidence: `EVIDENCE/OBL-IA-TENANT-CMPP.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-CMPP` both return PASS.
+- [x] OBL-IA-TENANT-NOTIFICATION-TARGETS — Evidence: `EVIDENCE/OBL-IA-TENANT-NOTIFICATION-TARGETS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-NOTIFICATION-TARGETS` both return PASS.
+- [x] OBL-IA-TENANT-UPLINKS — Evidence: `EVIDENCE/OBL-IA-TENANT-UPLINKS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-UPLINKS` both return PASS.
+- [x] OBL-IA-TENANT-UNSUBSCRIBES — Evidence: `EVIDENCE/OBL-IA-TENANT-UNSUBSCRIBES.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-UNSUBSCRIBES` both return PASS.
+- [x] OBL-IA-TENANT-SHORTLINKS — Evidence: `EVIDENCE/OBL-IA-TENANT-SHORTLINKS.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-IA-TENANT-SHORTLINKS` both return PASS.
+- [x] OBL-EDGE-EMPTY-LIST — Evidence: `EVIDENCE/OBL-EDGE-EMPTY-LIST.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-EDGE-EMPTY-LIST` both return PASS.
+- [x] OBL-EDGE-REVIEW-VALIDATION — Evidence: `EVIDENCE/OBL-EDGE-REVIEW-VALIDATION.json` exists at the catalog target; phase02 obligation validator and `phase2-ui-case-runner.rb --phase 02 --case OBL-EDGE-REVIEW-VALIDATION` both return PASS.

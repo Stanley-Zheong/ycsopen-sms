@@ -64,10 +64,18 @@ if errors.empty?
     errors,
     "ui_elements"
   )
+  ui_tables = PlanningValidatorSupport.markdown_tables(
+    ui_elements_path,
+    PlanningValidatorSupport::UI_HEADERS,
+    errors,
+    "ui_elements_all"
+  )
+  supplemental_rows = ui_tables.drop(1).flatten(1)
   selectors = []
   page_cells = []
   routes = []
   ui_rows = []
+  supplemental_ui_rows = []
   rows.each_with_index do |row, index|
     page_cell = row[0]
     selector = row[7]
@@ -111,6 +119,32 @@ if errors.empty?
     errors << "UI_ROW_DUPLICATE_CATALOG_TEST_LINK: row=#{index + 1} ids=#{duplicate_test_links.join(',')}" unless duplicate_test_links.empty?
     errors << "UI_ROW_DUPLICATE_PLAYWRIGHT_LINK: row=#{index + 1} ids=#{duplicate_playwright_links.join(',')}" unless duplicate_playwright_links.empty?
   end
+  supplemental_rows.each_with_index do |row, index|
+    row.each_with_index do |value, column|
+      if PlanningValidatorSupport.placeholder?(value)
+        errors << "UI_SHARED_ELEMENT_PLACEHOLDER: row=#{index + 1} column=#{PlanningValidatorSupport::UI_HEADERS[column]} value=#{value.inspect}"
+      end
+    end
+    page_cell, _permission, _region, _element, _data, _action, _states,
+      selector, link_cell, behavior_cell, catalog_test_cell, _playwright_cell = row
+    route = page_cell[/\/(?:[A-Za-z0-9._~!$&'()*+,;=:@%-]+\/?)+/]
+    errors << "UI_SHARED_ROUTE_MISSING: row=#{index + 1} page=#{page_cell}" unless route
+    unless selector.match?(PlanningValidatorSupport::ELEMENT_TEST_ID)
+      errors << "UI_SHARED_TEST_ID_BAD_FORMAT: row=#{index + 1} value=#{selector}"
+    end
+    supplemental_ui_rows << {
+      index: index + 1,
+      page: page_cell,
+      selector: selector,
+      obligation_ids: link_cell.scan(PlanningValidatorSupport::OBLIGATION_ID),
+      requirement_ids: link_cell.scan(PlanningValidatorSupport::REQUIREMENT_ID),
+      behavior_ids: PlanningValidatorSupport.comma_tokens(behavior_cell),
+      catalog_tests: PlanningValidatorSupport.comma_tokens(catalog_test_cell),
+      playwright_ids: PlanningValidatorSupport.comma_tokens(_playwright_cell)
+    }
+    selectors << selector
+    routes << route if route
+  end
   duplicate_selectors = PlanningValidatorSupport.duplicates(selectors)
   errors << "UI_TEST_ID_DUPLICATE: #{duplicate_selectors.join(',')}" unless duplicate_selectors.empty?
   selectors.uniq!
@@ -134,6 +168,25 @@ if errors.empty?
   errors << "UI_OWNED_PAGE_MISSING: #{missing_pages.join(',')}" unless missing_pages.empty?
 
   direct_ids = direct_records.map(&:id).to_set
+  supplemental_ui_rows.each do |ui_row|
+    linked_records = direct_records.select { |record| ui_row[:obligation_ids].include?(record.id) }
+    errors << "UI_SHARED_OBLIGATION_LINK_MISSING: row=#{ui_row[:index]}" if linked_records.empty?
+    foreign_links = ui_row[:obligation_ids].to_set - direct_ids
+    errors << "UI_SHARED_FOREIGN_OBLIGATION_LINK: row=#{ui_row[:index]} ids=#{foreign_links.to_a.sort.join(',')}" unless foreign_links.empty?
+    next if linked_records.empty?
+
+    expected_requirements = linked_records.flat_map(&:requirements).uniq.sort
+    expected_behaviors = linked_records.map(&:behavior).uniq.sort
+    expected_tests = linked_records.map(&:test_reference).uniq.sort
+    expected_playwright = linked_records.map do |record|
+      canonical = ui_rows.find { |candidate| candidate[:obligation_ids].include?(record.id) }
+      canonical && canonical[:playwright_ids][canonical[:obligation_ids].index(record.id)]
+    end.compact.uniq.sort
+    errors << "UI_SHARED_REQUIREMENT_LINK_MISMATCH: row=#{ui_row[:index]}" unless ui_row[:requirement_ids].uniq.sort == expected_requirements
+    errors << "UI_SHARED_BEHAVIOR_LINK_MISMATCH: row=#{ui_row[:index]}" unless ui_row[:behavior_ids].uniq.sort == expected_behaviors
+    errors << "UI_SHARED_CATALOG_TEST_LINK_MISMATCH: row=#{ui_row[:index]}" unless ui_row[:catalog_tests].uniq.sort == expected_tests
+    errors << "UI_SHARED_PLAYWRIGHT_LINK_MISMATCH: row=#{ui_row[:index]}" unless ui_row[:playwright_ids].uniq.sort == expected_playwright
+  end
   ui_rows.each do |ui_row|
     linked_records = direct_records.select { |record| ui_row[:obligation_ids].include?(record.id) }
     errors << "UI_ROW_OBLIGATION_LINK_MISSING: row=#{ui_row[:index]}" if linked_records.empty?

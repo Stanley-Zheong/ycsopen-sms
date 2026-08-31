@@ -85,6 +85,37 @@ module PlanningValidatorSupport
     rows
   end
 
+  def markdown_tables(path, expected_headers, errors, label)
+    body = read(path, errors, label)
+    return [] if body.empty?
+
+    lines = body.lines.map(&:strip)
+    header_indexes = lines.each_index.select do |index|
+      table_cells(lines[index])&.map(&:downcase) == expected_headers.map(&:downcase)
+    end
+    if header_indexes.empty?
+      errors << "BAD_#{label.upcase}_HEADER: #{path} expected=#{expected_headers.join(' | ')}"
+      return []
+    end
+
+    header_indexes.map.with_index do |header_index, table_index|
+      rows = []
+      lines.drop(header_index + 1).each do |line|
+        break unless line.start_with?("|") && line.end_with?("|")
+
+        cells = table_cells(line)
+        next if cells.length == expected_headers.length && cells.all? { |cell| cell.match?(/\A:?-{3,}:?\z/) }
+        if cells.length != expected_headers.length
+          errors << "BAD_#{label.upcase}_COLUMN_COUNT: #{path} table=#{table_index + 1} expected=#{expected_headers.length} actual=#{cells.length}"
+          next
+        end
+        rows << cells
+      end
+      errors << "EMPTY_#{label.upcase}_TABLE: #{path} table=#{table_index + 1}" if rows.empty?
+      rows
+    end
+  end
+
   def table_cells(line)
     return nil unless line.start_with?("|") && line.end_with?("|")
 

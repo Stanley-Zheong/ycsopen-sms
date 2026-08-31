@@ -1,0 +1,184 @@
+# Console Design System Prototype Spec
+
+## Prototype scope
+This file defines the phase-2 prototype contract for routes and selectors (design stage only).
+
+## Shared shell routes
+- /shared/console/shell
+- /shared/component/states
+- /shared/responsive/baseline
+- /shared/console/design/shell/notification/target
+- /admin/auth/login
+- /admin/dashboard/realtime
+- /admin/dashboard/kpi
+- /admin/dashboard/alerts
+- /admin/dashboard/configuration
+- /admin/users
+- /admin/tenants
+- /admin/tenant/trial/contracts
+- /admin/tenant/terminations
+- /admin/tenant/access
+- /admin/tenant/recharge/review
+- /admin/roles
+- /admin/channel/configuration
+- /admin/channel/monitor
+- /admin/routing/policy
+- /admin/number/portability
+- /admin/send/monitor
+- /admin/api/status/monitor
+- /admin/task/monitor
+- /admin/signature/review
+- /admin/template/review
+- /admin/exemption/policy
+- /admin/black/white/lists
+- /admin/risk/provider
+- /admin/frequency/rules
+- /admin/content/safety
+- /admin/number/attribution
+- /admin/complaints
+- /admin/uplinks
+- /admin/unsubscribes
+- /admin/submission/details
+- /admin/bulk/details
+- /admin/uplink/details
+- /admin/receipt/details
+- /admin/error/details
+- /admin/export/center
+- /admin/statistics
+- /admin/custom/reports
+- /admin/reconciliation
+- /admin/settlements
+- /admin/invoices
+- /admin/financial/analytics
+- /admin/fee/warning
+- /admin/alert/rules
+- /admin/alert/history
+- /admin/notification/targets
+- /admin/shortlinks
+- /admin/status/codes
+- /admin/prefixes
+- /admin/send/jobs
+- /admin/system/accounts
+- /admin/system/logs
+- /tenant/auth/login
+- /tenant/register
+- /tenant/account/information
+- /tenant/qualification
+- /tenant/administrators
+- /tenant/overview
+- /tenant/send
+- /tenant/bulk/send
+- /tenant/scheduled/tasks
+- /tenant/send/records
+- /tenant/templates
+- /tenant/signatures
+- /tenant/balance
+- /tenant/recharge
+- /tenant/statements
+- /tenant/invoices
+- /tenant/blacklist
+- /tenant/webhooks
+- /tenant/api/keys
+- /tenant/cmpp/access
+- /tenant/notification/targets
+- /tenant/uplinks
+- /tenant/unsubscribes
+- /tenant/shortlinks
+- /shared/console/design/list/empty
+- /shared/console/design/form/inline/error
+
+## Element IDs
+- shared-console-shell-prototype-shell-001
+- shared-console-shell-prototype-shell-002
+- shared-component-states-prototype-shell-003
+- shared-responsive-baseline-prototype-shell-004
+- shared-console-design-shell-notification-target
+- admin-auth-login-prototype-shell-006
+- admin-dashboard-realtime-prototype-shell-007
+- admin-dashboard-kpi-prototype-shell-008
+- admin-dashboard-alerts-prototype-shell-009
+- admin-dashboard-configuration-prototype-shell-010
+- admin-users-prototype-shell-011
+- admin-tenants-prototype-shell-012
+- admin-tenant-trial-contracts-prototype-shell-013
+- admin-tenant-terminations-prototype-shell-014
+- admin-tenant-access-prototype-shell-015
+- admin-tenant-recharge-review-prototype-shell-016
+- admin-roles-prototype-shell-017
+- admin-channel-configuration-prototype-shell-018
+- admin-channel-monitor-prototype-shell-019
+- admin-routing-policy-prototype-shell-020
+- admin-number-portability-prototype-shell-021
+- admin-send-monitor-prototype-shell-022
+- admin-api-status-monitor-prototype-shell-023
+- admin-task-monitor-prototype-shell-024
+- admin-signature-review-prototype-shell-025
+- admin-template-review-prototype-shell-026
+- admin-exemption-policy-prototype-shell-027
+- admin-black-white-lists-prototype-shell-028
+- admin-risk-provider-prototype-shell-029
+- admin-frequency-rules-prototype-shell-030
+- admin-content-safety-prototype-shell-031
+- admin-number-attribution-prototype-shell-032
+- admin-complaints-prototype-shell-033
+- admin-uplinks-prototype-shell-034
+- admin-unsubscribes-prototype-shell-035
+- admin-submission-details-prototype-shell-036
+- admin-bulk-details-prototype-shell-037
+- admin-uplink-details-prototype-shell-038
+- admin-receipt-details-prototype-shell-039
+- admin-error-details-prototype-shell-040
+- admin-export-center-prototype-shell-041
+- admin-statistics-prototype-shell-042
+- admin-custom-reports-prototype-shell-043
+- admin-reconciliation-prototype-shell-044
+- admin-settlements-prototype-shell-045
+- admin-invoices-prototype-shell-046
+- admin-financial-analytics-prototype-shell-047
+- admin-fee-warning-prototype-shell-048
+- admin-alert-rules-prototype-shell-049
+- admin-alert-history-prototype-shell-050
+- admin-notification-targets-prototype-shell-051
+- admin-shortlinks-prototype-shell-052
+- admin-status-codes-prototype-shell-053
+- admin-prefixes-prototype-shell-054
+- admin-send-jobs-prototype-shell-055
+- admin-system-accounts-prototype-shell-056
+- admin-system-logs-prototype-shell-057
+- tenant-auth-login-prototype-shell-058
+- tenant-register-prototype-shell-059
+- tenant-account-information-prototype-shell-060
+- tenant-qualification-prototype-shell-061
+- tenant-administrators-prototype-shell-062
+- tenant-overview-prototype-shell-063
+- tenant-send-prototype-shell-064
+- tenant-bulk-send-prototype-shell-065
+- tenant-scheduled-tasks-prototype-shell-066
+- tenant-send-records-prototype-shell-067
+- tenant-templates-prototype-shell-068
+- tenant-signatures-prototype-shell-069
+- tenant-balance-prototype-shell-070
+- tenant-recharge-prototype-shell-071
+- tenant-statements-prototype-shell-072
+- tenant-invoices-prototype-shell-073
+- tenant-blacklist-prototype-shell-074
+- tenant-webhooks-prototype-shell-075
+- tenant-api-keys-prototype-shell-076
+- tenant-cmpp-access-prototype-shell-077
+- tenant-notification-targets-prototype-shell-078
+- tenant-uplinks-prototype-shell-079
+- tenant-unsubscribes-prototype-shell-080
+- tenant-shortlinks-prototype-shell-081
+- shared-console-design-list-empty
+- shared-console-design-form-inline-error
+
+## Interaction notes
+- Each route has a canonical contract marker and a role-filtered `shared-console-shell-navigation-${page-id}-link` entry; navigation uses `history.pushState` and rerenders without a full-page reload. Admin and Tenant role switchers expose the exact route-to-role matrix and render a permission-denied contract when a pinned role cannot access the current route.
+- Shared shell actions include keyword filtering, status selection, refresh/export/create feedback, row-detail modal, notification drawer, profile popover and status toast.
+- Authentication forms prevent real credential submission in the prototype and announce the simulated action.
+- The empty-list route provides an illustration, guidance, disabled bulk/export controls and an enabled recovery action.
+- The invalid-review route begins with an enabled submit button; a failed attempt exposes the exact field reason, sets `aria-invalid`, focuses the field, blocks further submit and performs zero request or navigation.
+- The complete structural/action/state selector inventory is maintained in `UI-ELEMENTS.md` for later automation generation.
+
+## Evidence notes
+- `EVIDENCE/ui-contract.json` binds the registry sources. `EVIDENCE/evidence-manifest.json` binds the canonical Chrome report, six tested inputs and all 83 catalog targets.

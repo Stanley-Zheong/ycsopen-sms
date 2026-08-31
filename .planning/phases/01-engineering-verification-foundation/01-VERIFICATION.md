@@ -160,6 +160,9 @@ _Overall historical attempt: 8; current resealed 194-input evidence cycle attemp
 ## Final verdict
 PASS
 
+## Verdict
+PASS
+
 ## Review Binding
 
 The remote-CI stale-seal finding opened this bounded evidence cycle. All earlier reports and digests are historical only and cannot authorize this cycle. This protocol table is intentionally the final table in the document so target-tree delivery parsing has one unambiguous row set.
