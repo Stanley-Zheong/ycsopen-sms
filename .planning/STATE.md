@@ -22,7 +22,7 @@ completion_metric: scoped_todo_empty
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
 Plan: dependency-ordered Phase 03 implementation
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Plans `03-20` and `03-30` have committed implementation and summary evidence. Key lifecycle/rewrap is explicit, the real object-registration composition passes, and all Phase 03 obligation TODO rows remain open pending migration, rotation, leak and evidence composition.
+**Current plan**: Plans `03-14` and `03-18` now have committed implementation and summary evidence. Real seven-target migration/encrypted snapshot recovery and typed safe logging pass; Phase 03 obligation TODO rows remain open pending leak scanning, rotation/composed-fault closure and evidence composition.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -113,6 +113,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Plan 14, then Plans 18, 19, 21, 22 and 23 in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/independent/Claude review for the Phase boundary; execute each plan-owned real-service lane once when it becomes the active dependency.
+**Resume from**: Plan 19, then Plans 21, 22 and 23 in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/independent/Claude review for the Phase boundary; execute each plan-owned real-service lane once when it becomes the active dependency.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Preserve the scoped TODO query as the sole completion metric.
