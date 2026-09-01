@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 12 of 30
+Plan: dependency-ordered Phase 03 implementation
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: `03-12-PLAN.md` has committed task results and a summary; the digest-bound typed manifest, magic-first classifier and zero-mutation paired preflight contract now exist, while all Phase 03 obligation TODO rows remain open.
+**Current plan**: `03-27-PLAN.md` has committed task results and summary evidence; signed writer/snapshot manifests now use one canonical role-separated Ed25519 pair and atomic CAS admission, while all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -81,7 +81,7 @@ The verified scoped TODO query is the sole completion metric.
 - Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
 - Plan 09 provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 adopts it in the live message service, and Plan 10 now adds checkpoint-aware lookup plus real Connector/J/PKCS11 raw-row, AAD, outage and rollback proof. Every Phase 03 obligation TODO remains open.
 - Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
-- Plan 12 now provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Production signed writer/snapshot pair verification remains owned by Plan 27, migration execution/recovery remains later work, and every Phase 03 obligation TODO remains open.
+- Plan 12 provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Plan 27 now provides the production signed writer/snapshot pair verifier, closed schemas, trust rotation and atomic pair CAS. Migration execution/recovery remains later work, and every Phase 03 obligation TODO remains open.
 
 ## Authoritative TODO seeds
 
@@ -113,6 +113,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Remaining Phase 3 plans in declared dependency order; `03-12-PLAN.md` has committed task results and summary evidence.
+**Resume from**: Remaining Phase 3 plans in declared dependency order; `03-27-PLAN.md` has committed task results and summary evidence. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/real-service plus independent/Claude review for the Phase boundary.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Preserve the scoped TODO query as the sole completion metric.
