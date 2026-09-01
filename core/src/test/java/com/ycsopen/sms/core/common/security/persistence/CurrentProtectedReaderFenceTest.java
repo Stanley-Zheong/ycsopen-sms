@@ -145,14 +145,12 @@ class CurrentProtectedReaderFenceTest {
                 .preHandle(request, new MockHttpServletResponse(), new Object())).isTrue();
         assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID)).isEqualTo(42L);
 
-        BlacklistEntryRepository blacklists = mock(BlacklistEntryRepository.class);
+        BlindIndexLookupService lookup = mock(BlindIndexLookupService.class);
         ThirdPartyBlacklistClient thirdParty = mock(ThirdPartyBlacklistClient.class);
-        BlacklistEntryRepository.LookupProjection white = mock(BlacklistEntryRepository.LookupProjection.class);
-        when(white.getListType()).thenReturn(BlacklistEntry.ListType.WHITE);
-        when(blacklists.findTenantLegacyCompatibilityMatches(
-                "legacy-index", 42L, BlacklistEntry.Status.ACTIVE)).thenReturn(List.of(white));
-        BlacklistChecker.Result result = new BlacklistChecker(blacklists, thirdParty).check(
-                RoutingContext.builder().tenantId(42L).mobileHash("legacy-index").build());
+        when(lookup.lookupBlacklist(eq(42L), any(), eq(BlacklistEntry.Status.ACTIVE)))
+                .thenReturn(BlindIndexLookupService.BlacklistLookupResult.whitelisted());
+        BlacklistChecker.Result result = new BlacklistChecker(lookup, thirdParty).check(
+                RoutingContext.builder().tenantId(42L).build());
         assertThat(result.blocked()).isFalse();
         verifyNoInteractions(thirdParty);
 
@@ -199,11 +197,13 @@ class CurrentProtectedReaderFenceTest {
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java"))
                 .contains("messageTaskProtectionAdapter.prepare",
                         ".mobileQueryIndexes(preparedMobile.queryIndexes())",
+                        ".legacyMobileLookupToken(preparedMobile.legacyLookupToken())",
                         "messageTaskProtectionAdapter.save")
                 .doesNotContain("messageTaskRepository", "setMobileEncrypted", "setMobileHash");
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java"))
-                .contains("BlindIndexPort.OrderedIndexes mobileQueryIndexes")
-                .doesNotContain("phoneNumber");
+                .contains("BlindIndexPort.OrderedIndexes mobileQueryIndexes",
+                        "LegacyMobileLookupToken legacyMobileLookupToken")
+                .doesNotContain("phoneNumber", "mobileHash", "String legacy");
 
         for (JsonNode surface : surfaces.values()) {
             assertThat(surface.path("disposition").asText()).doesNotContain("REQUIRED");
@@ -247,8 +247,8 @@ class CurrentProtectedReaderFenceTest {
                 .contains("findAuthenticationByAppKey")
                 .doesNotContain("findByAppKey", "getAppSecretEncrypted");
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java"))
-                .contains("findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches")
-                .doesNotContain("List<BlacklistEntry>", "getMobileEncrypted");
+                .contains("blindIndexLookupService.lookupBlacklist")
+                .doesNotContain("blacklistEntryRepository", "List<BlacklistEntry>", "getMobileEncrypted");
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/complaint/ComplaintRatioService.java"))
                 .contains("tenantRepository.findAllIds()")
                 .doesNotContain("tenantRepository.findAll()", "import com.ycsopen.sms.core.domain.entity.Tenant;");

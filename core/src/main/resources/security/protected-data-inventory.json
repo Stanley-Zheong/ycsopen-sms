@@ -118,10 +118,12 @@
       "readers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BlacklistEntry.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/repository/BlacklistEntryRepository.java", "tokens": ["interface LookupProjection", "entry.mobileHash as legacyIndex", "entry.listType as listType"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupService.java", "tokens": ["ycs_crypto_blind_indexes", "legacyFallbackAllowed", "deduplicate"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileHashReader.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["blindIndexLookupService.lookupBlacklist", "getLegacyMobileLookupToken"] }
       ],
       "writers": [],
-      "reason": "Current routing uses a ciphertext-excluding legacy compatibility projection; Plan 10 solely owns ACTIVE/RETIRING metadata lookup and checkpoint-gated legacy union."
+      "reason": "Current routing uses the metadata-first owner and an opaque compatibility capability; only the package-scoped legacy reader can execute raw-SHA lookup before COMPLETE."
     },
     {
       "id": "tenant_api_keys.app_secret_encrypted", "table": "tenant_api_keys", "column": "app_secret_encrypted",
@@ -359,13 +361,15 @@
       "reason": "The current incomplete authentication path selects only ID, tenant and status; app_secret_encrypted is absent from the closed query and projection."
     },
     {
-      "id": "blacklist-lookup-hydration", "role": "READER", "disposition": "ADOPTED_CIPHERTEXT_EXCLUDING_LEGACY_COMPATIBILITY_PROJECTION", "obligation_blocking": false,
+      "id": "blacklist-lookup-hydration", "role": "READER", "disposition": "ADOPTED_METADATA_FIRST_CHECKPOINT_GATED_LOOKUP", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["blindIndexLookupService.lookupBlacklist", "getLegacyMobileLookupToken"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupService.java", "tokens": ["ycs_crypto_blind_indexes", "legacyFallbackAllowed", "deduplicate"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileHashReader.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BlacklistEntry.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "@Column(name = \"mobile_hash\", nullable = false)", "private byte[] mobileEncrypted"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/repository/BlacklistEntryRepository.java", "tokens": ["interface LookupProjection", "entry.mobileHash as legacyIndex", "entry.listType as listType"] }
       ],
-      "reason": "Routing now consumes an ID/status/type/tenant/legacy-index projection without ciphertext hydration; Plan 10 remains the sole ACTIVE/RETIRING and checkpoint-gated legacy-union query owner."
+      "reason": "Routing delegates an opaque lookup capability to the sole ACTIVE/RETIRING metadata owner; only its package-scoped legacy reader may use the historical digest before the exact target is COMPLETE."
     },
     {
       "id": "tenant-lifecycle-analytics-hydration-save", "role": "READER_WRITER", "disposition": "ADOPTED_OPAQUE_ENTITY_PRESERVATION_AND_ID_ONLY_ANALYTICS", "obligation_blocking": false,

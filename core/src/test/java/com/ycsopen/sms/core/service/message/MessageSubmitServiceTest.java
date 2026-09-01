@@ -5,6 +5,7 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
+import com.ycsopen.sms.core.common.security.persistence.LegacyMobileLookupToken;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
@@ -63,6 +64,7 @@ class MessageSubmitServiceTest {
     @Mock MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     @Mock MessageTaskRepository legacyMessageTaskRepository;
     @Mock PreparedMessageMobile preparedMobile;
+    @Mock LegacyMobileLookupToken legacyLookupToken;
 
     private MessageSubmitService service;
 
@@ -105,7 +107,7 @@ class MessageSubmitServiceTest {
 
         RoutingContext context = routing.getValue();
         assertThat(context.getMobileQueryIndexes()).isEqualTo(QUERY_INDEXES);
-        assertThat(context.getMobileHash()).isEqualTo(ACTIVE_INDEX.canonicalValue());
+        assertThat(context.getLegacyMobileLookupToken()).isSameAs(legacyLookupToken);
         assertThat(context.getMobileQueryIndexes().values())
                 .extracting(VersionedBlindIndex::canonicalValue)
                 .doesNotContain(MOBILE, rawMobileSha256());
@@ -179,6 +181,7 @@ class MessageSubmitServiceTest {
 
     private void stubPreparedQueryIndexes() {
         when(preparedMobile.queryIndexes()).thenReturn(QUERY_INDEXES);
+        when(preparedMobile.legacyLookupToken()).thenReturn(legacyLookupToken);
     }
 
     private static byte[] repeatedBytes(int value) {

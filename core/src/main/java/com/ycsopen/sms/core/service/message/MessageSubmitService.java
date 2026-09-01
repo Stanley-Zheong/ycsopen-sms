@@ -82,6 +82,7 @@ public class MessageSubmitService {
         RoutingContext ctx = RoutingContext.builder()
                 .tenantId(tenantId)
                 .mobileQueryIndexes(preparedMobile.queryIndexes())
+                .legacyMobileLookupToken(preparedMobile.legacyLookupToken())
                 .clientIp(clientIp)
                 .content(finalContent)
                 .templateId(template.getId())

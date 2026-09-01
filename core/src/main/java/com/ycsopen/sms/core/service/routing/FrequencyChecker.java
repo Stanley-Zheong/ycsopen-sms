@@ -48,7 +48,7 @@ public class FrequencyChecker {
 
     private String dimensionValue(FrequencyRule rule, RoutingContext ctx) {
         return switch (rule.getLimitType()) {
-            case MOBILE -> ctx.getMobileHash();
+            case MOBILE -> ctx.getOpaqueMobileQueryValue();
             case TENANT_LEVEL -> ctx.getTenantId() == null ? null : String.valueOf(ctx.getTenantId());
             case IP -> ctx.getClientIp();
             case CONTENT_SIMILARITY -> null; // TODO: 需要内容指纹算法，先跳过（不影响其余三类规则生效）

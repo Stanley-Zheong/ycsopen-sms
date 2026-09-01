@@ -12,6 +12,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HexFormat;
@@ -31,6 +33,8 @@ public final class MessageTaskProtectionAdapter {
     private static final String LOGICAL_TABLE = "message_tasks";
     private static final String CONTENT_ROLE = "mobile_encrypted";
     private static final String TARGET_TYPE = "MESSAGE_TASK";
+    private static final String BLACKLIST_TARGET_TYPE = "BLACKLIST_ENTRY";
+    private static final String PORTABILITY_TARGET_TYPE = "MOBILE_PORTABILITY";
     private static final String INDEX_FIELD = "mobile";
     private static final Pattern MESSAGE_ID =
             Pattern.compile("MSG_[0-9]{1,19}_[A-Z0-9]{8}");
@@ -84,6 +88,7 @@ public final class MessageTaskProtectionAdapter {
         byte[] plaintext = mobileAscii(checkedMobile);
         byte[] envelope = null;
         byte[] locatorEntropy = null;
+        byte[] historicalDigest = null;
         try {
             String tenantScope = "tenant:" + checkedTenantId;
             ProtectionContext fieldContext = new ProtectionContext(
@@ -97,6 +102,17 @@ public final class MessageTaskProtectionAdapter {
                     blindIndexPort.writeIndexes(checkedMobile, indexContext);
             BlindIndexPort.OrderedIndexes queryIndexes =
                     blindIndexPort.queryIndexes(checkedMobile, indexContext);
+            BlindIndexPort.OrderedIndexes blacklistIndexes = blindIndexPort.queryIndexes(
+                    checkedMobile, new BlindIndexPort.Context(
+                            BLACKLIST_TARGET_TYPE, INDEX_FIELD,
+                            BlindIndexPort.Purpose.MOBILE_ROUTING, tenantScope));
+            BlindIndexPort.OrderedIndexes portabilityIndexes = blindIndexPort.queryIndexes(
+                    checkedMobile, new BlindIndexPort.Context(
+                            PORTABILITY_TARGET_TYPE, INDEX_FIELD,
+                            BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
+            historicalDigest = sha256(plaintext);
+            LegacyMobileLookupToken legacyLookupToken = new LegacyMobileLookupToken(
+                    historicalDigest, blacklistIndexes, portabilityIndexes);
             envelope = protectedFieldCodec.protect(
                     plaintext, fieldContext, EnvelopeCodec.Target.DATABASE_FIELD);
             if (envelope.length > MAXIMUM_MOBILE_ENVELOPE_BYTES) {
@@ -107,13 +123,15 @@ public final class MessageTaskProtectionAdapter {
             secureRandom.nextBytes(locatorEntropy);
             String locator = HexFormat.of().formatHex(locatorEntropy);
             return new PreparedMessageMobile(
-                    checkedTenantId, checkedMessageId, envelope, locator, writeIndexes, queryIndexes);
+                    checkedTenantId, checkedMessageId, envelope, locator,
+                    writeIndexes, queryIndexes, legacyLookupToken);
         } catch (RuntimeException failure) {
             throw sanitized();
         } finally {
             Arrays.fill(plaintext, (byte) 0);
             clear(envelope);
             clear(locatorEntropy);
+            clear(historicalDigest);
         }
     }
 
@@ -174,6 +192,14 @@ public final class MessageTaskProtectionAdapter {
             bytes[index] = (byte) mobile.charAt(index);
         }
         return bytes;
+    }
+
+    private static byte[] sha256(byte[] value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException(SANITIZED_FAILURE);
+        }
     }
 
     private static void requireMatchingIdentity(MessageTask task, PreparedMessageMobile prepared) {

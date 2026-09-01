@@ -30,13 +30,15 @@ public final class PreparedMessageMobile {
     private final String legacyLocator;
     private final BlindIndexPort.OrderedIndexes writeIndexes;
     private final BlindIndexPort.OrderedIndexes queryIndexes;
+    private final LegacyMobileLookupToken legacyLookupToken;
 
     PreparedMessageMobile(long tenantId,
                           String messageId,
                           byte[] envelope,
                           String legacyLocator,
                           BlindIndexPort.OrderedIndexes writeIndexes,
-                          BlindIndexPort.OrderedIndexes queryIndexes) {
+                          BlindIndexPort.OrderedIndexes queryIndexes,
+                          LegacyMobileLookupToken legacyLookupToken) {
         if (tenantId <= 0 || messageId == null || messageId.isEmpty()
                 || envelope == null || legacyLocator == null
                 || !LOCATOR.matcher(legacyLocator).matches()) {
@@ -53,6 +55,8 @@ public final class PreparedMessageMobile {
         }
         this.writeIndexes = copyIndexes(writeIndexes);
         this.queryIndexes = copyIndexes(queryIndexes);
+        this.legacyLookupToken = Objects.requireNonNull(
+                legacyLookupToken, "legacyLookupToken").defensiveCopy();
         if (!this.queryIndexes.values().containsAll(this.writeIndexes.values())) {
             throw new IllegalArgumentException("write indexes are not query compatible");
         }
@@ -72,6 +76,10 @@ public final class PreparedMessageMobile {
 
     public BlindIndexPort.OrderedIndexes queryIndexes() {
         return queryIndexes;
+    }
+
+    public LegacyMobileLookupToken legacyLookupToken() {
+        return legacyLookupToken.defensiveCopy();
     }
 
     long tenantId() {

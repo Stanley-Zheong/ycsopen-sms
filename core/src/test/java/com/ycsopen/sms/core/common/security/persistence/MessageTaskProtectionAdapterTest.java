@@ -94,8 +94,15 @@ class MessageTaskProtectionAdapterTest {
                 ProtectionContext.Purpose.DATABASE_FIELD,
                 "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
                 "tenant:17", "message_id=" + MESSAGE_ID));
-        assertThat(blindIndexPort.context).isEqualTo(new BlindIndexPort.Context(
-                "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"));
+        assertThat(blindIndexPort.contexts).containsExactly(
+                new BlindIndexPort.Context(
+                        "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
+                new BlindIndexPort.Context(
+                        "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
+                new BlindIndexPort.Context(
+                        "BLACKLIST_ENTRY", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
+                new BlindIndexPort.Context(
+                        "MOBILE_PORTABILITY", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
         assertThat(prepared.copyEnvelope()).hasSize(156);
         ProtectedFieldCodec verifier = new ProtectedFieldCodec(
                 new EnvelopeCodec(), keyPort, new FixedSecureRandom(), KEY_REFERENCE);
@@ -103,6 +110,9 @@ class MessageTaskProtectionAdapterTest {
                 EnvelopeCodec.Target.DATABASE_FIELD))
                 .containsExactly(MOBILE.getBytes(StandardCharsets.US_ASCII));
         assertThat(prepared.queryIndexes().values()).containsExactly(RETIRING_INDEX, ACTIVE_INDEX);
+        assertThat(prepared.legacyLookupToken().toString())
+                .isEqualTo("LegacyMobileLookupToken[digest=[redacted], indexes=[redacted]]")
+                .doesNotContain(MOBILE, rawMobileSha256());
         assertThat(prepared.toString()).contains("[redacted]").doesNotContain(MOBILE,
                 RETIRING_INDEX.canonicalValue(), ACTIVE_INDEX.canonicalValue());
 
@@ -292,20 +302,20 @@ class MessageTaskProtectionAdapterTest {
     }
 
     private static final class RecordingBlindIndexPort implements BlindIndexPort {
-        private Context context;
+        private final List<Context> contexts = new java.util.ArrayList<>();
         private boolean unavailable;
 
         @Override
         public OrderedIndexes writeIndexes(String normalizedMobile, Context suppliedContext) {
             requireAvailable(normalizedMobile);
-            context = suppliedContext;
+            contexts.add(suppliedContext);
             return new OrderedIndexes(List.of(RETIRING_INDEX, ACTIVE_INDEX));
         }
 
         @Override
         public OrderedIndexes queryIndexes(String normalizedMobile, Context suppliedContext) {
             requireAvailable(normalizedMobile);
-            context = suppliedContext;
+            contexts.add(suppliedContext);
             return new OrderedIndexes(List.of(RETIRING_INDEX, ACTIVE_INDEX));
         }
 
