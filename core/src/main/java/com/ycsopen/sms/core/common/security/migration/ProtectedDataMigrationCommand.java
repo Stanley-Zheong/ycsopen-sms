@@ -2,9 +2,12 @@ package com.ycsopen.sms.core.common.security.migration;
 
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunState;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunStatus;
+import com.ycsopen.sms.core.common.security.migration.MigrationPreflight.CheckpointState;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.BatchResult;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.MigrationRequest;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.RunControlRequest;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionRequest;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionResult;
 import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier.FailureCode;
 import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier.VerificationException;
 import com.ycsopen.sms.core.common.security.migration.WriterFencePort.PairedAdmission;
@@ -28,6 +31,7 @@ public final class ProtectedDataMigrationCommand {
               preflight  Admit one signed writer/snapshot manifest pair
               start      Start one bounded target batch
               resume     Resume one bounded target batch
+              advance    Advance one target through one reviewed checkpoint edge
               pause      Pause an admitted migration run
               abort      Abort forward migration without plaintext rollback
               status     Print sanitized run counters
@@ -49,6 +53,13 @@ public final class ProtectedDataMigrationCommand {
               --lease-owner-digest HEX
               --batch-size 1..1000
 
+            advance options (all required):
+              --run-id ID
+              --target REVIEWED_TARGET
+              --pair-digest HEX
+              --lease-owner-digest HEX
+              --next-state BACKFILLED|VERIFIED|CUTOVER|SCRUBBED|COMPLETE
+
             pause/abort options (all required):
               --run-id ID
               --pair-digest HEX
@@ -62,13 +73,15 @@ public final class ProtectedDataMigrationCommand {
             """;
 
     private static final Set<String> COMMANDS = Set.of(
-            "preflight", "start", "resume", "pause", "abort", "status");
+            "preflight", "start", "resume", "advance", "pause", "abort", "status");
     private static final List<String> PREFLIGHT_OPTIONS = List.of(
             "--writer-manifest", "--writer-signature", "--snapshot-manifest",
             "--snapshot-signature", "--environment", "--database-instance-fingerprint",
             "--schema", "--flyway-set-digest");
     private static final List<String> BATCH_OPTIONS = List.of(
             "--run-id", "--target", "--pair-digest", "--lease-owner-digest", "--batch-size");
+    private static final List<String> ADVANCE_OPTIONS = List.of(
+            "--run-id", "--target", "--pair-digest", "--lease-owner-digest", "--next-state");
     private static final List<String> MUTATION_OPTIONS = List.of("--run-id", "--pair-digest");
     private static final List<String> STATUS_OPTIONS = List.of("--run-id");
 
@@ -104,6 +117,7 @@ public final class ProtectedDataMigrationCommand {
             return switch (args[0]) {
                 case "preflight" -> preflight(parse(args, PREFLIGHT_OPTIONS), stdout);
                 case "start", "resume" -> batch(args[0], parse(args, BATCH_OPTIONS), stdout);
+                case "advance" -> advance(parse(args, ADVANCE_OPTIONS), stdout);
                 case "pause", "abort" -> mutate(args[0], parse(args, MUTATION_OPTIONS), stdout);
                 case "status" -> status(parse(args, STATUS_OPTIONS), stdout);
                 default -> throw commandFailure(Exit.INVOCATION_OR_PATH);
@@ -185,6 +199,26 @@ public final class ProtectedDataMigrationCommand {
         return Exit.ACCEPTED.code();
     }
 
+    private int advance(Map<String, String> options, PrintStream stdout) {
+        String pairDigest = options.get("--pair-digest");
+        requireAcceptedPair(pairDigest);
+        CheckpointState nextState = CheckpointState.valueOf(options.get("--next-state"));
+        if (nextState == CheckpointState.DISCOVERED) {
+            throw commandFailure(Exit.INVOCATION_OR_PATH);
+        }
+        TransitionResult result = services.advance(new TransitionRequest(
+                options.get("--run-id"), options.get("--target"), pairDigest,
+                options.get("--lease-owner-digest"),
+                ProtectedDataMigrationRunner.DEFAULT_LEASE_DURATION, nextState));
+        if (result == null) {
+            throw commandFailure(Exit.KEY_OR_PROVIDER);
+        }
+        stdout.print("{\"status\":\"accepted\",\"target\":\"" + result.targetId()
+                + "\",\"previous_state\":\"" + result.previous()
+                + "\",\"current_state\":\"" + result.current() + "\"}\n");
+        return Exit.ACCEPTED.code();
+    }
+
     private int status(Map<String, String> options, PrintStream stdout) {
         RunStatus status = services.status(options.get("--run-id"));
         if (status == null) {
@@ -250,6 +284,8 @@ public final class ProtectedDataMigrationCommand {
 
         BatchResult resume(MigrationRequest request);
 
+        TransitionResult advance(TransitionRequest request);
+
         void pause(RunControlRequest request);
 
         void abort(RunControlRequest request);
@@ -302,6 +338,11 @@ public final class ProtectedDataMigrationCommand {
         @Override
         public BatchResult resume(MigrationRequest request) {
             return runner.migrateBatch(request);
+        }
+
+        @Override
+        public TransitionResult advance(TransitionRequest request) {
+            return runner.advance(request);
         }
 
         @Override

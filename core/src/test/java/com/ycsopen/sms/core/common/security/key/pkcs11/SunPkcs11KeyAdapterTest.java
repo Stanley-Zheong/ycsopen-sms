@@ -255,11 +255,16 @@ class SunPkcs11KeyAdapterTest {
         BlindIndexPort.Context context = new BlindIndexPort.Context(
                 "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17");
 
-        assertThat(adapter.writeIndexes("13800138000", context).values())
+        var onlineIndexes = adapter.writeIndexes("13800138000", context);
+        assertThat(onlineIndexes.values())
                 .extracting(value -> value.canonicalValue())
                 .containsExactly(
                         "afvx276qfp5gtxpdgvrtboujgm7hs45lcyyrqsuc7w6hwk6bv7pxk",
                         "alesvuhbuvlf3pvcduj5ghm4kicrnfqkxbocojpoeq453uxdjsjc6");
+        byte[] historicalDigest = sha256("13800138000".getBytes(StandardCharsets.US_ASCII));
+        assertThat(adapter.queryIndexesFromHistoricalDigest(historicalDigest, context))
+                .isEqualTo(onlineIndexes);
+        java.util.Arrays.fill(historicalDigest, (byte) 0);
 
         VersionedTokenDigest capability = adapter.issue(
                 OpaqueTokenDigestPort.Purpose.OBJECT_CAPABILITY, CAPABILITY_BINDING, TOKEN_SECRET);

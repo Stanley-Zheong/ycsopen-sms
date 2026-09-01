@@ -2,6 +2,7 @@ package com.ycsopen.sms.core.common.security.migration;
 
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunState;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunStatus;
+import com.ycsopen.sms.core.common.security.migration.MigrationPreflight.CheckpointState;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommand.CommandException;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommand.CommandServices;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommand.Exit;
@@ -9,6 +10,8 @@ import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationComm
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.BatchResult;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.MigrationRequest;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.RunControlRequest;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionRequest;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionResult;
 import com.ycsopen.sms.core.common.security.migration.WriterFencePort.PairedAdmission;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -117,16 +120,21 @@ class ProtectedDataMigrationCommandTest {
                 "--batch-size", "10");
         Invocation pause = invoke(services,
                 "pause", "--run-id", RUN_ID, "--pair-digest", DIGEST);
+        Invocation advance = invoke(services,
+                "advance", "--run-id", RUN_ID,
+                "--target", "bulk_sending_items.mobile_encrypted",
+                "--pair-digest", DIGEST, "--lease-owner-digest", OTHER_DIGEST,
+                "--next-state", "BACKFILLED");
         Invocation abort = invoke(services,
                 "abort", "--run-id", RUN_ID, "--pair-digest", DIGEST);
 
-        assertThat(List.of(start.exit(), pause.exit(), abort.exit())).containsOnly(24);
-        assertThat(services.acceptedPairCalls).isEqualTo(3);
+        assertThat(List.of(start.exit(), advance.exit(), pause.exit(), abort.exit())).containsOnly(24);
+        assertThat(services.acceptedPairCalls).isEqualTo(4);
         assertThat(services.mutationCalls).isZero();
     }
 
     @Test
-    void exposesOnlyTheSixFixedSubcommandsAndSanitizedResults() {
+    void exposesOnlyTheSevenFixedSubcommandsAndSanitizedResults() {
         RecordingServices services = new RecordingServices();
         Invocation start = invoke(services,
                 "start", "--run-id", RUN_ID, "--target", "bulk_sending_items.mobile_encrypted",
@@ -136,15 +144,23 @@ class ProtectedDataMigrationCommandTest {
                 "resume", "--run-id", RUN_ID, "--target", "bulk_sending_items.mobile_encrypted",
                 "--pair-digest", DIGEST, "--lease-owner-digest", OTHER_DIGEST,
                 "--batch-size", "10");
+        Invocation advance = invoke(services,
+                "advance", "--run-id", RUN_ID,
+                "--target", "bulk_sending_items.mobile_encrypted",
+                "--pair-digest", DIGEST, "--lease-owner-digest", OTHER_DIGEST,
+                "--next-state", "BACKFILLED");
         Invocation pause = invoke(services,
                 "pause", "--run-id", RUN_ID, "--pair-digest", DIGEST);
         Invocation abort = invoke(services,
                 "abort", "--run-id", RUN_ID, "--pair-digest", DIGEST);
         Invocation status = invoke(services, "status", "--run-id", RUN_ID);
 
-        assertThat(List.of(start.exit(), resume.exit(), pause.exit(), abort.exit(), status.exit()))
+        assertThat(List.of(start.exit(), resume.exit(), advance.exit(), pause.exit(), abort.exit(), status.exit()))
                 .containsOnly(0);
-        assertThat(services.mutationCalls).isEqualTo(4);
+        assertThat(services.mutationCalls).isEqualTo(5);
+        assertThat(advance.stdout()).contains("\"previous_state\":\"DISCOVERED\"")
+                .contains("\"current_state\":\"BACKFILLED\"")
+                .doesNotContain("plaintext");
         assertThat(status.stdout()).contains("\"scanned\":1").doesNotContain("plaintext");
         assertThat(invoke(services, "rollback").exit()).isEqualTo(20);
     }
@@ -244,6 +260,13 @@ class ProtectedDataMigrationCommandTest {
         public BatchResult resume(MigrationRequest request) {
             mutationCalls++;
             return batch(request);
+        }
+
+        @Override
+        public TransitionResult advance(TransitionRequest request) {
+            mutationCalls++;
+            return new TransitionResult(
+                    request.targetId(), CheckpointState.DISCOVERED, request.nextState());
         }
 
         @Override

@@ -1,6 +1,11 @@
 package com.ycsopen.sms.core.verification;
 
 import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
+import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
+import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
+import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
+import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
+import com.ycsopen.sms.core.common.security.migration.MigrationPreflightProperties.AnchorState;
 import com.ycsopen.sms.core.common.security.key.pkcs11.KekWrapUsageRepository;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11CryptoStorageProperties;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11FailureMapper;
@@ -14,6 +19,7 @@ import com.ycsopen.sms.core.common.security.migration.ProtectedDataManifest;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommand;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationLauncher;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner;
+import com.ycsopen.sms.core.common.security.migration.Pkcs11MigrationBlindIndexPort;
 import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier;
 import com.ycsopen.sms.core.common.security.migration.WriterFencePort;
 import com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotService;
@@ -50,14 +56,20 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.sql.Connection;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -249,6 +261,8 @@ class Phase03MigrationIntegrationTest {
                         .endsWith(".ycse")).toList()).isEmpty();
             }
             assertThat(store.recoveryComplete(snapshotId, restoreSchema, manifest.digest())).isFalse();
+            runMigrationCommandProof(sourceDataSource, transactions, runtime.adapter(), envelopeCodec,
+                    storeRoot.resolve("migration-command"));
         } finally {
             java.util.Arrays.fill(payload, (byte) 0);
             admin.execute("DROP DATABASE IF EXISTS `" + restoreSchema + "`");
@@ -353,6 +367,944 @@ class Phase03MigrationIntegrationTest {
                 .contains("\"status\":\"accepted\"")
                 .contains(hex(pairDigest));
         return new AdmissionProof(exit, admitted.get());
+    }
+
+    private static void runMigrationCommandProof(
+            DataSource dataSource,
+            DataSourceTransactionManager transactions,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            Path directory) throws Exception {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        Path v1 = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/src/main/resources/db/migration/V1__init_schema.sql");
+        assertThat(sha256(v1)).isEqualTo(V1_SHA256);
+        resetMigrationProof(jdbc);
+        assertClassifierOnlyBoundaries(envelopeCodec);
+        Phase03MigrationCommandFixture fixture = new Phase03MigrationCommandFixture(directory);
+        KeyPair oldSigner = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        KeyPair activeSigner = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        MigrationRuntime runtime = migrationRuntime(
+                dataSource, transactions, adapter, adapter, envelopeCodec,
+                Phase03MigrationCommandFixture.properties(List.of(
+                        Phase03MigrationCommandFixture.anchor(
+                                oldSigner, "signer-v1", AnchorState.ACTIVE, null))));
+
+        assertSignedPreflightRejectionMatrix(
+                jdbc, transactions, fixture, oldSigner, activeSigner, runtime);
+        AcceptedCommand accepted = admitRotationSuccessPair(
+                jdbc, dataSource, transactions, adapter, envelopeCodec,
+                fixture, oldSigner, activeSigner);
+
+        List<IndexedFixture> indexed = seedIndexedTargets(jdbc);
+        assertIndexedTargetMigrations(jdbc, accepted, adapter, indexed);
+        assertNoIndexTargetMigration(
+                jdbc, accepted, adapter, envelopeCodec,
+                "bulk_sending_items.mobile_encrypted", "BULK_SENDING_ITEM_MOBILE",
+                9_100_001L, "13800138000");
+        assertConcurrentMutationAndNoIndexMigration(
+                jdbc, dataSource, transactions, accepted, adapter, envelopeCodec,
+                9_200_001L, "13900139000");
+        writeMigrationEvidence(jdbc, accepted.pairDigest());
+        assertThat(sha256(v1)).isEqualTo(V1_SHA256);
+    }
+
+    private static void assertClassifierOnlyBoundaries(EnvelopeCodec envelopeCodec) throws Exception {
+        Path inventoryPath = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/src/main/resources/security/protected-data-inventory.json");
+        byte[] inventory = Files.readAllBytes(inventoryPath);
+        ProtectedDataManifest manifest = ProtectedDataManifest.load(
+                inventoryPath, ProtectedDataManifest.canonicalDigest(inventory));
+        LegacyValueClassifier classifier = new LegacyValueClassifier(envelopeCodec);
+        var boundary = manifest.requireTarget("channels.account_encrypted");
+        assertThat(classifier.classify(
+                boundary, "a".repeat(110).getBytes(StandardCharsets.US_ASCII)))
+                .isEqualTo(LegacyValueClassifier.Classification.APPROVED_LEGACY);
+        assertThat(classifier.classify(
+                boundary, "a".repeat(111).getBytes(StandardCharsets.US_ASCII)))
+                .isEqualTo(LegacyValueClassifier.Classification.AMBIGUOUS);
+        assertThat(classifier.classify(boundary, null))
+                .isEqualTo(LegacyValueClassifier.Classification.NULL_ALLOWED);
+    }
+
+    private static void assertSignedPreflightRejectionMatrix(
+            JdbcTemplate jdbc,
+            DataSourceTransactionManager transactions,
+            Phase03MigrationCommandFixture fixture,
+            KeyPair oldSigner,
+            KeyPair newSigner,
+            MigrationRuntime activeRuntime) throws Exception {
+        Phase03MigrationCommandFixture.PairFiles valid = fixture.pair(1, "signer-v1", oldSigner);
+
+        Path absent = valid.writerManifest().resolveSibling("absent-writer.json");
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 20,
+                new String[]{
+                        "preflight", "--writer-manifest", absent.toString(),
+                        "--writer-signature", valid.writerSignature().toString(),
+                        "--snapshot-manifest", valid.snapshotManifest().toString(),
+                        "--snapshot-signature", valid.snapshotSignature().toString(),
+                        "--environment", Phase03MigrationCommandFixture.ENVIRONMENT,
+                        "--database-instance-fingerprint", Phase03MigrationCommandFixture.DATABASE,
+                        "--schema", Phase03MigrationCommandFixture.SCHEMA,
+                        "--flyway-set-digest", Phase03MigrationCommandFixture.FLYWAY
+                });
+
+        Path empty = absent.resolveSibling("empty-writer.json");
+        Files.write(empty, new byte[0]);
+        Phase03MigrationCommandFixture.PairFiles emptyPair = new Phase03MigrationCommandFixture.PairFiles(
+                empty, valid.writerSignature(), valid.snapshotManifest(), valid.snapshotSignature(),
+                valid.pairDigest(), valid.subject());
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 20,
+                Phase03MigrationCommandFixture.preflightArguments(emptyPair));
+
+        Phase03MigrationCommandFixture.PairFiles noncanonical = fixture.pair(1, "signer-v1", oldSigner);
+        Files.writeString(noncanonical.writerManifest(), "\n", StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.APPEND);
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 21,
+                Phase03MigrationCommandFixture.preflightArguments(noncanonical));
+
+        Phase03MigrationCommandFixture.PairFiles unknown = fixture.pair(1, "signer-unknown", newSigner);
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 22,
+                Phase03MigrationCommandFixture.preflightArguments(unknown));
+
+        for (AnchorState state : List.of(AnchorState.RETIRED, AnchorState.REVOKED)) {
+            resetPairState(jdbc);
+            MigrationRuntime untrusted = migrationRuntime(
+                    activeRuntime.dataSource(), transactions, activeRuntime.adapter(),
+                    activeRuntime.adapter(), activeRuntime.envelopeCodec(),
+                    Phase03MigrationCommandFixture.properties(List.of(
+                            Phase03MigrationCommandFixture.anchor(oldSigner, "signer-v1", state, null),
+                            Phase03MigrationCommandFixture.anchor(
+                                    newSigner, "signer-v2", AnchorState.ACTIVE, null))));
+            assertRejectedPreflight(jdbc, untrusted.services(), 22,
+                    Phase03MigrationCommandFixture.preflightArguments(valid));
+        }
+
+        resetPairState(jdbc);
+        MigrationRuntime stale = migrationRuntime(
+                activeRuntime.dataSource(), transactions, activeRuntime.adapter(),
+                activeRuntime.adapter(), activeRuntime.envelopeCodec(),
+                Phase03MigrationCommandFixture.properties(List.of(
+                        Phase03MigrationCommandFixture.anchor(
+                                oldSigner, "signer-v1", AnchorState.RETIRING, 0L),
+                        Phase03MigrationCommandFixture.anchor(
+                                newSigner, "signer-v2", AnchorState.ACTIVE, null))));
+        assertRejectedPreflight(jdbc, stale.services(), 24,
+                Phase03MigrationCommandFixture.preflightArguments(valid));
+
+        resetPairState(jdbc);
+        Phase03MigrationCommandFixture.PairFiles future = fixture.pair(
+                1, "signer-v1", oldSigner,
+                writer -> writer.put("issued_at", Phase03MigrationCommandFixture.NOW.plusSeconds(1).toString()),
+                snapshot -> { });
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 24,
+                Phase03MigrationCommandFixture.preflightArguments(future));
+
+        Phase03MigrationCommandFixture.PairFiles forged = fixture.pair(1, "signer-v1", oldSigner);
+        byte[] forgedSignature = Files.readAllBytes(forged.writerSignature());
+        forgedSignature[0] ^= 1;
+        Files.write(forged.writerSignature(), forgedSignature);
+        Arrays.fill(forgedSignature, (byte) 0);
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 22,
+                Phase03MigrationCommandFixture.preflightArguments(forged));
+
+        resetPairState(jdbc);
+        ProtectedDataMigrationCommand.DefaultServices fingerprintDrift = servicesWithPreflight(
+                activeRuntime, invocation -> {
+                    MigrationPreflightProperties.SignerAnchor drifted =
+                            new MigrationPreflightProperties.SignerAnchor(
+                                    "signer-v1", AnchorState.ACTIVE, "0".repeat(64),
+                                    Base64.getEncoder().encodeToString(oldSigner.getPublic().getEncoded()), null);
+                    return new SignedMigrationManifestVerifier(
+                            Phase03MigrationCommandFixture.properties(List.of(drifted)),
+                            new SignedMigrationManifestVerifier.JdbcPairAdmissionStore(
+                                    jdbc, new org.springframework.transaction.support.TransactionTemplate(
+                                    transactions)),
+                            Clock.fixed(Phase03MigrationCommandFixture.NOW, ZoneOffset.UTC))
+                            .verifyAndAdmit(preflightRequest(invocation,
+                                    Phase03MigrationCommandFixture.MIGRATION_SET));
+                });
+        assertRejectedPreflight(jdbc, fingerprintDrift, 20,
+                Phase03MigrationCommandFixture.preflightArguments(valid));
+
+        for (String mismatch : List.of("migration-set", "environment", "database", "schema", "flyway")) {
+            resetPairState(jdbc);
+            String expectedMigrationSet = "migration-set".equals(mismatch)
+                    ? "phase03-other" : Phase03MigrationCommandFixture.MIGRATION_SET;
+            ProtectedDataMigrationCommand.DefaultServices services = servicesWithPreflight(
+                    activeRuntime, invocation -> activeRuntime.verifier().verifyAndAdmit(
+                            preflightRequest(invocation, expectedMigrationSet)));
+            String environment = "environment".equals(mismatch)
+                    ? "other" : Phase03MigrationCommandFixture.ENVIRONMENT;
+            String database = "database".equals(mismatch)
+                    ? "5".repeat(64) : Phase03MigrationCommandFixture.DATABASE;
+            String schema = "schema".equals(mismatch)
+                    ? "other_schema" : Phase03MigrationCommandFixture.SCHEMA;
+            String flyway = "flyway".equals(mismatch)
+                    ? "6".repeat(64) : Phase03MigrationCommandFixture.FLYWAY;
+            assertRejectedPreflight(jdbc, services, 23,
+                    Phase03MigrationCommandFixture.preflightArguments(
+                            valid, environment, database, schema, flyway));
+        }
+
+        resetPairState(jdbc);
+        Phase03MigrationCommandFixture.PairFiles sharedMismatch = fixture.pair(
+                1, "signer-v1", oldSigner,
+                writer -> writer.put("environment", "other"), snapshot -> { });
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 23,
+                Phase03MigrationCommandFixture.preflightArguments(sharedMismatch));
+
+        Phase03MigrationCommandFixture.PairFiles left = fixture.pair(1, "signer-v1", oldSigner);
+        Phase03MigrationCommandFixture.PairFiles right = fixture.pair(
+                1, "signer-v1", oldSigner, writer -> { },
+                snapshot -> snapshot.put("snapshot_id", "cross-pair"));
+        Phase03MigrationCommandFixture.PairFiles splice = new Phase03MigrationCommandFixture.PairFiles(
+                left.writerManifest(), left.writerSignature(),
+                right.snapshotManifest(), right.snapshotSignature(),
+                left.pairDigest(), left.subject());
+        assertRejectedPreflight(jdbc, activeRuntime.services(), 22,
+                Phase03MigrationCommandFixture.preflightArguments(splice));
+
+        resetPairState(jdbc);
+        assertHalfAdmissionRollsBack(
+                jdbc, transactions, activeRuntime, valid);
+    }
+
+    private static AcceptedCommand admitRotationSuccessPair(
+            JdbcTemplate jdbc,
+            DataSource dataSource,
+            DataSourceTransactionManager transactions,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            Phase03MigrationCommandFixture fixture,
+            KeyPair oldSigner,
+            KeyPair newSigner) throws Exception {
+        resetPairState(jdbc);
+        MigrationRuntime oldRuntime = migrationRuntime(
+                dataSource, transactions, adapter, adapter, envelopeCodec,
+                Phase03MigrationCommandFixture.properties(List.of(
+                        Phase03MigrationCommandFixture.anchor(
+                                oldSigner, "signer-v1", AnchorState.ACTIVE, null))));
+        Phase03MigrationCommandFixture.PairFiles oldPair = fixture.pair(10, "signer-v1", oldSigner);
+        assertAcceptedPreflight(oldRuntime.services(), oldPair);
+        long version = pairOptimisticVersion(jdbc);
+        assertAcceptedPreflight(oldRuntime.services(), oldPair);
+        assertThat(pairOptimisticVersion(jdbc)).isEqualTo(version);
+        Phase03MigrationCommandFixture.PairFiles sameSequenceChange = fixture.pair(
+                10, "signer-v1", oldSigner, writer -> { },
+                snapshot -> snapshot.put("snapshot_id", "same-sequence-change"));
+        StateCounts beforeSameSequence = stateCounts(jdbc);
+        Phase03MigrationCommandFixture.CommandResult sameSequenceRejected =
+                Phase03MigrationCommandFixture.invoke(
+                        oldRuntime.services(),
+                        Phase03MigrationCommandFixture.preflightArguments(sameSequenceChange));
+        assertThat(sameSequenceRejected.exit()).isEqualTo(24);
+        assertThat(stateCounts(jdbc)).isEqualTo(beforeSameSequence);
+
+        MigrationRuntime rollout = migrationRuntime(
+                dataSource, transactions, adapter, adapter, envelopeCodec,
+                Phase03MigrationCommandFixture.properties(List.of(
+                        Phase03MigrationCommandFixture.anchor(
+                                oldSigner, "signer-v1", AnchorState.RETIRING, 10L),
+                        Phase03MigrationCommandFixture.anchor(
+                                newSigner, "signer-v2", AnchorState.ACTIVE, null))));
+        assertAcceptedPreflight(rollout.services(), oldPair);
+        Phase03MigrationCommandFixture.PairFiles replay = fixture.pair(11, "signer-v1", oldSigner);
+        StateCounts beforeReplay = stateCounts(jdbc);
+        Phase03MigrationCommandFixture.CommandResult rejected = Phase03MigrationCommandFixture.invoke(
+                rollout.services(), Phase03MigrationCommandFixture.preflightArguments(replay));
+        assertThat(rejected.exit()).isEqualTo(24);
+        assertThat(stateCounts(jdbc)).isEqualTo(beforeReplay);
+
+        Phase03MigrationCommandFixture.PairFiles higher = fixture.pair(11, "signer-v2", newSigner);
+        assertAcceptedPreflight(rollout.services(), higher);
+        Map<String, Object> admitted = jdbc.queryForMap(
+                "SELECT global_sequence, signer_key_version, "
+                        + "LOWER(HEX(pair_digest)) pair_digest FROM ycs_crypto_manifest_pair_admission "
+                        + "WHERE singleton_id = 1");
+        assertThat(((Number) admitted.get("global_sequence")).longValue()).isEqualTo(11L);
+        assertThat(admitted)
+                .containsEntry("signer_key_version", "signer-v2")
+                .containsEntry("pair_digest", higher.pairDigest());
+        return new AcceptedCommand(rollout.services(), higher.pairDigest(), rollout);
+    }
+
+    private static void assertHalfAdmissionRollsBack(
+            JdbcTemplate jdbc,
+            DataSourceTransactionManager transactions,
+            MigrationRuntime runtime,
+            Phase03MigrationCommandFixture.PairFiles pair) {
+        org.springframework.transaction.support.TransactionTemplate transaction =
+                new org.springframework.transaction.support.TransactionTemplate(transactions);
+        SignedMigrationManifestVerifier.PairAdmissionStore halfStore =
+                new SignedMigrationManifestVerifier.PairAdmissionStore() {
+                    @Override
+                    public java.util.Optional<SignedMigrationManifestVerifier.PairTuple> current() {
+                        return java.util.Optional.empty();
+                    }
+
+                    @Override
+                    public SignedMigrationManifestVerifier.AdmissionDecision compareAndSet(
+                            java.util.Optional<SignedMigrationManifestVerifier.PairTuple> expected,
+                            SignedMigrationManifestVerifier.PairTuple candidate,
+                            MigrationPreflightProperties.SignerAnchor signer) {
+                        transaction.executeWithoutResult(status -> {
+                            jdbc.update("INSERT INTO ycs_crypto_manifest_pair_admission "
+                                            + "(singleton_id,migration_set_id,canonical_subject_digest,"
+                                            + "global_sequence,signer_key_version,signer_fingerprint,"
+                                            + "writer_digest,snapshot_digest,pair_digest) VALUES "
+                                            + "(1,?,UNHEX(?),?,?,UNHEX(?),UNHEX(?),UNHEX(?),UNHEX(?))",
+                                    candidate.migrationSetId(), candidate.subjectDigest(),
+                                    candidate.globalSequence(), candidate.signerKeyVersion(),
+                                    candidate.signerFingerprint(), candidate.writerDigest(),
+                                    candidate.snapshotDigest(), candidate.pairDigest());
+                            throw new IllegalStateException("simulated pair admission failure");
+                        });
+                        throw new IllegalStateException("unreachable");
+                    }
+                };
+        SignedMigrationManifestVerifier verifier = new SignedMigrationManifestVerifier(
+                Phase03MigrationCommandFixture.properties(List.of(
+                        runtime.properties().signerAnchors().getFirst())),
+                halfStore, Clock.fixed(Phase03MigrationCommandFixture.NOW, ZoneOffset.UTC));
+        ProtectedDataMigrationCommand.DefaultServices services = servicesWithPreflight(
+                runtime, invocation -> verifier.verifyAndAdmit(preflightRequest(
+                        invocation, Phase03MigrationCommandFixture.MIGRATION_SET)));
+        assertRejectedPreflight(jdbc, services, 24,
+                Phase03MigrationCommandFixture.preflightArguments(pair));
+    }
+
+    private static void assertRejectedPreflight(
+            JdbcTemplate jdbc,
+            ProtectedDataMigrationCommand.DefaultServices services,
+            int expectedExit,
+            String[] arguments) {
+        resetPairState(jdbc);
+        StateCounts before = stateCounts(jdbc);
+        Phase03MigrationCommandFixture.CommandResult result =
+                Phase03MigrationCommandFixture.invoke(services, arguments);
+        assertThat(result.exit()).isEqualTo(expectedExit);
+        assertThat(result.stdout()).isEmpty();
+        assertThat(result.stderr()).startsWith("phase03-migration:error:");
+        assertThat(stateCounts(jdbc)).isEqualTo(before);
+    }
+
+    private static void assertAcceptedPreflight(
+            ProtectedDataMigrationCommand.DefaultServices services,
+            Phase03MigrationCommandFixture.PairFiles pair) {
+        Phase03MigrationCommandFixture.CommandResult result = Phase03MigrationCommandFixture.invoke(
+                services, Phase03MigrationCommandFixture.preflightArguments(pair));
+        assertThat(result.exit()).isZero();
+        assertThat(result.stderr()).isEmpty();
+        assertThat(result.stdout()).contains("\"status\":\"accepted\"")
+                .contains(pair.pairDigest());
+    }
+
+    private static WriterFencePort.PairedAdmissionRequest preflightRequest(
+            ProtectedDataMigrationCommand.PreflightInvocation invocation,
+            String migrationSet) {
+        return new WriterFencePort.PairedAdmissionRequest(
+                invocation.writerManifest(), invocation.writerSignature(),
+                invocation.snapshotManifest(), invocation.snapshotSignature(),
+                new WriterFencePort.DeploymentSubject(
+                        migrationSet, invocation.environment(),
+                        invocation.databaseInstanceFingerprint(), invocation.schema(),
+                        invocation.flywaySetDigest()));
+    }
+
+    private static MigrationRuntime migrationRuntime(
+            DataSource dataSource,
+            DataSourceTransactionManager transactions,
+            SunPkcs11KeyAdapter adapter,
+            KeyProtectionPort fieldKeyPort,
+            EnvelopeCodec envelopeCodec,
+            MigrationPreflightProperties properties) throws Exception {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        org.springframework.transaction.support.TransactionTemplate transaction =
+                new org.springframework.transaction.support.TransactionTemplate(transactions);
+        MigrationStateRepository repository = new MigrationStateRepository.Jdbc(jdbc, transaction);
+        SignedMigrationManifestVerifier verifier = new SignedMigrationManifestVerifier(
+                properties,
+                new SignedMigrationManifestVerifier.JdbcPairAdmissionStore(jdbc, transaction),
+                Clock.fixed(Phase03MigrationCommandFixture.NOW, ZoneOffset.UTC));
+        Path inventoryPath = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/src/main/resources/security/protected-data-inventory.json");
+        byte[] inventory = Files.readAllBytes(inventoryPath);
+        ProtectedDataManifest manifest = ProtectedDataManifest.load(
+                inventoryPath, ProtectedDataManifest.canonicalDigest(inventory));
+        ProtectedFieldCodec fieldCodec = new ProtectedFieldCodec(
+                envelopeCodec, fieldKeyPort, new SecureRandom(), "field-kek.v1");
+        OpaqueTokenDigestPort.Binding fingerprintBinding =
+                new OpaqueTokenDigestPort.Binding("phase03", "migration", "row-fingerprint");
+        ProtectedDataMigrationRunner runner = new ProtectedDataMigrationRunner(
+                manifest, repository, new LegacyValueClassifier(envelopeCodec), fieldCodec,
+                value -> {
+                    byte[] bounded = sha256Bytes(value);
+                    try {
+                        return adapter.issue(
+                                OpaqueTokenDigestPort.Purpose.OBJECT_CAPABILITY,
+                                fingerprintBinding, bounded).digest();
+                    } finally {
+                        Arrays.fill(bounded, (byte) 0);
+                    }
+                },
+                new Pkcs11MigrationBlindIndexPort(adapter, jdbc),
+                Clock.fixed(Phase03MigrationCommandFixture.NOW, ZoneOffset.UTC));
+        MigrationRuntime runtime = new MigrationRuntime(
+                dataSource, adapter, envelopeCodec, properties, verifier, repository, runner, null);
+        ProtectedDataMigrationCommand.DefaultServices services = servicesWithPreflight(
+                runtime, invocation -> verifier.verifyAndAdmit(preflightRequest(
+                        invocation, Phase03MigrationCommandFixture.MIGRATION_SET)));
+        return runtime.withServices(services);
+    }
+
+    private static ProtectedDataMigrationCommand.DefaultServices servicesWithPreflight(
+            MigrationRuntime runtime,
+            ProtectedDataMigrationCommand.PreflightOperation preflight) {
+        return new ProtectedDataMigrationCommand.DefaultServices(
+                preflight, runtime.repository(), runtime.runner());
+    }
+
+    private static List<IndexedFixture> seedIndexedTargets(JdbcTemplate jdbc) {
+        IndexedFixture portability = new IndexedFixture(
+                "mobile_portability.mobile_hash", "MOBILE_PORTABILITY",
+                "mobile_portability", "mobile_hash", "13700000001", "global", null, 1);
+        IndexedFixture blacklist = new IndexedFixture(
+                "blacklist_entries.mobile_hash", "BLACKLIST_ENTRY",
+                "blacklist_entries", "mobile_hash", "13700000002", "global", 9_300_001L, 2);
+        IndexedFixture risk = new IndexedFixture(
+                "third_party_risk_check_logs.mobile_hash", "THIRD_PARTY_RISK_CHECK_LOG",
+                "third_party_risk_check_logs", "mobile_hash", "13700000003", "global", 9_300_002L, 1);
+        IndexedFixture message = new IndexedFixture(
+                "message_tasks.mobile_hash", "MESSAGE_TASK",
+                "message_tasks", "mobile_hash", "13700000004", "tenant:101", 9_300_003L, 1);
+        IndexedFixture unsubscribe = new IndexedFixture(
+                "unsubscribe_records.mobile_hash", "UNSUBSCRIBE_RECORD",
+                "unsubscribe_records", "mobile_hash", "13700000005", "tenant:101", 9_300_004L, 1);
+        jdbc.update("INSERT INTO mobile_portability "
+                        + "(mobile_encrypted,mobile_hash,original_operator,current_operator) "
+                        + "VALUES (?,?,'MOBILE','UNICOM')",
+                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), portability.rawDigest());
+        jdbc.update("INSERT INTO blacklist_entries "
+                        + "(id,tenant_id,mobile_encrypted,mobile_hash,list_type,source,status) "
+                        + "VALUES (9300001,NULL,?,?,'BLACK','MANUAL','ACTIVE')",
+                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), blacklist.rawDigest());
+        jdbc.update("INSERT INTO blacklist_entries "
+                        + "(id,tenant_id,mobile_encrypted,mobile_hash,list_type,source,status) "
+                        + "VALUES (9300005,101,?,?,'WHITE','MANUAL','ACTIVE')",
+                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), blacklist.rawDigest());
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM blacklist_entries WHERE mobile_hash = ? "
+                        + "AND ((tenant_id = 101 AND list_type = 'WHITE') "
+                        + "OR (tenant_id IS NULL AND list_type = 'BLACK'))",
+                Long.class, blacklist.rawDigest())).isEqualTo(2L);
+        jdbc.update("INSERT INTO third_party_risk_check_logs "
+                        + "(id,request_id,mobile_hash,is_hit) VALUES (9300002,'plan14-risk',?,0)",
+                risk.rawDigest());
+        jdbc.update("INSERT INTO message_tasks "
+                        + "(id,message_id,tenant_id,mobile_encrypted,mobile_hash,content) "
+                        + "VALUES (9300003,'plan14-message',101,?,?,'migration proof')",
+                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), message.rawDigest());
+        jdbc.update("INSERT INTO unsubscribe_records "
+                        + "(id,mobile_encrypted,mobile_hash,tenant_id) VALUES (9300004,?,?,101)",
+                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), unsubscribe.rawDigest());
+        return List.of(portability, blacklist, risk, message, unsubscribe);
+    }
+
+    private static void assertIndexedTargetMigrations(
+            JdbcTemplate jdbc,
+            AcceptedCommand accepted,
+            SunPkcs11KeyAdapter adapter,
+            List<IndexedFixture> targets) {
+        for (IndexedFixture target : targets) {
+            assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
+            String runId = UUID.randomUUID().toString();
+            Phase03MigrationCommandFixture.CommandResult result =
+                    Phase03MigrationCommandFixture.invoke(
+                            accepted.services(),
+                            Phase03MigrationCommandFixture.batchArguments(
+                                    "start", runId, target.targetId(), accepted.pairDigest(),
+                                    "a".repeat(64), 10));
+            assertThat(result.exit()).as(target.targetId()).isZero();
+            assertThat(result.stdout()).contains(
+                    "\"scanned\":" + target.expectedRows(),
+                    "\"migrated\":" + target.expectedRows());
+            assertThat(invokeBatch(accepted, "resume", runId, target.targetId(), 10).stdout())
+                    .contains("\"scanned\":0", "\"end_of_target\":true");
+
+            List<Map<String, Object>> metadata = jdbc.queryForList(
+                    "SELECT legacy_row_id,key_version,index_value,index_status,"
+                            + "LOWER(HEX(original_row_digest)) original_digest "
+                            + "FROM ycs_crypto_blind_indexes WHERE target_type = ? "
+                            + "AND field_id = 'mobile' ORDER BY legacy_row_id,key_version",
+                    target.targetType());
+            assertThat(metadata).hasSize(target.expectedRows());
+            com.ycsopen.sms.core.common.security.key.BlindIndexPort.OrderedIndexes online =
+                    adapter.queryIndexes(
+                            target.mobile(), new com.ycsopen.sms.core.common.security.key.BlindIndexPort.Context(
+                                    target.targetType(), "mobile",
+                                    com.ycsopen.sms.core.common.security.key.BlindIndexPort.Purpose.MOBILE_ROUTING,
+                                    target.tenantScope()));
+            assertThat(metadata.stream().map(row -> row.get("index_value")).toList())
+                    .contains(online.values().getFirst().canonicalValue());
+            assertThat(((Number) metadata.getFirst().get("key_version")).longValue()).isOne();
+            assertThat(metadata.getFirst().get("index_status")).isEqualTo("ACTIVE");
+            if ("BLACKLIST_ENTRY".equals(target.targetType())) {
+                var tenantOnline = adapter.queryIndexes(
+                        target.mobile(), new com.ycsopen.sms.core.common.security.key.BlindIndexPort.Context(
+                                target.targetType(), "mobile",
+                                com.ycsopen.sms.core.common.security.key.BlindIndexPort.Purpose.MOBILE_ROUTING,
+                                "tenant:101"));
+                assertThat(metadata.stream().map(row -> row.get("index_value")).toList())
+                        .contains(tenantOnline.values().getFirst().canonicalValue());
+            }
+            assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
+
+            advanceOne(accepted, runId, target.targetId(), "BACKFILLED");
+            advanceOne(accepted, runId, target.targetId(), "VERIFIED");
+            advanceOne(accepted, runId, target.targetId(), "CUTOVER");
+            assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
+            assertThat(jdbc.queryForObject(
+                    "SELECT legacy_fallback_allowed FROM ycs_crypto_migration_targets "
+                            + "WHERE target_type = ?", Boolean.class, target.targetType())).isTrue();
+
+            advanceOne(accepted, runId, target.targetId(), "SCRUBBED");
+            assertThat(legacyMatches(jdbc, target)).isZero();
+            assertScrubBinding(jdbc, target, metadata);
+            advanceOne(accepted, runId, target.targetId(), "COMPLETE");
+            assertThat(jdbc.queryForObject(
+                    "SELECT CONCAT(target_state, ':', legacy_fallback_allowed) "
+                            + "FROM ycs_crypto_migration_targets WHERE target_type = ?",
+                    String.class, target.targetType())).isEqualTo("COMPLETE:0");
+        }
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_blind_indexes", Long.class)).isEqualTo(6L);
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_migration_targets "
+                        + "WHERE target_disposition <> 'PROTECTED_NO_INDEX' "
+                        + "AND target_state = 'COMPLETE' AND legacy_fallback_allowed = FALSE",
+                Long.class)).isEqualTo(5L);
+    }
+
+    private static long legacyMatches(JdbcTemplate jdbc, IndexedFixture target) {
+        return jdbc.queryForObject(
+                "SELECT COUNT(*) FROM " + target.table() + " WHERE " + target.column() + " = ?",
+                Long.class, target.rawDigest());
+    }
+
+    private static void assertScrubBinding(
+            JdbcTemplate jdbc, IndexedFixture target, List<Map<String, Object>> metadata) {
+        String scrubbed;
+        if (target.rowId() == null) {
+            scrubbed = jdbc.queryForObject(
+                    "SELECT mobile_hash FROM mobile_portability", String.class);
+            String expectedPrefix = String.format("%016x",
+                    ((Number) metadata.getFirst().get("legacy_row_id")).longValue());
+            assertThat(scrubbed).startsWith(expectedPrefix);
+        } else {
+            scrubbed = jdbc.queryForObject(
+                    "SELECT " + target.column() + " FROM " + target.table() + " WHERE id = ?",
+                    String.class, target.rowId());
+            assertThat(scrubbed).startsWith(String.format("%016x", target.rowId()));
+        }
+        assertThat(scrubbed).hasSize(64).isNotEqualTo(target.rawDigest());
+        assertThat(metadata.getFirst().get("original_digest")).isEqualTo(
+                HexFormat.of().formatHex(sha256Bytes(
+                        target.rawDigest().getBytes(StandardCharsets.US_ASCII))));
+        if ("BLACKLIST_ENTRY".equals(target.targetType())) {
+            assertThat(jdbc.queryForList(
+                    "SELECT mobile_hash FROM blacklist_entries WHERE id IN (9300001,9300005) "
+                            + "ORDER BY id", String.class))
+                    .allSatisfy(locator -> assertThat(locator).hasSize(64)
+                            .isNotEqualTo(target.rawDigest()));
+        }
+    }
+
+    private static void assertNoIndexTargetMigration(
+            JdbcTemplate jdbc,
+            AcceptedCommand accepted,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            String target,
+            String targetType,
+            long firstId,
+            String mobile) {
+        String table = target.substring(0, target.indexOf('.'));
+        byte[] malformedMagic = "YCSE-not-an-envelope".getBytes(StandardCharsets.US_ASCII);
+        insertNoIndexRow(jdbc, table, firstId - 3, malformedMagic);
+        assertBatchRejectedWithoutState(jdbc, accepted, target);
+        jdbc.update("DELETE FROM " + table + " WHERE id = ?", firstId - 3);
+
+        insertNoIndexRow(jdbc, table, firstId - 2, new byte[]{(byte) 0xc3, 0x28});
+        assertBatchRejectedWithoutState(jdbc, accepted, target);
+        jdbc.update("DELETE FROM " + table + " WHERE id = ?", firstId - 2);
+
+        insertNoIndexRow(jdbc, table, firstId - 1,
+                "1".repeat(12).getBytes(StandardCharsets.US_ASCII));
+        assertBatchRejectedWithoutState(jdbc, accepted, target);
+        jdbc.update("DELETE FROM " + table + " WHERE id = ?", firstId - 1);
+
+        assertThatThrownBy(() -> insertNoIndexRow(jdbc, table, firstId - 4, null))
+                .isInstanceOf(DataAccessException.class);
+
+        byte[] plaintext = mobile.getBytes(StandardCharsets.US_ASCII);
+        byte[] existingPlaintext = "13600136000".getBytes(StandardCharsets.US_ASCII);
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(
+                envelopeCodec, adapter, new SecureRandom(), "field-kek.v1");
+        byte[] existingEnvelope = codec.protect(
+                existingPlaintext, migrationContext(table, firstId + 1),
+                EnvelopeCodec.Target.DATABASE_FIELD);
+        insertNoIndexRow(jdbc, table, firstId, plaintext);
+        insertNoIndexRow(jdbc, table, firstId + 1, existingEnvelope);
+
+        String runId = UUID.randomUUID().toString();
+        Phase03MigrationCommandFixture.CommandResult start = invokeBatch(
+                accepted, "start", runId, target, 1);
+        assertThat(start.exit()).isZero();
+        assertThat(start.stdout()).contains("\"scanned\":1", "\"migrated\":1");
+        Phase03MigrationCommandFixture.CommandResult pause = Phase03MigrationCommandFixture.invoke(
+                accepted.services(), "pause", "--run-id", runId,
+                "--pair-digest", accepted.pairDigest());
+        assertThat(pause.exit()).isZero();
+        Phase03MigrationCommandFixture.CommandResult resume = invokeBatch(
+                accepted, "resume", runId, target, 1);
+        assertThat(resume.exit()).isZero();
+        assertThat(invokeBatch(accepted, "resume", runId, target, 1).stdout())
+                .contains("\"scanned\":0", "\"end_of_target\":true");
+
+        advanceAll(accepted, runId, target);
+        assertThat(jdbc.queryForObject(
+                "SELECT CONCAT(target_state, ':', legacy_fallback_allowed) "
+                        + "FROM ycs_crypto_migration_targets WHERE target_type = ?",
+                String.class, targetType)).isEqualTo("COMPLETE:0");
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_blind_indexes WHERE target_type = ?",
+                Long.class, targetType)).isZero();
+
+        byte[] migrated = jdbc.queryForObject(
+                "SELECT mobile_encrypted FROM " + table + " WHERE id = ?",
+                byte[].class, firstId);
+        byte[] retained = jdbc.queryForObject(
+                "SELECT mobile_encrypted FROM " + table + " WHERE id = ?",
+                byte[].class, firstId + 1);
+        assertThat(migrated).startsWith((byte) 'Y', (byte) 'C', (byte) 'S', (byte) 'E');
+        assertThat(retained).isEqualTo(existingEnvelope);
+        assertThat(codec.unprotect(
+                migrated, migrationContext(table, firstId), EnvelopeCodec.Target.DATABASE_FIELD))
+                .isEqualTo(plaintext);
+        assertThat(codec.unprotect(
+                retained, migrationContext(table, firstId + 1), EnvelopeCodec.Target.DATABASE_FIELD))
+                .isEqualTo(existingPlaintext);
+        Arrays.fill(plaintext, (byte) 0);
+        Arrays.fill(existingPlaintext, (byte) 0);
+        Arrays.fill(existingEnvelope, (byte) 0);
+        Arrays.fill(migrated, (byte) 0);
+        Arrays.fill(retained, (byte) 0);
+    }
+
+    private static void assertConcurrentMutationAndNoIndexMigration(
+            JdbcTemplate jdbc,
+            DataSource dataSource,
+            DataSourceTransactionManager transactions,
+            AcceptedCommand accepted,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            long rowId,
+            String original) throws Exception {
+        byte[] originalBytes = original.getBytes(StandardCharsets.US_ASCII);
+        insertNoIndexRow(jdbc, "uplink_records", rowId, originalBytes);
+        BlockingKeyPort blocking = new BlockingKeyPort(adapter);
+        MigrationRuntime racing = migrationRuntime(
+                dataSource, transactions, adapter, blocking, envelopeCodec,
+                accepted.runtime().properties());
+        String runId = UUID.randomUUID().toString();
+        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
+            Future<Phase03MigrationCommandFixture.CommandResult> result = executor.submit(() ->
+                    Phase03MigrationCommandFixture.invoke(
+                            racing.services(), Phase03MigrationCommandFixture.batchArguments(
+                                    "start", runId, "uplink_records.mobile_encrypted",
+                                    accepted.pairDigest(), "a".repeat(64), 10)));
+            blocking.awaitWrap();
+            jdbc.update("UPDATE uplink_records SET mobile_encrypted = ? WHERE id = ?",
+                    "13500135000".getBytes(StandardCharsets.US_ASCII), rowId);
+            blocking.release();
+            assertThat(result.get().exit()).isEqualTo(26);
+        }
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_migration_runs WHERE migration_run_id = ?",
+                Long.class, runId)).isZero();
+
+        String retryRun = UUID.randomUUID().toString();
+        assertThat(invokeBatch(
+                accepted, "start", retryRun, "uplink_records.mobile_encrypted", 10).exit()).isZero();
+        advanceAll(accepted, retryRun, "uplink_records.mobile_encrypted");
+        byte[] stored = jdbc.queryForObject(
+                "SELECT mobile_encrypted FROM uplink_records WHERE id = ?", byte[].class, rowId);
+        assertThat(stored).startsWith((byte) 'Y', (byte) 'C', (byte) 'S', (byte) 'E');
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_blind_indexes "
+                        + "WHERE target_type = 'UPLINK_RECORD_MOBILE'",
+                Long.class)).isZero();
+        Arrays.fill(originalBytes, (byte) 0);
+        Arrays.fill(stored, (byte) 0);
+    }
+
+    private static void assertBatchRejectedWithoutState(
+            JdbcTemplate jdbc, AcceptedCommand accepted, String target) {
+        StateCounts before = stateCounts(jdbc);
+        Phase03MigrationCommandFixture.CommandResult result = invokeBatch(
+                accepted, "start", UUID.randomUUID().toString(), target, 10);
+        assertThat(result.exit()).isEqualTo(26);
+        assertThat(stateCounts(jdbc)).isEqualTo(before);
+    }
+
+    private static Phase03MigrationCommandFixture.CommandResult invokeBatch(
+            AcceptedCommand accepted,
+            String operation,
+            String runId,
+            String target,
+            int batchSize) {
+        return Phase03MigrationCommandFixture.invoke(
+                accepted.services(), Phase03MigrationCommandFixture.batchArguments(
+                        operation, runId, target, accepted.pairDigest(), "a".repeat(64), batchSize));
+    }
+
+    private static void advanceAll(
+            AcceptedCommand accepted, String runId, String target) {
+        for (String state : List.of("BACKFILLED", "VERIFIED", "CUTOVER", "SCRUBBED", "COMPLETE")) {
+            advanceOne(accepted, runId, target, state);
+        }
+    }
+
+    private static void advanceOne(
+            AcceptedCommand accepted, String runId, String target, String state) {
+        Phase03MigrationCommandFixture.CommandResult result =
+                Phase03MigrationCommandFixture.invoke(
+                        accepted.services(), Phase03MigrationCommandFixture.advanceArguments(
+                                runId, target, accepted.pairDigest(), "a".repeat(64), state));
+        assertThat(result.exit()).as(target + ":" + state).isZero();
+        assertThat(result.stdout()).contains("\"current_state\":\"" + state + "\"");
+    }
+
+    private static void insertNoIndexRow(
+            JdbcTemplate jdbc, String table, long id, byte[] value) {
+        if ("bulk_sending_items".equals(table)) {
+            jdbc.update("INSERT INTO bulk_sending_items (id,bulk_id,mobile_encrypted) VALUES (?,?,?)",
+                    id, 9000, value);
+        } else if ("uplink_records".equals(table)) {
+            jdbc.update("INSERT INTO uplink_records (id,tenant_id,mobile_encrypted,content) "
+                            + "VALUES (?,101,?,'migration proof')",
+                    id, value);
+        } else {
+            throw new IllegalArgumentException("unreviewed no-index table");
+        }
+    }
+
+    private static ProtectionContext migrationContext(String table, long id) {
+        return new ProtectionContext(
+                ProtectionContext.Purpose.DATABASE_FIELD,
+                "crypto-storage-bootstrap", table, "mobile_encrypted",
+                "uplink_records".equals(table) ? "tenant:101" : "global",
+                "id=" + id);
+    }
+
+    private static StateCounts stateCounts(JdbcTemplate jdbc) {
+        return new StateCounts(
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ycs_crypto_manifest_pair_admission", Long.class),
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ycs_crypto_migration_runs", Long.class),
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ycs_crypto_migration_checkpoints", Long.class),
+                jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM ycs_crypto_migration_events", Long.class),
+                jdbc.queryForObject(
+                        "SELECT COALESCE(SUM(optimistic_version),0) "
+                                + "FROM ycs_crypto_migration_targets", Long.class));
+    }
+
+    private static long pairOptimisticVersion(JdbcTemplate jdbc) {
+        return jdbc.queryForObject(
+                "SELECT optimistic_version FROM ycs_crypto_manifest_pair_admission "
+                        + "WHERE singleton_id = 1", Long.class);
+    }
+
+    private static void resetPairState(JdbcTemplate jdbc) {
+        jdbc.update("DELETE FROM ycs_crypto_migration_events");
+        jdbc.update("DELETE FROM ycs_crypto_migration_checkpoints");
+        jdbc.update("DELETE FROM ycs_crypto_migration_runs");
+        jdbc.update("DELETE FROM ycs_crypto_manifest_pair_admission");
+    }
+
+    private static void resetMigrationProof(JdbcTemplate jdbc) {
+        resetPairState(jdbc);
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes");
+        jdbc.update("UPDATE ycs_crypto_migration_targets SET target_state = 'DISCOVERED', "
+                + "legacy_fallback_allowed = CASE WHEN target_disposition = 'PROTECTED_NO_INDEX' "
+                + "THEN FALSE ELSE TRUE END, optimistic_version = 0");
+        jdbc.update("DELETE FROM mobile_portability");
+        jdbc.update("DELETE FROM blacklist_entries WHERE id BETWEEN 9000000 AND 9999999");
+        jdbc.update("DELETE FROM third_party_risk_check_logs WHERE id BETWEEN 9000000 AND 9999999");
+        jdbc.update("DELETE FROM message_tasks WHERE id BETWEEN 9000000 AND 9999999");
+        jdbc.update("DELETE FROM unsubscribe_records WHERE id BETWEEN 9000000 AND 9999999");
+        jdbc.update("DELETE FROM bulk_sending_items WHERE id BETWEEN 9000000 AND 9999999");
+        jdbc.update("DELETE FROM uplink_records WHERE id BETWEEN 9000000 AND 9999999");
+    }
+
+    private static String legacyDigest(String mobile) {
+        return HexFormat.of().formatHex(sha256Bytes(
+                mobile.getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    private static void writeMigrationEvidence(JdbcTemplate jdbc, String pairDigest) throws Exception {
+        List<Map<String, Object>> targetRows = jdbc.queryForList(
+                "SELECT target_type,target_state,legacy_fallback_allowed "
+                        + "FROM ycs_crypto_migration_targets ORDER BY target_type");
+        List<Map<String, Object>> counts = new ArrayList<>();
+        for (Map<String, Object> row : targetRows) {
+            String targetType = row.get("target_type").toString();
+            Map<String, Object> value = new LinkedHashMap<>();
+            value.put("target_type", targetType);
+            value.put("target_state", row.get("target_state").toString());
+            value.put("legacy_fallback_allowed",
+                    Boolean.TRUE.equals(row.get("legacy_fallback_allowed"))
+                            || Integer.valueOf(1).equals(row.get("legacy_fallback_allowed")));
+            value.put("checkpoint_count", jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ycs_crypto_migration_checkpoints WHERE target_type = ?",
+                    Long.class, targetType));
+            value.put("event_count", jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ycs_crypto_migration_events WHERE target_type = ?",
+                    Long.class, targetType));
+            value.put("blind_index_count", jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ycs_crypto_blind_indexes WHERE target_type = ?",
+                    Long.class, targetType));
+            counts.add(value);
+        }
+        Map<String, Object> evidence = new LinkedHashMap<>();
+        evidence.put("schema_version", "phase03-migration-inventory/v1");
+        evidence.put("accepted_pair_digest", pairDigest);
+        evidence.put("v1_sha256", V1_SHA256);
+        evidence.put("target_count", counts.size());
+        evidence.put("complete_target_count", counts.stream()
+                .filter(row -> "COMPLETE".equals(row.get("target_state"))).count());
+        evidence.put("blocking_target_count", counts.stream()
+                .filter(row -> "DISCOVERED".equals(row.get("target_state"))).count());
+        evidence.put("indexed_target_set_digest", indexedTargetSetDigest());
+        evidence.put("targets", counts);
+        Path output = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/target/phase03/migration-inventory.json");
+        Files.createDirectories(output.getParent());
+        Files.writeString(output,
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .writerWithDefaultPrettyPrinter().writeValueAsString(evidence) + "\n",
+                StandardCharsets.UTF_8);
+    }
+
+    private static String indexedTargetSetDigest() throws Exception {
+        String targets = String.join("\n", List.of(
+                "blacklist_entries.mobile_hash",
+                "message_tasks.mobile_hash",
+                "mobile_portability.mobile_hash",
+                "third_party_risk_check_logs.mobile_hash",
+                "unsubscribe_records.mobile_hash"));
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(targets.getBytes(StandardCharsets.US_ASCII)));
+    }
+
+    private record StateCounts(
+            long admittedPairs,
+            long runs,
+            long checkpoints,
+            long events,
+            long targetOptimisticVersionSum) {
+    }
+
+    private record AcceptedCommand(
+            ProtectedDataMigrationCommand.DefaultServices services,
+            String pairDigest,
+            MigrationRuntime runtime) {
+    }
+
+    private record IndexedFixture(
+            String targetId,
+            String targetType,
+            String table,
+            String column,
+            String mobile,
+            String tenantScope,
+            Long rowId,
+            int expectedRows) {
+
+        private String rawDigest() {
+            return legacyDigest(mobile);
+        }
+    }
+
+    private record MigrationRuntime(
+            DataSource dataSource,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            MigrationPreflightProperties properties,
+            SignedMigrationManifestVerifier verifier,
+            MigrationStateRepository repository,
+            ProtectedDataMigrationRunner runner,
+            ProtectedDataMigrationCommand.DefaultServices services) {
+
+        private MigrationRuntime withServices(
+                ProtectedDataMigrationCommand.DefaultServices commandServices) {
+            return new MigrationRuntime(
+                    dataSource, adapter, envelopeCodec, properties, verifier,
+                    repository, runner, commandServices);
+        }
+    }
+
+    private static final class BlockingKeyPort implements KeyProtectionPort {
+        private final KeyProtectionPort delegate;
+        private final CountDownLatch wrapping = new CountDownLatch(1);
+        private final CountDownLatch continueWrap = new CountDownLatch(1);
+        private final AtomicBoolean first = new AtomicBoolean(true);
+
+        private BlockingKeyPort(KeyProtectionPort delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public WrappedDataKey wrap(
+                byte[] dataEncryptionKey,
+                byte[] authenticatedHeader,
+                ProtectionContext semanticContext) {
+            if (first.compareAndSet(true, false)) {
+                wrapping.countDown();
+                try {
+                    continueWrap.await();
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("migration race proof interrupted", interrupted);
+                }
+            }
+            return delegate.wrap(dataEncryptionKey, authenticatedHeader, semanticContext);
+        }
+
+        @Override
+        public byte[] unwrap(
+                WrappedDataKey wrappedDataKey,
+                byte[] authenticatedHeader,
+                ProtectionContext semanticContext) {
+            return delegate.unwrap(wrappedDataKey, authenticatedHeader, semanticContext);
+        }
+
+        @Override
+        public com.ycsopen.sms.core.common.security.key.KeyHealth health() {
+            return delegate.health();
+        }
+
+        private void awaitWrap() throws InterruptedException {
+            wrapping.await();
+        }
+
+        private void release() {
+            continueWrap.countDown();
+        }
     }
 
     private static byte[] canonicalWriter(

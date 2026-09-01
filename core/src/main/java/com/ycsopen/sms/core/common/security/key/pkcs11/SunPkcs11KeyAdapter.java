@@ -21,6 +21,7 @@ import java.security.MessageDigest;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -170,6 +171,24 @@ public final class SunPkcs11KeyAdapter
         return mobileIndexes(normalizedMobile, context, false);
     }
 
+    /**
+     * Computes the same query indexes from an already verified historical SHA-256 value.
+     * This is the migration-only bridge for legacy databases that retained the digest but no
+     * reversible mobile number; the digest is never treated as a mobile or persisted again.
+     */
+    public OrderedIndexes queryIndexesFromHistoricalDigest(
+            byte[] historicalSha256, BlindIndexPort.Context context) {
+        if (historicalSha256 == null || historicalSha256.length != 32 || context == null) {
+            throw failure(Pkcs11FailureMapper.Category.OPERATION_FAILED, null, null);
+        }
+        byte[] digest = historicalSha256.clone();
+        try {
+            return mobileIndexesFromDigest(digest, context, false);
+        } finally {
+            Arrays.fill(digest, (byte) 0);
+        }
+    }
+
     @Override
     public VersionedTokenDigest issue(OpaqueTokenDigestPort.Purpose purpose,
                                       OpaqueTokenDigestPort.Binding binding,
@@ -228,18 +247,31 @@ public final class SunPkcs11KeyAdapter
             throw failure(Pkcs11FailureMapper.Category.OPERATION_FAILED, null, null);
         }
         byte[] historicalDigest = sha256(mobile.getBytes(StandardCharsets.US_ASCII));
-        byte[] input = encodeMobileInput(context, historicalDigest);
-        if (writes && mobileKeys.stream().noneMatch(key ->
-                key.state() == Pkcs11KeyDescriptor.State.ACTIVE)) {
-            throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, null, null);
+        try {
+            return mobileIndexesFromDigest(historicalDigest, context, writes);
+        } finally {
+            Arrays.fill(historicalDigest, (byte) 0);
         }
-        List<VersionedBlindIndex> values = new ArrayList<>();
-        mobileKeys.stream()
-                .filter(key -> key.state() == Pkcs11KeyDescriptor.State.ACTIVE
-                        || key.state() == Pkcs11KeyDescriptor.State.RETIRING)
-                .forEach(key -> values.add(new VersionedBlindIndex(
-                        Math.toIntExact(key.keyVersion()), hmac(key, input))));
-        return new OrderedIndexes(values);
+    }
+
+    private OrderedIndexes mobileIndexesFromDigest(
+            byte[] historicalDigest, BlindIndexPort.Context context, boolean writes) {
+        byte[] input = encodeMobileInput(context, historicalDigest);
+        try {
+            if (writes && mobileKeys.stream().noneMatch(key ->
+                    key.state() == Pkcs11KeyDescriptor.State.ACTIVE)) {
+                throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, null, null);
+            }
+            List<VersionedBlindIndex> values = new ArrayList<>();
+            mobileKeys.stream()
+                    .filter(key -> key.state() == Pkcs11KeyDescriptor.State.ACTIVE
+                            || key.state() == Pkcs11KeyDescriptor.State.RETIRING)
+                    .forEach(key -> values.add(new VersionedBlindIndex(
+                            Math.toIntExact(key.keyVersion()), hmac(key, input))));
+            return new OrderedIndexes(values);
+        } finally {
+            Arrays.fill(input, (byte) 0);
+        }
     }
 
     private VersionedTokenDigest digestToken(OpaqueTokenDigestPort.Purpose purpose,

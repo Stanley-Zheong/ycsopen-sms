@@ -4,6 +4,7 @@ Commands:
   preflight  Admit one signed writer/snapshot manifest pair
   start      Start one bounded target batch
   resume     Resume one bounded target batch
+  advance    Advance one target through one reviewed checkpoint edge
   pause      Pause an admitted migration run
   abort      Abort forward migration without plaintext rollback
   status     Print sanitized run counters
@@ -24,6 +25,13 @@ start/resume options (all required):
   --pair-digest HEX
   --lease-owner-digest HEX
   --batch-size 1..1000
+
+advance options (all required):
+  --run-id ID
+  --target REVIEWED_TARGET
+  --pair-digest HEX
+  --lease-owner-digest HEX
+  --next-state BACKFILLED|VERIFIED|CUTOVER|SCRUBBED|COMPLETE
 
 pause/abort options (all required):
   --run-id ID

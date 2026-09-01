@@ -6,10 +6,11 @@ require_relative "phase3-protected-inventory"
 
 options = { acceptance: false }
 OptionParser.new do |parser|
-  parser.banner = "Usage: ruby .planning/tools/validate-phase-03-protected-inventory.rb --manifest PATH --schema PATH --source-root PATH [--acceptance]"
+  parser.banner = "Usage: ruby .planning/tools/validate-phase-03-protected-inventory.rb --manifest PATH --schema PATH --source-root PATH [--mysql-evidence PATH] [--acceptance]"
   parser.on("--manifest PATH") { |value| options[:manifest] = value }
   parser.on("--schema PATH") { |value| options[:schema] = value }
   parser.on("--source-root PATH") { |value| options[:source_root] = value }
+  parser.on("--mysql-evidence PATH") { |value| options[:mysql_evidence] = value }
   parser.on("--acceptance") { options[:acceptance] = true }
 end.parse!
 
@@ -28,12 +29,22 @@ validator = Phase3ProtectedInventory::Validator.new(
   acceptance: options[:acceptance]
 ).validate
 
+if options[:mysql_evidence]
+  mysql = Phase3ProtectedInventory::MigrationEvidenceValidator.new(
+    root: Dir.pwd,
+    evidence_path: options[:mysql_evidence],
+    v1_path: options[:schema]
+  ).validate
+  validator.errors.concat(mysql.errors)
+end
+
 if validator.errors.empty?
   readiness = validator.blocking_surfaces.empty? ? "READY" : "BLOCKED_BY_CURRENT_IMPLEMENTATION"
   puts "protected_inventory=PASS inline_targets=#{Phase3ProtectedInventory::INLINE_TARGETS.length} " \
        "object_targets=#{Phase3ProtectedInventory::OBJECT_TARGETS.length} " \
        "digest_targets=#{Phase3ProtectedInventory::DIGEST_TARGETS.length} " \
        "source_surfaces=#{Phase3ProtectedInventory::REQUIRED_SURFACES.length} " \
+       "mysql_evidence=#{options[:mysql_evidence] ? 'PASS' : 'NOT_REQUESTED'} " \
        "obligation_readiness=#{readiness} blocking_surfaces=#{validator.blocking_surfaces.length}"
   exit 0
 end

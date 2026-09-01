@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "fileutils"
+require "digest"
 require "json"
 require "open3"
 require "rbconfig"
@@ -33,25 +34,72 @@ def copy_fixture(root)
   end
 end
 
-def run_validator(root)
-  Open3.capture3(
+def run_validator(root, mysql_evidence: nil)
+  arguments = [
     RbConfig.ruby,
     VALIDATOR,
     "--manifest", MANIFEST,
     "--schema", SQL_SCHEMA,
     "--source-root", SOURCE_ROOT,
-    "--acceptance",
+    "--acceptance"
+  ]
+  arguments.concat(["--mysql-evidence", mysql_evidence]) if mysql_evidence
+  Open3.capture3(
+    *arguments,
     chdir: root
   )
 end
 
-def assert_result(name, root, expected_success:, token:)
-  stdout, stderr, status = run_validator(root)
+def assert_result(name, root, expected_success:, token:, mysql_evidence: nil)
+  stdout, stderr, status = run_validator(root, mysql_evidence: mysql_evidence)
   output = stdout + stderr
   unless status.success? == expected_success
     abort "#{name}: expected success=#{expected_success}, got #{status.exitstatus}:\n#{output}"
   end
   abort "#{name}: missing #{token}:\n#{output}" unless output.include?(token)
+end
+
+def write_migration_evidence(root)
+  path = "migration-inventory.json"
+  indexed = %w[
+    blacklist_entries.mobile_hash
+    message_tasks.mobile_hash
+    mobile_portability.mobile_hash
+    third_party_risk_check_logs.mobile_hash
+    unsubscribe_records.mobile_hash
+  ]
+  target_types = %w[
+    BLACKLIST_ENTRY BULK_SENDING_ITEM_MOBILE MESSAGE_TASK MOBILE_PORTABILITY
+    THIRD_PARTY_RISK_CHECK_LOG UNSUBSCRIBE_RECORD UPLINK_RECORD_MOBILE
+  ]
+  no_index = %w[BULK_SENDING_ITEM_MOBILE UPLINK_RECORD_MOBILE]
+  evidence = {
+    "schema_version" => "phase03-migration-inventory/v1",
+    "accepted_pair_digest" => "a" * 64,
+    "v1_sha256" => Digest::SHA256.file(File.join(root, SQL_SCHEMA)).hexdigest,
+    "target_count" => 7,
+    "complete_target_count" => 7,
+    "blocking_target_count" => 0,
+    "indexed_target_set_digest" => Digest::SHA256.hexdigest(indexed.join("\n")),
+    "targets" => target_types.map do |target_type|
+      {
+        "target_type" => target_type,
+        "target_state" => "COMPLETE",
+        "legacy_fallback_allowed" => false,
+        "checkpoint_count" => 1,
+        "event_count" => 1,
+        "blind_index_count" => no_index.include?(target_type) ? 0 : 1
+      }
+    end
+  }
+  File.write(File.join(root, path), JSON.generate(evidence) + "\n")
+  path
+end
+
+def mutate_evidence(root, path)
+  evidence = JSON.parse(File.read(File.join(root, path), encoding: "UTF-8"))
+  yield evidence
+  File.write(File.join(root, path), JSON.generate(evidence) + "\n")
 end
 
 def mutate_manifest(root)
@@ -73,6 +121,39 @@ cases = 0
 with_fixture("baseline") do |root|
   assert_result("baseline", root, expected_success: true, token: "protected_inventory=PASS")
   assert_result("baseline readiness", root, expected_success: true, token: "obligation_readiness=READY")
+  cases += 1
+end
+
+with_fixture("mysql-evidence-baseline") do |root|
+  evidence = write_migration_evidence(root)
+  assert_result("mysql evidence baseline", root, expected_success: true,
+                token: "mysql_evidence=PASS", mysql_evidence: evidence)
+  cases += 1
+end
+
+with_fixture("mysql-evidence-omission") do |root|
+  evidence = write_migration_evidence(root)
+  mutate_evidence(root, evidence) { |value| value["targets"].pop }
+  assert_result("mysql evidence omission", root, expected_success: false,
+                token: "MYSQL_EVIDENCE_TARGET_SET_INVALID", mysql_evidence: evidence)
+  cases += 1
+end
+
+with_fixture("mysql-evidence-no-index") do |root|
+  evidence = write_migration_evidence(root)
+  mutate_evidence(root, evidence) do |value|
+    value["targets"].find { |target| target["target_type"] == "UPLINK_RECORD_MOBILE" }["blind_index_count"] = 1
+  end
+  assert_result("mysql evidence no-index", root, expected_success: false,
+                token: "MYSQL_EVIDENCE_BLIND_INDEX_COUNT", mysql_evidence: evidence)
+  cases += 1
+end
+
+with_fixture("mysql-evidence-secret-field") do |root|
+  evidence = write_migration_evidence(root)
+  mutate_evidence(root, evidence) { |value| value["targets"].first["plaintext"] = "13800138000" }
+  assert_result("mysql evidence secret field", root, expected_success: false,
+                token: "MYSQL_EVIDENCE_TARGET_FIELDS_INVALID", mysql_evidence: evidence)
   cases += 1
 end
 

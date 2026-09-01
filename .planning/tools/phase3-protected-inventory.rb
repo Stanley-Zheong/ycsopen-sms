@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "digest"
 require "pathname"
 require "set"
 
@@ -52,6 +53,24 @@ module Phase3ProtectedInventory
   REQUIRED_NO_INDEX_TARGETS = Set[
     "bulk_sending_items.mobile_encrypted",
     "uplink_records.mobile_encrypted"
+  ].freeze
+
+  MIGRATION_TARGETS = {
+    "BLACKLIST_ENTRY" => true,
+    "MESSAGE_TASK" => true,
+    "MOBILE_PORTABILITY" => true,
+    "THIRD_PARTY_RISK_CHECK_LOG" => true,
+    "UNSUBSCRIBE_RECORD" => true,
+    "BULK_SENDING_ITEM_MOBILE" => false,
+    "UPLINK_RECORD_MOBILE" => false
+  }.freeze
+  MIGRATION_EVIDENCE_KEYS = Set[
+    "schema_version", "accepted_pair_digest", "v1_sha256", "target_count",
+    "complete_target_count", "blocking_target_count", "indexed_target_set_digest", "targets"
+  ].freeze
+  MIGRATION_TARGET_KEYS = Set[
+    "target_type", "target_state", "legacy_fallback_allowed",
+    "checkpoint_count", "event_count", "blind_index_count"
   ].freeze
 
   CANDIDATE_COLUMNS = Set[
@@ -509,6 +528,102 @@ module Phase3ProtectedInventory
       unknown = actual - expected
       @errors << "#{label}_MISSING: #{missing.to_a.sort.join(',')}" unless missing.empty?
       @errors << "#{label}_UNKNOWN: #{unknown.to_a.sort.join(',')}" unless unknown.empty?
+    end
+  end
+
+  # Strict counts/digests-only validator for the real MySQL migration result.
+  class MigrationEvidenceValidator
+    attr_reader :errors
+
+    def initialize(root:, evidence_path:, v1_path:)
+      @root = Pathname(root).realpath
+      @evidence_path = Pathname(evidence_path).expand_path(@root)
+      @v1_path = Pathname(v1_path).expand_path(@root)
+      @errors = []
+    end
+
+    def validate
+      unless repository_file?(@evidence_path) && @evidence_path.size <= 65_536
+        @errors << "MYSQL_EVIDENCE_PATH_INVALID"
+        return self
+      end
+      evidence = JSON.parse(@evidence_path.read(encoding: "UTF-8"))
+      exact_keys(evidence, MIGRATION_EVIDENCE_KEYS, "MYSQL_EVIDENCE")
+      @errors << "MYSQL_EVIDENCE_SCHEMA_INVALID" unless evidence["schema_version"] == "phase03-migration-inventory/v1"
+      digest(evidence["accepted_pair_digest"], "MYSQL_EVIDENCE_PAIR_DIGEST")
+      digest(evidence["v1_sha256"], "MYSQL_EVIDENCE_V1_DIGEST")
+      digest(evidence["indexed_target_set_digest"], "MYSQL_EVIDENCE_INDEX_SET_DIGEST")
+      expected_v1 = Digest::SHA256.file(@v1_path).hexdigest if repository_file?(@v1_path)
+      @errors << "MYSQL_EVIDENCE_V1_DRIFT" unless evidence["v1_sha256"] == expected_v1
+      expected_index_digest = Digest::SHA256.hexdigest(
+        DIGEST_TARGETS.to_a.sort.join("\n")
+      )
+      unless evidence["indexed_target_set_digest"] == expected_index_digest
+        @errors << "MYSQL_EVIDENCE_INDEX_SET_DRIFT"
+      end
+      targets = evidence["targets"]
+      unless targets.is_a?(Array)
+        @errors << "MYSQL_EVIDENCE_TARGETS_INVALID"
+        return self
+      end
+      target_types = targets.filter_map { |target| target.is_a?(Hash) ? target["target_type"] : nil }
+      unless target_types.to_set == MIGRATION_TARGETS.keys.to_set && target_types.length == MIGRATION_TARGETS.length
+        @errors << "MYSQL_EVIDENCE_TARGET_SET_INVALID"
+      end
+      targets.each { |target| validate_target(target) }
+      integer(evidence["target_count"], MIGRATION_TARGETS.length, "MYSQL_EVIDENCE_TARGET_COUNT")
+      integer(evidence["complete_target_count"], MIGRATION_TARGETS.length, "MYSQL_EVIDENCE_COMPLETE_COUNT")
+      integer(evidence["blocking_target_count"], 0, "MYSQL_EVIDENCE_BLOCKING_COUNT")
+      self
+    rescue Errno::ENOENT, JSON::ParserError, EncodingError, TypeError => error
+      @errors << "MYSQL_EVIDENCE_INVALID: #{error.class}"
+      self
+    end
+
+    private
+
+    def validate_target(target)
+      unless target.is_a?(Hash)
+        @errors << "MYSQL_EVIDENCE_TARGET_INVALID"
+        return
+      end
+      exact_keys(target, MIGRATION_TARGET_KEYS, "MYSQL_EVIDENCE_TARGET")
+      target_type = target["target_type"]
+      indexed = MIGRATION_TARGETS[target_type]
+      return if indexed.nil?
+
+      @errors << "MYSQL_EVIDENCE_TARGET_INCOMPLETE: #{target_type}" unless target["target_state"] == "COMPLETE"
+      if target["legacy_fallback_allowed"] != false
+        @errors << "MYSQL_EVIDENCE_LEGACY_FALLBACK: #{target_type}"
+      end
+      positive_integer(target["checkpoint_count"], "MYSQL_EVIDENCE_CHECKPOINT_COUNT: #{target_type}")
+      positive_integer(target["event_count"], "MYSQL_EVIDENCE_EVENT_COUNT: #{target_type}")
+      blind_count = target["blind_index_count"]
+      if !blind_count.is_a?(Integer) || blind_count.negative? || indexed && blind_count.zero? || !indexed && !blind_count.zero?
+        @errors << "MYSQL_EVIDENCE_BLIND_INDEX_COUNT: #{target_type}"
+      end
+    end
+
+    def repository_file?(path)
+      path.to_s.start_with?(@root.to_s + File::SEPARATOR) && path.file? && !path.symlink?
+    end
+
+    def exact_keys(record, expected, label)
+      unless record.is_a?(Hash) && record.keys.to_set == expected
+        @errors << "#{label}_FIELDS_INVALID"
+      end
+    end
+
+    def digest(value, label)
+      @errors << "#{label}_INVALID" unless value.is_a?(String) && value.match?(/\A[0-9a-f]{64}\z/)
+    end
+
+    def integer(value, expected, label)
+      @errors << "#{label}_INVALID" unless value.is_a?(Integer) && value == expected
+    end
+
+    def positive_integer(value, label)
+      @errors << "#{label}_INVALID" unless value.is_a?(Integer) && value.positive?
     end
   end
 end
