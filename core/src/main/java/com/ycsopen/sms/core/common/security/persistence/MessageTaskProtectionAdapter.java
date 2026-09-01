@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * Sole context-bound preparation, protected assignment and persistence owner for message mobiles.
  */
 @Component
-public final class MessageTaskProtectionAdapter {
+public class MessageTaskProtectionAdapter {
 
     public static final String SANITIZED_FAILURE = "PROTECTED_MESSAGE_PERSISTENCE_FAILED";
 
