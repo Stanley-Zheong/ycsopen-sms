@@ -23,7 +23,7 @@ module Phase03ArtifactLeakScan
   SHA256 = /\A[0-9a-f]{64}\z/
   DIRECT_PATTERNS = [
     /YCSLEAK_[A-Z]+_[A-Za-z0-9_-]{12,}/,
-    /(?<!\d)1[3-9]\d{9}(?!\d)/,
+    /(?<!\d)199999\d{5}(?!\d)/,
     /(?<!\d)110101\d{12}(?!\d)/,
     /(?:cred|object|dek)_[0-9a-f]{24,}/i,
     /(?:ocap_v1_|regup_v1_)[A-Za-z0-9._~-]{16,}/,

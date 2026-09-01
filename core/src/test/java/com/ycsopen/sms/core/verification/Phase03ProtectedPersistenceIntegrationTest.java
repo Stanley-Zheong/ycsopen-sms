@@ -287,12 +287,16 @@ class Phase03ProtectedPersistenceIntegrationTest {
         properties.put("ycsopen.security.crypto-storage.hard-ceiling", "1048576");
         properties.put("ycsopen.security.crypto-storage.aliases.field-encryption-kek",
                 CryptoStorageStartupVerifier.FIELD_KEK_ALIAS);
+        properties.put("ycsopen.security.crypto-storage.aliases.snapshot-recovery",
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_ALIAS);
         properties.put("ycsopen.security.crypto-storage.aliases.mobile-blind-index",
                 CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS);
         properties.put("ycsopen.security.crypto-storage.aliases.object-capability-digest",
                 CryptoStorageStartupVerifier.OBJECT_DIGEST_ALIAS);
         properties.put("ycsopen.security.crypto-storage.aliases.registration-upload-digest",
                 CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS);
+        properties.put("ycsopen.security.crypto-storage.references.snapshot-recovery",
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE);
         String[] arguments = properties.entrySet().stream()
                 .map(entry -> "--" + entry.getKey() + "=" + entry.getValue())
                 .toArray(String[]::new);
@@ -320,6 +324,10 @@ class Phase03ProtectedPersistenceIntegrationTest {
                         + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
                         + "VALUES ('FIELD_ENCRYPTION_KEK',1,'pkcs11',?,'ACTIVE')",
                 FIELD_REFERENCE);
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                        + "VALUES ('SNAPSHOT_RECOVERY',1,'pkcs11',?,'ACTIVE')",
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE);
         jdbc.update("INSERT INTO ycs_crypto_key_references "
                         + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
                         + "VALUES ('MOBILE_BLIND_INDEX',1,'pkcs11',?,'ACTIVE')",
@@ -484,6 +492,10 @@ class Phase03ProtectedPersistenceIntegrationTest {
                         descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
                                 FIELD_REFERENCE, CryptoStorageStartupVerifier.FIELD_KEK_ALIAS,
                                 Pkcs11KeyDescriptor.State.ACTIVE),
+                        descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 1,
+                                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE,
+                                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_ALIAS,
+                                Pkcs11KeyDescriptor.State.ACTIVE),
                         descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                                 MOBILE_ACTIVE_REFERENCE, CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS,
                                 Pkcs11KeyDescriptor.State.ACTIVE),
@@ -515,8 +527,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
                                                    String alias,
                                                    Pkcs11KeyDescriptor.State state) {
         return new Pkcs11KeyDescriptor(purpose, version, reference, alias, state,
-                purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
-                        ? "AES" : "HmacSHA256", 256);
+                purpose.isWrappingKey() ? "AES" : "HmacSHA256", 256);
     }
 
     private static void cleanupRows(JdbcTemplate jdbc,
@@ -536,7 +547,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
         jdbc.update("DELETE FROM message_tasks WHERE message_id IN (?,?,?)",
                 successfulMessageId, repositoryFailureMessageId, providerFailureMessageId);
         jdbc.update("DELETE FROM ycs_crypto_key_references WHERE purpose IN "
-                + "('FIELD_ENCRYPTION_KEK','MOBILE_BLIND_INDEX',"
+                + "('FIELD_ENCRYPTION_KEK','SNAPSHOT_RECOVERY','MOBILE_BLIND_INDEX',"
                 + "'OBJECT_CAPABILITY_DIGEST','REGISTRATION_UPLOAD_DIGEST')");
     }
 
@@ -750,6 +761,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
               int failed = 0;
               if (strcmp(argv[3], "provision") == 0 && argc == 4) {
                 failed |= generate(session, "ycs.field-encryption-kek.v1", 1);
+                failed |= generate(session, "ycs.snapshot-recovery.v1", 1);
                 failed |= generate(session, "ycs.mobile-blind-index.v1", 0);
                 failed |= generate(session, "ycs.mobile-blind-index.v2", 0);
                 failed |= generate(session, "ycs.object-capability-digest.v1", 0);

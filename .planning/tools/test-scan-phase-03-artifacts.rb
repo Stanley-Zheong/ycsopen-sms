@@ -75,12 +75,20 @@ end
 
 variants = {
   "direct" => MARKER,
+  "reserved-phone" => "19999912345",
   "base64" => Base64.strict_encode64(MARKER),
   "base64url" => Base64.urlsafe_encode64(MARKER, padding: false),
   "hex" => MARKER.unpack1("H*"),
   "url" => CGI.escape(MARKER),
   "split-reader-boundary" => ("x" * 8_191) + MARKER
 }
+
+with_fixture("ordinary-phone-not-a-run-canary") do |root|
+  write(root, File.join(GENERATED_ROOT, "results/ordinary-phone.txt"), "13800138000")
+  assert_run("ordinary phone not a run canary", root, success: true,
+             token: "phase03_artifact_scan=PASS")
+  cases += 1
+end
 
 variants.each do |name, value|
   with_fixture(name) do |root|

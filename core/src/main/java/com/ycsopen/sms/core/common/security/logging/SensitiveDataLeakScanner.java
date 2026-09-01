@@ -176,7 +176,9 @@ public final class SensitiveDataLeakScanner {
 
         private CanarySet(String nonce) {
             Map<CanaryKind, String> generated = new EnumMap<>(CanaryKind.class);
-            generated.put(CanaryKind.PHONE, shapedDigits("13", nonce, 9));
+            // Reserve a valid-shaped, low-collision namespace so artifact scans detect
+            // only run-owned phone canaries rather than arbitrary digits in SHA-256 values.
+            generated.put(CanaryKind.PHONE, shapedDigits("199999", nonce, 5));
             generated.put(CanaryKind.IDENTITY, shapedDigits("110101", nonce, 12));
             generated.put(CanaryKind.CREDENTIAL, "cred_" + nonce);
             generated.put(CanaryKind.OBJECT, "object_" + nonce);
