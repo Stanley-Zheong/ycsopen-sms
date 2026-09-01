@@ -1,0 +1,117 @@
+{
+  "additionalProperties": false,
+  "command": "phase03-migration",
+  "contract_version": "phase03-migration-cli/v1",
+  "exits": [
+    {"code": 0, "name": "accepted"},
+    {"code": 20, "name": "invocation_or_path"},
+    {"code": 21, "name": "canonical_or_schema"},
+    {"code": 22, "name": "signature_or_trust"},
+    {"code": 23, "name": "subject_mismatch"},
+    {"code": 24, "name": "writer_or_replay"},
+    {"code": 25, "name": "snapshot_invalid"},
+    {"code": 26, "name": "key_or_provider"}
+  ],
+  "help": {
+    "argument": "--help",
+    "dependencies_loaded": [],
+    "exit": 0,
+    "stderr": "empty",
+    "stdout_resource": "security/migration/phase03-migration-help.txt"
+  },
+  "manifest_pair": {
+    "admission": "one_atomic_compare_and_set",
+    "canonical_pair_digest": true,
+    "individual_role_digests": ["writer_digest", "snapshot_digest"],
+    "role_separated_signatures": {"snapshot": "0x02", "writer": "0x01"},
+    "role_separate_admission_allowed": false,
+    "shared_equal_fields": [
+      "migration_set_id",
+      "environment",
+      "database_instance_fingerprint",
+      "schema",
+      "flyway_set_digest",
+      "global_sequence",
+      "signer_key_version"
+    ]
+  },
+  "stderr": {
+    "format": "phase03-migration:error:<exit-name>\\n",
+    "protected_values_allowed": false,
+    "provider_exception_text_allowed": false
+  },
+  "stdout": {
+    "format": "one_canonical_json_object",
+    "protected_values_allowed": false,
+    "safe_fields": [
+      "status",
+      "pair_digest",
+      "global_sequence",
+      "run_id",
+      "target",
+      "state",
+      "scanned",
+      "migrated",
+      "verified",
+      "skipped",
+      "quarantined",
+      "end_of_target"
+    ]
+  },
+  "subcommands": {
+    "abort": {
+      "mutates": true,
+      "options": ["--run-id", "--pair-digest"],
+      "plaintext_rollback": false
+    },
+    "pause": {
+      "mutates": true,
+      "options": ["--run-id", "--pair-digest"]
+    },
+    "preflight": {
+      "inseparable_path_roles": [
+        "--writer-manifest",
+        "--writer-signature",
+        "--snapshot-manifest",
+        "--snapshot-signature"
+      ],
+      "mutates": "pair_cas_only_after_complete_validation",
+      "options": [
+        "--writer-manifest",
+        "--writer-signature",
+        "--snapshot-manifest",
+        "--snapshot-signature",
+        "--environment",
+        "--database-instance-fingerprint",
+        "--schema",
+        "--flyway-set-digest"
+      ]
+    },
+    "resume": {
+      "accepted_pair_digest_required": true,
+      "mutates": true,
+      "options": [
+        "--run-id",
+        "--target",
+        "--pair-digest",
+        "--lease-owner-digest",
+        "--batch-size"
+      ]
+    },
+    "start": {
+      "accepted_pair_digest_required": true,
+      "mutates": true,
+      "options": [
+        "--run-id",
+        "--target",
+        "--pair-digest",
+        "--lease-owner-digest",
+        "--batch-size"
+      ]
+    },
+    "status": {
+      "mutates": false,
+      "options": ["--run-id"]
+    }
+  }
+}

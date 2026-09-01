@@ -1,0 +1,37 @@
+phase03-migration <command> [options]
+
+Commands:
+  preflight  Admit one signed writer/snapshot manifest pair
+  start      Start one bounded target batch
+  resume     Resume one bounded target batch
+  pause      Pause an admitted migration run
+  abort      Abort forward migration without plaintext rollback
+  status     Print sanitized run counters
+
+preflight options (all required):
+  --writer-manifest PATH
+  --writer-signature PATH
+  --snapshot-manifest PATH
+  --snapshot-signature PATH
+  --environment ID
+  --database-instance-fingerprint HEX
+  --schema NAME
+  --flyway-set-digest HEX
+
+start/resume options (all required):
+  --run-id ID
+  --target REVIEWED_TARGET
+  --pair-digest HEX
+  --lease-owner-digest HEX
+  --batch-size 1..1000
+
+pause/abort options (all required):
+  --run-id ID
+  --pair-digest HEX
+
+status options (all required):
+  --run-id ID
+
+Exit codes: 0 accepted; 20 invocation/path; 21 canonical/schema;
+            22 signature/trust; 23 subject; 24 writer/replay;
+            25 snapshot; 26 key/provider.
