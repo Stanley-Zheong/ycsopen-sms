@@ -22,7 +22,7 @@ completion_metric: scoped_todo_empty
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
 Plan: 5 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute `03-05-PLAN.md` in Wave 2; `03-01-PLAN.md` through `03-04-PLAN.md` have committed summaries and all Phase 03 obligation TODO rows remain open.
+**Current plan**: Execute `03-05-PLAN.md` in Wave 2; `03-01-PLAN.md` through `03-04-PLAN.md` and the independently schedulable `03-11-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
