@@ -126,7 +126,7 @@ None — implementation stayed within the eight declared task files and preserve
 ## Issues Encountered and Verification Boundary
 
 - The first focused invocation exposed an invalid exception-constructor call at compilation. It was corrected before the task commit; all focused and full backend tests then passed.
-- `.planning/tools/test-phase-03-protected-inventory.rb` currently has an older source-drift fixture that attempts to replace `setMobileEncrypted`, a token removed by prior Plan 26 work. Because the fixture performs no mutation, that one destructive-suite case reports an expected-failure mismatch. The required real source-inventory acceptance command passes; the unrelated validator-fixture repair is outside Plan 03-12's declared files.
+- The post-plan Wave 6 gate found an older source-drift fixture that attempted to replace `setMobileEncrypted`, a token removed by Plan 26. The gate replaced it with the current reviewed `messageTaskProtectionAdapter.save` token and added an explicit mutation assertion. The complete 17-case destructive inventory suite and real source-inventory acceptance command both pass; this repair is recorded separately from the Plan 03-12 task commit.
 
 ## Known Stubs
 

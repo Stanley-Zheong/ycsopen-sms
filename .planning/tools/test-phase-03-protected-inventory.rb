@@ -166,8 +166,10 @@ end
 
 with_fixture("source-drift") do |root|
   path = File.join(root, SOURCE_ROOT, "com/ycsopen/sms/core/service/message/MessageSubmitService.java")
-  content = File.read(path, encoding: "UTF-8").sub("setMobileEncrypted", "setUnexpectedEncrypted")
-  File.write(path, content)
+  content = File.read(path, encoding: "UTF-8")
+  changed = content.sub("messageTaskProtectionAdapter.save", "messageTaskProtectionAdapter.unreviewedSave")
+  abort "source drift fixture did not mutate" if changed == content
+  File.write(path, changed)
   assert_result("source token drift", root, expected_success: false, token: "TOKEN_MISSING")
   cases += 1
 end
