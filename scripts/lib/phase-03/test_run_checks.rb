@@ -70,6 +70,13 @@ assert(paths.none? { |path| path.start_with?("core/target/") }, "generated outpu
 assert(paths.none? { |path| path.end_with?("SUMMARY.md", "TODO.md", "ITERATIONS.md") },
        "mutable closure record entered subject")
 assert(paths.any? { |path| path.include?("/EVIDENCE/schema/") }, "evidence schemas absent")
+assert(paths.include?(".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/README.md"),
+       "evidence contract README absent")
+producer_outputs = %w[tested-inputs.json evidence-manifest.json OBL-CRYPTO-STORAGE-001.json
+                      OBL-CRYPTO-STORAGE-002.json OBL-CRYPTO-STORAGE-003.json
+                      OBL-CRYPTO-STORAGE-004.json]
+assert(paths.none? { |path| producer_outputs.include?(File.basename(path)) },
+       "producer output entered tested subject")
 assert(subject.fetch("inputs").all? { |row| row.fetch("sha256").match?(Phase03RunChecks::SHA256) },
        "subject digest invalid")
 

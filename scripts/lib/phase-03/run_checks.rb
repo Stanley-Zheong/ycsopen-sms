@@ -230,10 +230,13 @@ module Phase03RunChecks
          .map { |path| Pathname(path).relative_path_from(Pathname(root)).to_s }
          .reject do |path|
            basename = File.basename(path)
+           producer_output = path.start_with?("#{PHASE_DIR}/EVIDENCE/") &&
+             (basename == "tested-inputs.json" || basename == "evidence-manifest.json" ||
+              basename.match?(/\AOBL-CRYPTO-STORAGE-00[1-4]\.json\z/))
            mutable_phase_record = path.start_with?("#{PHASE_DIR}/") &&
              (basename.match?(/(?:SUMMARY|VERIFICATION|REVIEW)\.md\z/) ||
               %w[TODO.md ITERATIONS.md DECISIONS.md TEST-MATRIX.md].include?(basename) ||
-              (path.include?("/EVIDENCE/") && !path.include?("/EVIDENCE/schema/")))
+              producer_output)
            path.start_with?("core/target/") || path.include?("/.DS_Store") || mutable_phase_record
          end
          .uniq.sort

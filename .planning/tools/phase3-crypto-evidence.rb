@@ -5,6 +5,7 @@ require "digest"
 require "json"
 require "pathname"
 require "set"
+require "time"
 
 module Phase3CryptoEvidence
   PHASE = "03-crypto-storage-bootstrap"
@@ -16,6 +17,9 @@ module Phase3CryptoEvidence
   LEAK_RESULT_SCHEMA = "phase03-leak-result-v1"
   SHA256 = /\A[0-9a-f]{64}\z/
   FILE_LIMIT = 4 * 1024 * 1024
+  ROOT_RESULT_DIR = "core/target/phase03/results"
+  ROOT_RESULT_SCHEMA = "phase03-root-lane-result-v1"
+  ROOT_AGGREGATE_SCHEMA = "phase03-root-aggregate-v1"
 
   OBLIGATIONS = {
     "OBL-CRYPTO-STORAGE-001" => {
@@ -110,6 +114,17 @@ module Phase3CryptoEvidence
   INPUT_FIELDS = Set.new(%w[path mode sha256 role]).freeze
   LEAK_FIELDS = Set.new(%w[schema_version phase check_id subject_digest status exit_code targets result_digest]).freeze
   LEAK_TARGET_FIELDS = Set.new(%w[id reader_identity scanned_items prohibited_matches sensitivity_status]).freeze
+  ROOT_AGGREGATE_FIELDS = Set.new(%w[
+    schema_version phase status tested_subject_digest registry_digest
+    lane_result_digests result_digest
+  ]).freeze
+  ROOT_LANE_FIELDS = Set.new(%w[
+    schema_version check_id layer mode argv status exit_code error_id diagnostic_sha256
+    started_at completed_at result_digest
+  ]).freeze
+  CHILD_LANE_FACT_FIELDS = Set.new(%w[
+    aggregate_status registry_digest required_lane_ids lane_result_digests
+  ]).freeze
 
   PROHIBITED_KEYS = Set.new(%w[
     plaintext plaintext_canary canary key key_bytes private_key secret pin raw_token
@@ -164,6 +179,7 @@ module Phase3CryptoEvidence
       @required_owner = require_owner
       @errors = []
       @documents_for_scan = []
+      @root_result_cache = nil
     rescue Errno::ENOENT
       @errors = ["REPOSITORY_ROOT_MISSING"]
     end
@@ -194,6 +210,23 @@ module Phase3CryptoEvidence
       self
     rescue StandardError => exception
       @errors << "VALIDATOR_INTERNAL_ERROR: #{exception.class}: #{exception.message}"
+      @errors.uniq!
+      self
+    end
+
+    # Shared producer preflight: applies the same semantic inventory gate without materializing
+    # evidence first. The producer inspects errors and writes nothing unless this remains empty.
+    def validate_inventory_document(inventory)
+      validate_inventory(inventory)
+      @errors.uniq!
+      self
+    end
+
+    # Shared producer preflight for sanitized child/aggregate/lane inputs.
+    def validate_sanitized_documents(documents)
+      Array(documents).each_with_index do |document, index|
+        scan_prohibited(document, "PRODUCER_INPUT_#{index}")
+      end
       @errors.uniq!
       self
     end
@@ -273,6 +306,8 @@ module Phase3CryptoEvidence
     def validate_subject_reference(reference, label)
       exact_fields(reference, SUBJECT_REF_FIELDS, label)
       return nil unless reference.is_a?(Hash)
+      error("#{label}_PATH_MISMATCH") unless reference["path"] ==
+        File.join(@phase_dir, "EVIDENCE/tested-inputs.json")
 
       document, snapshot = load_bound_json(reference, label)
       return nil unless document
@@ -310,6 +345,8 @@ module Phase3CryptoEvidence
     def validate_inventory_reference(reference, subject, label)
       exact_fields(reference, INVENTORY_REF_FIELDS, label)
       return nil unless reference.is_a?(Hash)
+      error("#{label}_PATH_MISMATCH") unless reference["path"] ==
+        "core/src/main/resources/security/protected-data-inventory.json"
 
       inventory, _snapshot = load_bound_json(reference, label)
       return nil unless inventory
@@ -323,6 +360,7 @@ module Phase3CryptoEvidence
         expected_cases: OBLIGATIONS.values.map { |definition| definition.fetch("case_id") },
         expected_layer: "static",
         required_adapters: ["phase03-inventory-validator"],
+        expected_obligation: nil,
         label: "INVENTORY_VALIDATOR_RESULT"
       )
       if validator_result
@@ -407,6 +445,8 @@ module Phase3CryptoEvidence
     def validate_leak_reference(reference, subject, label)
       exact_fields(reference, LEAK_REF_FIELDS, label)
       return nil unless reference.is_a?(Hash)
+      error("#{label}_PATH_MISMATCH") unless reference["path"] ==
+        File.join(ROOT_RESULT_DIR, "complete-leak-result.json")
 
       leak, snapshot = load_bound_json(reference, label)
       return nil unless leak
@@ -500,13 +540,19 @@ module Phase3CryptoEvidence
         expected_cases: [expected["case_id"]],
         expected_layer: expected["layer"],
         required_adapters: expected["adapters"],
+        expected_obligation: obligation_id,
         label: "OBLIGATION_CHILD_RESULT #{obligation_id}"
       )
     end
 
-    def validate_result_reference(reference, subject, expected_check:, expected_obligations:, expected_cases:, expected_layer:, required_adapters:, label:)
+    def validate_result_reference(reference, subject, expected_check:, expected_obligations:, expected_cases:, expected_layer:, required_adapters:, expected_obligation:, label:)
       exact_fields(reference, RESULT_REF_FIELDS, label)
       return nil unless reference.is_a?(Hash)
+      expected_path = File.join(
+        ROOT_RESULT_DIR,
+        expected_obligation ? "#{expected_check}.json" : "protected-inventory-result.json"
+      )
+      error("#{label}_PATH_MISMATCH") unless reference["path"] == expected_path
       result, = load_bound_json(reference, label)
       return nil unless result
       exact_fields(result, CHILD_FIELDS, label)
@@ -523,9 +569,101 @@ module Phase3CryptoEvidence
       error("#{label}_REFERENCE_DIGEST_MISMATCH") unless reference["result_digest"] == actual_digest
       validate_adapters(result["adapter_identities"], required_adapters, label)
       error("#{label}_FACTS_INVALID") unless result["facts"].is_a?(Hash) && !result["facts"].empty?
+      validate_child_lane_facts(result, subject, expected_obligation, label) if expected_obligation
       @documents_for_scan << [label, reference]
       @documents_for_scan << ["#{label}_DOCUMENT", result]
       result
+    end
+
+    def validate_child_lane_facts(result, subject, obligation_id, label)
+      facts = result["facts"]
+      exact_fields(facts, CHILD_LANE_FACT_FIELDS, "#{label}_FACTS")
+      return unless facts.is_a?(Hash)
+
+      contract = root_contract
+      binding = contract.const_get(:CHILD_BINDINGS).fetch(obligation_id)
+      required = binding.fetch("lanes")
+      digests = facts["lane_result_digests"]
+      error("#{label}_AGGREGATE_STATUS_INVALID") unless facts["aggregate_status"] == "PASS"
+      error("#{label}_REQUIRED_LANES_MISMATCH") unless facts["required_lane_ids"] == required
+      error("#{label}_DURABLE_LANE_MISSING") unless required.include?("durable-artifact-leak-scan")
+      error("#{label}_CLEANUP_LANE_MISSING") unless required.include?("fixture-cleanup")
+      unless digests.is_a?(Hash) && digests.keys.sort == required.sort &&
+             digests.values.all? { |digest| digest.is_a?(String) && digest.match?(SHA256) }
+        error("#{label}_LANE_DIGEST_SET_MISMATCH")
+      end
+
+      root = validate_root_results(subject, contract)
+      return unless root
+      error("#{label}_REGISTRY_DIGEST_MISMATCH") unless facts["registry_digest"] == root[:registry_digest]
+      error("#{label}_LANE_DIGEST_MISMATCH") unless digests == root[:lane_digests].slice(*required)
+    end
+
+    def validate_root_results(subject, contract)
+      return @root_result_cache if @root_result_cache
+
+      aggregate = load_root_json(File.join(ROOT_RESULT_DIR, "aggregate.json"), "ROOT_AGGREGATE")
+      return nil unless aggregate
+      exact_fields(aggregate, ROOT_AGGREGATE_FIELDS, "ROOT_AGGREGATE")
+      checks = contract.const_get(:CHECKS)
+      expected_lane_ids = checks.map { |definition| definition.fetch("id") }
+      expected_registry = contract.digest(checks)
+      lane_digests = aggregate["lane_result_digests"]
+      error("ROOT_AGGREGATE_SCHEMA_MISMATCH") unless aggregate["schema_version"] == ROOT_AGGREGATE_SCHEMA
+      error("ROOT_AGGREGATE_PHASE_MISMATCH") unless aggregate["phase"] == PHASE
+      error("ROOT_AGGREGATE_STATUS_INVALID") unless aggregate["status"] == "PASS"
+      error("ROOT_AGGREGATE_SUBJECT_MISMATCH") unless subject && aggregate["tested_subject_digest"] == subject[:digest]
+      error("ROOT_AGGREGATE_REGISTRY_MISMATCH") unless aggregate["registry_digest"] == expected_registry
+      error("ROOT_AGGREGATE_RESULT_DIGEST_MISMATCH") unless aggregate["result_digest"] == contract.digest(aggregate.reject { |key, _| key == "result_digest" })
+      unless lane_digests.is_a?(Hash) && lane_digests.keys.sort == expected_lane_ids.sort &&
+             lane_digests.values.all? { |digest| digest.is_a?(String) && digest.match?(SHA256) }
+        error("ROOT_AGGREGATE_LANE_SET_MISMATCH")
+        return nil
+      end
+
+      checks.each do |definition|
+        id = definition.fetch("id")
+        lane = load_root_json(File.join(ROOT_RESULT_DIR, "lanes", "#{id}.json"), "ROOT_LANE #{id}")
+        next unless lane
+        exact_fields(lane, ROOT_LANE_FIELDS, "ROOT_LANE #{id}")
+        error("ROOT_LANE_SCHEMA_MISMATCH: #{id}") unless lane["schema_version"] == ROOT_RESULT_SCHEMA
+        error("ROOT_LANE_CHECK_ID_MISMATCH: #{id}") unless lane["check_id"] == id
+        error("ROOT_LANE_LAYER_MISMATCH: #{id}") unless lane["layer"] == definition.fetch("layer")
+        error("ROOT_LANE_MODE_MISMATCH: #{id}") unless lane["mode"] == definition.fetch("mode")
+        error("ROOT_LANE_ARGV_MISMATCH: #{id}") unless lane["argv"] == definition.fetch("argv")
+        error("ROOT_LANE_STATUS_INVALID: #{id}") unless lane.values_at("status", "exit_code", "error_id") == ["PASS", 0, nil]
+        error("ROOT_LANE_DIAGNOSTIC_INVALID: #{id}") unless lane["diagnostic_sha256"].is_a?(String) && lane["diagnostic_sha256"].match?(SHA256)
+        %w[started_at completed_at].each do |field|
+          begin
+            Time.iso8601(lane.fetch(field))
+          rescue ArgumentError, KeyError, TypeError
+            error("ROOT_LANE_TIMESTAMP_INVALID: #{id} #{field}")
+          end
+        end
+        actual = contract.digest(lane.reject { |key, _| key == "result_digest" })
+        error("ROOT_LANE_RESULT_DIGEST_MISMATCH: #{id}") unless lane["result_digest"] == actual
+        error("ROOT_LANE_AGGREGATE_DIGEST_MISMATCH: #{id}") unless lane_digests[id] == actual
+      end
+      @documents_for_scan << ["ROOT_AGGREGATE", aggregate]
+      @root_result_cache = { registry_digest: expected_registry, lane_digests: lane_digests }
+    end
+
+    def load_root_json(relative, label)
+      snapshot = read_file(relative, label)
+      return nil unless snapshot
+      JSON.parse(snapshot)
+    rescue JSON::ParserError
+      error("#{label}_JSON_INVALID")
+      nil
+    end
+
+    def root_contract
+      require_relative "../../scripts/lib/phase-03/run_checks"
+      Phase03RunChecks.registry_contract!
+      Phase03RunChecks
+    rescue Phase03RunChecks::ConfigurationError
+      error("ROOT_REGISTRY_INVALID")
+      Phase03RunChecks
     end
 
     def validate_adapters(adapters, required, label)
@@ -653,7 +791,7 @@ module Phase3CryptoEvidence
         if value.start_with?("/") || value.match?(/\A[A-Za-z]:[\\\/]/)
           error("PROHIBITED_ABSOLUTE_PATH: #{label} #{path.join('.')}")
         end
-        return if path.last.to_s.match?(/(?:sha256|digest)\z/)
+        return if path.any? { |segment| segment.to_s.match?(/(?:sha256|digests?)\z/) }
         PROHIBITED_VALUE_PATTERNS.each do |token, pattern|
           error("PROHIBITED_#{token}: #{label} #{path.join('.')}") if value.match?(pattern)
         end
