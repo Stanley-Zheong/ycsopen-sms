@@ -63,8 +63,7 @@ class CurrentProtectedReaderFenceTest {
             "hmac-api-key-hydration",
             "blacklist-lookup-hydration",
             "tenant-lifecycle-analytics-hydration-save");
-    private static final Set<String> DEDICATED_WRITER_BLOCKERS = Set.of(
-            "tenant-registration-persistence");
+    private static final Set<String> DEDICATED_WRITER_BLOCKERS = Set.of();
 
     @Autowired
     JdbcTemplate jdbc;
@@ -189,6 +188,7 @@ class CurrentProtectedReaderFenceTest {
                 .containsExactlyInAnyOrderElementsOf(DEDICATED_WRITER_BLOCKERS);
         assertThat(toTextSet(manifest.path("obligation_readiness").path("blocking_surface_ids")))
                 .containsExactlyInAnyOrderElementsOf(DEDICATED_WRITER_BLOCKERS);
+        assertThat(manifest.path("obligation_readiness").path("status").asText()).isEqualTo("READY");
 
         JsonNode messageSubmit = surfaces.get("message-submit-persistence");
         assertThat(messageSubmit.path("disposition").asText())

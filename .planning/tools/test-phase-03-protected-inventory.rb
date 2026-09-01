@@ -72,7 +72,7 @@ cases = 0
 
 with_fixture("baseline") do |root|
   assert_result("baseline", root, expected_success: true, token: "protected_inventory=PASS")
-  assert_result("baseline readiness", root, expected_success: true, token: "obligation_readiness=BLOCKED_BY_CURRENT_IMPLEMENTATION")
+  assert_result("baseline readiness", root, expected_success: true, token: "obligation_readiness=READY")
   cases += 1
 end
 
@@ -145,7 +145,12 @@ with_fixture("no-index") do |root|
 end
 
 with_fixture("false-ready") do |root|
-  mutate_manifest(root) { |manifest| manifest["obligation_readiness"]["status"] = "READY" }
+  mutate_manifest(root) do |manifest|
+    blocker = manifest["source_surfaces"].first
+    blocker["obligation_blocking"] = true
+    manifest["obligation_readiness"]["status"] = "READY"
+    manifest["obligation_readiness"]["blocking_surface_ids"] = [blocker["id"]]
+  end
   assert_result("false obligation ready", root, expected_success: false, token: "OBLIGATION_FALSE_READY")
   cases += 1
 end

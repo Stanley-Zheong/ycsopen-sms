@@ -66,10 +66,8 @@ class ProtectedDataManifestTest {
         assertThat(thirdParty.kind()).isEqualTo(Kind.LEGACY_DIGEST);
         assertThat(thirdParty.migrationState()).isEqualTo(MigrationState.MIGRATABLE_SCHEMA_ONLY);
         assertThat(thirdParty.identityColumn()).isEqualTo("id");
-        assertThat(manifest.resolvedForMigration()).isFalse();
-        assertThat(manifest.unresolvedReasons()).contains(
-                "source-surface-blocking:tenant-registration-persistence",
-                "readiness-blocking:tenant-registration-persistence");
+        assertThat(manifest.resolvedForMigration()).isTrue();
+        assertThat(manifest.unresolvedReasons()).isEmpty();
     }
 
     @Test
@@ -125,8 +123,8 @@ class ProtectedDataManifestTest {
     }
 
     @Test
-    void unresolvedReviewedManifestBlocksBeforeThePairedBoundary() {
-        ProtectedDataManifest manifest = load(manifestBytes);
+    void unresolvedReviewedManifestBlocksBeforeThePairedBoundary() throws Exception {
+        ProtectedDataManifest manifest = unresolvedManifest();
         AtomicInteger pairCalls = new AtomicInteger();
         AtomicReference<MutationCounters> mutations = new AtomicReference<>(zeroMutations());
         MigrationPreflight preflight = new MigrationPreflight(manifest, request -> {
@@ -255,6 +253,25 @@ class ProtectedDataManifestTest {
             return root;
         });
         return load(resolved);
+    }
+
+    private static ProtectedDataManifest unresolvedManifest() throws Exception {
+        byte[] unresolved = mutate(root -> {
+            for (JsonNode surface : root.required("source_surfaces")) {
+                ObjectNode row = (ObjectNode) surface;
+                if ("tenant-registration-persistence".equals(row.required("id").asText())) {
+                    row.put("obligation_blocking", true);
+                    row.put("disposition", "BLOCKING_TEST_PROTECTED_BOUNDARY");
+                }
+            }
+            ObjectNode readiness = (ObjectNode) root.required("obligation_readiness");
+            readiness.put("status", "BLOCKED_BY_CURRENT_IMPLEMENTATION");
+            readiness.set("blocking_surface_ids",
+                    JSON.createArrayNode().add("tenant-registration-persistence"));
+            readiness.put("reason", "Synthetic current-writer blocker for preflight rejection.");
+            return root;
+        });
+        return load(unresolved);
     }
 
     private static PreflightRequest validRequest(ProtectedDataManifest manifest) {

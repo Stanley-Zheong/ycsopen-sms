@@ -35,9 +35,10 @@
       ],
       "writers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdNo"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["submitRegistration", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "legal_rep_id_no_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
       ],
-      "reason": "The mapped field is hidden opaque byte[] state, but the live registration writer still drops this protected input and remains blocking."
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
     },
     {
       "id": "tenants.contact_id_no_encrypted", "table": "tenants", "column": "contact_id_no_encrypted",
@@ -50,9 +51,10 @@
       ],
       "writers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String contactIdNo"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["submitRegistration", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "contact_id_no_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
       ],
-      "reason": "The mapped field is hidden opaque byte[] state, but the live registration writer still drops this protected input and remains blocking."
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
     },
     {
       "id": "tenants.contact_phone_encrypted", "table": "tenants", "column": "contact_phone_encrypted",
@@ -65,9 +67,10 @@
       ],
       "writers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String contactPhone"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["submitRegistration", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "contact_phone_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
       ],
-      "reason": "The mapped field is hidden opaque byte[] state, but the live registration writer still drops this protected input and remains blocking."
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
     },
     {
       "id": "signatures.applicant_phone_encrypted", "table": "signatures", "column": "applicant_phone_encrypted",
@@ -204,34 +207,41 @@
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"business_license_url\")", "private String businessLicenseObjectId"] }
       ],
       "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setBusinessLicenseUrl", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.BUSINESS_LICENSE", "object_state = 'CLAIMED'", "claim_reference"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
       ],
-      "reason": "Required 10 MiB registration object is currently accepted and persisted as a raw URL."
+      "reason": "The required 10 MiB proof is accepted only as a purpose-bound staged object ID and claimed atomically with tenant persistence."
     },
     {
       "id": "tenants.legal_rep_id_front_url", "table": "tenants", "column": "legal_rep_id_front_url",
       "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
       "source_bound_bytes": 5242880, "maximum_complete_envelope_bytes": 5243025, "storage_capacity_bytes": 255,
       "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
-      "tenant_column": "id", "identity_column": "id", "readers": [],
-      "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdFrontUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["submitRegistration", "tenantRepository.save(tenant)"] }
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_front_url\")", "private String legalRepIdFrontObjectId"] }
       ],
-      "reason": "Required 5 MiB registration object input is currently dropped instead of claimed as an opaque object ID."
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdFrontObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.LEGAL_REPRESENTATIVE_ID_FRONT", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The required front image is retained only as its purpose-bound opaque object ID after atomic claim."
     },
     {
       "id": "tenants.legal_rep_id_back_url", "table": "tenants", "column": "legal_rep_id_back_url",
       "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
       "source_bound_bytes": 5242880, "maximum_complete_envelope_bytes": 5243025, "storage_capacity_bytes": 255,
       "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
-      "tenant_column": "id", "identity_column": "id", "readers": [],
-      "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdBackUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["submitRegistration", "tenantRepository.save(tenant)"] }
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_back_url\")", "private String legalRepIdBackObjectId"] }
       ],
-      "reason": "Required 5 MiB registration object input is currently dropped instead of claimed as an opaque object ID."
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdBackObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.LEGAL_REPRESENTATIVE_ID_BACK", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The required back image is retained only as its purpose-bound opaque object ID after atomic claim."
     },
     {
       "id": "tenants.shortlink_domain_proof_url", "table": "tenants", "column": "shortlink_domain_proof_url",
@@ -243,10 +253,10 @@
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"shortlink_domain_proof_url\")", "private String shortlinkDomainProofObjectId"] }
       ],
       "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String shortlinkDomainProofUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setShortlinkDomainProofUrl", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String shortlinkDomainProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.SHORT_LINK_PROOF", "object_state = 'CLAIMED'"] }
       ],
-      "reason": "Optional 10 MiB proof object is currently persisted as a raw URL."
+      "reason": "The optional proof is omitted or retained only as its purpose-bound opaque object ID after atomic claim."
     },
     {
       "id": "tenants.trademark_proof_url", "table": "tenants", "column": "trademark_proof_url",
@@ -258,10 +268,10 @@
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"trademark_proof_url\")", "private String trademarkProofObjectId"] }
       ],
       "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String trademarkProofUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setTrademarkProofUrl", "tenantRepository.save(tenant)"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String trademarkProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.TRADEMARK_PROOF", "object_state = 'CLAIMED'"] }
       ],
-      "reason": "Optional 10 MiB proof object is currently persisted as a raw URL."
+      "reason": "The optional proof is omitted or retained only as its purpose-bound opaque object ID after atomic claim."
     },
     {
       "id": "signatures.evidence_url", "table": "signatures", "column": "evidence_url",
@@ -333,14 +343,16 @@
       "reason": "The live caller generates the immutable identity, prepares once before routing, exposes only ordered opaque query values, and saves the envelope plus separate write-compatible index rows through the protected adapter."
     },
     {
-      "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "BLOCKING_REGISTRATION_PROTECTED_FIELD_AND_OBJECT_CLAIM_WRITER", "obligation_blocking": true,
+      "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_FIELD_AND_OBJECT_CLAIM", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "tenantService.submitRegistration(request)"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseUrl", "String legalRepIdNo", "String legalRepIdFrontUrl", "String legalRepIdBackUrl", "String contactIdNo", "String contactPhone", "String shortlinkDomainProofUrl", "String trademarkProofUrl"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setBusinessLicenseUrl", "setShortlinkDomainProofUrl", "setTrademarkProofUrl", "tenantRepository.save(tenant)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "TenantRegistrationResponse.from"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId", "String legalRepIdNo", "String legalRepIdFrontObjectId", "String legalRepIdBackObjectId", "String contactIdNo", "String contactPhone", "String shortlinkDomainProofObjectId", "String trademarkProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "protectedFieldCodec.protect", "verifier.claim", "object_state = 'CLAIMED'"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.validateRequest", "registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationResponse.java", "tokens": ["Public registration state", "TenantRegistrationResponse from"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantRepository.java", "tokens": ["JpaRepository<Tenant, Long>", "findByUnifiedSocialCreditCode"] }
       ],
-      "reason": "Current endpoint drops protected identity/contact inputs and writes raw proof URLs."
+      "reason": "The live endpoint allocates a stable tenant identity, writes three YCSE/v1 field envelopes and claims every selected staged object in one transaction, while returning only public state."
     },
     {
       "id": "auth-user-hydration-save", "role": "READER_WRITER", "disposition": "ADOPTED_OPAQUE_MAPPING_EXACT_BYTE_PRESERVATION", "obligation_blocking": false,
@@ -383,10 +395,8 @@
     }
   ],
   "obligation_readiness": {
-    "status": "BLOCKED_BY_CURRENT_IMPLEMENTATION",
-    "blocking_surface_ids": [
-      "tenant-registration-persistence"
-    ],
-    "reason": "Current message and non-message reader boundaries are adopted; OBL-CRYPTO-STORAGE-001 remains blocked by the tenant-registration protected field/object-claim writer."
+    "status": "READY",
+    "blocking_surface_ids": [],
+    "reason": "All current executable reader/writer surfaces use protected adapters or closed projections; migration and phase-boundary evidence remain separately required."
   }
 }

@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ycsopen.sms.core.common.security.persistence.TenantRegistrationProtectionAdapter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -52,6 +53,20 @@ public class Tenant {
     @ToString.Exclude
     @Column(name = "legal_rep_id_no_encrypted", length = 255)
     private byte[] legalRepIdNoEncrypted;
+
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_front_url")
+    private String legalRepIdFrontObjectId;
+
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_back_url")
+    private String legalRepIdBackObjectId;
 
     @Column(name = "contact_name")
     private String contactName;
@@ -119,27 +134,28 @@ public class Tenant {
     public enum BillingMode { PREPAID, POSTPAID }
 
     /**
-     * Temporary write-only compatibility seam for the current registration service.
-     * Plan 03-29 replaces the request writer with the purpose-bound object claim owner.
+     * Assigns the complete protected registration state through the sole persistence adapter.
+     * The permit cannot be constructed by controllers or ordinary services, and all mutable
+     * inputs are defensively copied before the adapter clears its working buffers.
      */
-    @Deprecated(forRemoval = true)
     @JsonIgnore
-    public void setBusinessLicenseUrl(String objectId) {
-        this.businessLicenseObjectId = objectId;
-    }
-
-    /** @see #setBusinessLicenseUrl(String) */
-    @Deprecated(forRemoval = true)
-    @JsonIgnore
-    public void setShortlinkDomainProofUrl(String objectId) {
-        this.shortlinkDomainProofObjectId = objectId;
-    }
-
-    /** @see #setBusinessLicenseUrl(String) */
-    @Deprecated(forRemoval = true)
-    @JsonIgnore
-    public void setTrademarkProofUrl(String objectId) {
-        this.trademarkProofObjectId = objectId;
+    public void assignProtectedRegistration(
+            TenantRegistrationProtectionAdapter.PreparedRegistration prepared,
+            TenantRegistrationProtectionAdapter.AssignmentPermit permit) {
+        if (permit == null || prepared == null
+                || prepared.businessLicenseObjectId() == null
+                || prepared.legalRepIdFrontObjectId() == null
+                || prepared.legalRepIdBackObjectId() == null) {
+            throw new IllegalStateException("protected registration assignment is invalid");
+        }
+        this.legalRepIdNoEncrypted = prepared.copyLegalRepresentativeIdEnvelope();
+        this.contactIdNoEncrypted = prepared.copyContactIdEnvelope();
+        this.contactPhoneEncrypted = prepared.copyContactPhoneEnvelope();
+        this.businessLicenseObjectId = prepared.businessLicenseObjectId();
+        this.legalRepIdFrontObjectId = prepared.legalRepIdFrontObjectId();
+        this.legalRepIdBackObjectId = prepared.legalRepIdBackObjectId();
+        this.shortlinkDomainProofObjectId = prepared.shortlinkDomainProofObjectId();
+        this.trademarkProofObjectId = prepared.trademarkProofObjectId();
     }
 
     /** F-2.8：试用额度是否已耗尽。 */
