@@ -59,6 +59,18 @@ class SecurityRedactionConverterTest {
     }
 
     @Test
+    void appenderTransformTerminatesExactlyOneRedactedPhysicalLine() {
+        String output = new SecurityRedactionConverter().transform(
+                null, "event=PROVIDER_REJECTION token=secret-token\r\nCKR_DEVICE_ERROR");
+
+        assertThat(output)
+                .endsWith(System.lineSeparator())
+                .doesNotContain("secret-token", "CKR_DEVICE_ERROR", "\r");
+        assertThat(output.substring(0, output.length() - System.lineSeparator().length()))
+                .doesNotContain("\n");
+    }
+
+    @Test
     void everyConfiguredAppenderUsesTheRedactionConverter() throws Exception {
         String configuration = Files.readString(Path.of("src/main/resources/logback-spring.xml"));
         Matcher appenders = Pattern.compile("(?s)<appender\\b.*?</appender>").matcher(configuration);
@@ -70,7 +82,10 @@ class SecurityRedactionConverterTest {
         assertThat(count).isPositive();
         assertThat(configuration)
                 .contains("conversionWord=\"securityRedact\"")
-                .contains("SecurityRedactionConverter");
+                .contains("class=\"com.ycsopen.sms.core.common.security.logging.SecurityRedactionConverter\"")
+                .contains("SecurityRedactionConverter")
+                .contains("%nopex%securityRedact(%msg)")
+                .doesNotContain("%securityRedact(%msg)%n");
     }
 
     private static final class RedactingCaptureAppender extends AppenderBase<ILoggingEvent> {

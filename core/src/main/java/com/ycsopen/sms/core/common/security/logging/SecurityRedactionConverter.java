@@ -24,7 +24,7 @@ public final class SecurityRedactionConverter extends CompositeConverter<ILoggin
 
     @Override
     protected String transform(ILoggingEvent event, String input) {
-        return redact(input);
+        return redact(input) + System.lineSeparator();
     }
 
     public static String redact(String input) {
