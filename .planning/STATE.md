@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 3 of 30
+Plan: 4 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute `03-03-PLAN.md` in Wave 1; `03-01-PLAN.md` and `03-02-PLAN.md` have committed summaries and all Phase 03 obligation TODO rows remain open.
+**Current plan**: Execute `03-04-PLAN.md` in Wave 1; `03-01-PLAN.md` through `03-03-PLAN.md` have committed summaries and all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -55,6 +55,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Every entry, plan, GSD, UI, code, and Claude review uses a bounded revision cycle. Escalation never grants completion; affected TODOs remain open until a later cycle reaches a blocking-free result.
 - Each completed phase is one atomic commit plus one external annotated delivery tag. Dependency entry resolves the configured remote branch/tag target, target-tree subject/evidence/review digests, and PR/check PASS; committed `SUMMARY.md` records locators rather than a self SHA.
 - Phase 03 obligation PASS evidence must bind the exact-four catalog/TEST-MATRIX trace to canonical live input hashes, the accepted inventory digest, complete leak coverage, and fixed real/deterministic child-result identities and digests; OBL-001 independently rejects unresolved inventory and missing no-index targets.
+- Phase 03 real fixture evidence requires digest-locked MySQL and MinIO operations plus an executable source-verified SoftHSM token; source-manifest validation or a mock substitute cannot satisfy the runtime prerequisite.
 
 ## Known implementation reality
 
@@ -69,6 +70,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Trial quota is disconnected from sending.
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
+- Plan 03 now provides a passing opt-in real fixture lane: JDBC against the admitted MySQL digest, signed MinIO object lifecycle with anonymous rejection, and Java SunPKCS11 AES-GCM/HMAC against a source-verified SoftHSM 2.7.0 token. This is prerequisite evidence only and closes no obligation TODO.
 
 ## Authoritative TODO seeds
 
@@ -86,7 +88,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 ## Blockers
 
 - No Phase 03 execution-entry blocker remains; independent entry review and Claude Attempt 5 are authorized.
-- Real SoftHSM execution is intentionally still open implementation work owned by Plan 03-03; it was not represented as completed entry evidence.
+- Real MySQL/MinIO/SoftHSM fixture execution is available after Plan 03-03; production crypto/storage/migration/leak implementation and canonical obligation evidence remain open.
 - Phase 03 completion remains blocked until its scoped TODO is empty, independent verification passes, and commit/push delivery attestation is recorded.
 
 ## Coverage state
@@ -100,6 +102,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-03-PLAN.md`, Phase 3 Wave 1.
+**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-04-PLAN.md`, Phase 3 Wave 1.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
