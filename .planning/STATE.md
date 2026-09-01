@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 4 of 30
+Plan: 5 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute `03-04-PLAN.md` in Wave 1; `03-01-PLAN.md` through `03-03-PLAN.md` have committed summaries and all Phase 03 obligation TODO rows remain open.
+**Current plan**: Execute `03-05-PLAN.md` in Wave 2; `03-01-PLAN.md` through `03-04-PLAN.md` have committed summaries and all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -71,6 +71,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
 - Plan 03 now provides a passing opt-in real fixture lane: JDBC against the admitted MySQL digest, signed MinIO object lifecycle with anonymous rejection, and Java SunPKCS11 AES-GCM/HMAC against a source-verified SoftHSM 2.7.0 token. This is prerequisite evidence only and closes no obligation TODO.
+- Plan 04 now provides the strict immutable YCSE/v1 binary and canonical AAD contract with passing byte, mutation, capacity and bounded-reader tests. Production key-provider, persistence, storage and migration evidence remain open.
 
 ## Authoritative TODO seeds
 
@@ -102,6 +103,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-04-PLAN.md`, Phase 3 Wave 1.
+**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-05-PLAN.md`, Phase 3 Wave 2.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
