@@ -163,10 +163,10 @@
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] }
       ],
       "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["setMobileEncrypted", "setMobileHash", "messageTaskRepository.save(task)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
       ],
-      "reason": "The adapter owns the protected write, but the live submission service still invokes fail-closed plaintext/raw-digest seams until Plan 26 rewires it."
+      "reason": "The live submission service prepares once before routing, routes only ordered opaque query values, and persists the YCSE envelope, non-queryable locator, and per-version indexes only through the adapter transaction."
     },
     {
       "id": "bulk_sending_items.mobile_encrypted", "table": "bulk_sending_items", "column": "mobile_encrypted",
@@ -282,7 +282,7 @@
     { "id": "mobile_portability.mobile_hash", "table": "mobile_portability", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Exact-five legacy digest target; schema-only today." },
     { "id": "blacklist_entries.mobile_hash", "table": "blacklist_entries", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "CURRENT_EXECUTABLE", "reason": "Current blacklist equality lookup uses the legacy digest." },
     { "id": "third_party_risk_check_logs.mobile_hash", "table": "third_party_risk_check_logs", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Deployed databases may contain rows even though current Java has no reader or writer." },
-    { "id": "message_tasks.mobile_hash", "table": "message_tasks", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "CURRENT_EXECUTABLE", "reason": "Current message submission writes raw SHA-256." },
+    { "id": "message_tasks.mobile_hash", "table": "message_tasks", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "CURRENT_EXECUTABLE", "reason": "Existing rows remain a legacy migration target; current message submission writes a non-queryable row locator and separate versioned HMAC metadata rows." },
     { "id": "unsubscribe_records.mobile_hash", "table": "unsubscribe_records", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Exact-five legacy digest target; schema-only today." }
   ],
   "candidates": [
@@ -320,14 +320,15 @@
   ],
   "source_surfaces": [
     {
-      "id": "message-submit-persistence", "role": "WRITER", "disposition": "BLOCKING_LIVE_CALLER_REWIRE_TO_PROTECTED_ADAPTER", "obligation_blocking": true,
+      "id": "message-submit-persistence", "role": "WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_ENVELOPE_AND_VERSIONED_INDEX_WRITE", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["HashUtil.sha256Hex(request.phoneNumber())", "setMobileEncrypted(request.phoneNumber())", "messageTaskRepository.save(task)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java", "tokens": ["BlindIndexPort.OrderedIndexes mobileQueryIndexes", "never raw SHA-256"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "@Column(name = \"mobile_hash\", nullable = false, length = 64)", "private byte[] mobileEncrypted"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/repository/MessageTaskRepository.java", "tokens": ["JpaRepository<MessageTask, Long>"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
       ],
-      "reason": "A protected adapter exists, but the live submission service still invokes fail-closed plaintext/raw-digest seams; Plan 26 must rewire the caller before this blocker can close."
+      "reason": "The live caller generates the immutable identity, prepares once before routing, exposes only ordered opaque query values, and saves the envelope plus separate write-compatible index rows through the protected adapter."
     },
     {
       "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "BLOCKING_REGISTRATION_PROTECTED_FIELD_AND_OBJECT_CLAIM_WRITER", "obligation_blocking": true,
@@ -380,9 +381,8 @@
   "obligation_readiness": {
     "status": "BLOCKED_BY_CURRENT_IMPLEMENTATION",
     "blocking_surface_ids": [
-      "message-submit-persistence",
       "tenant-registration-persistence"
     ],
-    "reason": "Current non-message readers are fenced; OBL-CRYPTO-STORAGE-001 remains blocked by the live message caller rewire and tenant-registration protected field/object-claim writer."
+    "reason": "Current message and non-message reader boundaries are adopted; OBL-CRYPTO-STORAGE-001 remains blocked by the tenant-registration protected field/object-claim writer."
   }
 }

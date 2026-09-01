@@ -64,7 +64,6 @@ class CurrentProtectedReaderFenceTest {
             "blacklist-lookup-hydration",
             "tenant-lifecycle-analytics-hydration-save");
     private static final Set<String> DEDICATED_WRITER_BLOCKERS = Set.of(
-            "message-submit-persistence",
             "tenant-registration-persistence");
 
     @Autowired
@@ -192,6 +191,19 @@ class CurrentProtectedReaderFenceTest {
                 .containsExactlyInAnyOrderElementsOf(DEDICATED_WRITER_BLOCKERS);
         assertThat(toTextSet(manifest.path("obligation_readiness").path("blocking_surface_ids")))
                 .containsExactlyInAnyOrderElementsOf(DEDICATED_WRITER_BLOCKERS);
+
+        JsonNode messageSubmit = surfaces.get("message-submit-persistence");
+        assertThat(messageSubmit.path("disposition").asText())
+                .isEqualTo("ADOPTED_PROTECTED_ADAPTER_ATOMIC_ENVELOPE_AND_VERSIONED_INDEX_WRITE");
+        assertThat(messageSubmit.path("obligation_blocking").asBoolean()).isFalse();
+        assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java"))
+                .contains("messageTaskProtectionAdapter.prepare",
+                        ".mobileQueryIndexes(preparedMobile.queryIndexes())",
+                        "messageTaskProtectionAdapter.save")
+                .doesNotContain("messageTaskRepository", "setMobileEncrypted", "setMobileHash");
+        assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java"))
+                .contains("BlindIndexPort.OrderedIndexes mobileQueryIndexes")
+                .doesNotContain("phoneNumber");
 
         for (JsonNode surface : surfaces.values()) {
             assertThat(surface.path("disposition").asText()).doesNotContain("REQUIRED");
