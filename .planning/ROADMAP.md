@@ -170,7 +170,7 @@ Each lane records its exact obligation subset in its plan frontmatter, SPEC trac
 
 **Test layers**: Crypto vectors, persistence integration, rotation/failure recovery, leak scans.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: 30 executable plan files are registered; `03-01` through `03-09`, `03-11`, `03-15`, `03-24`, `03-25`, and `03-26` have committed summaries; `03-10` can resume against the adopted message writer. Completion remains governed only by the scoped TODO query.
+**Plans**: 30 executable plan files are registered; `03-01` through `03-11`, `03-15`, `03-24`, `03-25`, and `03-26` have committed summaries. Completion remains governed only by the scoped TODO query.
 
 ### Phase 4: Platform system-message and notification bootstrap
 
