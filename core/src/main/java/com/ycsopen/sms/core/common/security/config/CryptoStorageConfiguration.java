@@ -12,6 +12,9 @@ import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11CryptoStorageProper
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11FailureMapper;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactory;
 import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
+import com.ycsopen.sms.core.common.security.object.DenyAllObjectAccessAuthorization;
+import com.ycsopen.sms.core.common.security.object.ObjectAccessAuthorizationPort;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -71,6 +74,12 @@ public class CryptoStorageConfiguration {
     @Bean
     OpaqueTokenDigestPort opaqueTokenDigestPort(CryptoStorageRuntime runtime) {
         return runtime.opaqueTokenDigestPort();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectAccessAuthorizationPort.class)
+    ObjectAccessAuthorizationPort objectAccessAuthorizationPort() {
+        return new DenyAllObjectAccessAuthorization();
     }
 
     @Bean
