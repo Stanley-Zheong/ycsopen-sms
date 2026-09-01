@@ -22,7 +22,7 @@ completion_metric: scoped_todo_empty
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
 Plan: dependency-ordered Phase 03 implementation
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Plans `03-13` and `03-29` have committed implementation and summary evidence. The bounded migration command exists, tenant registration has no remaining current protected-writer blocker, and all Phase 03 obligation TODO rows remain open pending composed evidence.
+**Current plan**: Plans `03-20` and `03-30` have committed implementation and summary evidence. Key lifecycle/rewrap is explicit, the real object-registration composition passes, and all Phase 03 obligation TODO rows remain open pending migration, rotation, leak and evidence composition.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -81,7 +81,7 @@ The verified scoped TODO query is the sole completion metric.
 - Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
 - Plan 09 provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 adopts it in the live message service, and Plan 10 now adds checkpoint-aware lookup plus real Connector/J/PKCS11 raw-row, AAD, outage and rollback proof. Every Phase 03 obligation TODO remains open.
 - Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
-- Plan 12 provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Plan 27 provides the production signed writer/snapshot pair verifier, closed schemas, trust rotation and atomic pair CAS. Plan 13 adds the bounded transactional migration command/runner, and Plan 29 adopts the last current tenant-registration writer so the protected inventory is READY with zero blocking surfaces. Real migration/recovery and registration service composition remain later work, and every Phase 03 obligation TODO remains open.
+- Plan 12 provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Plan 27 provides the production signed writer/snapshot pair verifier, closed schemas, trust rotation and atomic pair CAS. Plan 13 adds the bounded transactional migration command/runner, Plan 29 adopts the last current tenant-registration writer, Plan 20 adds explicit lifecycle/rewrap, and Plan 30 passes the real object-registration service composition. Real migration recovery, rotation/fault composition, leak/evidence sealing and every Phase 03 obligation TODO remain open.
 
 ## Authoritative TODO seeds
 
@@ -113,6 +113,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Remaining Phase 3 plans after completed Plans 13 and 29, in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/real-service plus independent/Claude review for the Phase boundary.
+**Resume from**: Plan 14, then Plans 18, 19, 21, 22 and 23 in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/independent/Claude review for the Phase boundary; execute each plan-owned real-service lane once when it becomes the active dependency.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Preserve the scoped TODO query as the sole completion metric.
