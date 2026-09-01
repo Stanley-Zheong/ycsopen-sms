@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 7 of 30
+Plan: 9 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute `03-07-PLAN.md` in Wave 4; `03-01-PLAN.md` through `03-06-PLAN.md` and the independently schedulable `03-08-PLAN.md`, `03-11-PLAN.md`, and `03-15-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
+**Current plan**: Execute `03-09-PLAN.md`; `03-01-PLAN.md` through `03-08-PLAN.md` plus `03-11-PLAN.md`, `03-15-PLAN.md`, and `03-24-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -74,6 +74,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Plan 04 now provides the strict immutable YCSE/v1 binary and canonical AAD contract with passing byte, mutation, capacity and bounded-reader tests. Production key-provider, persistence, storage and migration evidence remain open.
 - Plan 05 now provides opaque key, versioned blind-index and purpose-separated capability/upload digest ports with passing deterministic vectors. The deterministic adapter is test-only evidence and production PKCS11, persistence and lifecycle evidence remain open.
 - Plan 06 now provides the production Java 21 SunPKCS11 provider/session and opaque-key adapter, with durable independent pre-nonce reservation, purpose-separated aliases/domains, the 1,048,576 hard ceiling and sanitized failures proven by unit mapping/order tests. Real SoftHSM/MySQL adapter evidence remains owned by Plan 07, and every Phase 03 obligation TODO remains open.
+- Plan 07 now enforces reference-only production startup and proves the same production SunPKCS11 adapter against a source/hash-locked SoftHSM 2.7.0 fixture plus real MySQL reservation state, including AES-GCM/AAD, purpose-separated HMAC, restart, failure burn, concurrency and the exact ceiling. This is SoftHSM protocol conformance rather than physical-HSM certification, and every Phase 03 obligation TODO remains open.
 - Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
 - Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
 
@@ -107,6 +108,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-07-PLAN.md`, Phase 3 Wave 4.
+**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-09-PLAN.md`, Phase 3.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
