@@ -2,6 +2,7 @@ package com.ycsopen.sms.core.service.routing;
 
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
 import com.ycsopen.sms.core.repository.BlacklistEntryRepository;
+import com.ycsopen.sms.core.repository.BlacklistEntryRepository.LookupProjection;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,8 +27,8 @@ public class BlacklistChecker {
 
     public Result check(RoutingContext ctx) {
         // 白名单优先：机构级白名单命中直接放行 (F-5.2)
-        List<BlacklistEntry> tenantWhite = blacklistEntryRepository
-                .findByMobileHashAndTenantIdAndStatus(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
+        List<LookupProjection> tenantWhite = blacklistEntryRepository
+                .findTenantLegacyCompatibilityMatches(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
                 .stream().filter(e -> e.getListType() == BlacklistEntry.ListType.WHITE).toList();
         if (!tenantWhite.isEmpty()) {
             return Result.pass();
@@ -35,7 +36,7 @@ public class BlacklistChecker {
 
         // ① 系统级黑名单
         boolean systemHit = blacklistEntryRepository
-                .findByMobileHashAndTenantIdIsNullAndStatus(ctx.getMobileHash(), BlacklistEntry.Status.ACTIVE)
+                .findSystemLegacyCompatibilityMatches(ctx.getMobileHash(), BlacklistEntry.Status.ACTIVE)
                 .stream().anyMatch(e -> e.getListType() == BlacklistEntry.ListType.BLACK);
         if (systemHit) {
             return Result.blocked("系统级黑名单命中");
@@ -43,7 +44,7 @@ public class BlacklistChecker {
 
         // ② 机构级黑名单
         boolean tenantHit = blacklistEntryRepository
-                .findByMobileHashAndTenantIdAndStatus(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
+                .findTenantLegacyCompatibilityMatches(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
                 .stream().anyMatch(e -> e.getListType() == BlacklistEntry.ListType.BLACK);
         if (tenantHit) {
             return Result.blocked("机构级黑名单命中（如历史退订用户）");
