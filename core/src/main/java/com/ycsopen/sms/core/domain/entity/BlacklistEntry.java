@@ -1,8 +1,11 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -19,8 +22,12 @@ public class BlacklistEntry {
     @Column(name = "tenant_id")
     private Long tenantId;
 
-    @Column(name = "mobile_encrypted", nullable = false)
-    private String mobileEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "mobile_encrypted", nullable = false, length = 255)
+    private byte[] mobileEncrypted;
 
     @Column(name = "mobile_hash", nullable = false)
     private String mobileHash;

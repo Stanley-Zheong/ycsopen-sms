@@ -1,8 +1,11 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,29 +36,53 @@ public class Tenant {
     @Column(name = "unified_social_credit_code", nullable = false, unique = true)
     private String unifiedSocialCreditCode;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "business_license_url")
-    private String businessLicenseUrl;
+    private String businessLicenseObjectId;
 
     @Column(name = "legal_rep_name")
     private String legalRepName;
 
-    @Column(name = "legal_rep_id_no_encrypted")
-    private String legalRepIdNoEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_no_encrypted", length = 255)
+    private byte[] legalRepIdNoEncrypted;
 
     @Column(name = "contact_name")
     private String contactName;
 
-    @Column(name = "contact_id_no_encrypted")
-    private String contactIdNoEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "contact_id_no_encrypted", length = 255)
+    private byte[] contactIdNoEncrypted;
 
-    @Column(name = "contact_phone_encrypted")
-    private String contactPhoneEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "contact_phone_encrypted", length = 255)
+    private byte[] contactPhoneEncrypted;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "shortlink_domain_proof_url")
-    private String shortlinkDomainProofUrl;
+    private String shortlinkDomainProofObjectId;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "trademark_proof_url")
-    private String trademarkProofUrl;
+    private String trademarkProofObjectId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status")
@@ -90,6 +117,30 @@ public class Tenant {
     public enum VerificationStatus { UNVERIFIED, PENDING, VERIFIED, REJECTED }
     public enum LifecycleStatus { SUBMITTED, TRIAL, TRIAL_FROZEN, SIGNED, FROZEN, TERMINATED }
     public enum BillingMode { PREPAID, POSTPAID }
+
+    /**
+     * Temporary write-only compatibility seam for the current registration service.
+     * Plan 03-29 replaces the request writer with the purpose-bound object claim owner.
+     */
+    @Deprecated(forRemoval = true)
+    @JsonIgnore
+    public void setBusinessLicenseUrl(String objectId) {
+        this.businessLicenseObjectId = objectId;
+    }
+
+    /** @see #setBusinessLicenseUrl(String) */
+    @Deprecated(forRemoval = true)
+    @JsonIgnore
+    public void setShortlinkDomainProofUrl(String objectId) {
+        this.shortlinkDomainProofObjectId = objectId;
+    }
+
+    /** @see #setBusinessLicenseUrl(String) */
+    @Deprecated(forRemoval = true)
+    @JsonIgnore
+    public void setTrademarkProofUrl(String objectId) {
+        this.trademarkProofObjectId = objectId;
+    }
 
     /** F-2.8：试用额度是否已耗尽。 */
     public boolean isTrialQuotaExhausted() {
