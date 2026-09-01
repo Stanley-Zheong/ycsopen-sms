@@ -159,7 +159,7 @@ def build_fixture(root)
     "targets" => Phase3CryptoEvidence::LEAK_TARGETS.to_a.sort.map do |id|
       {
         "id" => id,
-        "reader_identity" => "phase03-leak-scanner",
+        "reader_identity" => Phase3CryptoEvidence::LEAK_READER_IDENTITIES.fetch(id),
         "scanned_items" => 1,
         "prohibited_matches" => 0,
         "sensitivity_status" => "DETECTED_SEEDED_MUTATION"
@@ -414,6 +414,31 @@ with_fixture("leak-match") do |root|
   mutate_json(root, LEAK_PATH) { |leak| leak.fetch("targets").first["prohibited_matches"] = 1 }
   refresh_bindings(root)
   assert_result("leak match", root, expected_success: false, token: "LEAK_PROHIBITED_MATCH")
+  cases += 1
+end
+
+with_fixture("leak-reader-spoof") do |root|
+  mutate_json(root, LEAK_PATH) do |leak|
+    leak.fetch("targets").find { |target| target["id"] == "evidence" }["reader_identity"] = "phase03-leak-scanner"
+  end
+  refresh_bindings(root)
+  assert_result("leak reader spoof", root, expected_success: false, token: "LEAK_READER_IDENTITY_INVALID")
+  cases += 1
+end
+
+with_fixture("leak-self-attestation") do |root|
+  subject = read_json(root, SUBJECT_PATH)
+  leak_snapshot = File.binread(File.join(root, LEAK_PATH))
+  subject.fetch("inputs") << {
+    "path" => LEAK_PATH,
+    "mode" => format("%06o", File.stat(File.join(root, LEAK_PATH)).mode),
+    "sha256" => Digest::SHA256.hexdigest(leak_snapshot),
+    "role" => "test"
+  }
+  subject["inputs"].sort_by! { |input| input.fetch("path") }
+  write_json(root, SUBJECT_PATH, subject)
+  refresh_bindings(root)
+  assert_result("leak self attestation", root, expected_success: false, token: "LEAK_SELF_ATTESTATION_REJECTED")
   cases += 1
 end
 

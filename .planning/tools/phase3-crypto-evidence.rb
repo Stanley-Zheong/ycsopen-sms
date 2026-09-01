@@ -83,6 +83,13 @@ module Phase3CryptoEvidence
     "tenant-lifecycle-analytics-hydration-save"
   ].freeze
   LEAK_TARGETS = Set.new(%w[database-cells evidence logs object-bytes reports]).freeze
+  LEAK_READER_IDENTITIES = {
+    "database-cells" => "phase03-leak-scanner",
+    "evidence" => "phase03-artifact-scanner",
+    "logs" => "phase03-leak-scanner",
+    "object-bytes" => "phase03-leak-scanner",
+    "reports" => "phase03-artifact-scanner"
+  }.freeze
 
   MANIFEST_FIELDS = Set.new(%w[schema_version phase owner status subject inventory leak_result entries]).freeze
   SUBJECT_REF_FIELDS = Set.new(%w[path sha256 tested_subject_digest]).freeze
@@ -417,14 +424,19 @@ module Phase3CryptoEvidence
         return nil
       end
       ids = targets.filter_map { |target| target["id"] if target.is_a?(Hash) }
-      error("LEAK_TARGET_SET_INVALID") unless ids.to_set == LEAK_TARGETS && ids.uniq.length == ids.length
+      error("LEAK_TARGET_SET_INVALID") unless ids == LEAK_TARGETS.to_a.sort
       targets.each do |target|
         exact_fields(target, LEAK_TARGET_FIELDS, "LEAK_TARGET")
         next unless target.is_a?(Hash)
-        error("LEAK_READER_IDENTITY_INVALID: #{target['id']}") unless target["reader_identity"] == "phase03-leak-scanner"
+        expected_reader = LEAK_READER_IDENTITIES[target["id"]]
+        error("LEAK_READER_IDENTITY_INVALID: #{target['id']}") unless expected_reader && target["reader_identity"] == expected_reader
         error("LEAK_SCANNED_COUNT_INVALID: #{target['id']}") unless target["scanned_items"].is_a?(Integer) && target["scanned_items"].positive?
         error("LEAK_PROHIBITED_MATCH: #{target['id']}") unless target["prohibited_matches"] == 0
         error("LEAK_SENSITIVITY_INVALID: #{target['id']}") unless target["sensitivity_status"] == "DETECTED_SEEDED_MUTATION"
+      end
+      subject_inputs = Array(subject&.dig(:document, "inputs"))
+      if subject_inputs.any? { |input| input.is_a?(Hash) && input["path"] == reference["path"] }
+        error("LEAK_SELF_ATTESTATION_REJECTED")
       end
       @documents_for_scan << [label, reference]
       @documents_for_scan << ["LEAK_RESULT", leak]

@@ -25,6 +25,18 @@ Select exactly one dependency-unblocked phase from `ROADMAP.md`.
 Do not begin another module merely because a shared file is nearby.
 If execution reveals another module, record it as a dependency or later-phase TODO and keep the active phase fenced.
 
+## Mandatory execution steering checkpoint
+
+Run this checkpoint after every implementation batch and before starting the next batch. It is a delivery-control check, not another review ceremony.
+
+1. Compare the authoritative phase TODO before and after the batch. Every batch must either remove an evidenced TODO dependency or produce a concrete artifact required to close one; otherwise stop and change course.
+2. List verification commands already run for the unchanged subject. Do not repeat a passing full-suite, real-service, entry, independent-review, or Claude gate unless its relevant subject changed or the phase is at its final boundary.
+3. Compare implementation/test output with process-document output. Documentation records decisions, deviations, evidence, and handoff facts concisely; it does not restate source code or manufacture progress.
+4. Re-read the active phase objective and the current batch's owned files. Defer requirements not owned by the PRD obligation or established architecture instead of inventing production behavior to satisfy over-broad plan prose.
+5. Record only a material correction in `ITERATIONS.md`. A checkpoint that confirms the course needs no ceremonial artifact.
+
+If any check shows drift, narrow or re-sequence the remaining work immediately. Completion continues to depend only on the verified scoped TODO set.
+
 ## Canonical phase directory
 
 Use `.planning/phases/<NN>-<package-id>/`.
@@ -99,6 +111,7 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 4. Record meaningful failures, discoveries, deviations, and corrections in `ITERATIONS.md`.
 5. Update `DECISIONS.md` before implementing a consequential deviation.
 6. Keep `TODO.md` synchronized item by item; a checked item cites evidence rather than merely claiming completion.
+7. Run the mandatory execution steering checkpoint after each implementation batch before selecting more work.
 
 ## Gate F — acceptance automation
 
