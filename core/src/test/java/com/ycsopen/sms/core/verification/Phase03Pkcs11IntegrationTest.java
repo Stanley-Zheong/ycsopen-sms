@@ -53,6 +53,7 @@ class Phase03Pkcs11IntegrationTest {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private static final String MAIN_ALIAS = CryptoStorageStartupVerifier.FIELD_KEK_ALIAS;
+    private static final String SNAPSHOT_ALIAS = "ycs.snapshot-recovery.v1";
     private static final String RETIRING_ALIAS = "ycs.field-encryption-kek.v2";
     private static final String CEILING_ALIAS = "ycs.field-ceiling.v3";
     private static final String CONCURRENT_ALIAS = "ycs.field-concurrent.v4";
@@ -303,6 +304,9 @@ class Phase03Pkcs11IntegrationTest {
                 handoff.slot(), "phase03-real-token", () -> handoff.userPin().clone(),
                 List.of(fieldKey,
                         field(2, "field-retiring.v2", RETIRING_ALIAS, Pkcs11KeyDescriptor.State.RETIRING),
+                        new Pkcs11KeyDescriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY,
+                                1, "snapshot-recovery.v1", SNAPSHOT_ALIAS,
+                                Pkcs11KeyDescriptor.State.ACTIVE, "AES", 256),
                         hmac(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                                 "mobile-index.v1", MOBILE_ACTIVE_ALIAS, Pkcs11KeyDescriptor.State.ACTIVE),
                         hmac(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 2,
@@ -344,6 +348,9 @@ class Phase03Pkcs11IntegrationTest {
         insertField(jdbc, 4, "field-concurrent.v4", "ROTATION_REQUIRED", 1_048_560, true);
         insertField(jdbc, 5, "field-failure.v5", "ACTIVE", 0, false);
         insertField(jdbc, 6, "field-extractable.v6", "ACTIVE", 0, false);
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose, key_version, provider_id, provider_key_reference, key_state) "
+                        + "VALUES ('SNAPSHOT_RECOVERY', 1, 'pkcs11', 'snapshot-recovery.v1', 'ACTIVE')");
         insertHmac(jdbc, "MOBILE_BLIND_INDEX", 1, "mobile-index.v1", "ACTIVE");
         insertHmac(jdbc, "MOBILE_BLIND_INDEX", 2, "mobile-index.v2", "RETIRING");
         insertHmac(jdbc, "OBJECT_CAPABILITY_DIGEST", 1, "object-digest.v1", "ACTIVE");
@@ -542,7 +549,8 @@ class Phase03Pkcs11IntegrationTest {
               int failed = 0;
               if (strcmp(argv[3], "provision") == 0 && argc == 4) {
                 const char *aes[] = {"ycs.field-encryption-kek.v1", "ycs.field-encryption-kek.v2",
-                  "ycs.field-ceiling.v3", "ycs.field-concurrent.v4", "ycs.field-failure.v5"};
+                  "ycs.field-ceiling.v3", "ycs.field-concurrent.v4", "ycs.field-failure.v5",
+                  "ycs.snapshot-recovery.v1"};
                 const char *hmac[] = {"ycs.mobile-blind-index.v1", "ycs.mobile-blind-index.v2",
                   "ycs.object-capability-digest.v1", "ycs.registration-upload-digest.v1"};
                 for (size_t i = 0; i < sizeof(aes) / sizeof(aes[0]); i++) failed |= generate(session, aes[i], 1, 0);

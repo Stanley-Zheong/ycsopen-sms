@@ -99,6 +99,7 @@ class Phase03ObjectStorageIntegrationTest {
 
     private static final String FIELD_REFERENCE = "field-kek.v1";
     private static final String FIELD_ALIAS = "ycs.field-encryption-kek.v1";
+    private static final String SNAPSHOT_ALIAS = "ycs.snapshot-recovery.v1";
     private static final String MOBILE_ALIAS = "ycs.mobile-blind-index.v1";
     private static final String OBJECT_ACTIVE_ALIAS = "ycs.object-capability-digest.v1";
     private static final String OBJECT_RETIRING_ALIAS = "ycs.object-capability-digest.v2";
@@ -1024,6 +1025,8 @@ class Phase03ObjectStorageIntegrationTest {
         List<Pkcs11KeyDescriptor> descriptors = List.of(
                 descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
                         FIELD_REFERENCE, FIELD_ALIAS, Pkcs11KeyDescriptor.State.ACTIVE),
+                descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 1,
+                        "snapshot-recovery.v1", SNAPSHOT_ALIAS, Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                         "mobile-index.v1", MOBILE_ALIAS, Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.OBJECT_CAPABILITY_DIGEST, 1,
@@ -1081,12 +1084,13 @@ class Phase03ObjectStorageIntegrationTest {
                                                   String alias,
                                                   Pkcs11KeyDescriptor.State state) {
         return new Pkcs11KeyDescriptor(purpose, version, reference, alias, state,
-                purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
+                purpose.isWrappingKey()
                         ? "AES" : "HmacSHA256", 256);
     }
 
     private static void seedKeyMetadata(JdbcTemplate jdbc) {
         insertKey(jdbc, "FIELD_ENCRYPTION_KEK", 1, FIELD_REFERENCE, "ACTIVE");
+        insertKey(jdbc, "SNAPSHOT_RECOVERY", 1, "snapshot-recovery.v1", "ACTIVE");
         insertKey(jdbc, "MOBILE_BLIND_INDEX", 1, "mobile-index.v1", "ACTIVE");
         insertKey(jdbc, "OBJECT_CAPABILITY_DIGEST", 1, "object-digest.v1", "ACTIVE");
         insertKey(jdbc, "OBJECT_CAPABILITY_DIGEST", 2, "object-digest.v2", "RETIRING");
@@ -1375,7 +1379,7 @@ class Phase03ObjectStorageIntegrationTest {
               if (C_OpenSession((CK_SLOT_ID)parsed, CKF_SERIAL_SESSION | CKF_RW_SESSION,
                                 NULL_PTR, NULL_PTR, &session) != CKR_OK) return 68;
               if (C_Login(session, CKU_USER, (CK_UTF8CHAR_PTR)user_pin, strlen(user_pin)) != CKR_OK) return 69;
-              const char *aes[] = {"ycs.field-encryption-kek.v1"};
+              const char *aes[] = {"ycs.field-encryption-kek.v1", "ycs.snapshot-recovery.v1"};
               const char *hmac[] = {"ycs.mobile-blind-index.v1", "ycs.object-capability-digest.v1",
                 "ycs.object-capability-digest.v2", "ycs.registration-upload-digest.v1",
                 "ycs.registration-upload-digest.v2"};
