@@ -1,8 +1,13 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
+import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,10 +38,18 @@ public class MessageTask {
     @Column(name = "signature_id")
     private Long signatureId;
 
-    @Column(name = "mobile_encrypted", nullable = false)
-    private String mobileEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "mobile_encrypted", nullable = false, length = 255)
+    private byte[] mobileEncrypted;
 
-    @Column(name = "mobile_hash", nullable = false)
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "mobile_hash", nullable = false, length = 64)
     private String mobileHash;
 
     @Column(nullable = false)
@@ -65,6 +78,46 @@ public class MessageTask {
 
     @Version
     private Integer version;
+
+    /** Accepts only the adapter-produced, context-bound value. */
+    public void assignPreparedMobile(PreparedMessageMobile prepared,
+                                     MessageTaskProtectionAdapter.AssignmentPermit permit) {
+        if (prepared == null || permit == null || mobileEncrypted != null || mobileHash != null) {
+            throw new IllegalStateException("protected mobile assignment rejected");
+        }
+        mobileEncrypted = prepared.copyEnvelope();
+        mobileHash = prepared.legacyLocator();
+    }
+
+    /** Clears only the exact prepared assignment after its transaction rolled back. */
+    public void clearPreparedMobile(PreparedMessageMobile prepared,
+                                    MessageTaskProtectionAdapter.AssignmentPermit permit) {
+        if (permit != null && prepared != null
+                && java.util.Arrays.equals(mobileEncrypted, prepared.copyEnvelope())
+                && java.util.Objects.equals(mobileHash, prepared.legacyLocator())) {
+            if (mobileEncrypted != null) {
+                java.util.Arrays.fill(mobileEncrypted, (byte) 0);
+            }
+            mobileEncrypted = null;
+            mobileHash = null;
+        }
+    }
+
+    public boolean hasPreparedMobile() {
+        return mobileEncrypted != null || mobileHash != null;
+    }
+
+    /** Existing plaintext callers fail closed until Plan 03-26 rewires them to the adapter. */
+    @Deprecated(forRemoval = true)
+    public void setMobileEncrypted(String rejectedPlaintext) {
+        throw new IllegalStateException("protected mobile requires MessageTaskProtectionAdapter");
+    }
+
+    /** Existing raw-digest callers fail closed until Plan 03-26 rewires them to the adapter. */
+    @Deprecated(forRemoval = true)
+    public void setMobileHash(String rejectedDigest) {
+        throw new IllegalStateException("protected mobile requires MessageTaskProtectionAdapter");
+    }
 
     public enum SendStatus { PENDING, SENT, DELIVERED, FAILED }
 }
