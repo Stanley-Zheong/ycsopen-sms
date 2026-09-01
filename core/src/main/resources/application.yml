@@ -35,10 +35,25 @@ ycsopen:
     jwt:
       secret: ${JWT_SECRET:CHANGE_ME_IN_ENV_32_BYTES_MINIMUM}
       access-token-ttl-minutes: 120
-    field-encryption:
-      # AES key for 🔒-tagged column encryption (PRD 6.2.1). MUST come from a
-      # real KMS in production — env var here is a dev-only placeholder.
-      key-base64: ${FIELD_ENCRYPTION_KEY:CHANGE_ME_BASE64_32_BYTES}
+    crypto-storage:
+      enabled: ${YCSOPEN_CRYPTO_STORAGE_ENABLED:false}
+      adapter: ${YCSOPEN_CRYPTO_STORAGE_ADAPTER:SUN_PKCS11}
+      provider-id: pkcs11
+      module-path: ${YCSOPEN_PKCS11_MODULE_PATH:}
+      allowed-module-paths: ${YCSOPEN_PKCS11_ALLOWED_MODULE_PATHS:}
+      slot-id: ${YCSOPEN_PKCS11_SLOT_ID:-1}
+      token-identity: ${YCSOPEN_PKCS11_TOKEN_IDENTITY:}
+      credential-source: ENVIRONMENT
+      credential-reference: ${YCSOPEN_PKCS11_CREDENTIAL_REFERENCE:YCSOPEN_PKCS11_PIN}
+      mechanisms: CKM_AES_GCM,CKM_SHA256_HMAC
+      key-attributes: CKA_TOKEN,CKA_PRIVATE,CKA_SENSITIVE,CKA_NOT_EXTRACTABLE
+      rotation-required-at: 983040
+      hard-ceiling: 1048576
+      aliases:
+        field-encryption-kek: ycs.field-encryption-kek.v1
+        mobile-blind-index: ycs.mobile-blind-index.v1
+        object-capability-digest: ycs.object-capability-digest.v1
+        registration-upload-digest: ycs.registration-upload-digest.v1
   routing:
     complaint-ratio-threshold: 0.003   # 千分之三 default, see PRD F-11.9/F-11.10
   third-party-blacklist:
