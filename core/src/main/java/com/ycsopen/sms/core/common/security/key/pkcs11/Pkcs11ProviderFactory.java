@@ -190,7 +190,7 @@ public final class Pkcs11ProviderFactory {
     }
 
     private static boolean algorithmMatches(Pkcs11KeyDescriptor descriptor, String actual) {
-        if (descriptor.purpose() == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK) {
+        if (descriptor.purpose().isWrappingKey()) {
             return "AES".equalsIgnoreCase(actual);
         }
         return "Generic Secret".equalsIgnoreCase(actual)

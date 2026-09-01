@@ -107,6 +107,8 @@ public class CryptoStorageConfiguration {
                 environment.getProperty(PREFIX + "rotation-required-at", Long.class, -1L),
                 environment.getProperty(PREFIX + "hard-ceiling", Long.class, -1L),
                 environment.getProperty(PREFIX + "aliases.field-encryption-kek"),
+                environment.getProperty(PREFIX + "aliases.snapshot-recovery"),
+                environment.getProperty(PREFIX + "references.snapshot-recovery"),
                 environment.getProperty(PREFIX + "aliases.mobile-blind-index"),
                 environment.getProperty(PREFIX + "aliases.object-capability-digest"),
                 environment.getProperty(PREFIX + "aliases.registration-upload-digest"));

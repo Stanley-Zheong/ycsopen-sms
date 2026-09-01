@@ -65,7 +65,7 @@ final class Phase03ServiceHarness {
                     "mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb")) {
                 throw new FixtureException("MYSQL_IMAGE_IDENTITY_MISMATCH");
             }
-            return ServiceSession.mysql(runId, identity, username, password);
+            return ServiceSession.mysql(runId, identity, username, password, rootPassword);
         } catch (RuntimeException failure) {
             cleanupAfterFailedStart("mysql", runId, failure);
             throw failure;
@@ -395,32 +395,38 @@ final class Phase03ServiceHarness {
         private final String runId;
         private final String host;
         private final int port;
+        private final String containerName;
         private final String username;
         private final String password;
+        private final char[] rootPassword;
         private final SoftHsmHandoff softHsm;
         private boolean closed;
 
         private ServiceSession(String service, String runId, JsonNode identity, String username,
-                               String password, SoftHsmHandoff softHsm) {
+                               String password, char[] rootPassword, SoftHsmHandoff softHsm) {
             this.service = service;
             this.runId = runId;
             this.host = identity.path("host").asText();
             this.port = identity.path("port").asInt();
+            this.containerName = identity.path("container_name").asText();
             this.username = username;
             this.password = password;
+            this.rootPassword = rootPassword == null ? null : rootPassword.clone();
             this.softHsm = softHsm;
         }
 
-        static ServiceSession mysql(String runId, JsonNode identity, String username, String password) {
-            return new ServiceSession("mysql", runId, identity, username, password, null);
+        static ServiceSession mysql(String runId, JsonNode identity, String username,
+                                    String password, String rootPassword) {
+            return new ServiceSession("mysql", runId, identity, username, password,
+                    rootPassword.toCharArray(), null);
         }
 
         static ServiceSession minio(String runId, JsonNode identity, String username, String password) {
-            return new ServiceSession("minio", runId, identity, username, password, null);
+            return new ServiceSession("minio", runId, identity, username, password, null, null);
         }
 
         static ServiceSession softHsm(String runId, JsonNode identity, SoftHsmHandoff handoff) {
-            return new ServiceSession("softhsm", runId, identity, null, null, handoff);
+            return new ServiceSession("softhsm", runId, identity, null, null, null, handoff);
         }
 
         String host() {
@@ -431,12 +437,26 @@ final class Phase03ServiceHarness {
             return port;
         }
 
+        String containerName() {
+            if (containerName == null || containerName.isBlank()) {
+                throw new FixtureException("MYSQL_CONTAINER_IDENTITY_UNAVAILABLE");
+            }
+            return containerName;
+        }
+
         String username() {
             return username;
         }
 
         String password() {
             return password;
+        }
+
+        char[] rootPassword() {
+            if (rootPassword == null) {
+                throw new FixtureException("MYSQL_ROOT_CREDENTIAL_UNAVAILABLE");
+            }
+            return rootPassword.clone();
         }
 
         SoftHsmHandoff softHsm() {
@@ -451,6 +471,9 @@ final class Phase03ServiceHarness {
                 } finally {
                     if (softHsm != null) {
                         java.util.Arrays.fill(softHsm.userPin(), '\0');
+                    }
+                    if (rootPassword != null) {
+                        java.util.Arrays.fill(rootPassword, '\0');
                     }
                     closed = true;
                 }

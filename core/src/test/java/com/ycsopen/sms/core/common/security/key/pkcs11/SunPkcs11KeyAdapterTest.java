@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -157,6 +158,97 @@ class SunPkcs11KeyAdapterTest {
     }
 
     @Test
+    void selectsPurposeBoundReferencesUnderCanonicalDomainAndRejectsCrossPurposeUse() throws Exception {
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, new AtomicLong());
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, new AtomicLong());
+        List<String> events = new ArrayList<>();
+        TestCryptoOperations crypto = new TestCryptoOperations(events);
+        SunPkcs11KeyAdapter adapter = adapter(counts, events, crypto);
+        crypto.clearStartupEvents();
+        byte[] fieldHeader = header(32);
+        byte[] snapshotHeader = snapshotHeader(32);
+        ProtectionContext fieldContext = databaseContext("purpose-field");
+        ProtectionContext snapshotContext = snapshotContext("purpose-snapshot");
+
+        WrappedDataKey field = adapter.wrap(sequence(32, 1), fieldHeader, fieldContext);
+        WrappedDataKey snapshot = adapter.wrap(sequence(32, 2), snapshotHeader, snapshotContext);
+
+        assertThat(field.keyReference()).isEqualTo("unit-kek-v1");
+        assertThat(snapshot.keyReference()).isEqualTo("unit-snapshot-v1");
+        assertThat(counts.get(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK)).hasValue(1);
+        assertThat(counts.get(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY)).hasValue(1);
+        assertThat(asciiPrefix(crypto.aads.get(0), "YCSE-WRAP-AAD\0".length()))
+                .isEqualTo("YCSE-WRAP-AAD\0");
+        assertThat(asciiPrefix(crypto.aads.get(1), "YCSE-WRAP-AAD\0".length()))
+                .isEqualTo("YCSE-WRAP-AAD\0");
+        assertThat(canonicalContextFromWrapAad(crypto.aads.get(0)))
+                .containsExactly(fieldContext.canonicalBytes());
+        assertThat(canonicalContextFromWrapAad(crypto.aads.get(1)))
+                .containsExactly(snapshotContext.canonicalBytes())
+                .isNotEqualTo(fieldContext.canonicalBytes());
+        assertThat(adapter.unwrap(field, fieldHeader, fieldContext)).containsExactly(sequence(32, 1));
+        assertThat(adapter.unwrap(snapshot, snapshotHeader, snapshotContext))
+                .containsExactly(sequence(32, 2));
+
+        assertThatThrownBy(() -> adapter.unwrap(snapshot, snapshotHeader, fieldContext))
+                .isInstanceOf(Pkcs11FailureMapper.Pkcs11OperationException.class)
+                .hasMessageContaining("PKCS11_KEY_POLICY");
+        assertThatThrownBy(() -> adapter.unwrap(field, fieldHeader, snapshotContext))
+                .isInstanceOf(Pkcs11FailureMapper.Pkcs11OperationException.class)
+                .hasMessageContaining("PKCS11_KEY_POLICY");
+        assertThatThrownBy(() -> adapter.wrap(sequence(32, 4), fieldHeader, snapshotContext))
+                .isInstanceOf(Pkcs11FailureMapper.Pkcs11OperationException.class)
+                .hasMessageContaining("PKCS11_KEY_POLICY");
+        assertThat(counts.get(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY)).hasValue(1);
+    }
+
+    @Test
+    void fieldAndSnapshotReservationsEnforceIndependentCeilings() throws Exception {
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        AtomicLong field = new AtomicLong(KekWrapUsageRepository.HARD_CEILING);
+        AtomicLong snapshot = new AtomicLong();
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, field);
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, snapshot);
+        SunPkcs11KeyAdapter adapter = adapter(counts, new ArrayList<>(),
+                new TestCryptoOperations(new ArrayList<>()));
+
+        assertThatThrownBy(() -> adapter.wrap(sequence(32, 5), header(32),
+                databaseContext("field-ceiling")))
+                .hasMessageContaining("PKCS11_WRAP_LIMIT_REACHED");
+        adapter.wrap(sequence(32, 6), snapshotHeader(32), snapshotContext("snapshot-open"));
+        assertThat(field).hasValue(KekWrapUsageRepository.HARD_CEILING);
+        assertThat(snapshot).hasValue(1);
+
+        field.set(0);
+        snapshot.set(KekWrapUsageRepository.HARD_CEILING);
+        assertThatThrownBy(() -> adapter.wrap(sequence(32, 7), snapshotHeader(32),
+                snapshotContext("snapshot-ceiling")))
+                .hasMessageContaining("PKCS11_WRAP_LIMIT_REACHED");
+        adapter.wrap(sequence(32, 8), header(32), databaseContext("field-open"));
+        assertThat(field).hasValue(1);
+        assertThat(snapshot).hasValue(KekWrapUsageRepository.HARD_CEILING);
+    }
+
+    @Test
+    void startupRejectsMoreThanOneActiveOrRotationSnapshotOwner() {
+        List<Pkcs11KeyDescriptor> ambiguous = new ArrayList<>(descriptors());
+        ambiguous.add(descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 2,
+                "unit-snapshot-kek-v2", Pkcs11KeyDescriptor.State.ROTATION_REQUIRED));
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, new AtomicLong());
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, new AtomicLong());
+
+        assertThatThrownBy(() -> adapter(counts, new ArrayList<>(),
+                new TestCryptoOperations(new ArrayList<>()), ambiguous))
+                .isInstanceOf(Pkcs11FailureMapper.Pkcs11OperationException.class)
+                .hasMessageContaining("PKCS11_KEY_POLICY");
+    }
+
+    @Test
     void preservesKnownMobileAndPurposeSeparatedTokenVectors() throws Exception {
         SunPkcs11KeyAdapter adapter = adapter(new AtomicLong(), new ArrayList<>(),
                 new TestCryptoOperations(new ArrayList<>()));
@@ -216,9 +308,9 @@ class SunPkcs11KeyAdapterTest {
         PlatformTransactionManager transactions = mock(PlatformTransactionManager.class);
         TransactionStatus status = new SimpleTransactionStatus();
         when(transactions.getTransaction(any(TransactionDefinition.class))).thenReturn(status);
-        when(jdbc.update(anyString(), anyLong(), anyString())).thenReturn(1);
+        when(jdbc.update(anyString(), anyString(), anyLong(), anyString())).thenReturn(1);
         when(jdbc.queryForObject(anyString(), org.mockito.ArgumentMatchers.eq(Long.class),
-                anyLong(), anyString()))
+                anyString(), anyLong(), anyString()))
                 .thenReturn(983_040L);
         KekWrapUsageRepository repository = new KekWrapUsageRepository(jdbc, transactions, mapper());
 
@@ -229,12 +321,45 @@ class SunPkcs11KeyAdapterTest {
         InOrder order = inOrder(jdbc, transactions);
         order.verify(transactions).getTransaction(any(TransactionDefinition.class));
         order.verify(jdbc).update(org.mockito.ArgumentMatchers.contains("wrap_operation_count < 1048576"),
+                org.mockito.ArgumentMatchers.eq("FIELD_ENCRYPTION_KEK"),
                 org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq("unit-kek-v1"));
         order.verify(jdbc).queryForObject(org.mockito.ArgumentMatchers.contains("SELECT wrap_operation_count"),
-                org.mockito.ArgumentMatchers.eq(Long.class), org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq(Long.class),
+                org.mockito.ArgumentMatchers.eq("FIELD_ENCRYPTION_KEK"),
+                org.mockito.ArgumentMatchers.eq(1L),
                 org.mockito.ArgumentMatchers.eq("unit-kek-v1"));
         order.verify(transactions).commit(status);
         verify(transactions).commit(status);
+    }
+
+    @Test
+    void repositoryBindsSnapshotPurposeToItsIndependentPersistedCounter() {
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        PlatformTransactionManager transactions = mock(PlatformTransactionManager.class);
+        TransactionStatus status = new SimpleTransactionStatus();
+        when(transactions.getTransaction(any(TransactionDefinition.class))).thenReturn(status);
+        when(jdbc.update(anyString(), org.mockito.ArgumentMatchers.eq("SNAPSHOT_RECOVERY"),
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq("unit-snapshot-v1"))).thenReturn(1);
+        when(jdbc.queryForObject(anyString(), org.mockito.ArgumentMatchers.eq(Long.class),
+                org.mockito.ArgumentMatchers.eq("SNAPSHOT_RECOVERY"),
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq("unit-snapshot-v1"))).thenReturn(1L);
+        KekWrapUsageRepository repository = new KekWrapUsageRepository(jdbc, transactions, mapper());
+        Pkcs11KeyDescriptor snapshot = descriptors().stream()
+                .filter(key -> key.purpose() == Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY)
+                .findFirst().orElseThrow();
+
+        assertThat(repository.reserve(snapshot).reservedCount()).isOne();
+        verify(jdbc).update(org.mockito.ArgumentMatchers.contains("purpose = ?"),
+                org.mockito.ArgumentMatchers.eq("SNAPSHOT_RECOVERY"),
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq("unit-snapshot-v1"));
+        verify(jdbc).queryForObject(org.mockito.ArgumentMatchers.contains("purpose = ?"),
+                org.mockito.ArgumentMatchers.eq(Long.class),
+                org.mockito.ArgumentMatchers.eq("SNAPSHOT_RECOVERY"),
+                org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq("unit-snapshot-v1"));
     }
 
     private Boundary wrapAt(long initial) throws Exception {
@@ -250,11 +375,27 @@ class SunPkcs11KeyAdapterTest {
     private SunPkcs11KeyAdapter adapter(AtomicLong count,
                                         java.util.Collection<String> events,
                                         TestCryptoOperations crypto) throws Exception {
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, count);
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, new AtomicLong());
+        return adapter(counts, events, crypto);
+    }
+
+    private SunPkcs11KeyAdapter adapter(Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts,
+                                        java.util.Collection<String> events,
+                                        TestCryptoOperations crypto) throws Exception {
+        return adapter(counts, events, crypto, descriptors());
+    }
+
+    private SunPkcs11KeyAdapter adapter(Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts,
+                                        java.util.Collection<String> events,
+                                        TestCryptoOperations crypto,
+                                        List<Pkcs11KeyDescriptor> descriptors) throws Exception {
         Path module = temporaryDirectory.resolve("unit-pkcs11.so");
         if (!Files.exists(module)) {
             Files.writeString(module, "unit");
         }
-        List<Pkcs11KeyDescriptor> descriptors = descriptors();
         Pkcs11CryptoStorageProperties properties = new Pkcs11CryptoStorageProperties(
                 module, List.of(module), 41, "unit-token", () -> "unit-pin".toCharArray(), descriptors);
         Pkcs11ProviderFactory factory = new Pkcs11ProviderFactory(
@@ -263,12 +404,16 @@ class SunPkcs11KeyAdapterTest {
                         Pkcs11KeyDescriptor::alias,
                         descriptor -> new Pkcs11ProviderFactory.TokenKey(
                                 new OpaqueUnitKey(descriptor.algorithm(), material(descriptor)),
-                                descriptor.purpose() == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
+                                descriptor.purpose().isWrappingKey()
                                         ? "AES" : "Generic Secret",
                                 256, true, true, false))), mapper());
         Pkcs11ProviderFactory.Session session = factory.open(properties);
         KekWrapUsageRepository repository = new KekWrapUsageRepository(descriptor -> {
             events.add("reserve");
+            AtomicLong count = counts.get(descriptor.purpose());
+            if (count == null) {
+                return null;
+            }
             while (true) {
                 long current = count.get();
                 if (current >= KekWrapUsageRepository.HARD_CEILING) {
@@ -293,6 +438,8 @@ class SunPkcs11KeyAdapterTest {
         return List.of(
                 descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
                         "unit-kek-v1", Pkcs11KeyDescriptor.State.ACTIVE),
+                descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 1,
+                        "unit-snapshot-kek-v1", Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                         "unit-mobile-v1", Pkcs11KeyDescriptor.State.RETIRING),
                 descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 2,
@@ -315,16 +462,20 @@ class SunPkcs11KeyAdapterTest {
                                                    long version,
                                                    String alias,
                                                    Pkcs11KeyDescriptor.State state) {
-        String reference = purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
-                ? "unit-kek-v1" : purpose.name().toLowerCase() + "-v" + version;
+        String reference = switch (purpose) {
+            case FIELD_ENCRYPTION_KEK -> "unit-kek-v1";
+            case SNAPSHOT_RECOVERY -> "unit-snapshot-v1";
+            default -> purpose.name().toLowerCase() + "-v" + version;
+        };
         return new Pkcs11KeyDescriptor(purpose, version, reference, alias, state,
-                purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK ? "AES" : "HmacSHA256",
+                purpose.isWrappingKey() ? "AES" : "HmacSHA256",
                 256);
     }
 
     private static byte[] material(Pkcs11KeyDescriptor descriptor) {
         String label = switch (descriptor.purpose()) {
             case FIELD_ENCRYPTION_KEK -> "field-encryption-kek-v1";
+            case SNAPSHOT_RECOVERY -> "snapshot-recovery-kek-v1";
             case MOBILE_BLIND_INDEX -> "mobile-blind-index-v" + descriptor.keyVersion();
             case OBJECT_CAPABILITY_DIGEST -> "opaque-token-object_capability-v" + descriptor.keyVersion();
             case REGISTRATION_UPLOAD_DIGEST -> "opaque-token-registration_upload-v" + descriptor.keyVersion();
@@ -363,10 +514,38 @@ class SunPkcs11KeyAdapterTest {
                 "unit-kek-v1", plaintextLength, EnvelopeCodec.Target.DATABASE_FIELD);
     }
 
+    private static byte[] snapshotHeader(long plaintextLength) {
+        return new EnvelopeCodec().authenticatedHeader(
+                "unit-snapshot-v1", plaintextLength,
+                EnvelopeCodec.Target.MYSQL_ENCRYPTED_SNAPSHOT_CHUNK);
+    }
+
     private static ProtectionContext databaseContext(String resource) {
         return new ProtectionContext(ProtectionContext.Purpose.DATABASE_FIELD,
                 "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
                 "tenant:17", resource);
+    }
+
+    private static ProtectionContext snapshotContext(String resource) {
+        return new ProtectionContext(ProtectionContext.Purpose.MYSQL_ENCRYPTED_SNAPSHOT_CHUNK,
+                "crypto-storage-bootstrap", "mysql-snapshot", "encrypted-chunk",
+                "global", resource);
+    }
+
+    private static String asciiPrefix(byte[] value, int length) {
+        return new String(value, 0, length, StandardCharsets.US_ASCII);
+    }
+
+    private static byte[] canonicalContextFromWrapAad(byte[] aad) {
+        ByteBuffer encoded = ByteBuffer.wrap(aad);
+        encoded.position("YCSE-WRAP-AAD\0".getBytes(StandardCharsets.US_ASCII).length);
+        int headerLength = encoded.getInt();
+        encoded.position(encoded.position() + headerLength);
+        int contextLength = encoded.getInt();
+        byte[] context = new byte[contextLength];
+        encoded.get(context);
+        assertThat(encoded.hasRemaining()).isFalse();
+        return context;
     }
 
     private static byte[] sequence(int length, int first) {
@@ -434,6 +613,7 @@ class SunPkcs11KeyAdapterTest {
     private static final class TestCryptoOperations implements SunPkcs11KeyAdapter.CryptoOperations {
         private final java.util.Collection<String> events;
         private final AtomicBoolean failNextAes = new AtomicBoolean();
+        private final List<byte[]> aads = new java.util.concurrent.CopyOnWriteArrayList<>();
 
         private TestCryptoOperations(java.util.Collection<String> events) {
             this.events = events;
@@ -441,11 +621,13 @@ class SunPkcs11KeyAdapterTest {
 
         void clearStartupEvents() {
             events.clear();
+            aads.clear();
         }
 
         @Override
         public byte[] aesGcm(boolean encrypt, SecretKey key, byte[] nonce, byte[] aad, byte[] input) {
             events.add("provider");
+            aads.add(aad.clone());
             if (failNextAes.compareAndSet(true, false)) {
                 throw new IllegalStateException("post-reservation-canary");
             }

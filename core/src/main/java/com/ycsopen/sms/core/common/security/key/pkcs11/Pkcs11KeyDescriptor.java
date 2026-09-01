@@ -22,6 +22,7 @@ public record Pkcs11KeyDescriptor(Purpose purpose,
 
     public enum Purpose {
         FIELD_ENCRYPTION_KEK("FIELD_ENCRYPTION_KEK", "AES"),
+        SNAPSHOT_RECOVERY("SNAPSHOT_RECOVERY", "AES"),
         MOBILE_BLIND_INDEX("MOBILE_BLIND_INDEX", "HmacSHA256"),
         OBJECT_CAPABILITY_DIGEST("OBJECT_CAPABILITY_DIGEST", "HmacSHA256"),
         REGISTRATION_UPLOAD_DIGEST("REGISTRATION_UPLOAD_DIGEST", "HmacSHA256");
@@ -40,6 +41,10 @@ public record Pkcs11KeyDescriptor(Purpose purpose,
 
         String algorithm() {
             return algorithm;
+        }
+
+        public boolean isWrappingKey() {
+            return this == FIELD_ENCRYPTION_KEK || this == SNAPSHOT_RECOVERY;
         }
     }
 

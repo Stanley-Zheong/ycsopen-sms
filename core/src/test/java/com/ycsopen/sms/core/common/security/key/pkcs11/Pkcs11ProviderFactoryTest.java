@@ -72,6 +72,8 @@ class Pkcs11ProviderFactoryTest {
         List<Pkcs11KeyDescriptor> duplicate = List.of(
                 descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
                         "unit-kek-v1", "shared-alias", Pkcs11KeyDescriptor.State.ACTIVE),
+                descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 1,
+                        "snapshot-v1", "unit-snapshot-v1", Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                         "mobile-v1", "SHARED-ALIAS", Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.OBJECT_CAPABILITY_DIGEST, 1,
@@ -81,6 +83,13 @@ class Pkcs11ProviderFactoryTest {
         assertThatThrownBy(() -> properties(allowed, duplicate))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("duplicate PKCS11 key identity");
+
+        List<Pkcs11KeyDescriptor> missingSnapshot = descriptors().stream()
+                .filter(key -> key.purpose() != Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY)
+                .toList();
+        assertThatThrownBy(() -> properties(allowed, missingSnapshot))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("missing PKCS11 key purpose");
     }
 
     @Test
@@ -131,7 +140,7 @@ class Pkcs11ProviderFactoryTest {
         assertThat(pin).containsExactly(TEST_PIN);
         Map<String, Pkcs11ProviderFactory.TokenKey> keys = new HashMap<>();
         for (Pkcs11KeyDescriptor descriptor : descriptors) {
-            String algorithm = descriptor.purpose() == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
+            String algorithm = descriptor.purpose().isWrappingKey()
                     ? "AES" : "Generic Secret";
             keys.put(descriptor.alias(), new Pkcs11ProviderFactory.TokenKey(
                     new OpaqueUnitKey(algorithm), algorithm, 256, true, true, false));
@@ -155,6 +164,8 @@ class Pkcs11ProviderFactoryTest {
         return List.of(
                 descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
                         "unit-kek-v1", "unit-kek-v1", Pkcs11KeyDescriptor.State.ACTIVE),
+                descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 1,
+                        "snapshot-v1", "unit-snapshot-v1", Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX, 1,
                         "mobile-v1", "unit-mobile-v1", Pkcs11KeyDescriptor.State.ACTIVE),
                 descriptor(Pkcs11KeyDescriptor.Purpose.OBJECT_CAPABILITY_DIGEST, 1,
@@ -169,7 +180,7 @@ class Pkcs11ProviderFactoryTest {
                                                    String alias,
                                                    Pkcs11KeyDescriptor.State state) {
         return new Pkcs11KeyDescriptor(purpose, version, reference, alias, state,
-                purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK ? "AES" : "HmacSHA256",
+                purpose.isWrappingKey() ? "AES" : "HmacSHA256",
                 256);
     }
 

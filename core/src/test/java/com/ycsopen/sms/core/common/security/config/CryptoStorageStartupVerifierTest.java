@@ -33,7 +33,7 @@ class CryptoStorageStartupVerifierTest {
 
         settings.validate();
 
-        assertThat(settings.descriptors()).hasSize(4)
+        assertThat(settings.descriptors()).hasSize(5)
                 .allSatisfy(descriptor -> {
                     assertThat(descriptor.keyBits()).isEqualTo(256);
                     assertThat(descriptor.hashedIdentity()).matches("[a-f0-9]{64}");
@@ -47,7 +47,7 @@ class CryptoStorageStartupVerifierTest {
         CryptoStorageStartupVerifier.Settings invalid = copy(enabledSettings(),
                 null, null, null, null, -1, null, null, null,
                 Set.of(), Set.of(), -1, -1,
-                null, null, null, null);
+                null, null, null, null, null, null);
 
         assertThatThrownBy(invalid::validate)
                 .isInstanceOf(IllegalStateException.class)
@@ -60,7 +60,10 @@ class CryptoStorageStartupVerifierTest {
                 List.of(Path.of("/module")), 1, "token", CryptoStorageStartupVerifier.CredentialSource.ENVIRONMENT,
                 "YCSOPEN_PKCS11_PIN", CryptoStorageStartupVerifier.REQUIRED_MECHANISMS,
                 CryptoStorageStartupVerifier.REQUIRED_ATTRIBUTES, 983040, 1048576,
-                CryptoStorageStartupVerifier.FIELD_KEK_ALIAS, CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS,
+                CryptoStorageStartupVerifier.FIELD_KEK_ALIAS,
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_ALIAS,
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE,
+                CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS,
                 CryptoStorageStartupVerifier.OBJECT_DIGEST_ALIAS,
                 CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS), "adapter");
         assertInvalid(withProvider(enabledSettings(), "in-memory"), "provider-id");
@@ -70,6 +73,10 @@ class CryptoStorageStartupVerifierTest {
                 CryptoStorageStartupVerifier.OBJECT_DIGEST_ALIAS,
                 CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS),
                 "aliases.field-encryption-kek");
+        assertInvalid(withSnapshotAlias(enabledSettings(), "unexpected"),
+                "aliases.snapshot-recovery");
+        assertInvalid(withSnapshotReference(enabledSettings(), "field-kek.v1"),
+                "references.snapshot-recovery");
         assertInvalid(withCeiling(enabledSettings(), 983039, 1048576), "rotation-required-at");
         assertInvalid(withCeiling(enabledSettings(), 983040, 1048577), "hard-ceiling");
     }
@@ -98,6 +105,8 @@ class CryptoStorageStartupVerifierTest {
                 CryptoStorageStartupVerifier.REQUIRED_MECHANISMS,
                 CryptoStorageStartupVerifier.REQUIRED_ATTRIBUTES, 983040, 1048576,
                 CryptoStorageStartupVerifier.FIELD_KEK_ALIAS,
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_ALIAS,
+                CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE,
                 CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS,
                 CryptoStorageStartupVerifier.OBJECT_DIGEST_ALIAS,
                 CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS);
@@ -105,7 +114,8 @@ class CryptoStorageStartupVerifierTest {
 
     private static CryptoStorageStartupVerifier.Settings disabledSettings() {
         return new CryptoStorageStartupVerifier.Settings(false, null, null, null, List.of(), -1,
-                null, null, null, Set.of(), Set.of(), -1, -1, null, null, null, null);
+                null, null, null, Set.of(), Set.of(), -1, -1,
+                null, null, null, null, null, null);
     }
 
     private static CryptoStorageStartupVerifier.Settings copy(
@@ -113,11 +123,13 @@ class CryptoStorageStartupVerifierTest {
             String adapter, String provider, Path module, List<Path> allowlist, long slot,
             String token, CryptoStorageStartupVerifier.CredentialSource credentialSource,
             String credentialReference, Set<String> mechanisms, Set<String> attributes,
-            long rotation, long ceiling, String fieldAlias, String mobileAlias,
+            long rotation, long ceiling, String fieldAlias, String snapshotAlias,
+            String snapshotReference, String mobileAlias,
             String objectAlias, String registrationAlias) {
         return new CryptoStorageStartupVerifier.Settings(source.enabled(), adapter, provider, module,
                 allowlist, slot, token, credentialSource, credentialReference, mechanisms, attributes,
-                rotation, ceiling, fieldAlias, mobileAlias, objectAlias, registrationAlias);
+                rotation, ceiling, fieldAlias, snapshotAlias, snapshotReference,
+                mobileAlias, objectAlias, registrationAlias);
     }
 
     private static CryptoStorageStartupVerifier.Settings withProvider(
@@ -125,7 +137,8 @@ class CryptoStorageStartupVerifierTest {
         return copy(source, source.adapterId(), provider, source.modulePath(), source.allowedModulePaths(),
                 source.slotId(), source.tokenIdentity(), source.credentialSource(), source.credentialReference(),
                 source.mechanisms(), source.keyAttributes(), source.rotationRequiredAt(), source.hardCeiling(),
-                source.fieldKekAlias(), source.mobileIndexAlias(), source.objectDigestAlias(),
+                source.fieldKekAlias(), source.snapshotRecoveryAlias(),
+                source.snapshotRecoveryReference(), source.mobileIndexAlias(), source.objectDigestAlias(),
                 source.registrationDigestAlias());
     }
 
@@ -134,7 +147,8 @@ class CryptoStorageStartupVerifierTest {
         return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
                 source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
                 source.credentialReference(), mechanisms, source.keyAttributes(), source.rotationRequiredAt(),
-                source.hardCeiling(), source.fieldKekAlias(), source.mobileIndexAlias(),
+                source.hardCeiling(), source.fieldKekAlias(), source.snapshotRecoveryAlias(),
+                source.snapshotRecoveryReference(), source.mobileIndexAlias(),
                 source.objectDigestAlias(), source.registrationDigestAlias());
     }
 
@@ -143,7 +157,8 @@ class CryptoStorageStartupVerifierTest {
         return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
                 source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
                 source.credentialReference(), source.mechanisms(), attributes, source.rotationRequiredAt(),
-                source.hardCeiling(), source.fieldKekAlias(), source.mobileIndexAlias(),
+                source.hardCeiling(), source.fieldKekAlias(), source.snapshotRecoveryAlias(),
+                source.snapshotRecoveryReference(), source.mobileIndexAlias(),
                 source.objectDigestAlias(), source.registrationDigestAlias());
     }
 
@@ -153,7 +168,29 @@ class CryptoStorageStartupVerifierTest {
         return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
                 source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
                 source.credentialReference(), source.mechanisms(), source.keyAttributes(),
-                source.rotationRequiredAt(), source.hardCeiling(), field, mobile, object, registration);
+                source.rotationRequiredAt(), source.hardCeiling(), field,
+                source.snapshotRecoveryAlias(), source.snapshotRecoveryReference(),
+                mobile, object, registration);
+    }
+
+    private static CryptoStorageStartupVerifier.Settings withSnapshotAlias(
+            CryptoStorageStartupVerifier.Settings source, String snapshotAlias) {
+        return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
+                source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
+                source.credentialReference(), source.mechanisms(), source.keyAttributes(),
+                source.rotationRequiredAt(), source.hardCeiling(), source.fieldKekAlias(),
+                snapshotAlias, source.snapshotRecoveryReference(), source.mobileIndexAlias(),
+                source.objectDigestAlias(), source.registrationDigestAlias());
+    }
+
+    private static CryptoStorageStartupVerifier.Settings withSnapshotReference(
+            CryptoStorageStartupVerifier.Settings source, String snapshotReference) {
+        return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
+                source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
+                source.credentialReference(), source.mechanisms(), source.keyAttributes(),
+                source.rotationRequiredAt(), source.hardCeiling(), source.fieldKekAlias(),
+                source.snapshotRecoveryAlias(), snapshotReference, source.mobileIndexAlias(),
+                source.objectDigestAlias(), source.registrationDigestAlias());
     }
 
     private static CryptoStorageStartupVerifier.Settings withCeiling(
@@ -161,8 +198,9 @@ class CryptoStorageStartupVerifierTest {
         return copy(source, source.adapterId(), source.providerId(), source.modulePath(),
                 source.allowedModulePaths(), source.slotId(), source.tokenIdentity(), source.credentialSource(),
                 source.credentialReference(), source.mechanisms(), source.keyAttributes(), rotation, ceiling,
-                source.fieldKekAlias(), source.mobileIndexAlias(), source.objectDigestAlias(),
-                source.registrationDigestAlias());
+                source.fieldKekAlias(), source.snapshotRecoveryAlias(),
+                source.snapshotRecoveryReference(), source.mobileIndexAlias(),
+                source.objectDigestAlias(), source.registrationDigestAlias());
     }
 
     private static void assertInvalid(CryptoStorageStartupVerifier.Settings settings, String property) {

@@ -46,7 +46,7 @@ public final class SunPkcs11KeyAdapter
     private final SecureRandom secureRandom;
     private final Pkcs11FailureMapper failureMapper;
     private final CryptoOperations operations;
-    private final Pkcs11KeyDescriptor activeKek;
+    private final Map<Pkcs11KeyDescriptor.Purpose, Pkcs11KeyDescriptor> activeKeks;
     private final Map<String, Pkcs11KeyDescriptor> keksByReference;
     private final List<Pkcs11KeyDescriptor> mobileKeys;
     private final Map<OpaqueTokenDigestPort.Purpose, List<Pkcs11KeyDescriptor>> tokenKeys;
@@ -73,16 +73,22 @@ public final class SunPkcs11KeyAdapter
         this.operations = Objects.requireNonNull(operations, "operations");
 
         List<Pkcs11KeyDescriptor> descriptors = properties.keys();
-        this.activeKek = descriptors.stream()
-                .filter(key -> key.purpose() == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
-                        && key.state().permitsWrap())
-                .reduce((left, right) -> {
-                    throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, left, null);
-                })
-                .orElseThrow(() -> failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, null, null));
+        this.activeKeks = new EnumMap<>(Pkcs11KeyDescriptor.Purpose.class);
+        for (Pkcs11KeyDescriptor.Purpose purpose : List.of(
+                Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK,
+                Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY)) {
+            Pkcs11KeyDescriptor active = descriptors.stream()
+                    .filter(key -> key.purpose() == purpose && key.state().permitsWrap())
+                    .reduce((left, right) -> {
+                        throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, left, null);
+                    })
+                    .orElseThrow(() -> failure(
+                            Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, null, null));
+            activeKeks.put(purpose, active);
+        }
         this.keksByReference = new HashMap<>();
         descriptors.stream()
-                .filter(key -> key.purpose() == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK)
+                .filter(key -> key.purpose().isWrappingKey())
                 .forEach(key -> {
                     if (keksByReference.put(key.keyReference(), key) != null) {
                         throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, key, null);
@@ -99,8 +105,8 @@ public final class SunPkcs11KeyAdapter
                 descriptorsFor(descriptors, Pkcs11KeyDescriptor.Purpose.REGISTRATION_UPLOAD_DIGEST));
         validatePurposeIsolation(descriptors);
         validateMechanisms(descriptors);
-        this.runtimeStatus = new AtomicReference<>(activeKek.state()
-                == Pkcs11KeyDescriptor.State.ROTATION_REQUIRED
+        this.runtimeStatus = new AtomicReference<>(activeKeks.values().stream().anyMatch(key ->
+                key.state() == Pkcs11KeyDescriptor.State.ROTATION_REQUIRED)
                 ? KeyHealth.Status.ROTATION_REQUIRED : KeyHealth.Status.READY);
     }
 
@@ -108,6 +114,7 @@ public final class SunPkcs11KeyAdapter
     public WrappedDataKey wrap(byte[] dataEncryptionKey,
                                byte[] authenticatedHeader,
                                ProtectionContext semanticContext) {
+        Pkcs11KeyDescriptor activeKek = activeKek(semanticContext);
         requireLength(dataEncryptionKey, DATA_ENCRYPTION_KEY_BYTES, activeKek);
         requireHeaderKeyReference(authenticatedHeader, activeKek.keyReference(), activeKek);
         byte[] aad = wrapAad(authenticatedHeader, semanticContext, activeKek);
@@ -139,6 +146,7 @@ public final class SunPkcs11KeyAdapter
         if (descriptor == null || !descriptor.state().permitsUnwrap()) {
             throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, descriptor, null);
         }
+        requireContextPurpose(semanticContext, descriptor);
         requireHeaderKeyReference(authenticatedHeader, descriptor.keyReference(), descriptor);
         byte[] aad = wrapAad(authenticatedHeader, semanticContext, descriptor);
         try {
@@ -272,19 +280,22 @@ public final class SunPkcs11KeyAdapter
             byte[] nonce = new byte[WrappedDataKey.WRAP_NONCE_BYTES];
             byte[] aad = "YCS-PKCS11-STARTUP-PROBE/v1".getBytes(StandardCharsets.US_ASCII);
             byte[] plaintext = new byte[DATA_ENCRYPTION_KEY_BYTES];
-            byte[] ciphertext = operations.aesGcm(true, key(activeKek), nonce, aad, plaintext);
-            byte[] recovered = operations.aesGcm(false, key(activeKek), nonce, aad, ciphertext);
-            if (!MessageDigest.isEqual(plaintext, recovered)) {
-                throw new IllegalStateException("AES-GCM probe mismatch");
+            for (Pkcs11KeyDescriptor activeKek : activeKeks.values()) {
+                byte[] ciphertext = operations.aesGcm(true, key(activeKek), nonce, aad, plaintext);
+                byte[] recovered = operations.aesGcm(false, key(activeKek), nonce, aad, ciphertext);
+                if (!MessageDigest.isEqual(plaintext, recovered)) {
+                    throw new IllegalStateException("AES-GCM probe mismatch");
+                }
             }
             for (Pkcs11KeyDescriptor descriptor : descriptors) {
-                if (descriptor.purpose() != Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
+                if (!descriptor.purpose().isWrappingKey()
                         && operations.hmac(key(descriptor), aad).length != 32) {
                     throw new IllegalStateException("HMAC probe mismatch");
                 }
             }
         } catch (RuntimeException exception) {
-            throw failure(Pkcs11FailureMapper.Category.MECHANISM_UNAVAILABLE, activeKek, exception);
+            throw failure(Pkcs11FailureMapper.Category.MECHANISM_UNAVAILABLE,
+                    activeKeks.get(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK), exception);
         }
     }
 
@@ -336,6 +347,34 @@ public final class SunPkcs11KeyAdapter
                         + 4 + canonical.length)
                 .put(WRAP_AAD_DOMAIN).putInt(authenticatedHeader.length).put(authenticatedHeader)
                 .putInt(canonical.length).put(canonical).array();
+    }
+
+    private Pkcs11KeyDescriptor activeKek(ProtectionContext context) {
+        Pkcs11KeyDescriptor.Purpose purpose = wrappingPurpose(context);
+        Pkcs11KeyDescriptor descriptor = activeKeks.get(purpose);
+        if (descriptor == null || !descriptor.state().permitsWrap()) {
+            throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, descriptor, null);
+        }
+        return descriptor;
+    }
+
+    private void requireContextPurpose(ProtectionContext context,
+                                       Pkcs11KeyDescriptor descriptor) {
+        if (descriptor.purpose() != wrappingPurpose(context)) {
+            throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, descriptor, null);
+        }
+    }
+
+    private Pkcs11KeyDescriptor.Purpose wrappingPurpose(ProtectionContext context) {
+        if (context == null) {
+            throw failure(Pkcs11FailureMapper.Category.OPERATION_FAILED, null, null);
+        }
+        return switch (context.purpose()) {
+            case DATABASE_FIELD, PROTECTED_OBJECT ->
+                    Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK;
+            case MYSQL_ENCRYPTED_SNAPSHOT_CHUNK ->
+                    Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY;
+        };
     }
 
     private void requireHeaderKeyReference(byte[] header,

@@ -1,5 +1,26 @@
 package com.ycsopen.sms.core.verification;
 
+import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
+import com.ycsopen.sms.core.common.security.key.pkcs11.KekWrapUsageRepository;
+import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11CryptoStorageProperties;
+import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11FailureMapper;
+import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11KeyDescriptor;
+import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactory;
+import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
+import com.ycsopen.sms.core.common.security.migration.LegacyValueClassifier;
+import com.ycsopen.sms.core.common.security.migration.MigrationPreflightProperties;
+import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataManifest;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommand;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationLauncher;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner;
+import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier;
+import com.ycsopen.sms.core.common.security.migration.WriterFencePort;
+import com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotService;
+import com.ycsopen.sms.core.common.security.migration.snapshot.MySqlSnapshotProcess;
+import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotChunkStore;
+import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotManifest;
+import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -11,19 +32,32 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.time.Clock;
+import java.time.Instant;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -104,6 +138,477 @@ class Phase03MigrationIntegrationTest {
         assertAtomicWrapReservationCeiling();
         assertAtomicManifestPairAdmission();
         assertConcurrentRegistrationAttemptCeilings();
+    }
+
+    @Test
+    void createsAndRestoresEncryptedSnapshotIntoFreshSchema() throws Exception {
+        Phase03EncryptedSnapshotHarness.runRealProof();
+    }
+
+    /** Child entrypoint so SoftHSM reads the run-owned configuration from its real environment. */
+    public static void main(String[] args) throws Exception {
+        if (args.length != 1 || !"real-snapshot-proof".equals(args[0])) {
+            throw new IllegalArgumentException("unsupported integration proof mode");
+        }
+        runSnapshotChild();
+        System.out.print("PHASE03_SNAPSHOT_REAL_PROOF_PASS\n");
+    }
+
+    private static void runSnapshotChild() throws Exception {
+        DriverManagerDataSource sourceDataSource = snapshotDataSource("phase01");
+        migrateSnapshotQuietly(sourceDataSource);
+        JdbcTemplate source = new JdbcTemplate(sourceDataSource);
+        JdbcTemplate admin = new JdbcTemplate(snapshotAdminDataSource("mysql"));
+        DataSourceTransactionManager transactions = new DataSourceTransactionManager(sourceDataSource);
+        seedSnapshotKeyMetadata(source);
+
+        String snapshotId = "snapshot-" + UUID.randomUUID().toString().substring(0, 8);
+        String restoreSchema = "restore_" + UUID.randomUUID().toString().replace("-", "");
+        String rejectedSchema = "restore_rejected_" + UUID.randomUUID().toString().replace("-", "");
+        byte[] marker = ("phase03-plaintext-canary-" + snapshotId)
+                .getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+        byte[] payload = repeated(marker, 11 * 1_024 * 1_024 + 257);
+        source.execute("CREATE TABLE phase03_snapshot_canary (id BIGINT PRIMARY KEY, payload LONGBLOB NOT NULL)");
+        source.update("INSERT INTO phase03_snapshot_canary (id, payload) VALUES (1, ?)", payload);
+        String sourcePayloadDigest = source.queryForObject(
+                "SELECT LOWER(SHA2(payload, 256)) FROM phase03_snapshot_canary WHERE id = 1",
+                String.class);
+
+        Path storeRoot = Path.of(requiredEnvironment("PHASE03_SNAPSHOT_STORE"))
+                .toAbsolutePath().normalize();
+        SnapshotChunkStore.FileStore store = new SnapshotChunkStore.FileStore(storeRoot);
+        EnvelopeCodec envelopeCodec = new EnvelopeCodec();
+        try (AdapterRuntime runtime = openSnapshotAdapter(sourceDataSource, transactions)) {
+            ProtectedFieldCodec recoveryCodec = new ProtectedFieldCodec(
+                    envelopeCodec, runtime.adapter(), new SecureRandom(), "snapshot-recovery.v1");
+            MySqlSnapshotProcess process = new MySqlSnapshotProcess.FixedArgumentClient(
+                    findExecutable("docker"), requiredEnvironment("PHASE03_MYSQL_CONTAINER"));
+            EncryptedMySqlSnapshotService service = new EncryptedMySqlSnapshotService(
+                    recoveryCodec, process, store,
+                    (original, target) -> requireFreshSchema(admin, original, target));
+            MySqlSnapshotProcess.Database sourceDatabase = database("phase01", false);
+            SnapshotManifest.Subject subject = new SnapshotManifest.Subject(
+                    "migration-set-plan14", "integration", "2".repeat(64), "phase01",
+                    "3".repeat(64), 1, "signer-v1");
+            SnapshotManifest manifest = service.create(
+                    new EncryptedMySqlSnapshotService.CreateRequest(
+                            sourceDatabase, subject, snapshotId, "snapshot-recovery.v1"));
+            assertThat(manifest.chunks()).hasSizeGreaterThan(1);
+            assertThat(manifest.totalPlaintextBytes()).isGreaterThan(10_485_760L);
+            assertEncryptedChunksExclude(storeRoot, marker, manifest.chunks().size());
+
+            AdmissionProof proof = admitWithRealCommand(
+                    manifest, sourceDataSource, transactions, runtime.adapter(), envelopeCodec,
+                    storeRoot);
+            assertThat(proof.exit()).isZero();
+            assertThat(proof.admission().snapshotDigest()).isEqualTo(manifest.digest());
+
+            admin.execute("CREATE DATABASE `" + restoreSchema
+                    + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            MySqlSnapshotProcess.Database targetDatabase = database(restoreSchema, true);
+            EncryptedMySqlSnapshotService.RestoreResult result = service.restore(
+                    manifest.canonicalBytes(), proof.admission(), sourceDatabase, targetDatabase);
+            assertThat(result.alreadyComplete()).isFalse();
+            assertThat(store.recoveryComplete(snapshotId, restoreSchema, manifest.digest())).isTrue();
+
+            JdbcTemplate restored = new JdbcTemplate(snapshotAdminDataSource(restoreSchema));
+            assertThat(restored.queryForObject(
+                    "SELECT COUNT(*) FROM phase03_snapshot_canary", Long.class)).isOne();
+            assertThat(restored.queryForObject(
+                    "SELECT LOWER(SHA2(payload, 256)) FROM phase03_snapshot_canary WHERE id = 1",
+                    String.class)).isEqualTo(sourcePayloadDigest);
+            assertThat(restored.queryForList(
+                    "SELECT version FROM flyway_schema_history WHERE success = 1 "
+                            + "AND version IS NOT NULL ORDER BY installed_rank", String.class))
+                    .containsExactly("1", "1200");
+
+            admin.execute("CREATE DATABASE `" + rejectedSchema
+                    + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            Path firstChunk;
+            try (var paths = Files.walk(storeRoot)) {
+                firstChunk = paths.filter(path -> path.getFileName().toString()
+                                .equals("chunk-000000.ycse"))
+                        .findFirst().orElseThrow();
+            }
+            byte[] corrupted = Files.readAllBytes(firstChunk);
+            corrupted[corrupted.length - 1] ^= 1;
+            Files.write(firstChunk, corrupted);
+            java.util.Arrays.fill(corrupted, (byte) 0);
+            assertThatThrownBy(() -> service.restore(
+                    manifest.canonicalBytes(), proof.admission(), sourceDatabase,
+                    database(rejectedSchema, true)))
+                    .isInstanceOf(SnapshotManifest.SnapshotException.class);
+            assertThat(store.recoveryComplete(snapshotId, rejectedSchema, manifest.digest())).isFalse();
+            assertThat(admin.queryForObject(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ?",
+                    Long.class, rejectedSchema)).isZero();
+
+            store.deleteSnapshot(snapshotId);
+            try (var remaining = Files.walk(storeRoot)) {
+                assertThat(remaining.filter(path -> path.getFileName().toString()
+                        .endsWith(".ycse")).toList()).isEmpty();
+            }
+            assertThat(store.recoveryComplete(snapshotId, restoreSchema, manifest.digest())).isFalse();
+        } finally {
+            java.util.Arrays.fill(payload, (byte) 0);
+            admin.execute("DROP DATABASE IF EXISTS `" + restoreSchema + "`");
+            admin.execute("DROP DATABASE IF EXISTS `" + rejectedSchema + "`");
+        }
+    }
+
+    private static AdmissionProof admitWithRealCommand(
+            SnapshotManifest snapshot,
+            DataSource dataSource,
+            DataSourceTransactionManager transactions,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            Path directory) throws Exception {
+        Instant now = Instant.parse("2026-09-01T00:00:00Z");
+        KeyPair signer = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        String signerFingerprint = hex(MessageDigest.getInstance("SHA-256")
+                .digest(signer.getPublic().getEncoded()));
+        String writerSourceDigest = "4".repeat(64);
+        byte[] writer = canonicalWriter(snapshot.subject(), now, writerSourceDigest);
+        byte[] snapshotBytes = snapshot.canonicalBytes();
+        byte[] writerDigest = MessageDigest.getInstance("SHA-256").digest(writer);
+        byte[] snapshotDigest = MessageDigest.getInstance("SHA-256").digest(snapshotBytes);
+        byte[] pairDigest = pairDigest(snapshot.subject(), writerDigest, snapshotDigest);
+
+        Path writerPath = directory.resolve("writer.json");
+        Path snapshotPath = directory.resolve("snapshot.json");
+        Path writerSignature = directory.resolve("writer.sig");
+        Path snapshotSignature = directory.resolve("snapshot.sig");
+        Files.write(writerPath, writer);
+        Files.write(snapshotPath, snapshotBytes);
+        Files.write(writerSignature, sign(signer, (byte) 1, pairDigest, writerDigest));
+        Files.write(snapshotSignature, sign(signer, (byte) 2, pairDigest, snapshotDigest));
+
+        MigrationPreflightProperties.WriterIdentity writerIdentity =
+                new MigrationPreflightProperties.WriterIdentity(
+                        "ycsopen-sms-core", "1.0.0", writerSourceDigest);
+        MigrationPreflightProperties properties = new MigrationPreflightProperties(
+                List.of(new MigrationPreflightProperties.SignerAnchor(
+                        "signer-v1", MigrationPreflightProperties.AnchorState.ACTIVE,
+                        signerFingerprint,
+                        Base64.getEncoder().encodeToString(signer.getPublic().getEncoded()), null)),
+                Set.of(writerIdentity), Set.of("snapshot-recovery.v1"));
+        MigrationStateRepository repository = new MigrationStateRepository.Jdbc(
+                new JdbcTemplate(dataSource), new org.springframework.transaction.support.TransactionTemplate(
+                transactions));
+        SignedMigrationManifestVerifier verifier = new SignedMigrationManifestVerifier(
+                properties, new SignedMigrationManifestVerifier.JdbcPairAdmissionStore(
+                new JdbcTemplate(dataSource),
+                new org.springframework.transaction.support.TransactionTemplate(transactions)),
+                Clock.fixed(now, java.time.ZoneOffset.UTC));
+
+        Path protectedInventory = Phase01ServiceHarness.repositoryRoot()
+                .resolve("core/src/main/resources/security/protected-data-inventory.json");
+        byte[] inventoryBytes = Files.readAllBytes(protectedInventory);
+        ProtectedDataManifest protectedManifest = ProtectedDataManifest.load(
+                protectedInventory, ProtectedDataManifest.canonicalDigest(inventoryBytes));
+        ProtectedFieldCodec fieldCodec = new ProtectedFieldCodec(
+                envelopeCodec, adapter, new SecureRandom(), "field-kek.v1");
+        ProtectedDataMigrationRunner runner = new ProtectedDataMigrationRunner(
+                protectedManifest, repository, new LegacyValueClassifier(envelopeCodec), fieldCodec,
+                value -> sha256Bytes(value),
+                (value, targetType, fieldId, tenantScope) -> List.of(),
+                Clock.fixed(now, java.time.ZoneOffset.UTC));
+        AtomicReference<WriterFencePort.PairedAdmission> admitted = new AtomicReference<>();
+        ProtectedDataMigrationCommand.DefaultServices services =
+                new ProtectedDataMigrationCommand.DefaultServices(invocation -> {
+                    WriterFencePort.PairedAdmission value = verifier.verifyAndAdmit(
+                            new WriterFencePort.PairedAdmissionRequest(
+                                    invocation.writerManifest(), invocation.writerSignature(),
+                                    invocation.snapshotManifest(), invocation.snapshotSignature(),
+                                    new WriterFencePort.DeploymentSubject(
+                                            snapshot.subject().migrationSetId(), invocation.environment(),
+                                            invocation.databaseInstanceFingerprint(), invocation.schema(),
+                                            invocation.flywaySetDigest())));
+                    admitted.set(value);
+                    return value;
+                }, repository, runner);
+
+        ByteArrayOutputStream stdoutBytes = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderrBytes = new ByteArrayOutputStream();
+        int exit;
+        try (PrintStream stdout = new PrintStream(stdoutBytes, true,
+                java.nio.charset.StandardCharsets.UTF_8);
+             PrintStream stderr = new PrintStream(stderrBytes, true,
+                     java.nio.charset.StandardCharsets.UTF_8)) {
+            exit = ProtectedDataMigrationLauncher.run(new String[]{
+                    "preflight",
+                    "--writer-manifest", writerPath.toRealPath().toString(),
+                    "--writer-signature", writerSignature.toRealPath().toString(),
+                    "--snapshot-manifest", snapshotPath.toRealPath().toString(),
+                    "--snapshot-signature", snapshotSignature.toRealPath().toString(),
+                    "--environment", snapshot.subject().environment(),
+                    "--database-instance-fingerprint",
+                    snapshot.subject().databaseInstanceFingerprint(),
+                    "--schema", snapshot.subject().schema(),
+                    "--flyway-set-digest", snapshot.subject().flywaySetDigest()
+            }, stdout, stderr, services);
+        }
+        assertThat(stderrBytes.toString(java.nio.charset.StandardCharsets.UTF_8)).isEmpty();
+        assertThat(stdoutBytes.toString(java.nio.charset.StandardCharsets.UTF_8))
+                .contains("\"status\":\"accepted\"")
+                .contains(hex(pairDigest));
+        return new AdmissionProof(exit, admitted.get());
+    }
+
+    private static byte[] canonicalWriter(
+            SnapshotManifest.Subject subject, Instant now, String sourceDigest) {
+        String json = "{"
+                + "\"database_instance_fingerprint\":\"" + subject.databaseInstanceFingerprint() + "\","
+                + "\"environment\":\"" + subject.environment() + "\","
+                + "\"expires_at\":\"" + now.plusSeconds(3600) + "\","
+                + "\"flyway_set_digest\":\"" + subject.flywaySetDigest() + "\","
+                + "\"global_sequence\":" + subject.globalSequence() + ","
+                + "\"issued_at\":\"" + now.minusSeconds(1) + "\","
+                + "\"manifest_schema\":\"ycs-writer-fence/v1\","
+                + "\"migration_set_id\":\"" + subject.migrationSetId() + "\","
+                + "\"schema\":\"" + subject.schema() + "\","
+                + "\"signer_key_version\":\"" + subject.signerKeyVersion() + "\","
+                + "\"writers\":[{\"artifact_id\":\"ycsopen-sms-core\","
+                + "\"migration_compatible\":true,\"source_digest\":\"" + sourceDigest + "\","
+                + "\"version\":\"1.0.0\"}]}";
+        return json.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private static byte[] pairDigest(
+            SnapshotManifest.Subject subject, byte[] writerDigest, byte[] snapshotDigest)
+            throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.writeBytes("YCS-MIGRATION-PAIR/v1\0"
+                .getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        for (String value : List.of(
+                subject.migrationSetId(), subject.environment(),
+                subject.databaseInstanceFingerprint(), subject.schema(),
+                subject.flywaySetDigest())) {
+            writeLengthPrefixed(output, value);
+        }
+        output.writeBytes(java.nio.ByteBuffer.allocate(Long.BYTES)
+                .putLong(subject.globalSequence()).array());
+        writeLengthPrefixed(output, subject.signerKeyVersion());
+        output.writeBytes(writerDigest);
+        output.writeBytes(snapshotDigest);
+        return MessageDigest.getInstance("SHA-256").digest(output.toByteArray());
+    }
+
+    private static byte[] sign(
+            KeyPair signer, byte role, byte[] pairDigest, byte[] roleDigest) throws Exception {
+        Signature signature = Signature.getInstance("Ed25519");
+        signature.initSign(signer.getPrivate());
+        signature.update("YCS-MIGRATION-PAIR-SIGNATURE/v1\0"
+                .getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        signature.update(role);
+        signature.update(pairDigest);
+        signature.update(roleDigest);
+        return signature.sign();
+    }
+
+    private static void writeLengthPrefixed(ByteArrayOutputStream output, String value) {
+        byte[] bytes = value.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        output.writeBytes(java.nio.ByteBuffer.allocate(Integer.BYTES).putInt(bytes.length).array());
+        output.writeBytes(bytes);
+    }
+
+    private static void requireFreshSchema(
+            JdbcTemplate jdbc,
+            MySqlSnapshotProcess.Database source,
+            MySqlSnapshotProcess.Database target) {
+        if (!source.host().equals(target.host()) || source.port() != target.port()
+                || source.schema().equals(target.schema())) {
+            throw new IllegalStateException("fresh restore schema boundary rejected");
+        }
+        Long schemas = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = ?",
+                Long.class, target.schema());
+        Long tables = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ?",
+                Long.class, target.schema());
+        if (!Long.valueOf(1).equals(schemas) || !Long.valueOf(0).equals(tables)) {
+            throw new IllegalStateException("fresh restore schema boundary rejected");
+        }
+    }
+
+    private static void assertEncryptedChunksExclude(
+            Path root, byte[] marker, int expectedCount) throws Exception {
+        List<Path> chunkPaths;
+        try (var paths = Files.walk(root)) {
+            chunkPaths = paths.filter(path -> path.getFileName().toString().endsWith(".ycse"))
+                    .sorted().toList();
+        }
+        assertThat(chunkPaths).hasSize(expectedCount);
+        for (Path path : chunkPaths) {
+            assertThat(contains(Files.readAllBytes(path), marker)).isFalse();
+        }
+        try (var paths = Files.walk(root)) {
+            assertThat(paths.filter(path -> path.getFileName().toString().endsWith(".sql"))
+                    .toList()).isEmpty();
+        }
+    }
+
+    private static boolean contains(byte[] input, byte[] marker) {
+        outer:
+        for (int offset = 0; offset <= input.length - marker.length; offset++) {
+            for (int index = 0; index < marker.length; index++) {
+                if (input[offset + index] != marker[index]) {
+                    continue outer;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static byte[] repeated(byte[] marker, int size) {
+        byte[] value = new byte[size];
+        for (int offset = 0; offset < size; offset += marker.length) {
+            System.arraycopy(marker, 0, value, offset, Math.min(marker.length, size - offset));
+        }
+        return value;
+    }
+
+    private static void seedSnapshotKeyMetadata(JdbcTemplate jdbc) {
+        insertSnapshotKey(jdbc, "FIELD_ENCRYPTION_KEK", "field-kek.v1");
+        insertSnapshotKey(jdbc, "SNAPSHOT_RECOVERY", "snapshot-recovery.v1");
+        insertSnapshotKey(jdbc, "MOBILE_BLIND_INDEX", "mobile-index.v1");
+        insertSnapshotKey(jdbc, "OBJECT_CAPABILITY_DIGEST", "object-digest.v1");
+        insertSnapshotKey(jdbc, "REGISTRATION_UPLOAD_DIGEST", "registration-digest.v1");
+    }
+
+    private static void insertSnapshotKey(JdbcTemplate jdbc, String purpose, String reference) {
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                        + "VALUES (? ,1,'pkcs11',?,'ACTIVE')",
+                purpose, reference);
+    }
+
+    private static AdapterRuntime openSnapshotAdapter(
+            DataSource dataSource, DataSourceTransactionManager transactions) throws Exception {
+        Path library = Path.of(requiredEnvironment("PHASE03_HSM_LIBRARY"))
+                .toAbsolutePath().normalize().toRealPath();
+        Path pinSource = Path.of(requiredEnvironment("PHASE03_HSM_PIN_SOURCE"));
+        List<String> pins = Files.readAllLines(pinSource);
+        char[] userPin = pins.get(1).toCharArray();
+        List<Pkcs11KeyDescriptor> descriptors = List.of(
+                descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK,
+                        "field-kek.v1", "ycs.field-encryption-kek.v1"),
+                descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY,
+                        "snapshot-recovery.v1", "ycs.snapshot-recovery.v1"),
+                descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX,
+                        "mobile-index.v1", "ycs.mobile-blind-index.v1"),
+                descriptor(Pkcs11KeyDescriptor.Purpose.OBJECT_CAPABILITY_DIGEST,
+                        "object-digest.v1", "ycs.object-capability-digest.v1"),
+                descriptor(Pkcs11KeyDescriptor.Purpose.REGISTRATION_UPLOAD_DIGEST,
+                        "registration-digest.v1", "ycs.registration-upload-digest.v1"));
+        Pkcs11CryptoStorageProperties properties = new Pkcs11CryptoStorageProperties(
+                library, List.of(library), Long.parseUnsignedLong(requiredEnvironment("PHASE03_HSM_SLOT")),
+                "phase03-snapshot", () -> userPin.clone(), descriptors);
+        Pkcs11FailureMapper mapper = new Pkcs11FailureMapper();
+        Pkcs11ProviderFactory.Session session = new Pkcs11ProviderFactory(mapper).open(properties);
+        try {
+            SunPkcs11KeyAdapter adapter = new SunPkcs11KeyAdapter(
+                    session, properties,
+                    new KekWrapUsageRepository(new JdbcTemplate(dataSource), transactions, mapper), mapper);
+            java.util.Arrays.fill(userPin, '\0');
+            return new AdapterRuntime(session, adapter);
+        } catch (RuntimeException failure) {
+            java.util.Arrays.fill(userPin, '\0');
+            session.close();
+            throw failure;
+        }
+    }
+
+    private static Pkcs11KeyDescriptor descriptor(
+            Pkcs11KeyDescriptor.Purpose purpose, String reference, String alias) {
+        return new Pkcs11KeyDescriptor(
+                purpose, 1, reference, alias, Pkcs11KeyDescriptor.State.ACTIVE,
+                purpose.isWrappingKey() ? "AES" : "HmacSHA256", 256);
+    }
+
+    private static DriverManagerDataSource snapshotDataSource(String schema) {
+        String url = "jdbc:mysql://" + requiredEnvironment("PHASE03_MYSQL_HOST") + ":"
+                + requiredEnvironment("PHASE03_MYSQL_PORT") + "/" + schema
+                + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+                + "&allowPublicKeyRetrieval=true&useSSL=false";
+        return new DriverManagerDataSource(
+                url, requiredEnvironment("PHASE03_MYSQL_USER"),
+                requiredEnvironment("PHASE03_MYSQL_PASSWORD"));
+    }
+
+    private static void migrateSnapshotQuietly(DataSource dataSource) {
+        PrintStream original = System.out;
+        try (PrintStream discarded = new PrintStream(
+                java.io.OutputStream.nullOutputStream(), true,
+                java.nio.charset.StandardCharsets.UTF_8)) {
+            System.setOut(discarded);
+            Flyway.configure().dataSource(dataSource).locations("classpath:db/migration")
+                    .placeholderReplacement(false).load().migrate();
+        } finally {
+            System.setOut(original);
+        }
+    }
+
+    private static DriverManagerDataSource snapshotAdminDataSource(String schema) {
+        String url = "jdbc:mysql://" + requiredEnvironment("PHASE03_MYSQL_HOST") + ":"
+                + requiredEnvironment("PHASE03_MYSQL_PORT") + "/" + schema
+                + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+                + "&allowPublicKeyRetrieval=true&useSSL=false";
+        return new DriverManagerDataSource(
+                url, "root", requiredEnvironment("PHASE03_MYSQL_ROOT_PASSWORD"));
+    }
+
+    private static MySqlSnapshotProcess.Database database(String schema, boolean root) {
+        return new MySqlSnapshotProcess.Database(
+                "127.0.0.1", 3306,
+                root ? "root" : requiredEnvironment("PHASE03_MYSQL_USER"),
+                requiredEnvironment(root
+                        ? "PHASE03_MYSQL_ROOT_PASSWORD"
+                        : "PHASE03_MYSQL_PASSWORD").toCharArray(), schema);
+    }
+
+    private static Path findExecutable(String name) {
+        String path = requiredEnvironment("PATH");
+        for (String entry : path.split(java.io.File.pathSeparator)) {
+            Path candidate = Path.of(entry).resolve(name);
+            if (Files.isRegularFile(candidate) && Files.isExecutable(candidate)) {
+                return candidate;
+            }
+        }
+        throw new IllegalStateException("required MySQL client unavailable");
+    }
+
+    private static String requiredEnvironment(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("integration environment unavailable: " + name);
+        }
+        return value;
+    }
+
+    private static byte[] sha256Bytes(byte[] value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (Exception exception) {
+            throw new IllegalStateException("SHA-256 unavailable", exception);
+        }
+    }
+
+    private static String hex(byte[] value) {
+        return HexFormat.of().formatHex(value);
+    }
+
+    private record AdmissionProof(int exit, WriterFencePort.PairedAdmission admission) {
+    }
+
+    private record AdapterRuntime(
+            Pkcs11ProviderFactory.Session session,
+            SunPkcs11KeyAdapter adapter) implements AutoCloseable {
+        @Override
+        public void close() {
+            session.close();
+        }
     }
 
     private void assertFlywayAndOwnerBoundary() throws Exception {

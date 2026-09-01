@@ -26,13 +26,13 @@ CREATE TABLE ycs_crypto_key_references (
     )),
     CONSTRAINT chk_ycs_crypto_wrap_ceiling CHECK (wrap_operation_count <= 1048576),
     CONSTRAINT chk_ycs_crypto_wrap_purpose CHECK (
-        (purpose = 'FIELD_ENCRYPTION_KEK'
+        (purpose IN ('FIELD_ENCRYPTION_KEK', 'SNAPSHOT_RECOVERY')
             AND rotation_required = (wrap_operation_count >= 983040)
             AND (rotation_required = FALSE OR key_state IN (
                 'ROTATION_REQUIRED', 'DECRYPT_ONLY', 'RETIRED', 'COMPROMISED'
             )))
         OR
-        (purpose <> 'FIELD_ENCRYPTION_KEK'
+        (purpose NOT IN ('FIELD_ENCRYPTION_KEK', 'SNAPSHOT_RECOVERY')
             AND wrap_operation_count = 0
             AND rotation_required = FALSE)
     )

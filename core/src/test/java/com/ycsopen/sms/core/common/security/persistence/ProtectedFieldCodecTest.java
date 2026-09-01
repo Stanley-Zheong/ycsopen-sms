@@ -133,6 +133,34 @@ class ProtectedFieldCodecTest {
     }
 
     @Test
+    void boundedPrefixProtectsOnlyTheDeclaredBytesAndRejectsLengthBeforeWrap() {
+        CountingSecureRandom random = new CountingSecureRandom();
+        RecordingKeyPort keyPort = new RecordingKeyPort(KEY_REFERENCE);
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(
+                ENVELOPE_CODEC, keyPort, random, KEY_REFERENCE);
+        byte[] reusable = new byte[]{10, 20, 30, 40, 50, 60};
+        ProtectionContext context = databaseContext("message-prefix");
+
+        byte[] encoded = codec.protect(
+                reusable, 3, context, EnvelopeCodec.Target.DATABASE_FIELD);
+
+        assertThat(codec.unprotect(encoded, context, EnvelopeCodec.Target.DATABASE_FIELD))
+                .containsExactly(10, 20, 30);
+        assertThat(reusable).containsExactly(10, 20, 30, 40, 50, 60);
+        assertThat(keyPort.wrapCalls).isOne();
+        assertThat(random.calls).isEqualTo(2);
+
+        for (int invalidLength : List.of(-1, 0, reusable.length + 1)) {
+            assertInvalid(() -> codec.protect(
+                    reusable, invalidLength, context, EnvelopeCodec.Target.DATABASE_FIELD));
+        }
+        assertInvalid(() -> codec.protect(
+                new byte[111], 111, context, EnvelopeCodec.Target.DATABASE_FIELD));
+        assertThat(keyPort.wrapCalls).isOne();
+        assertThat(random.calls).isEqualTo(2);
+    }
+
+    @Test
     void wrongTargetPurposeAndWrongKeyFailClosedWithoutPlaintextFallback() {
         RecordingKeyPort keyPort = new RecordingKeyPort(KEY_REFERENCE);
         ProtectedFieldCodec codec = codec(keyPort, KEY_REFERENCE);

@@ -22,7 +22,7 @@ public class KekWrapUsageRepository {
                        ELSE key_state
                    END,
                    optimistic_version = optimistic_version + 1
-             WHERE purpose = 'FIELD_ENCRYPTION_KEK'
+             WHERE purpose = ?
                AND key_version = ?
                AND provider_id = 'pkcs11'
                AND provider_key_reference = ?
@@ -32,7 +32,7 @@ public class KekWrapUsageRepository {
     private static final String READ_COUNT_SQL = """
             SELECT wrap_operation_count
               FROM ycs_crypto_key_references
-             WHERE purpose = 'FIELD_ENCRYPTION_KEK'
+             WHERE purpose = ?
                AND key_version = ?
                AND provider_id = 'pkcs11'
                AND provider_key_reference = ?
@@ -49,13 +49,14 @@ public class KekWrapUsageRepository {
         TransactionTemplate independent = new TransactionTemplate(transactionManager);
         independent.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         this.store = descriptor -> independent.execute(status -> {
-            int updated = jdbcTemplate.update(RESERVE_SQL,
+            int updated = jdbcTemplate.update(RESERVE_SQL, descriptor.purpose().storageValue(),
                     descriptor.keyVersion(), descriptor.keyReference());
             if (updated != 1) {
                 return null;
             }
             return jdbcTemplate.queryForObject(READ_COUNT_SQL, Long.class,
-                    descriptor.keyVersion(), descriptor.keyReference());
+                    descriptor.purpose().storageValue(), descriptor.keyVersion(),
+                    descriptor.keyReference());
         });
         this.failureMapper = Objects.requireNonNull(failureMapper, "failureMapper");
     }
@@ -67,7 +68,7 @@ public class KekWrapUsageRepository {
 
     public Reservation reserve(Pkcs11KeyDescriptor descriptor) {
         if (descriptor == null
-                || descriptor.purpose() != Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
+                || !descriptor.purpose().isWrappingKey()
                 || !descriptor.state().permitsWrap()) {
             throw failureMapper.failure(Pkcs11FailureMapper.Category.KEY_POLICY, descriptor, null);
         }

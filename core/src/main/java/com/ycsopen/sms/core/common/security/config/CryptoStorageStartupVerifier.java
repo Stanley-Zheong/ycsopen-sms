@@ -23,6 +23,8 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
             Set.of("CKA_TOKEN", "CKA_PRIVATE", "CKA_SENSITIVE", "CKA_NOT_EXTRACTABLE");
 
     public static final String FIELD_KEK_ALIAS = "ycs.field-encryption-kek.v1";
+    public static final String SNAPSHOT_RECOVERY_ALIAS = "ycs.snapshot-recovery.v1";
+    public static final String SNAPSHOT_RECOVERY_REFERENCE = "snapshot-recovery.v1";
     public static final String MOBILE_INDEX_ALIAS = "ycs.mobile-blind-index.v1";
     public static final String OBJECT_DIGEST_ALIAS = "ycs.object-capability-digest.v1";
     public static final String REGISTRATION_DIGEST_ALIAS = "ycs.registration-upload-digest.v1";
@@ -79,6 +81,8 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
                            long rotationRequiredAt,
                            long hardCeiling,
                            String fieldKekAlias,
+                           String snapshotRecoveryAlias,
+                           String snapshotRecoveryReference,
                            String mobileIndexAlias,
                            String objectDigestAlias,
                            String registrationDigestAlias) {
@@ -87,6 +91,31 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
             allowedModulePaths = allowedModulePaths == null ? List.of() : List.copyOf(allowedModulePaths);
             mechanisms = mechanisms == null ? Set.of() : Set.copyOf(mechanisms);
             keyAttributes = keyAttributes == null ? Set.of() : Set.copyOf(keyAttributes);
+        }
+
+        /** Source-compatible constructor for existing field-only configuration call sites. */
+        public Settings(boolean enabled,
+                        String adapterId,
+                        String providerId,
+                        Path modulePath,
+                        List<Path> allowedModulePaths,
+                        long slotId,
+                        String tokenIdentity,
+                        CredentialSource credentialSource,
+                        String credentialReference,
+                        Set<String> mechanisms,
+                        Set<String> keyAttributes,
+                        long rotationRequiredAt,
+                        long hardCeiling,
+                        String fieldKekAlias,
+                        String mobileIndexAlias,
+                        String objectDigestAlias,
+                        String registrationDigestAlias) {
+            this(enabled, adapterId, providerId, modulePath, allowedModulePaths, slotId,
+                    tokenIdentity, credentialSource, credentialReference, mechanisms, keyAttributes,
+                    rotationRequiredAt, hardCeiling, fieldKekAlias, SNAPSHOT_RECOVERY_ALIAS,
+                    SNAPSHOT_RECOVERY_REFERENCE, mobileIndexAlias, objectDigestAlias,
+                    registrationDigestAlias);
         }
 
         public void validate() {
@@ -109,12 +138,16 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
                     "rotation-required-at");
             require(hardCeiling == KekWrapUsageRepository.HARD_CEILING, "hard-ceiling");
             require(FIELD_KEK_ALIAS.equals(fieldKekAlias), "aliases.field-encryption-kek");
+            require(SNAPSHOT_RECOVERY_ALIAS.equals(snapshotRecoveryAlias),
+                    "aliases.snapshot-recovery");
+            require(SNAPSHOT_RECOVERY_REFERENCE.equals(snapshotRecoveryReference),
+                    "references.snapshot-recovery");
             require(MOBILE_INDEX_ALIAS.equals(mobileIndexAlias), "aliases.mobile-blind-index");
             require(OBJECT_DIGEST_ALIAS.equals(objectDigestAlias), "aliases.object-capability-digest");
             require(REGISTRATION_DIGEST_ALIAS.equals(registrationDigestAlias),
                     "aliases.registration-upload-digest");
-            require(Set.of(fieldKekAlias, mobileIndexAlias, objectDigestAlias,
-                    registrationDigestAlias).size() == 4, "aliases");
+            require(Set.of(fieldKekAlias, snapshotRecoveryAlias, mobileIndexAlias,
+                    objectDigestAlias, registrationDigestAlias).size() == 5, "aliases");
         }
 
         public List<Pkcs11KeyDescriptor> descriptors() {
@@ -122,6 +155,8 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
             return List.of(
                     descriptor(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK,
                             "field-kek.v1", fieldKekAlias),
+                    descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY,
+                            snapshotRecoveryReference, snapshotRecoveryAlias),
                     descriptor(Pkcs11KeyDescriptor.Purpose.MOBILE_BLIND_INDEX,
                             "mobile-index.v1", mobileIndexAlias),
                     descriptor(Pkcs11KeyDescriptor.Purpose.OBJECT_CAPABILITY_DIGEST,
@@ -135,8 +170,7 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
                                                        String alias) {
             return new Pkcs11KeyDescriptor(purpose, 1, reference, alias,
                     Pkcs11KeyDescriptor.State.ACTIVE,
-                    purpose == Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK
-                            ? "AES" : "HmacSHA256",
+                    purpose.isWrappingKey() ? "AES" : "HmacSHA256",
                     256);
         }
 

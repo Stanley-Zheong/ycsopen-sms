@@ -51,9 +51,12 @@ ycsopen:
       hard-ceiling: 1048576
       aliases:
         field-encryption-kek: ycs.field-encryption-kek.v1
+        snapshot-recovery: ycs.snapshot-recovery.v1
         mobile-blind-index: ycs.mobile-blind-index.v1
         object-capability-digest: ycs.object-capability-digest.v1
         registration-upload-digest: ycs.registration-upload-digest.v1
+      references:
+        snapshot-recovery: snapshot-recovery.v1
   routing:
     complaint-ratio-threshold: 0.003   # 千分之三 default, see PRD F-11.9/F-11.10
   third-party-blacklist:

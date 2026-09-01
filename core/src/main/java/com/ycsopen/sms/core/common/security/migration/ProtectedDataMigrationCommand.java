@@ -83,8 +83,7 @@ public final class ProtectedDataMigrationCommand {
      * Production launchers should inject {@link DefaultServices} for all other operations.
      */
     public static void main(String[] args) {
-        CommandServices unavailable = new UnavailableServices();
-        int exit = new ProtectedDataMigrationCommand(unavailable).execute(args, System.out, System.err);
+        int exit = ProtectedDataMigrationLauncher.run(args, System.out, System.err);
         if (exit != Exit.ACCEPTED.code()) {
             System.exit(exit);
         }
@@ -389,40 +388,4 @@ public final class ProtectedDataMigrationCommand {
         }
     }
 
-    private static final class UnavailableServices implements CommandServices {
-        @Override
-        public PairedAdmission preflight(PreflightInvocation invocation) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-
-        @Override
-        public boolean acceptedPair(String pairDigest) {
-            return false;
-        }
-
-        @Override
-        public BatchResult start(MigrationRequest request) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-
-        @Override
-        public BatchResult resume(MigrationRequest request) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-
-        @Override
-        public void pause(RunControlRequest request) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-
-        @Override
-        public void abort(RunControlRequest request) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-
-        @Override
-        public RunStatus status(String runId) {
-            throw commandFailure(Exit.KEY_OR_PROVIDER);
-        }
-    }
 }

@@ -47,6 +47,17 @@ public final class ProtectedFieldCodec {
     public byte[] protect(byte[] plaintext,
                           ProtectionContext semanticContext,
                           EnvelopeCodec.Target target) {
+        return protect(plaintext, plaintext == null ? -1 : plaintext.length, semanticContext, target);
+    }
+
+    /**
+     * Protects one nonempty prefix without copying it. This is the bounded streaming entrypoint
+     * for callers that own a fixed-size reusable chunk buffer.
+     */
+    public byte[] protect(byte[] plaintext,
+                          int plaintextLength,
+                          ProtectionContext semanticContext,
+                          EnvelopeCodec.Target target) {
         byte[] dataEncryptionKey = null;
         byte[] dataNonce = null;
         byte[] authenticatedHeader = null;
@@ -55,21 +66,25 @@ public final class ProtectedFieldCodec {
         byte[] wrapNonce = null;
         byte[] wrappedDek = null;
         try {
-            if (plaintext == null || semanticContext == null || target == null) {
+            if (plaintext == null || plaintextLength < 1 || plaintextLength > plaintext.length
+                    || semanticContext == null || target == null) {
                 throw invalid(target);
             }
 
             // Enforce both the selected plaintext ceiling and complete-envelope bound before JCE
             // or the adapter can consume a durable wrap reservation.
-            envelopeCodec.maximumCompleteEnvelopeLength(keyReference, plaintext.length, target);
-            authenticatedHeader = envelopeCodec.authenticatedHeader(keyReference, plaintext.length, target);
-            dataAad = envelopeCodec.dataAad(keyReference, plaintext.length, semanticContext, target);
+            envelopeCodec.maximumCompleteEnvelopeLength(keyReference, plaintextLength, target);
+            authenticatedHeader = envelopeCodec.authenticatedHeader(
+                    keyReference, plaintextLength, target);
+            dataAad = envelopeCodec.dataAad(
+                    keyReference, plaintextLength, semanticContext, target);
 
             dataEncryptionKey = new byte[KeyProtectionPort.DATA_ENCRYPTION_KEY_BYTES];
             dataNonce = new byte[EnvelopeCodec.NONCE_BYTES];
             secureRandom.nextBytes(dataEncryptionKey);
             secureRandom.nextBytes(dataNonce);
-            ciphertext = encrypt(plaintext, dataEncryptionKey, dataNonce, dataAad);
+            ciphertext = encrypt(
+                    plaintext, plaintextLength, dataEncryptionKey, dataNonce, dataAad);
 
             // The adapter owns admission, KEK selection, wrap nonce generation and provider use.
             WrappedDataKey wrappedDataKey = keyProtectionPort.wrap(
@@ -146,6 +161,7 @@ public final class ProtectedFieldCodec {
     }
 
     private static byte[] encrypt(byte[] plaintext,
+                                  int plaintextLength,
                                   byte[] dataEncryptionKey,
                                   byte[] dataNonce,
                                   byte[] dataAad) throws GeneralSecurityException {
@@ -153,7 +169,7 @@ public final class ProtectedFieldCodec {
         cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(dataEncryptionKey, "AES"),
                 new GCMParameterSpec(GCM_TAG_LENGTH_BITS, dataNonce));
         cipher.updateAAD(dataAad);
-        return cipher.doFinal(plaintext);
+        return cipher.doFinal(plaintext, 0, plaintextLength);
     }
 
     private static byte[] decrypt(byte[] ciphertext,
