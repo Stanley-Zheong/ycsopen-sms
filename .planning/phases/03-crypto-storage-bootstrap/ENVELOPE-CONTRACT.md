@@ -36,12 +36,21 @@ IDs, noncanonical key references, zero or oversized lengths, arithmetic
 overflow, truncated input, and trailing bytes. It validates the complete fixed
 header and all declared lengths before any length-derived allocation.
 
-## Authenticated canonical header
+## Authenticated canonical headers
 
-`header-auth-v1` is the exact 19-byte serialized header followed by the exact
+`wrap-header-auth-v1` is the exact 19-byte serialized header followed by the exact
 provider-ID bytes and key-reference bytes. It includes `ciphertext length`; the
 plaintext size is known before encryption, so there is no mutable-length
-exception. Both AEAD operations authenticate this same header encoding.
+exception.
+
+`data-header-auth-v1` is the same fixed header with only the key-reference length
+normalized to zero, followed by the exact provider-ID bytes and no key-reference
+bytes. This normalization is limited to data AAD: it keeps the data key, nonce,
+ciphertext and tag byte-stable during a KEK rewrap. The independent wrap AEAD
+authenticates the actual key-reference length and bytes, so the two tags together
+still authenticate the complete envelope. Rewrap must first authenticate the old
+full wrap header, then authenticate the replacement full wrap header and finally
+verify the complete envelope before its compare-and-set update.
 
 The semantic context is encoded as:
 
@@ -57,14 +66,15 @@ semantic context is at most 6147 bytes, tenant scope is either `tenant:<id>` or
 
 Domain separation is exact:
 
-- data AAD is `ASCII("YCSE-DATA-AAD\u0000") || u32(len(header-auth-v1)) || header-auth-v1 || u32(len(context-v1)) || context-v1`;
-- DEK-wrap AAD is `ASCII("YCSE-WRAP-AAD\u0000") || u32(len(header-auth-v1)) || header-auth-v1 || u32(len(context-v1)) || context-v1`.
+- data AAD is `ASCII("YCSE-DATA-AAD\u0000") || u32(len(data-header-auth-v1)) || data-header-auth-v1 || u32(len(context-v1)) || context-v1`;
+- DEK-wrap AAD is `ASCII("YCSE-WRAP-AAD\u0000") || u32(len(wrap-header-auth-v1)) || wrap-header-auth-v1 || u32(len(context-v1)) || context-v1`.
 
 No implementation may reuse one domain prefix for the other operation. A
 mutation of magic, version, either algorithm, AAD schema, flags, any declared
 length, provider ID, key reference, nonce, wrapped DEK, ciphertext, semantic
-context, or domain prefix must fail closed. Wrong key, wrong context, malformed
-tag, and tamper expose one sanitized authentication category.
+context, or domain prefix must fail closed under the applicable data or wrap tag.
+Wrong key, wrong context, malformed tag, and tamper expose one sanitized
+authentication category.
 
 ## Capacity and allocation bounds
 

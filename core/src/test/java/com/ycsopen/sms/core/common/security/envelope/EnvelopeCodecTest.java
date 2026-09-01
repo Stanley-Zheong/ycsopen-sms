@@ -117,6 +117,22 @@ class EnvelopeCodecTest {
     }
 
     @Test
+    void dataAadIsStableAcrossKekReferenceRotationWhileWrapAadChanges() {
+        ProtectionContext context = new ProtectionContext(ProtectionContext.Purpose.DATABASE_FIELD,
+                "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
+                "tenant:42", "message_id=msg_01");
+
+        assertThat(CODEC.dataAad("field-kek.v1", 11, context,
+                EnvelopeCodec.Target.DATABASE_FIELD)).isEqualTo(
+                CODEC.dataAad("field-kek.v2-longer", 11, context,
+                        EnvelopeCodec.Target.DATABASE_FIELD));
+        assertThat(CODEC.wrapAad("field-kek.v1", 11, context,
+                EnvelopeCodec.Target.DATABASE_FIELD)).isNotEqualTo(
+                CODEC.wrapAad("field-kek.v2-longer", 11, context,
+                        EnvelopeCodec.Target.DATABASE_FIELD));
+    }
+
+    @Test
     void truncationTrailingBytesAndDeclaredActualMismatchFailClosed() {
         byte[] encoded = CODEC.encode(envelope("kek.v1", 3), EnvelopeCodec.Target.DATABASE_FIELD);
 

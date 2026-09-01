@@ -28,7 +28,7 @@ class ProtectionContextTest {
     }
 
     @Test
-    void dataAndWrapAadUseDistinctExactDomainPrefixesAndTheSameAuthenticatedHeader() {
+    void dataAndWrapAadUseDistinctDomainsAndOnlyWrapBindsTheRotatableKeyReference() {
         CipherEnvelope envelope = envelope();
         ProtectionContext context = databaseContext();
 
@@ -39,10 +39,17 @@ class ProtectionContextTest {
         assertThat(dataAad).startsWith("YCSE-DATA-AAD\0".getBytes(StandardCharsets.US_ASCII));
         assertThat(wrapAad).startsWith("YCSE-WRAP-AAD\0".getBytes(StandardCharsets.US_ASCII));
         assertThat(dataAad).isNotEqualTo(wrapAad);
-        assertThat(dataAad).containsSubsequence(header);
         assertThat(wrapAad).containsSubsequence(header);
         assertThat(dataAad).endsWith(context.canonicalBytes());
         assertThat(wrapAad).endsWith(context.canonicalBytes());
+
+        CipherEnvelope rotated = new CipherEnvelope("pkcs11", "field-kek.v2",
+                envelope.wrapNonce(), envelope.wrappedDek(), envelope.dataNonce(),
+                envelope.ciphertext());
+        assertThat(CODEC.dataAad(rotated, context, EnvelopeCodec.Target.DATABASE_FIELD))
+                .isEqualTo(dataAad);
+        assertThat(CODEC.wrapAad(rotated, context, EnvelopeCodec.Target.DATABASE_FIELD))
+                .isNotEqualTo(wrapAad);
     }
 
     @Test

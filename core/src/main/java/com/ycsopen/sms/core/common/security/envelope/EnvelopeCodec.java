@@ -160,11 +160,22 @@ public final class EnvelopeCodec {
     }
 
     public byte[] dataAad(CipherEnvelope envelope, ProtectionContext context, Target target) {
-        return aad(DATA_AAD_PREFIX, authenticatedHeader(envelope, target), context, target);
+        requireEnvelope(envelope);
+        return aad(DATA_AAD_PREFIX,
+                dataAuthenticatedHeaderForCiphertext(envelope.keyReference(),
+                        envelope.ciphertextLength(), target),
+                context, target);
     }
 
     public byte[] dataAad(String keyReference, long plaintextLength, ProtectionContext context, Target target) {
-        return aad(DATA_AAD_PREFIX, authenticatedHeader(keyReference, plaintextLength, target), context, target);
+        requireTarget(target);
+        if (plaintextLength < 0 || plaintextLength > target.maximumPlaintextBytes()) {
+            throw ProtectionFailure.invalid();
+        }
+        return aad(DATA_AAD_PREFIX,
+                dataAuthenticatedHeaderForCiphertext(keyReference,
+                        checkedAdd(plaintextLength, DATA_TAG_BYTES), target),
+                context, target);
     }
 
     public byte[] wrapAad(CipherEnvelope envelope, ProtectionContext context, Target target) {
@@ -184,6 +195,24 @@ public final class EnvelopeCodec {
         writeFixedHeader(header, keyReferenceBytes.length, ciphertextLength);
         header.put(PROVIDER_BYTES);
         header.put(keyReferenceBytes);
+        return header.array();
+    }
+
+    /**
+     * Stable data-AEAD header. The public key reference is authenticated by the independent wrap
+     * AEAD and is deliberately normalized out here so a DEK can be rewrapped without reusing the
+     * data key/nonce to generate a second GCM tag. All immutable wire algorithms, sizes, provider
+     * identity and the ciphertext length remain bound to the data tag.
+     */
+    private byte[] dataAuthenticatedHeaderForCiphertext(
+            String keyReference, long ciphertextLength, Target target) {
+        requireTarget(target);
+        int keyReferenceLength = keyReferenceBytes(keyReference).length;
+        checkedCompleteLength(keyReferenceLength, ciphertextLength, target);
+        ByteBuffer header = ByteBuffer.allocate(FIXED_HEADER_BYTES + PROVIDER_BYTES.length)
+                .order(ByteOrder.BIG_ENDIAN);
+        writeFixedHeader(header, 0, ciphertextLength);
+        header.put(PROVIDER_BYTES);
         return header.array();
     }
 
