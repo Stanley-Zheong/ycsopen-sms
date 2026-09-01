@@ -1,5 +1,7 @@
 package com.ycsopen.sms.core.common.security;
 
+import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
+import com.ycsopen.sms.core.common.security.envelope.ProtectionFailure;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
@@ -68,5 +70,15 @@ class FieldEncryptorTest {
         String shorterThanIv = Base64.getEncoder().encodeToString(new byte[11]);
         assertThatThrownBy(() -> encryptor.decrypt(shorterThanIv))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void legacyUnversionedPayloadIsNeverAcceptedAsYcse() {
+        byte[] legacyPayload = Base64.getDecoder().decode(encryptor.encrypt("legacy value"));
+
+        assertThatThrownBy(() -> new EnvelopeCodec().decode(
+                legacyPayload, EnvelopeCodec.Target.DATABASE_FIELD))
+                .isExactlyInstanceOf(ProtectionFailure.class)
+                .hasMessage(ProtectionFailure.SANITIZED_MESSAGE);
     }
 }
