@@ -42,10 +42,22 @@ class Pkcs11ProviderFactoryTest {
         assertThat(configText.get())
                 .contains("library=" + properties(module, descriptors()).canonicalModulePath(),
                         "slot=4198401")
-                .contains("CKM_AES_GCM", "CKM_SHA256_HMAC")
+                .contains("enabledMechanisms={ 0x7FFFFF21 CKM_AES_KEY_GEN CKM_AES_GCM "
+                        + "CKM_GENERIC_SECRET_KEY_GEN CKM_SHA256_HMAC }")
                 .doesNotContain("unit-token-exact", "unit-pin-only");
         assertThat(configPath.get()).doesNotExist();
         assertThat(UNIT_EVIDENCE_LABEL).contains("not-pkcs11-evidence");
+    }
+
+    @Test
+    void normalizesJava21P11KeyStoreByteLengthAndRejectsInvalidValues() {
+        assertThat(Pkcs11ProviderFactory.normalizeP11SecretKeyBits("32")).isEqualTo(256);
+        assertThatThrownBy(() -> Pkcs11ProviderFactory.normalizeP11SecretKeyBits("invalid"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("invalid token key length");
+        assertThatThrownBy(() -> Pkcs11ProviderFactory.normalizeP11SecretKeyBits("268435456"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("invalid token key length");
     }
 
     @Test

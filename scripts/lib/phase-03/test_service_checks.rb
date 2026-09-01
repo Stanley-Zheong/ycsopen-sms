@@ -30,6 +30,62 @@ class Phase03ServiceChecksTest < Minitest::Test
     assert ServiceChecks.validate_manifest!(manifest)
   end
 
+  def test_capability_patch_is_exact_and_fail_closed_for_context_or_hash_drift
+    Dir.mktmpdir("phase03-capability-patch-") do |directory|
+      target_dir = File.join(directory, "src/lib")
+      FileUtils.mkdir_p(target_dir)
+      fixtures = [
+        ["SoftHSM.cpp", ServiceChecks::SOFTHSM_CAPABILITY_ORIGINAL,
+         ServiceChecks::SOFTHSM_CAPABILITY_REPLACEMENT],
+        ["main.cpp", ServiceChecks::SOFTHSM_FUNCTION_LIST_ORIGINAL,
+         ServiceChecks::SOFTHSM_FUNCTION_LIST_REPLACEMENT]
+      ]
+      targets = fixtures.map do |name, original, replacement|
+        source = "prefix\n#{original}\nsuffix\n"
+        patched = source.sub(original, replacement)
+        File.binwrite(File.join(target_dir, name), source)
+        {
+          path: "src/lib/#{name}", source_sha256: Digest::SHA256.hexdigest(source),
+          result_sha256: Digest::SHA256.hexdigest(patched),
+          original: original, replacement: replacement
+        }
+      end
+
+      result = ServiceChecks.apply_softhsm_capability_patch!(
+        directory, targets: targets
+      )
+
+      assert_equal ServiceChecks::SOFTHSM_CAPABILITY_PATCH_SHA256, result
+      targets.each do |specification|
+        assert_equal specification.fetch(:result_sha256),
+                     Digest::SHA256.file(File.join(directory, specification.fetch(:path))).hexdigest
+      end
+
+      missing = "prefix without the locked C_GetInfo context\n"
+      File.binwrite(File.join(target_dir, "SoftHSM.cpp"), missing)
+      missing_targets = targets.map(&:dup)
+      missing_targets.first[:source_sha256] = Digest::SHA256.hexdigest(missing)
+      missing_targets.first[:result_sha256] = Digest::SHA256.hexdigest(missing)
+      assert_check("SOFTHSM_CAPABILITY_PATCH_CONTEXT_MISMATCH") do
+        ServiceChecks.apply_softhsm_capability_patch!(directory, targets: missing_targets)
+      end
+
+      assert_check("SOFTHSM_CAPABILITY_PATCH_DIGEST_MISMATCH") do
+        ServiceChecks.apply_softhsm_capability_patch!(
+          directory, targets: targets, expected_patch_sha256: "0" * 64
+        )
+      end
+
+      fixtures.each do |name, original, _replacement|
+        File.binwrite(File.join(target_dir, name), "prefix\n#{original}\nsuffix\n")
+      end
+      File.binwrite(File.join(target_dir, "main.cpp"), "hash drift\n")
+      assert_check("SOFTHSM_CAPABILITY_SOURCE_DRIFT") do
+        ServiceChecks.apply_softhsm_capability_patch!(directory, targets: targets)
+      end
+    end
+  end
+
   def test_wrong_source_identities_fail_closed
     {
       "archive_sha256" => ["0" * 64, "SOFTHSM_SOURCE_DIGEST_MISMATCH"],

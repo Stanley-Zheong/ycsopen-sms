@@ -26,6 +26,40 @@ module Phase03
     SOFTHSM_URL = "https://codeload.github.com/softhsm/SoftHSMv2/tar.gz/refs/tags/2.7.0"
     SOFTHSM_ARCHIVE_SHA256 = "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573"
     SOFTHSM_ARCHIVE_ROOT = "SoftHSMv2-2.7.0"
+    SOFTHSM_CAPABILITY_PATCH_SHA256 = "61f77b1f78ecb94b55da8decb5041d5a40e661c3034eed59f6c2f44645cb3efd"
+    SOFTHSM_CAPABILITY_PATCH = <<~PATCH.freeze
+      SoftHSM.cpp:C_GetInfo:CRYPTOKI_VERSION_MAJOR=>CRYPTOKI_LEGACY_VERSION_MAJOR
+      SoftHSM.cpp:C_GetInfo:CRYPTOKI_VERSION_MINOR=>CRYPTOKI_LEGACY_VERSION_MINOR
+      main.cpp:functionList:CRYPTOKI_VERSION_MAJOR=>CRYPTOKI_LEGACY_VERSION_MAJOR
+      main.cpp:functionList:CRYPTOKI_VERSION_MINOR=>CRYPTOKI_LEGACY_VERSION_MINOR
+    PATCH
+    SOFTHSM_CAPABILITY_ORIGINAL = <<~SOURCE.freeze
+      pInfo->cryptokiVersion.major = CRYPTOKI_VERSION_MAJOR;
+      \tpInfo->cryptokiVersion.minor = CRYPTOKI_VERSION_MINOR;
+    SOURCE
+    SOFTHSM_CAPABILITY_REPLACEMENT = <<~SOURCE.freeze
+      pInfo->cryptokiVersion.major = CRYPTOKI_LEGACY_VERSION_MAJOR;
+      \tpInfo->cryptokiVersion.minor = CRYPTOKI_LEGACY_VERSION_MINOR;
+    SOURCE
+    SOFTHSM_FUNCTION_LIST_ORIGINAL = "\t{ CRYPTOKI_VERSION_MAJOR, CRYPTOKI_VERSION_MINOR },".freeze
+    SOFTHSM_FUNCTION_LIST_REPLACEMENT =
+      "\t{ CRYPTOKI_LEGACY_VERSION_MAJOR, CRYPTOKI_LEGACY_VERSION_MINOR },".freeze
+    SOFTHSM_CAPABILITY_TARGETS = [
+      {
+        path: "src/lib/SoftHSM.cpp",
+        source_sha256: "c963edb9315e25ae81e104e97e3b5805ae3d7e63be30a75e7d753f32bcf2a8e1",
+        result_sha256: "1891c10f0172c85af3f0316e153ba818a0fb64c737cf6f1d2d67405a5bd7eef4",
+        original: SOFTHSM_CAPABILITY_ORIGINAL,
+        replacement: SOFTHSM_CAPABILITY_REPLACEMENT
+      },
+      {
+        path: "src/lib/main.cpp",
+        source_sha256: "2a0b44e1647c138d8410daa392326c5d35484d777edcc358e6b8fb2755d22a5f",
+        result_sha256: "4939c8f142cae61ff35c040105324b1cd893c29176dc7e455330412833efba2f",
+        original: SOFTHSM_FUNCTION_LIST_ORIGINAL,
+        replacement: SOFTHSM_FUNCTION_LIST_REPLACEMENT
+      }
+    ].freeze
     REQUIRED_MECHANISMS = %w[
       CKM_AES_KEY_GEN CKM_AES_GCM CKM_GENERIC_SECRET_KEY_GEN CKM_SHA256_HMAC
     ].freeze
@@ -65,6 +99,41 @@ module Phase03
     ].freeze
 
     module_function
+
+    def apply_softhsm_capability_patch!(source_root,
+                                        targets: SOFTHSM_CAPABILITY_TARGETS,
+                                        expected_patch_sha256: SOFTHSM_CAPABILITY_PATCH_SHA256)
+      unless Digest::SHA256.hexdigest(SOFTHSM_CAPABILITY_PATCH) == expected_patch_sha256
+        raise CheckError.new("SOFTHSM_CAPABILITY_PATCH_DIGEST_MISMATCH",
+                             "SoftHSM capability patch digest differs")
+      end
+      prepared = targets.map do |specification|
+        target = File.join(source_root, specification.fetch(:path))
+        unless File.file?(target) && !File.symlink?(target)
+          raise CheckError.new("SOFTHSM_CAPABILITY_PATCH_TARGET_INVALID",
+                               "SoftHSM capability patch target is not a regular file")
+        end
+        source = File.binread(target)
+        unless Digest::SHA256.hexdigest(source) == specification.fetch(:source_sha256)
+          raise CheckError.new("SOFTHSM_CAPABILITY_SOURCE_DRIFT",
+                               "SoftHSM capability patch source hash differs")
+        end
+        original = specification.fetch(:original)
+        replacement = specification.fetch(:replacement)
+        unless source.scan(original).length == 1 && !source.include?(replacement)
+          raise CheckError.new("SOFTHSM_CAPABILITY_PATCH_CONTEXT_MISMATCH",
+                               "SoftHSM capability patch context differs")
+        end
+        patched = source.sub(original, replacement)
+        unless Digest::SHA256.hexdigest(patched) == specification.fetch(:result_sha256)
+          raise CheckError.new("SOFTHSM_CAPABILITY_PATCH_RESULT_MISMATCH",
+                               "SoftHSM capability patch result hash differs")
+        end
+        [target, patched]
+      end
+      prepared.each { |target, patched| File.binwrite(target, patched) }
+      SOFTHSM_CAPABILITY_PATCH_SHA256
+    end
 
     def load_manifest!(path)
       raise CheckError.new("SOFTHSM_MANIFEST_PATH_INVALID", "manifest must be a regular non-symlink file") unless
@@ -345,7 +414,8 @@ module Phase03
       ], timeout: 600)
       result = JSON.parse(stdout)
       unless result["status"] == "PASS" && result.dig("runtime", "mechanism_count") == 4 &&
-             result.dig("runtime", "nonextractable_key_count") == 2
+             result.dig("runtime", "nonextractable_key_count") == 2 &&
+             result.dig("source", "capability_patch_sha256") == SOFTHSM_CAPABILITY_PATCH_SHA256
         raise CheckError.new("SOFTHSM_PREFLIGHT_INCOMPLETE", "provisioner did not return the real preflight contract")
       end
       handoff = read_softhsm_handoff!(destination)
@@ -367,10 +437,12 @@ module Phase03
         raise CheckError.new("SOFTHSM_HANDOFF_PERMISSION_INVALID", "SoftHSM handoff is missing or not private")
       end
       handoff = JSON.parse(File.binread(handoff_path))
-      expected_keys = %w[cli config header library pin_source schema_version slot source_sha256 token_dir version]
+      expected_keys = %w[capability_patch_sha256 cli config header library pin_source schema_version slot
+                         source_sha256 token_dir version]
       unless handoff.is_a?(Hash) && handoff.keys.sort == expected_keys &&
              handoff["schema_version"] == "ycs-softhsm-handoff/v1" &&
-             handoff["version"] == SOFTHSM_VERSION && handoff["source_sha256"] == SOFTHSM_ARCHIVE_SHA256
+             handoff["version"] == SOFTHSM_VERSION && handoff["source_sha256"] == SOFTHSM_ARCHIVE_SHA256 &&
+             handoff["capability_patch_sha256"] == SOFTHSM_CAPABILITY_PATCH_SHA256
         raise CheckError.new("SOFTHSM_HANDOFF_INVALID", "SoftHSM handoff identity differs from the locked source")
       end
       handoff

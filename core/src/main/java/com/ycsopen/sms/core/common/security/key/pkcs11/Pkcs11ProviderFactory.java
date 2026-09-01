@@ -103,7 +103,8 @@ public final class Pkcs11ProviderFactory {
         String contents = "name=" + providerSuffix + "\n"
                 + "library=" + library + "\n"
                 + "slot=" + properties.slotId() + "\n"
-                + "enabledMechanisms={ CKM_AES_GCM CKM_SHA256_HMAC }\n";
+                + "enabledMechanisms={ 0x7FFFFF21 CKM_AES_KEY_GEN CKM_AES_GCM "
+                + "CKM_GENERIC_SECRET_KEY_GEN CKM_SHA256_HMAC }\n";
         Files.writeString(config, contents, StandardCharsets.US_ASCII);
         return config;
     }
@@ -153,8 +154,20 @@ public final class Pkcs11ProviderFactory {
         if (!matcher.matches()) {
             throw new IllegalStateException("token key attributes unavailable");
         }
-        return new TokenKey(key, matcher.group(1), Integer.parseInt(matcher.group(2)),
+        return new TokenKey(key, matcher.group(1), normalizeP11SecretKeyBits(matcher.group(2)),
                 true, true, false);
+    }
+
+    static int normalizeP11SecretKeyBits(String valueLengthBytes) {
+        try {
+            int value = Integer.parseInt(valueLengthBytes);
+            if (value <= 0) {
+                throw new IllegalArgumentException("invalid token key length");
+            }
+            return Math.multiplyExact(value, Byte.SIZE);
+        } catch (NumberFormatException | ArithmeticException exception) {
+            throw new IllegalArgumentException("invalid token key length", exception);
+        }
     }
 
     private static void validateInventory(Map<String, TokenKey> keys,

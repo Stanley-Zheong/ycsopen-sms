@@ -6,3 +6,8 @@ phase03:
     softhsm-version: "2.7.0"
     softhsm-source-sha256: "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573"
     mock-substitution: false
+    pkcs11-proof:
+      adapter: "SUN_PKCS11"
+      persistent-reservations: true
+      durable-output: "hashes-and-counts-only"
+      physical-hsm-certification: false

@@ -242,7 +242,8 @@ final class Phase03ServiceHarness {
             }
             JsonNode handoff = JSON.readTree(Files.readAllBytes(handoffPath));
             Set<String> expectedFields = Set.of(
-                    "schema_version", "version", "source_sha256", "cli", "library", "header",
+                    "schema_version", "version", "source_sha256", "capability_patch_sha256",
+                    "cli", "library", "header",
                     "config", "pin_source", "slot", "token_dir");
             Set<String> actualFields = new java.util.HashSet<>();
             handoff.fieldNames().forEachRemaining(actualFields::add);
@@ -251,6 +252,8 @@ final class Phase03ServiceHarness {
                     || !handoff.path("version").asText().equals("2.7.0")
                     || !handoff.path("source_sha256").asText().equals(
                     "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573")
+                    || !handoff.path("capability_patch_sha256").asText().equals(
+                    "61f77b1f78ecb94b55da8decb5041d5a40e661c3034eed59f6c2f44645cb3efd")
                     || handoff.path("slot").asLong(-1) < 0) {
                 throw new FixtureException("SOFTHSM_HANDOFF_IDENTITY_INVALID");
             }

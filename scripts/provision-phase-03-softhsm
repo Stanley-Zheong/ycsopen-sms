@@ -276,6 +276,7 @@ module Phase03
       ServiceChecks.verify_archive_digest!(archive, manifest.fetch("archive_sha256"))
       extract_archive(archive, source_parent, manifest.fetch("archive_root"))
       source = File.join(source_parent, manifest.fetch("archive_root"))
+      capability_patch_sha256 = ServiceChecks.apply_softhsm_capability_patch!(source)
       cmake = command_path!("cmake", "SOFTHSM_BUILD_TOOL_MISSING")
       openssl_root = openssl_root!
       configure = [cmake, "-S", source, "-B", build, "-DCMAKE_INSTALL_PREFIX=#{install}",
@@ -286,7 +287,8 @@ module Phase03
       command([cmake, "--build", build, "--parallel", "2"])
       command([cmake, "--install", build])
       paths = discover_runtime!(install)
-      paths.merge(header: File.join(source, "src/lib/pkcs11/cryptoki.h"), branch: "provision")
+      paths.merge(header: File.join(source, "src/lib/pkcs11/cryptoki.h"), branch: "provision",
+                  capability_patch_sha256: capability_patch_sha256)
     end
 
     def admit_existing(_destination)
@@ -352,6 +354,7 @@ module Phase03
         "schema_version" => "ycs-softhsm-handoff/v1",
         "version" => manifest.fetch("version"),
         "source_sha256" => manifest.fetch("archive_sha256"),
+        "capability_patch_sha256" => paths.fetch(:capability_patch_sha256, nil),
         "cli" => paths.fetch(:cli), "library" => paths.fetch(:library), "header" => paths.fetch(:header),
         "config" => report&.fetch("config", nil), "pin_source" => report&.fetch("pin_source", nil),
         "slot" => report&.fetch("slot", nil),
@@ -366,7 +369,8 @@ module Phase03
         "status" => "PASS", "branch" => paths.fetch(:branch),
         "source" => {
           "tag" => manifest.fetch("tag"), "commit" => manifest.fetch("commit"),
-          "archive_sha256" => manifest.fetch("archive_sha256")
+          "archive_sha256" => manifest.fetch("archive_sha256"),
+          "capability_patch_sha256" => paths.fetch(:capability_patch_sha256, nil)
         },
         "runtime" => {
           "version" => manifest.fetch("version"),
