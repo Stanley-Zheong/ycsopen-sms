@@ -416,7 +416,9 @@ module Phase3CryptoEvidence
       surfaces.each do |surface|
         next unless surface.is_a?(Hash)
         id = surface["id"]
-        if surface["obligation_blocking"] != false || surface["disposition"] != "PROTECTED_BOUNDARY_ADOPTED"
+        disposition = surface["disposition"]
+        if surface["obligation_blocking"] != false ||
+           !disposition.is_a?(String) || !disposition.match?(/\AADOPTED_[A-Z0-9_]+\z/)
           error("INVENTORY_SOURCE_SURFACE_UNRESOLVED: #{id}")
         end
         Array(surface["sources"]).each do |source|

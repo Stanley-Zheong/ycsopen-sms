@@ -79,32 +79,6 @@ def copy_contract(root)
   end
 end
 
-def make_ready_inventory(root)
-  inventory = read_json(root, INVENTORY_PATH)
-  inventory["obligation_readiness"] = {
-    "status" => "READY",
-    "blocking_surface_ids" => [],
-    "reason" => "Every current protected boundary is represented by accepted executable evidence."
-  }
-  inventory.fetch("source_surfaces").each do |surface|
-    surface["disposition"] = "PROTECTED_BOUNDARY_ADOPTED"
-    surface["obligation_blocking"] = false
-    surface["sources"].each do |source|
-      source["tokens"] = source.fetch("tokens").map do |token|
-        token.match?(/(?:set|String\s+)(?:BusinessLicense|LegalRepIdFront|LegalRepIdBack|ShortlinkDomainProof|TrademarkProof|Evidence|File)Url/) ? "ProtectedBoundaryWrite" : token
-      end
-    end
-  end
-  inventory.fetch("targets").each do |target|
-    target.fetch("writers").each do |source|
-      source["tokens"] = source.fetch("tokens").map do |token|
-        token.match?(/(?:set|String\s+)(?:BusinessLicense|LegalRepIdFront|LegalRepIdBack|ShortlinkDomainProof|TrademarkProof|Evidence|File)Url/) ? "ProtectedBoundaryWrite" : token
-      end
-    end
-  end
-  write_json(root, INVENTORY_PATH, inventory)
-end
-
 def child_result(check_id:, layer:, obligation_ids:, case_ids:, adapters:, subject_digest:, facts: nil)
   result = {
     "schema_version" => Phase3CryptoEvidence::CHILD_RESULT_SCHEMA,
@@ -239,7 +213,6 @@ end
 
 def build_runner_fixture(root)
   copy_contract(root)
-  make_ready_inventory(root)
   build_runner_results(root)
 end
 
