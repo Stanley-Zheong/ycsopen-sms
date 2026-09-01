@@ -20,9 +20,9 @@ completion_metric: scoped_todo_empty
 ## Current position
 
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: 25 of 30
+Plan: 26 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute dependency-ready `03-25-PLAN.md`; `03-01-PLAN.md` through `03-09-PLAN.md` plus `03-11-PLAN.md`, `03-15-PLAN.md`, and `03-24-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
+**Current plan**: `03-26-PLAN.md` has a committed task result and summary; `03-10-PLAN.md` can resume against the adopted message writer, while all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -56,6 +56,8 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Each completed phase is one atomic commit plus one external annotated delivery tag. Dependency entry resolves the configured remote branch/tag target, target-tree subject/evidence/review digests, and PR/check PASS; committed `SUMMARY.md` records locators rather than a self SHA.
 - Phase 03 obligation PASS evidence must bind the exact-four catalog/TEST-MATRIX trace to canonical live input hashes, the accepted inventory digest, complete leak coverage, and fixed real/deterministic child-result identities and digests; OBL-001 independently rejects unresolved inventory and missing no-index targets.
 - Phase 03 real fixture evidence requires digest-locked MySQL and MinIO operations plus an executable source-verified SoftHSM token; source-manifest validation or a mock substitute cannot satisfy the runtime prerequisite.
+- Current message submission generates its immutable identity before one protected prepare operation, routes only ordered opaque query values, and saves task/envelope/per-version indexes only through `MessageTaskProtectionAdapter`.
+- `HashUtil` has no caller after message-writer adoption but remains under Plan 03-10 ownership until its checkpoint-gated legacy reader and repository-wide deletion audit are complete.
 
 ## Known implementation reality
 
@@ -76,7 +78,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Plan 06 now provides the production Java 21 SunPKCS11 provider/session and opaque-key adapter, with durable independent pre-nonce reservation, purpose-separated aliases/domains, the 1,048,576 hard ceiling and sanitized failures proven by unit mapping/order tests. Real SoftHSM/MySQL adapter evidence remains owned by Plan 07, and every Phase 03 obligation TODO remains open.
 - Plan 07 now enforces reference-only production startup and proves the same production SunPKCS11 adapter against a source/hash-locked SoftHSM 2.7.0 fixture plus real MySQL reservation state, including AES-GCM/AAD, purpose-separated HMAC, restart, failure burn, concurrency and the exact ceiling. This is SoftHSM protocol conformance rather than physical-HSM certification, and every Phase 03 obligation TODO remains open.
 - Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
-- Plan 09 now provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 still owns current service adoption, Plan 10 owns real Connector/J/PKCS11 proof, and every Phase 03 obligation TODO remains open.
+- Plan 09 provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 now adopts it in the live message service with no plaintext/raw-SHA write path; Plan 10 still owns real Connector/J/PKCS11 proof, and every Phase 03 obligation TODO remains open.
 - Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
 
 ## Authoritative TODO seeds
@@ -109,6 +111,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-25-PLAN.md`, Phase 3; `03-16-PLAN.md` is also dependency-ready.
+**Resume from**: `.planning/phases/03-crypto-storage-bootstrap/03-10-PLAN.md`, Phase 3; its legacy-reader and real persistence proof can now continue against the adopted message writer.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
