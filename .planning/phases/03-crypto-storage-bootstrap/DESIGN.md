@@ -62,6 +62,19 @@ flowchart LR
 
 `V1200__create_crypto_storage_metadata.sql` is expand-only and owns only key references/state, monotonic KEK wrap-operation reservations, per-version blind-index rows, protected object/session/capability metadata, migration run/checkpoint/lease/accepted-manifest signer state and sanitized events. It does not alter legacy V1 tables and contains no plaintext DEK, KEK, HMAC key, PIN, protected value, raw URL or capability token.
 
+V1200 physically creates exactly twelve `ycs_crypto_*` tables: key references,
+migration targets, blind indexes, one global manifest-pair admission row,
+migration runs/checkpoints/events, registration sessions/per-purpose attempts,
+protected objects, object capabilities and object operations. It creates no
+trigger or stored routine, so the normal Flyway application user does not need
+`SUPER` or `log_bin_trust_function_creators`. Monotonic reservations and state
+changes use checked ceilings plus `optimistic_version`, current-state and
+current-count predicates in one transaction. Concurrent writers therefore have
+one successful compare-and-set owner; stale, replayed, terminal or over-limit
+writers affect zero rows. Foreign keys, non-null paired fields, check constraints
+and unique indexes enforce every stored shape independently of that mutation
+protocol.
+
 The polymorphic legacy-row binding in blind-index metadata cannot use one physical foreign key. The allowlisted target manifest, same-transaction row-existence check, original-row digest predicate and orphan reconciliation jointly enforce the binding. `key_version` remains constrained to the Phase-owned key-reference registry.
 
 `bulk_sending_items.mobile_encrypted` and `uplink_records.mobile_encrypted` are required protected-field/migration inventory members. They have no V1 `mobile_hash` companion and no current equality-query contract, so no blind-index row is invented for them. Inventory and exact-four evidence validate their explicit no-index disposition and reject their omission.
