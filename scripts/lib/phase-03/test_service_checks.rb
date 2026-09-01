@@ -102,4 +102,37 @@ class Phase03ServiceChecksTest < Minitest::Test
   def test_preflight_report_accepts_exact_contract
     assert ServiceChecks.validate_preflight_report!(valid_report)
   end
+
+  def test_service_run_id_grammar_is_closed_and_service_scoped
+    assert ServiceChecks.validate_run_id!("mysql-012345abcdef", :mysql)
+    assert_check("SERVICE_RUN_ID_INVALID") do
+      ServiceChecks.validate_run_id!("minio-012345abcdef", :mysql)
+    end
+    assert_check("SERVICE_RUN_ID_INVALID") do
+      ServiceChecks.validate_run_id!("softhsm-latest", :softhsm)
+    end
+  end
+
+  def test_minio_image_identity_requires_exact_digest_platform_and_release
+    identity = {
+      "repo_digests" => [ServiceChecks::MINIO_IMAGE],
+      "image_id" => ServiceChecks::MINIO_IMAGE_ID,
+      "platform" => "linux/arm64",
+      "version" => ServiceChecks::MINIO_VERSION
+    }
+    assert ServiceChecks.validate_minio_identity!(identity)
+
+    assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
+      ServiceChecks.validate_minio_identity!(identity.merge("repo_digests" => ["minio/minio@sha256:#{'0' * 64}"]))
+    end
+    assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
+      ServiceChecks.validate_minio_identity!(identity.merge("image_id" => "sha256:#{'0' * 64}"))
+    end
+    assert_check("MINIO_IMAGE_PLATFORM_MISMATCH") do
+      ServiceChecks.validate_minio_identity!(identity.merge("platform" => "linux/riscv64"))
+    end
+    assert_check("MINIO_VERSION_MISMATCH") do
+      ServiceChecks.validate_minio_identity!(identity.merge("version" => "latest"))
+    end
+  end
 end

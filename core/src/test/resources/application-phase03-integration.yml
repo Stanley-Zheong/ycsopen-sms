@@ -1,0 +1,8 @@
+phase03:
+  integration:
+    enabled: false
+    mysql-image: "mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb"
+    minio-image: "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    softhsm-version: "2.7.0"
+    softhsm-source-sha256: "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573"
+    mock-substitution: false

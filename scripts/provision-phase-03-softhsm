@@ -83,6 +83,14 @@ module Phase03
         rv = C_InitToken(slots[0], (CK_UTF8CHAR_PTR)so_pin, (CK_ULONG)strlen(so_pin), label);
         require_rv(rv, "init-token"); free(slots); if (failed) { C_Finalize(NULL_PTR); return 70; }
 
+        /* SoftHSM assigns the token's stable slot ID when the module is next
+           initialized. Re-open the module so the handoff records the same ID
+           that independent PKCS#11 consumers will enumerate. */
+        rv = C_Finalize(NULL_PTR); require_rv(rv, "finalize-after-init-token");
+        if (failed) { return 70; }
+        rv = C_Initialize(NULL_PTR); require_rv(rv, "reinitialize-after-init-token");
+        if (failed) { return 70; }
+
         slot_count = 0; rv = C_GetSlotList(CK_TRUE, NULL_PTR, &slot_count); require_rv(rv, "token-slot-count");
         slots = calloc(slot_count, sizeof(CK_SLOT_ID));
         rv = C_GetSlotList(CK_TRUE, slots, &slot_count); require_rv(rv, "token-slot-list");
@@ -160,7 +168,8 @@ module Phase03
                   failed, aes_ok, hmac_ok, (unsigned long)signature_len);
           return 74;
         }
-        printf("token_initialized=1 mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32\n");
+        printf("token_initialized=1 owned_slot=%lu mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32\n",
+               (unsigned long)slot);
         return 0;
       }
     C
@@ -175,9 +184,10 @@ module Phase03
     def run
       manifest = ServiceChecks.load_manifest!(required_option(:manifest))
       destination = ServiceChecks.owned_destination!(required_option(:destination))
-      validate_mode!
-      cleanup_destination(destination) if @options[:cleanup] && !@options[:provision] && !existing_mode?
-      if @options[:cleanup] && !@options[:provision] && !existing_mode?
+      cleanup_only = @options[:cleanup] && !@options[:provision] && !existing_mode?
+      validate_mode! unless cleanup_only
+      cleanup_destination(destination) if cleanup_only
+      if cleanup_only
         ServiceChecks.validate_cleanup!(destination)
         @out.puts(JSON.generate("status" => "PASS", "cleanup" => "PASS"))
         return 0
@@ -318,7 +328,8 @@ module Phase03
                paths.fetch(:library), "-Wl,-rpath,#{File.dirname(paths.fetch(:library))}",
                "-Wl,-rpath,#{File.join(openssl_root!, 'lib')}", "-o", helper])
       stdout, = command([helper, pin_source], env: { "SOFTHSM2_CONF" => config })
-      unless stdout.strip == "token_initialized=1 mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32"
+      match = stdout.strip.match(/\Atoken_initialized=1 owned_slot=([0-9]+) mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32\z/)
+      unless match
         raise ServiceChecks::CheckError.new("SOFTHSM_PREFLIGHT_OUTPUT_INVALID", "native preflight result was incomplete")
       end
       {
@@ -328,6 +339,7 @@ module Phase03
           { "kind" => kind }.merge(ServiceChecks::REQUIRED_KEY_ATTRIBUTES)
         end,
         "hmac_output_bytes" => 32,
+        "slot" => Integer(match[1], 10),
         "config" => config,
         "pin_source" => pin_source,
         "token_dir" => token_dir
@@ -342,6 +354,7 @@ module Phase03
         "source_sha256" => manifest.fetch("archive_sha256"),
         "cli" => paths.fetch(:cli), "library" => paths.fetch(:library), "header" => paths.fetch(:header),
         "config" => report&.fetch("config", nil), "pin_source" => report&.fetch("pin_source", nil),
+        "slot" => report&.fetch("slot", nil),
         "token_dir" => report&.fetch("token_dir", nil)
       }
       File.write(handoff, JSON.generate(payload), mode: "wb", perm: 0o600)
