@@ -22,7 +22,7 @@ completion_metric: scoped_todo_empty
 Phase: 03 (crypto-storage-bootstrap) — EXECUTING
 Plan: 5 of 30
 **Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Execute `03-05-PLAN.md` in Wave 2; `03-01-PLAN.md` through `03-04-PLAN.md` and the independently schedulable `03-11-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
+**Current plan**: Execute `03-05-PLAN.md` in Wave 2; `03-01-PLAN.md` through `03-04-PLAN.md` and the independently schedulable `03-11-PLAN.md` and `03-15-PLAN.md` have committed summaries, while all Phase 03 obligation TODO rows remain open.
 **Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
@@ -72,6 +72,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
 - Plan 03 now provides a passing opt-in real fixture lane: JDBC against the admitted MySQL digest, signed MinIO object lifecycle with anonymous rejection, and Java SunPKCS11 AES-GCM/HMAC against a source-verified SoftHSM 2.7.0 token. This is prerequisite evidence only and closes no obligation TODO.
 - Plan 04 now provides the strict immutable YCSE/v1 binary and canonical AAD contract with passing byte, mutation, capacity and bounded-reader tests. Production key-provider, persistence, storage and migration evidence remain open.
+- Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
 
 ## Authoritative TODO seeds
 
