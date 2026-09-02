@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ycsopen-sms.local/schemas/browser-scenarios.schema.json",
+  "title": "Phase 1 LOGIN-SMOKE-V1 browser scenario contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "scenario", "digests"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "route", "selectors", "actions", "responder", "errorPolicy", "visualRule"],
+      "properties": {
+        "id": { "const": "LOGIN-SMOKE-V1" },
+        "route": { "const": "/login" },
+        "selectors": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["page", "card", "username", "password", "remember", "submit", "error"],
+          "properties": {
+            "page": { "const": "shared-auth-login-page" },
+            "card": { "const": "shared-auth-login-card" },
+            "username": { "const": "shared-auth-login-username" },
+            "password": { "const": "shared-auth-login-password" },
+            "remember": { "const": "shared-auth-login-remember" },
+            "submit": { "const": "shared-auth-login-submit" },
+            "error": { "const": "shared-auth-login-error" }
+          }
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "target"],
+            "properties": {
+              "kind": { "enum": ["submit-empty", "fill", "check", "assert-checked", "click", "await-response", "assert-visible"] },
+              "target": { "enum": ["username", "password", "remember", "submit", "error", "mapped-responder"] },
+              "value": { "type": "string" },
+              "assert": { "type": "string" }
+            }
+          }
+        },
+        "responder": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonicalPath", "mappedPaths", "method", "status", "contentType", "marker", "body", "uiErrorText"],
+          "properties": {
+            "canonicalPath": { "const": "/console/auth/login" },
+            "mappedPaths": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "string" }
+            },
+            "method": { "const": "POST" },
+            "status": { "const": 401 },
+            "contentType": { "const": "application/json" },
+            "marker": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "value"],
+              "properties": {
+                "name": { "const": "X-YCS-Scenario" },
+                "value": { "const": "LOGIN-SMOKE-V1" }
+              }
+            },
+            "body": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["code", "message"],
+              "properties": {
+                "code": { "const": "AUTH_INVALID_CREDENTIALS" },
+                "message": { "const": "用户名或密码错误" }
+              }
+            },
+            "uiErrorText": { "const": "用户名或密码错误，或账号已被锁定" }
+          }
+        },
+        "errorPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["console", "page", "network", "wait", "artifacts"],
+          "properties": {
+            "console": { "const": "fail-on-unexpected-warning-or-error" },
+            "page": { "const": "fail-on-pageerror" },
+            "network": { "const": "fail-on-unexpected-request-or-failed-response" },
+            "wait": { "const": "event-bound-no-sleep" },
+            "artifacts": { "const": "screenshot-sha256-and-visual-observations" }
+          }
+        },
+        "visualRule": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "requiredSelectorKeys", "viewport", "rectangle", "computedStyleFailures", "ancestorClipping", "hitTest", "intersectionObserver", "descendantClipping"],
+          "properties": {
+            "id": { "const": "LOGIN-CARD-IN-VIEWPORT-V2" },
+            "requiredSelectorKeys": {
+              "type": "array",
+              "minItems": 6,
+              "maxItems": 6,
+              "items": { "enum": ["page", "card", "username", "password", "remember", "submit"] }
+            },
+            "viewport": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimumWidth", "minimumHeight"],
+              "properties": {
+                "minimumWidth": { "const": 1366 },
+                "minimumHeight": { "const": 768 }
+              }
+            },
+            "rectangle": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["positive", "fullyInsideViewport"],
+              "properties": {
+                "positive": { "const": true },
+                "fullyInsideViewport": { "const": true }
+              }
+            },
+            "computedStyleFailures": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["display", "visibility", "contentVisibility", "effectiveOpacityAtMost", "clipPathExcept", "maskImageExcept"],
+              "properties": {
+                "display": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "none" } },
+                "visibility": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "enum": ["hidden", "collapse"] } },
+                "contentVisibility": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "hidden" } },
+                "effectiveOpacityAtMost": { "const": 0 },
+                "clipPathExcept": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "none" } },
+                "maskImageExcept": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "none" } }
+              }
+            },
+            "ancestorClipping": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["overflowValues", "box", "requiredCoverage", "axisSpecific"],
+              "properties": {
+                "overflowValues": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "enum": ["hidden", "clip", "scroll", "auto"] } },
+                "box": { "const": "padding-box" },
+                "requiredCoverage": { "const": "full-target-border-box" },
+                "axisSpecific": { "const": true }
+              }
+            },
+            "hitTest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["points", "insetPixels", "acceptedHit"],
+              "properties": {
+                "points": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "enum": ["center", "top-left", "top-right", "bottom-left", "bottom-right"] } },
+                "insetPixels": { "const": 12 },
+                "acceptedHit": { "const": "target-or-descendant" }
+              }
+            },
+            "intersectionObserver": { "const": "corroboration-only" },
+            "descendantClipping": { "const": "excluded" }
+          }
+        }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenarioSha256", "visualRuleSha256"],
+      "properties": {
+        "scenarioSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "visualRuleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

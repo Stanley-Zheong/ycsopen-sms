@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ycsopen-sms.invalid/schema/phase01-obligation-summary-v1.json",
+  "title": "Phase 1 durable obligation evidence summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "phase", "owner", "obligation_id", "requirement_ids",
+    "behavior_id", "catalog_test", "case_id", "matrix_command", "evidence_path",
+    "subject_manifest_path", "subject_manifest_digest", "tested_subject_digest",
+    "status", "exit_code", "check_results", "supporting_results",
+    "supporting_contracts", "runtime", "product_acceptance_claims"
+  ],
+  "properties": {
+    "schema_version": { "const": "phase01-obligation-summary-v1" },
+    "phase": { "const": "01-engineering-verification-foundation" },
+    "owner": { "const": "engineering-verification-foundation" },
+    "obligation_id": { "type": "string", "pattern": "^OBL-[A-Z0-9-]+$" },
+    "requirement_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "behavior_id": { "type": "string", "minLength": 1 },
+    "catalog_test": { "type": "string", "minLength": 1 },
+    "case_id": { "type": "string", "pattern": "^CASE-[A-Z0-9-]+$" },
+    "matrix_command": { "type": "string", "minLength": 1 },
+    "evidence_path": { "type": "string", "minLength": 1 },
+    "subject_manifest_path": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json" },
+    "subject_manifest_digest": { "$ref": "#/$defs/sha256" },
+    "tested_subject_digest": { "$ref": "#/$defs/sha256" },
+    "status": { "const": "PASS" },
+    "exit_code": { "const": 0 },
+    "check_results": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/result" } },
+    "supporting_results": { "type": "array", "items": { "$ref": "#/$defs/result" } },
+    "supporting_contracts": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "runtime": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path", "sha256", "brand", "full_version", "major", "executable_path",
+            "subject_manifest_path", "subject_manifest_digest", "tested_subject_digest",
+            "viewport", "launch_succeeded", "scenario_id", "visual_rule_id",
+            "response_status", "response_body_sha256", "marker_name", "marker_value",
+            "screenshot_sha256", "dom_sha256", "transcript_sha256", "console_sha256"
+          ],
+          "properties": {
+            "path": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/local-chrome-runtime.json" },
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "brand": { "const": "Google Chrome" },
+            "full_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$" },
+            "major": { "type": "integer", "minimum": 1 },
+            "executable_path": { "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
+            "subject_manifest_path": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json" },
+            "subject_manifest_digest": { "$ref": "#/$defs/sha256" },
+            "tested_subject_digest": { "$ref": "#/$defs/sha256" },
+            "viewport": {
+              "type": "object", "additionalProperties": false,
+              "required": ["width", "height"],
+              "properties": { "width": { "const": 1440 }, "height": { "const": 900 } }
+            },
+            "launch_succeeded": { "const": true },
+            "scenario_id": { "const": "LOGIN-SMOKE-V1" },
+            "visual_rule_id": { "const": "LOGIN-CARD-IN-VIEWPORT-V2" },
+            "response_status": { "const": 401 },
+            "response_body_sha256": { "$ref": "#/$defs/sha256" },
+            "marker_name": { "const": "X-YCS-Scenario" },
+            "marker_value": { "const": "LOGIN-SMOKE-V1" },
+            "screenshot_sha256": { "$ref": "#/$defs/sha256" },
+            "dom_sha256": { "$ref": "#/$defs/sha256" },
+            "transcript_sha256": { "$ref": "#/$defs/sha256" },
+            "console_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      ]
+    },
+    "product_acceptance_claims": { "const": [] }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check_id", "layer", "argv", "cwd", "case_ids", "status", "exit_code", "diagnostics", "artifact_checksums", "result_digest"],
+      "properties": {
+        "check_id": { "type": "string", "minLength": 1 },
+        "layer": { "type": "string", "minLength": 1 },
+        "argv": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "cwd": { "type": "string", "minLength": 1 },
+        "case_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "status": { "const": "PASS" },
+        "exit_code": { "const": 0 },
+        "diagnostics": { "type": "array", "items": { "type": "string", "maxLength": 4096 } },
+        "artifact_checksums": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sha256", "media_type", "size"],
+            "properties": {
+              "sha256": { "$ref": "#/$defs/sha256" },
+              "media_type": { "type": "string" },
+              "size": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "result_digest": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

@@ -9,13 +9,19 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: phase-01-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  core:
-    name: Core / Java 21
+  phase-01-portable:
+    name: Phase 01 portable registry
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: core
+    timeout-minutes: 45
+    env:
+      PHASE01_SERVICE_PLATFORM: linux/amd64
+      PHASE01_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
+      PHASE01_REDIS_IMAGE: redis@sha256:596405c58f60e287ce0d71459202aaff26d90d08590106264a5f4cc2c73308d2
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -24,25 +30,27 @@ jobs:
           java-version: "21"
           cache: maven
           cache-dependency-path: core/pom.xml
-      - name: Test backend
-        run: mvn --batch-mode test
-
-  web:
-    name: Web / Node 20
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Install dependencies
-        run: npm ci
-      - name: Test frontend
-        run: npm test
-      - name: Build frontend
-        run: npm run build
+      - name: Prepare digest-pinned service images
+        run: |
+          /usr/bin/env ruby scripts/lib/phase-01/service_checks.rb prepare-images \
+            --platform "$PHASE01_SERVICE_PLATFORM" \
+            --mysql-image "$PHASE01_MYSQL_IMAGE" \
+            --redis-image "$PHASE01_REDIS_IMAGE"
+      - name: Execute shared portable verification registry
+        run: >-
+          ./scripts/verify-phase-01 --ci
+          --evidence-dir
+          .planning/phases/01-engineering-verification-foundation/EVIDENCE
+      - name: Upload redacted failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-01-redacted-diagnostics-${{ github.run_id }}
+          path: .planning/phases/01-engineering-verification-foundation/EVIDENCE/runs/
+          if-no-files-found: warn
+          retention-days: 3

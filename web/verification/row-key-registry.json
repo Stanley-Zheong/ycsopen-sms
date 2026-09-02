@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "allowedClasses": [
+    {
+      "id": "synthetic-business-key",
+      "classification": "synthetic-non-sensitive-immutable-business-key",
+      "immutable": true,
+      "sensitive": false,
+      "reviewed": true,
+      "allowedProperties": ["reference", "businessKey", "externalReference", "immutableKey"],
+      "example": "fixture-order-reference"
+    }
+  ],
+  "deniedClasses": [
+    { "id": "phone-number", "reason": "Phone numbers are sensitive and mutable routing data." },
+    { "id": "database-id", "reason": "Storage identifiers are implementation details, not business selectors." },
+    { "id": "localized-label", "reason": "Localized labels change with copy and locale." },
+    { "id": "mutable-name", "reason": "Names can be edited and are not immutable identity." },
+    { "id": "mutable-value", "reason": "Mutable field values cannot identify an automation row." },
+    { "id": "credential", "reason": "Credentials must never enter DOM identity or evidence." },
+    { "id": "message-content", "reason": "Message content may be sensitive and mutable." }
+  ]
+}
