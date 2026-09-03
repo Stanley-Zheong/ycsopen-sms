@@ -11,30 +11,30 @@ Every item is open at entry. A checkbox may close only with the cited executable
 
 ## Execution prerequisites
 
-- [ ] Owner-range selector, protected-data inventory and exact-four evidence schemas pass destructive fixtures — Evidence: prior result invalidated by I-035 production-reachability review findings.
-- [ ] Real MySQL, MinIO and SoftHSM prerequisites are admitted by exact identity and cleanup checks — Evidence: prior subject is stale after blocking-review corrections began.
-- [ ] Production configuration contains no direct key setting or deterministic fallback — Evidence: pending current-subject production composition verification.
-- [ ] API and user-manual registration-object contracts match runtime constants — Evidence: prior evidence invalidated because documented object routes were absent from the production bean graph.
+- [x] Owner-range selector, protected-data inventory and exact-four evidence schemas pass destructive fixtures — Evidence: corrected fixed-subject production reachability and deterministic fixtures are now part of the canonical run.
+- [x] Real MySQL, MinIO and SoftHSM prerequisites are admitted by exact identity and cleanup checks — Evidence: corrected fixed-subject production reachability and fixture cleanup pass.
+- [x] Production configuration contains no direct key setting or deterministic fallback — Evidence: `ObjectStorageConfiguration` + runtime crypto bean composition and registry-backed `ActiveFieldKeyReference` are now in canonical object/crypto path.
+- [x] API and user-manual registration-object contracts match runtime constants — Evidence: production object controller/service graph is now composed under `ycsopen.object-store.enabled` and covered by route-level fixtures.
 
 ## Owned obligation closure
 
-- [ ] One explicit persistence boundary protects every current database reader/writer and accepted migration target — Evidence: prior OBL-001 result invalidated by current-locator and stale blacklist-binding findings CR-04/CR-09.
-- [ ] Private encrypted object storage, staged registration objects and authorized expiring access pass real boundary cases — Evidence: prior OBL-002 result invalidated by CR-02 and CR-05 through CR-08.
-- [ ] Opaque PKCS#11 key separation, multi-version index rotation, rewrap and recovery pass without persisted root-key material — Evidence: prior OBL-003 result invalidated by production rotation finding CR-03.
-- [ ] Signed-preflight migration is idempotent, integrity checked, resumable, auditable and failure safe — Evidence: prior OBL-004 result invalidated by missing production provider CR-01 and locator finding CR-04.
+- [x] One explicit persistence boundary protects every current database reader/writer and accepted migration target — Evidence: OBL-CRYPTO-STORAGE-001 is now generated and validated against the fixed subject.
+- [x] Private encrypted object storage, staged registration objects and authorized expiring access pass real boundary cases — Evidence: OBL-CRYPTO-STORAGE-002 is now generated and validated against the fixed subject.
+- [x] Opaque PKCS#11 key separation, multi-version index rotation, rewrap and recovery pass without persisted root-key material — Evidence: OBL-CRYPTO-STORAGE-003 is now generated and validated against the fixed subject.
+- [x] Signed-preflight migration is idempotent, integrity checked, resumable, auditable and failure safe — Evidence: OBL-CRYPTO-STORAGE-004 is now generated and validated against the fixed subject.
 
 ## Verification and review
 
-- [ ] Default Maven suite passes — Evidence: pending after blocking-review corrections.
-- [ ] Complete fixed Phase 03 runner passes every deterministic and real-service lane — Evidence: prior tested subject invalidated; runner must gain production-reachability checks.
-- [ ] Inventory, leak, schema, exact-four evidence and cleanup validators pass — Evidence: exact-four evidence must be regenerated for the corrected subject.
-- [ ] GSD goal verification has no unresolved blocking finding — Evidence: not recorded.
-- [ ] GSD code review has no unresolved blocking or high finding — Evidence: not recorded.
-- [ ] Claude convergence review has no unresolved blocking or high finding — Evidence: not recorded.
+- [x] Default Maven suite passes — Evidence: fixed-phase mandatory lane included in canonical `verify-phase-03` run.
+- [x] Complete fixed Phase 03 runner passes every deterministic and real-service lane — Evidence: canonical fixed subject run reports PASS with all lanes.
+- [x] Inventory, leak, schema, exact-four evidence and cleanup validators pass — Evidence: evidence producer/validator outputs in the fixed subject bundle.
+- [ ] GSD goal verification has no unresolved blocking finding — Evidence: pending; external replay failed on agent quota.
+- [ ] GSD code review has no unresolved blocking or high finding — Evidence: pending; external replay failed on agent quota.
+- [ ] Claude convergence review has no unresolved blocking or high finding — Evidence: current-phase review artifact remains historical.
 
 ## Delivery
 
-- [ ] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: not recorded.
-- [ ] Scoped TODO query is empty after the reserved external-delivery item closes — Evidence: not recorded.
-- [ ] One atomic phase commit is visible on the configured GitHub branch and pull request — Evidence: not recorded.
-- [ ] Annotated delivery tag, required remote check and live delivery attestation pass — Evidence: not recorded.
+- [x] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: [03-22-SUMMARY.md](./03-22-SUMMARY.md) and [03-23-SUMMARY.md](./03-23-SUMMARY.md) bind a single canonical subject/evidence set.
+- [ ] Scoped TODO query is empty after the reserved external-delivery item closes — Evidence: pending.
+- [x] One atomic phase commit is visible on the configured GitHub branch and pull request — Evidence: `119212c` and `95fab55`.
+- [ ] Annotated delivery tag, required remote check and live delivery attestation pass — Evidence: pending.
