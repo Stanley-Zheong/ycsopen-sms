@@ -51,6 +51,16 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         return store.completeCreate(operation, stored);
     }
 
+    /** Durably binds the opaque provider locator before final metadata publication. */
+    public void recordObjectStored(CreateOperation operation, StoredObjectMetadata stored) {
+        require(operation);
+        Objects.requireNonNull(stored, "stored");
+        if (stored.purpose() != operation.purpose()) {
+            throw new IllegalArgumentException("protected object metadata is invalid");
+        }
+        store.recordObjectStored(operation, stored);
+    }
+
     public void recordOrphan(CreateOperation operation, StoredObjectMetadata stored) {
         require(operation);
         Objects.requireNonNull(stored, "stored");
@@ -68,6 +78,17 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
     public Optional<ProtectedObjectMetadata> find(String protectedObjectId) {
         requireObjectId(protectedObjectId);
         return store.find(protectedObjectId);
+    }
+
+    public Optional<ProtectedObjectMetadata> reserveDelete(String protectedObjectId,
+                                                            PrivateObjectStorePort.ObjectPurpose purpose,
+                                                            String tenantDraftId) {
+        requireObjectId(protectedObjectId);
+        Objects.requireNonNull(purpose, "purpose");
+        if (tenantDraftId == null || tenantDraftId.isBlank()) {
+            throw new IllegalArgumentException("protected object metadata is invalid");
+        }
+        return store.reserveDelete(protectedObjectId, purpose, tenantDraftId);
     }
 
     public void markDeleted(String protectedObjectId) {
@@ -98,6 +119,14 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
             return Optional.empty();
         }
         return store.findCapability(lookupId);
+    }
+
+    @Override
+    public boolean consumeActive(String lookupId, Instant now) {
+        if (lookupId == null || lookupId.isBlank() || now == null) {
+            return false;
+        }
+        return store.consumeActiveCapability(lookupId, now);
     }
 
     private static void require(CreateOperation operation) {
@@ -245,11 +274,14 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         REPLACED,
         EXPIRED,
         ORPHANED,
+        DELETING,
         DELETED
     }
 
     interface Store {
         void beginCreate(CreateOperation operation);
+
+        void recordObjectStored(CreateOperation operation, StoredObjectMetadata stored);
 
         Optional<ProtectedObjectMetadata> completeCreate(CreateOperation operation,
                                                          StoredObjectMetadata stored);
@@ -260,6 +292,10 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
 
         Optional<ProtectedObjectMetadata> find(String protectedObjectId);
 
+        Optional<ProtectedObjectMetadata> reserveDelete(String protectedObjectId,
+                                                         PrivateObjectStorePort.ObjectPurpose purpose,
+                                                         String tenantDraftId);
+
         void markDeleted(String protectedObjectId);
 
         void markOrphaned(String protectedObjectId);
@@ -269,6 +305,8 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         boolean createCapability(ObjectCapabilityService.StoredCapability capability);
 
         Optional<ObjectCapabilityService.StoredCapability> findCapability(String lookupId);
+
+        boolean consumeActiveCapability(String lookupId, Instant now);
     }
 
     private static final class JdbcStore implements Store {
@@ -294,6 +332,20 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         }
 
         @Override
+        public void recordObjectStored(CreateOperation operation, StoredObjectMetadata stored) {
+            transaction.executeWithoutResult(status -> {
+                insertObject(operation, stored, "ORPHANED");
+                int updated = jdbc.update("""
+                        UPDATE ycs_crypto_object_operations
+                           SET protected_object_id = ?, operation_state = 'OBJECT_STORED',
+                               optimistic_version = optimistic_version + 1
+                         WHERE operation_id = ? AND operation_state = 'RESERVED'
+                        """, operation.protectedObjectId(), operation.operationId());
+                requireOne(updated);
+            });
+        }
+
+        @Override
         public Optional<ProtectedObjectMetadata> completeCreate(CreateOperation operation,
                                                                  StoredObjectMetadata stored) {
             return transaction.execute(status -> {
@@ -312,12 +364,27 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                             operation.tenantDraftId(), databasePurpose(operation.purpose()));
                     requireOne(updated);
                 }
-                insertObject(operation, stored, "STAGED");
+                int published = jdbc.update("""
+                        UPDATE ycs_crypto_protected_objects
+                           SET object_state = 'STAGED', optimistic_version = optimistic_version + 1
+                         WHERE protected_object_id = ?
+                           AND registration_session_id = ?
+                           AND tenant_draft_id = ?
+                           AND object_purpose = ?
+                           AND object_state = 'ORPHANED'
+                           AND opaque_store_locator = ?
+                           AND envelope_digest = UNHEX(?)
+                           AND envelope_size = ?
+                           AND media_type = ?
+                        """, operation.protectedObjectId(), operation.registrationSessionId(),
+                        operation.tenantDraftId(), databasePurpose(operation.purpose()),
+                        stored.storageKey(), stored.sha256(), stored.size(), stored.mediaType());
+                requireOne(published);
                 int updated = jdbc.update("""
                         UPDATE ycs_crypto_object_operations
                            SET protected_object_id = ?, operation_state = 'COMPLETED',
                                affected_count = 1, optimistic_version = optimistic_version + 1
-                         WHERE operation_id = ? AND operation_state = 'RESERVED'
+                         WHERE operation_id = ? AND operation_state = 'OBJECT_STORED'
                         """, operation.protectedObjectId(), operation.operationId());
                 requireOne(updated);
                 return replaced;
@@ -327,13 +394,13 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         @Override
         public void recordOrphan(CreateOperation operation, StoredObjectMetadata stored) {
             transaction.executeWithoutResult(status -> {
-                insertObject(operation, stored, "ORPHANED");
                 int updated = jdbc.update("""
                         UPDATE ycs_crypto_object_operations
-                           SET protected_object_id = ?, operation_state = 'RECONCILE_DELETE',
+                           SET operation_state = 'RECONCILE_DELETE',
                                optimistic_version = optimistic_version + 1
-                         WHERE operation_id = ? AND operation_state IN ('RESERVED', 'OBJECT_STORED')
-                        """, operation.protectedObjectId(), operation.operationId());
+                         WHERE operation_id = ? AND protected_object_id = ?
+                           AND operation_state = 'OBJECT_STORED'
+                        """, operation.operationId(), operation.protectedObjectId());
                 requireOne(updated);
             });
         }
@@ -385,20 +452,41 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         }
 
         @Override
+        public Optional<ProtectedObjectMetadata> reserveDelete(
+                String protectedObjectId,
+                PrivateObjectStorePort.ObjectPurpose purpose,
+                String tenantDraftId) {
+            return transaction.execute(status -> {
+                int updated = jdbc.update("""
+                        UPDATE ycs_crypto_protected_objects
+                           SET object_state = 'DELETING', optimistic_version = optimistic_version + 1
+                         WHERE protected_object_id = ?
+                           AND tenant_draft_id = ?
+                           AND object_purpose = ?
+                           AND object_state IN ('STAGED', 'REPLACED', 'EXPIRED', 'ORPHANED')
+                        """, protectedObjectId, tenantDraftId, databasePurpose(purpose));
+                return updated == 1 ? find(protectedObjectId) : Optional.empty();
+            });
+        }
+
+        @Override
         public void markDeleted(String protectedObjectId) {
-            int updated = jdbc.update("""
-                    UPDATE ycs_crypto_protected_objects
-                       SET object_state = 'DELETED', optimistic_version = optimistic_version + 1
-                     WHERE protected_object_id = ?
-                       AND object_state IN ('STAGED', 'REPLACED', 'EXPIRED', 'ORPHANED')
-                    """, protectedObjectId);
-            requireOne(updated);
-            jdbc.update("""
-                    UPDATE ycs_crypto_object_operations
-                       SET operation_state = 'COMPLETED', affected_count = 1,
-                           optimistic_version = optimistic_version + 1
-                     WHERE protected_object_id = ? AND operation_state = 'RECONCILE_DELETE'
-                    """, protectedObjectId);
+            transaction.executeWithoutResult(status -> {
+                int updated = jdbc.update("""
+                        UPDATE ycs_crypto_protected_objects
+                           SET object_state = 'DELETED', optimistic_version = optimistic_version + 1
+                         WHERE protected_object_id = ?
+                           AND object_state = 'DELETING'
+                        """, protectedObjectId);
+                requireOne(updated);
+                jdbc.update("""
+                        UPDATE ycs_crypto_object_operations
+                           SET operation_state = 'COMPLETED', affected_count = 1,
+                               optimistic_version = optimistic_version + 1
+                         WHERE protected_object_id = ?
+                           AND operation_state IN ('OBJECT_STORED', 'RECONCILE_DELETE')
+                        """, protectedObjectId);
+            });
         }
 
         @Override
@@ -407,7 +495,7 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                     UPDATE ycs_crypto_protected_objects
                        SET object_state = 'ORPHANED', optimistic_version = optimistic_version + 1
                      WHERE protected_object_id = ?
-                       AND object_state IN ('STAGED', 'REPLACED', 'EXPIRED')
+                       AND object_state IN ('STAGED', 'REPLACED', 'EXPIRED', 'DELETING')
                     """, protectedObjectId);
             requireOne(updated);
             jdbc.update("""
@@ -426,7 +514,7 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                            LOWER(HEX(envelope_digest)) AS envelope_sha256,
                            envelope_size, media_type, expires_at
                       FROM ycs_crypto_protected_objects
-                     WHERE object_state IN ('REPLACED', 'EXPIRED', 'ORPHANED')
+                     WHERE object_state IN ('REPLACED', 'EXPIRED', 'ORPHANED', 'DELETING')
                      ORDER BY updated_at, protected_object_id
                      LIMIT ?
                     """, (rs, row) -> new ProtectedObjectMetadata(
@@ -485,6 +573,17 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                             rs.getString("capability_state")),
                     rs.getTimestamp("expires_at").toInstant()), lookupId)
                     .stream().findFirst();
+        }
+
+        @Override
+        public boolean consumeActiveCapability(String lookupId, Instant now) {
+            return jdbc.update("""
+                    UPDATE ycs_crypto_object_capabilities
+                       SET capability_state = 'REVOKED', optimistic_version = optimistic_version + 1
+                     WHERE capability_lookup_id = ?
+                       AND capability_state = 'ACTIVE'
+                       AND expires_at > ?
+                    """, lookupId, Timestamp.from(now)) == 1;
         }
 
         private static void requireOne(int affected) {

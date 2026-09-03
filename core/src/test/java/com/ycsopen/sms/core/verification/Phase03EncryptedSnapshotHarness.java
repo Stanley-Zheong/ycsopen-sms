@@ -27,6 +27,9 @@ final class Phase03EncryptedSnapshotHarness {
             char[] rootPassword = fixtures.mysql().rootPassword();
             String rootCredential = new String(rootPassword);
             java.util.Arrays.fill(rootPassword, '\0');
+            char[] hsmPin = handoff.userPin().clone();
+            String hsmCredential = new String(hsmPin);
+            java.util.Arrays.fill(hsmPin, '\0');
             try {
                 Phase03ServiceHarness.CommandResult result = Phase03ServiceHarness.runChecked(
                         List.of(javaExecutable.toString(), "-cp", System.getProperty("java.class.path"),
@@ -35,6 +38,7 @@ final class Phase03EncryptedSnapshotHarness {
                                 Map.entry("SOFTHSM2_CONF", handoff.config().toString()),
                                 Map.entry("PHASE03_HSM_LIBRARY", handoff.library().toString()),
                                 Map.entry("PHASE03_HSM_PIN_SOURCE", handoff.pinSource().toString()),
+                                Map.entry("PHASE03_HSM_USER_PIN", hsmCredential),
                                 Map.entry("PHASE03_HSM_SLOT", Long.toUnsignedString(handoff.slot())),
                                 Map.entry("PHASE03_MYSQL_HOST", fixtures.mysql().host()),
                                 Map.entry("PHASE03_MYSQL_PORT", Integer.toString(fixtures.mysql().port())),
@@ -43,8 +47,10 @@ final class Phase03EncryptedSnapshotHarness {
                                 Map.entry("PHASE03_MYSQL_PASSWORD", fixtures.mysql().password()),
                                 Map.entry("PHASE03_MYSQL_ROOT_PASSWORD", rootCredential),
                                 Map.entry("PHASE03_SNAPSHOT_STORE", storeRoot.toString())));
-                if (result.stdout().contains(rootCredential) || result.stderr().contains(rootCredential)) {
-                    throw new IllegalStateException("root credential reached child output");
+                if (result.stdout().contains(rootCredential) || result.stderr().contains(rootCredential)
+                        || result.stdout().contains(hsmCredential)
+                        || result.stderr().contains(hsmCredential)) {
+                    throw new IllegalStateException("fixture credential reached child output");
                 }
                 if (!"PHASE03_SNAPSHOT_REAL_PROOF_PASS\n".equals(result.stdout())) {
                     throw new IllegalStateException("snapshot child proof did not return PASS");
@@ -52,6 +58,7 @@ final class Phase03EncryptedSnapshotHarness {
             } finally {
                 // The immutable environment String is scoped to this block and never persisted.
                 rootCredential = null;
+                hsmCredential = null;
             }
         } finally {
             deleteTree(storeRoot);

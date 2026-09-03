@@ -1,0 +1,1639 @@
+{
+  "inputs": [
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-01-PLAN.md",
+      "role": "contract",
+      "sha256": "a99f9f337353562c3c91e5baf2f7112b1dcb1930642ec50c4d17536c57cbf831"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-02-PLAN.md",
+      "role": "contract",
+      "sha256": "e3befab259534c98753fd575b251dd2a2a83a66bbcc5b6b3c24a346f16bf7e2f"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-03-PLAN.md",
+      "role": "contract",
+      "sha256": "5ba1f3ac44e2c04466cf72af2508163a56392e28ff9f3b743eb95e9063017c29"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-04-PLAN.md",
+      "role": "contract",
+      "sha256": "85adcb39a09383e7c10e46bbc9b2b1c61495275d10407f797f760a1b79722ef0"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-05-PLAN.md",
+      "role": "contract",
+      "sha256": "7f6014c406954ceeb8a97db05b322045005a1bb419caeec53a3b4f77342e1f7d"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-06-PLAN.md",
+      "role": "contract",
+      "sha256": "09cd5987e728b40ea4f87e4195566edf8c76c94a27f47338aae33151127e037b"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-07-PLAN.md",
+      "role": "contract",
+      "sha256": "b299ab9af3ce688365ad432d266f65a7933df4aa17140cb5bca7d2729b5d4a18"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-08-PLAN.md",
+      "role": "contract",
+      "sha256": "78dce888c0ff78ae2f1230ef009146c01c7cc2c558a1aa4fee57e017449bb545"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-09-PLAN.md",
+      "role": "contract",
+      "sha256": "e95076921ebbdee0844dd98875e46a91df7cc7a43c9af3ad3f375cc7e548d6a6"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-10-PLAN.md",
+      "role": "contract",
+      "sha256": "43435f133e7663f21986f172a0d2ab2d2e3bf97802b4868a4e977f7c1c85558e"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-11-PLAN.md",
+      "role": "contract",
+      "sha256": "5afd6d2b6959d17ecbd1f80e2619f02fc6d49ff6465faf16d2e6c1f833d52b20"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-12-PLAN.md",
+      "role": "contract",
+      "sha256": "0b6e4c8c1bb4d1e959bbb900bdaf62e0038734757b1a781f008a11e19555d355"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-13-PLAN.md",
+      "role": "contract",
+      "sha256": "e930969590978cd22ee75c17319aca9b8b4b43225b5267b93ca2b7280ce348ba"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-14-PLAN.md",
+      "role": "contract",
+      "sha256": "ee16a7f1df3c0a4e09a4671e30da8feea51e8c555f563635c2caa48e901e2724"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-15-PLAN.md",
+      "role": "contract",
+      "sha256": "b77c6f528a4822aa7f4f1f261d701e40b3404f48e316fd744e02a027d867c98f"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-16-PLAN.md",
+      "role": "contract",
+      "sha256": "f182e0ad0fb5ae7b914505e2ab23e8f86b24726ce44e455fa8953fe0bf67feb4"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-17-PLAN.md",
+      "role": "contract",
+      "sha256": "10dd144a47263e926b28ca6f2074f74c0389a08a9fc30a6f6b267732ff3467fd"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-18-PLAN.md",
+      "role": "contract",
+      "sha256": "f47ae8530915f9936b52378f35af463d97c3a8521ba5a32c328789fcc4b02cdf"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-19-PLAN.md",
+      "role": "contract",
+      "sha256": "26b45266837c6e592dbd4b8467e64dd4b82a532a105c45be3c3ebfedac2efcb4"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-20-PLAN.md",
+      "role": "contract",
+      "sha256": "eb93f6388bfb59ba82ac2ad11d6c8ef5828b1674ba63043147f1033ceb86be74"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-21-PLAN.md",
+      "role": "contract",
+      "sha256": "8fcd64e65ebdb1b706045bf62088c4c87fadcec2fb226988780656436fe301f9"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-22-PLAN.md",
+      "role": "contract",
+      "sha256": "8e435c4721a36429c771b096f76da0a909da7d924369dbcf626f2afdb5e2194b"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-23-PLAN.md",
+      "role": "contract",
+      "sha256": "9fafd13af5344787f7364e34508cf9d6af5f6f5c3ca120069f98eeebfcf584ca"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-24-PLAN.md",
+      "role": "contract",
+      "sha256": "6a8ed7a37c36c7f91acfab92ba66ce26511a909711d8806fc423cf2903cfb4bf"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-25-PLAN.md",
+      "role": "contract",
+      "sha256": "ab2f75e7464e9fba53a6725599035be95ffd310d57a002a462f10a814b4e5142"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-26-PLAN.md",
+      "role": "contract",
+      "sha256": "7f5a520c03d6d843989a6e4682f4cf9f0989c34f5c6b98508120e7d41ee02a33"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-27-PLAN.md",
+      "role": "contract",
+      "sha256": "09d4e09309c1369303b75857dc8e2c1f3010beb524248813a60338fb9574c6b8"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-28-PLAN.md",
+      "role": "contract",
+      "sha256": "7c86f435cb99740d08a56e0a1bbb41c4a468924106aeea7a4af0fd21bd72d645"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-29-PLAN.md",
+      "role": "contract",
+      "sha256": "757fbca6f438481005f8e77a6eef153c036a21b5793f129b3403fb8524bc782c"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-30-PLAN.md",
+      "role": "contract",
+      "sha256": "84e6270935ff3f7cca89d3aadc988e6495edd1f6d2c2e5e87dfa752d37c1a30e"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-CONTEXT.md",
+      "role": "contract",
+      "sha256": "a18bdd9951e9abb5c7441e2b0fe8946dec055f825651db3c66c31f6921bf7598"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-DECISIONS.md",
+      "role": "contract",
+      "sha256": "a1d0cfe1dfe4bfbff3371ab2ce89680f51e6539d6c7230490ae75105184e87e9"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-PATTERNS.md",
+      "role": "contract",
+      "sha256": "d23c29876a40f224fd2b5cb81f9cecf31c33741c03fe43c36d6288193b35f894"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-RESEARCH.md",
+      "role": "contract",
+      "sha256": "7876ab9706659be471604d2c20d3865976254b568392de9248b7e5d5e25ba3d4"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-SPEC.md",
+      "role": "contract",
+      "sha256": "5fea3349ff152a1c342035cc1ab506ae683944fe3b273202a839b34d50990c38"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/03-VALIDATION.md",
+      "role": "contract",
+      "sha256": "b7637cfbfe21d69986fe59fd440394b0d3e815dbc99a4a3003ff39522fb3b7fb"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/DESIGN.md",
+      "role": "contract",
+      "sha256": "23bafb92e082a925eead06f44ff10258671da5b0cc0023e005657e2e879ed806"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/ENTRY-EVIDENCE.md",
+      "role": "contract",
+      "sha256": "8ac1a83125bc2fb36f143e2d64f824b74414899fffa0f7775a9949d8e3c4d4bb"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/ENVELOPE-CONTRACT.md",
+      "role": "contract",
+      "sha256": "4d11e52949c74bf6f830c50aab712e683684e366f0899ec15498b56f3237926a"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/README.md",
+      "role": "contract",
+      "sha256": "462dfb636eaf92cf38c03adc0644723727fce403b8c027e3cbb27ac82d809950"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/schema/phase03-evidence-manifest.schema.json",
+      "role": "contract",
+      "sha256": "e4fb6d52ff4e55de232b4edec7b55c5a2a8625ddd4dcf2db93cc6ec8ed705985"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/schema/phase03-obligation-evidence.schema.json",
+      "role": "contract",
+      "sha256": "ebdd74e243467c2d4ba0ce5caeac1bfa16b92eca745b54d4c57c527ab690ae9a"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/schema/protected-data-inventory.schema.json",
+      "role": "contract",
+      "sha256": "c2659585aa94774ef9db484c943df81e3305017da309390c71981953c762e0bd"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/INTENT.md",
+      "role": "contract",
+      "sha256": "f618ccd729d0dfce1e1401a40adb2f78ed2f09ae371e1dd78efcc326ae32fe06"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/SCHEMA-CLAIMS.md",
+      "role": "contract",
+      "sha256": "2d825f071bfd605f0d18c7eba017732e3a73aafc7b991b197682987357662299"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/phase3-crypto-evidence.rb",
+      "role": "implementation",
+      "sha256": "9fe5785ba936e532322322c9eb09e4b670eae0009257b5fc9ef973ef3560fb48"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/produce-phase-03-crypto-evidence.rb",
+      "role": "implementation",
+      "sha256": "d2a6e2eec4bec4e17c9a5eb0603180f41787c7dfdc2d219c2938b28da843bf25"
+    },
+    {
+      "mode": "100755",
+      "path": ".planning/tools/scan-phase-03-artifacts.rb",
+      "role": "implementation",
+      "sha256": "251ed33ce35c3600777839fa8007023d366d5b49f234bcc6402c86d9a4518280"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/test-phase-03-crypto-evidence.rb",
+      "role": "implementation",
+      "sha256": "4b8d19e9d87111efe79ecd45b017871571f906513467ff6166ff481e7e4a3289"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/test-phase-03-protected-inventory.rb",
+      "role": "implementation",
+      "sha256": "cedab716b33d63a8aad9b0a38350b7d9f777d96bd6fce94d01a2fa68fc45334a"
+    },
+    {
+      "mode": "100755",
+      "path": ".planning/tools/test-scan-phase-03-artifacts.rb",
+      "role": "implementation",
+      "sha256": "1636e5c2bec1a9376c4941d3a69a21ceccbf8bc04e29a994f783d059408e6afd"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/validate-phase-03-crypto-evidence.rb",
+      "role": "validator",
+      "sha256": "d1beec60df72f9f4e22dca2b6c87b74c1565c41d5f23faa309466ee2a605303b"
+    },
+    {
+      "mode": "100644",
+      "path": ".planning/tools/validate-phase-03-protected-inventory.rb",
+      "role": "validator",
+      "sha256": "5472e0cc511f0b6d6f509e622ef093a6c006615205e2dfad0ba08db39f89f880"
+    },
+    {
+      "mode": "100644",
+      "path": "core/docs/API.md",
+      "role": "contract",
+      "sha256": "5426b7fc2d615471968dcb5845ad32db88d4847b816ea3e524e4b2d22627b9cd"
+    },
+    {
+      "mode": "100644",
+      "path": "core/docs/ARCHITECTURE.md",
+      "role": "contract",
+      "sha256": "030242d73fea4a31b353c4d13d33f0ecb0b310b01f09093eecc849d1caaad10d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/docs/ROADMAP.md",
+      "role": "contract",
+      "sha256": "3942e824b136eb0b81fc5b84d74bc413ffb20a5d349b133c262662b2c418c464"
+    },
+    {
+      "mode": "100644",
+      "path": "core/pom.xml",
+      "role": "config",
+      "sha256": "e5aee946a9bbb186e57499259d3fc3fd23621d1988224446ae5e57fc999e2653"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/YcsopenSmsCoreApplication.java",
+      "role": "implementation",
+      "sha256": "4a977c162a34af839a84ab0516b9e42eb01533cd75f19badfc1af1166e739775"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/cmpp/package-info.java",
+      "role": "implementation",
+      "sha256": "ce60d907d1f48d776191393ce40cd27088231958d08c29d7c8a6a96f632504d2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/exception/BusinessException.java",
+      "role": "implementation",
+      "sha256": "d3cb5c6f92a260178d340c289b75253bf2c320f7c8fb2259cc9784d81d21ac64"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/exception/GlobalExceptionHandler.java",
+      "role": "implementation",
+      "sha256": "7977ae10a6c8f1a2fa9e7325ebe2d73443fda61e1cbaee21a2fbff27fb01d0db"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/HmacSignatureVerifier.java",
+      "role": "implementation",
+      "sha256": "88229d2109241a2649792bec9ed23f2087be898c6bb7f1675b9f568695810a6c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/JwtTokenProvider.java",
+      "role": "implementation",
+      "sha256": "795e721a4dc98991e3ebaf5182db5c5b992bc9d091375c3d848205debbeb962d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/config/CryptoStorageConfiguration.java",
+      "role": "implementation",
+      "sha256": "8e31deeed02915aec776b1b0f3e6b24faea9a31bb888cfcf29267ee23507c8b1"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/config/CryptoStorageStartupVerifier.java",
+      "role": "implementation",
+      "sha256": "231840c988b6587df90634146a85080dbb31c1c461591bb5aa34421750b3baad"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/envelope/CipherEnvelope.java",
+      "role": "implementation",
+      "sha256": "d7f327e7e5d68d06f320c65a7c448b711a3139f5f64b64fe06374c129f78d852"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/envelope/EnvelopeCodec.java",
+      "role": "implementation",
+      "sha256": "538553a82b4deab246f83a9b569791740fe8cc195e1458396edb583c1ff0a128"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/envelope/ProtectionContext.java",
+      "role": "implementation",
+      "sha256": "6ea45fe76dc378d52e30dde3198324798cde4a79f579a45609fe7a84e2736842"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/envelope/ProtectionFailure.java",
+      "role": "implementation",
+      "sha256": "a18eb072fc8c31d93f5dd168bd5fcbb673797194fa1d799d089505b8e422fbf2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/BlindIndexPort.java",
+      "role": "implementation",
+      "sha256": "b4dc7f1ce3d8e39c4c3eadad762b5ec99ca92dd6435876d8d80b9ee60b524700"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/KeyHealth.java",
+      "role": "implementation",
+      "sha256": "0feb9a125f98c9ec849c3c15acd61d1ccdf7c9c1aee3216119cc6dfd7da548e8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/KeyProtectionPort.java",
+      "role": "implementation",
+      "sha256": "8c8c52100423467ba68ec8559d5af17102675acf19e0f755fe2e01194cc7f86f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/OpaqueTokenDigestPort.java",
+      "role": "implementation",
+      "sha256": "75072b6bffc4ee7c50634aa7fd6563ef9ed368055c0164af4f6c571ed6a41ad4"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/VersionedBlindIndex.java",
+      "role": "implementation",
+      "sha256": "9f568ee89dac181ae3888d91830a147a45d902786214ef5e953417d88b303de6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/VersionedTokenDigest.java",
+      "role": "implementation",
+      "sha256": "4ea6a66cf3708f7660f85e2d0cc5b0d129c690f0082cbbe18911adfc62bf5c06"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/WrapOperationAdmissionPort.java",
+      "role": "implementation",
+      "sha256": "d8e97f8412ebe6a65e85f58f1751fe10788b0644446a0b7c788d8ce232a67257"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/WrappedDataKey.java",
+      "role": "implementation",
+      "sha256": "7633048385efbffd6d04a8d034eab26ee1c4937e69612e76147387a211afc8dd"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/BlindIndexRotationService.java",
+      "role": "implementation",
+      "sha256": "8fe72632de7517a65c87d9ad102b296325e9b21d8bb01c8b9cd1fbfe40d39201"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/EnvelopeReferenceInventory.java",
+      "role": "implementation",
+      "sha256": "22bb895bea9c84e12d3ad72a103639475b9fd64b22abc4b39a30b65efb32a2b5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/EnvelopeRewrapService.java",
+      "role": "implementation",
+      "sha256": "2bb806cb455550770307c102eeb2c6df220f8e9424cc44df8b369df77d0494b3"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/KeyLifecycleService.java",
+      "role": "implementation",
+      "sha256": "671acf654981aab574afe67ba7934bd6caa6e94884a06e9ac8f8f43b795a5883"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/KeyReferenceRepository.java",
+      "role": "implementation",
+      "sha256": "df5eea2ff945f95a20af3a59f07ecb9fad368007103676d0f44066131388f6e4"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/lifecycle/KeyState.java",
+      "role": "implementation",
+      "sha256": "170bf7c032e350316a0d1bd735cde85e4787781455e83a3650b656f31dc824b2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/KekWrapUsageRepository.java",
+      "role": "implementation",
+      "sha256": "57b7c42353a10613693db15d53fecc5f0d3d292a1ef94cbb8c869115765d049a"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/Pkcs11CryptoStorageProperties.java",
+      "role": "implementation",
+      "sha256": "c4feca5da7b201716c80aafe5316f846e6a910e7e61dff5ae3283390c5570216"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/Pkcs11FailureMapper.java",
+      "role": "implementation",
+      "sha256": "378ccf602f9b68174ca58877c189dc567f9c77f08c4db28b90d368bac7c77ac8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/Pkcs11KeyDescriptor.java",
+      "role": "implementation",
+      "sha256": "79b5f3b00a1cac41cdf09adf2950135a776ca56463b920b276876aaa5b48614a"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/Pkcs11ProviderFactory.java",
+      "role": "implementation",
+      "sha256": "f9170eee16077a315924e9925d20fb8e5c48e01f3c2e46aec0ef840524c52f40"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/key/pkcs11/SunPkcs11KeyAdapter.java",
+      "role": "implementation",
+      "sha256": "0b5b2680221e65a728e9a33e6a84472233318d4a9e8d118850f8554506ef7bba"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/LeakScanReport.java",
+      "role": "implementation",
+      "sha256": "ff082eda95091d76534f387e4d4273868426060c6a8c3709b4d757694f0c03cb"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/Phase03LeakScanCommand.java",
+      "role": "implementation",
+      "sha256": "418c6259ab2170751ee4f8a8b70996906f678f7448a6c32e88df86722ac6793e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/SafeLogValue.java",
+      "role": "implementation",
+      "sha256": "49a8cf2befbecb95657e948c8318358d3849b1b1df156da0790aa65cea2fabc4"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/SecurityEventLogger.java",
+      "role": "implementation",
+      "sha256": "a08416a39d245bd2a20bb70a33e6fd833c72e3da6946674c057d0203f7011247"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/SecurityRedactionConverter.java",
+      "role": "implementation",
+      "sha256": "5d2fa1bf63b0d5ca4f237d1ca16adfecf379b6d2b5575b370118fc0d69af3a53"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/logging/SensitiveDataLeakScanner.java",
+      "role": "implementation",
+      "sha256": "520e1fb835c95f6c736dea0c81f045f31a42881cfec55d5433f39c35ece351b5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/EncryptedSnapshotVerifier.java",
+      "role": "implementation",
+      "sha256": "8dcffd45610272c5c7d3831d0ee6e935fa90ddf2b8ff0e6106edd880ade466c2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/LegacyValueClassifier.java",
+      "role": "implementation",
+      "sha256": "ee168fe4b82d7953e5f4dd58ccc657eb448e08ad1974238474953451b67be0e2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/MigrationPreflight.java",
+      "role": "implementation",
+      "sha256": "00b9d7243301dd61a4098ab278fd515fc056bc31718dc92198862e7ca95796b7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/MigrationPreflightProperties.java",
+      "role": "implementation",
+      "sha256": "c7186131e0d2b304b58ca89574e4dc759bd2ae864569be68ac94bcac85388f67"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/MigrationStateRepository.java",
+      "role": "implementation",
+      "sha256": "ddc6134c14d170433780c000b128e5c02236c8a83346f4d0abe88c0b7dcb8eb2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/Pkcs11MigrationBlindIndexPort.java",
+      "role": "implementation",
+      "sha256": "a76c47ee43d6c73137c64855ef03428dd90a4306872981eb155af6329f64de97"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataManifest.java",
+      "role": "implementation",
+      "sha256": "e12108f92c4291c879a48729dbaab50b9dde514cb4574f7d359d3d938f57e474"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataMigrationCommand.java",
+      "role": "implementation",
+      "sha256": "f74a28de3c992cbab248eecdd301f80e704cc57a78effad1d8c2ed3f3cc01666"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataMigrationLauncher.java",
+      "role": "implementation",
+      "sha256": "349b3091367f863cbf05286d9312a52b7aff02ca0c7996bcd50b85bce7a4ca6c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataMigrationRunner.java",
+      "role": "implementation",
+      "sha256": "1a99bc0ef701b8add6e9c95f0b247d3e8cf4db0584c2fe56284339be10b2a961"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataTarget.java",
+      "role": "implementation",
+      "sha256": "67de5a910f1532d81932bfeb9797a7889057e06943f9846e6e93c61cb2c84e30"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/SignedMigrationManifestVerifier.java",
+      "role": "implementation",
+      "sha256": "7d86821125610006aa6209f79e0365a53ec35cfc6082fd123fd55f8b5fdc38b9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/WriterFencePort.java",
+      "role": "implementation",
+      "sha256": "8c1f6c7adbe28b81506dc86a39ebe7ca7b38f0225a3e915c0631909f164c04b8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/snapshot/EncryptedMySqlSnapshotService.java",
+      "role": "implementation",
+      "sha256": "8a9052ddf27580f3e7622b40e9507a9df5219e9ac02c8a8e93a2b35632115546"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/snapshot/MySqlSnapshotProcess.java",
+      "role": "implementation",
+      "sha256": "9b1895879aa456a48675a73afa5c94d0d1d14c10b49701ca776553d00ad0f066"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/snapshot/SnapshotChunkStore.java",
+      "role": "implementation",
+      "sha256": "c99a2d301c570b6264d2189a750413052505ae8cf60f21948121cb9e130a5da4"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/migration/snapshot/SnapshotManifest.java",
+      "role": "implementation",
+      "sha256": "88c1ec3171543dfe154e87e33515a9f8cf710b0906d4b6be9fc17971b177abde"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/DenyAllObjectAccessAuthorization.java",
+      "role": "implementation",
+      "sha256": "dc470a85cef72758d1ce3302d96a091f4a600980b606a0ebe34113b0a47ec165"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ObjectAccessAuthorizationPort.java",
+      "role": "implementation",
+      "sha256": "b8ad3b068fbda39b46118b61177f72a812345ed1fe85fb2d16a6f24ed7ab58a7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ObjectCapabilityService.java",
+      "role": "implementation",
+      "sha256": "cca2ce84ef5ddc256be6aeb1f09b77b2990db2903aba2e1d68f2e304e21b1ee6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ObjectCapabilityToken.java",
+      "role": "implementation",
+      "sha256": "eced6fc106c21db4fdd1499b9343b8d64230cae7240bdd6fb808d22972301132"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ObjectStoreProperties.java",
+      "role": "implementation",
+      "sha256": "6f216bfdc2cbee6fa992ba2a849647fb147c2bc14f6d1dd0c6d08935299365d3"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/PrivateObjectStorePort.java",
+      "role": "implementation",
+      "sha256": "6e49ef2748065ac8b70b84accd26e610297c8c22f7542b29c4f8642905287a59"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ProtectedObjectMetadataRepository.java",
+      "role": "implementation",
+      "sha256": "7fe2fe7dffcd022fda1a5c636c5afafd0bd6e03c7c84a855f9ca51878623dd31"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/ProtectedObjectService.java",
+      "role": "implementation",
+      "sha256": "76340a81f5587d752f3d09ee87c77be8120110f62f2cd9929a44f25f3888b9ea"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/S3PrivateObjectStoreAdapter.java",
+      "role": "implementation",
+      "sha256": "7bbc68f24aa0c497f90ed73b7578dc27ea276922ca043910704360bcab1d48be"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/StoredObjectMetadata.java",
+      "role": "implementation",
+      "sha256": "a5f80dc9fdb065b4c6a7003607c017930ea3d5efc2c4e91c492072009c92f13c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/object/TenantRegistrationObjectSessionService.java",
+      "role": "implementation",
+      "sha256": "08dcb26196d95fffa9b4db5d85d5661f5d87b1df09b0f4791480e595df85ce9e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupService.java",
+      "role": "implementation",
+      "sha256": "7e1b65ba8e31761f700f386f0c72b57b1031373ab03d89bec7339df5b8a99ea7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexMetadataRepository.java",
+      "role": "implementation",
+      "sha256": "d5bfdae9268a4c9141f867963810224f06672250a5b5f112dd454d7968d1e2ef"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileHashReader.java",
+      "role": "implementation",
+      "sha256": "67295563718a6f6039025ab156c91ef419aeccd1a26ade493daba453cabcc68d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileLookupToken.java",
+      "role": "implementation",
+      "sha256": "179d15f1087da9f2aad72b73d575b185ce33476423194302d308bf56f84e6323"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java",
+      "role": "implementation",
+      "sha256": "02151e5266d870204bc4c6a3f755a9bf30ac00dab02b97e15e4cd993c31baf3c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/PreparedMessageMobile.java",
+      "role": "implementation",
+      "sha256": "a45196298d6392e5a3f1939c5a9c5dacd36b0eb6ffe7a8125e53b7760626105f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/ProtectedFieldCodec.java",
+      "role": "implementation",
+      "sha256": "e90b516c991bedc3bede6d45e42ea0bde6db738f72fd8dceb228460bfaf71902"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java",
+      "role": "implementation",
+      "sha256": "decbebb62ab002d48291712a709fa7be7a3fa44707d31ea5cb43441837f7f6d2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/config/SecurityConfig.java",
+      "role": "implementation",
+      "sha256": "13ef5c03add6631d12cfc0e6fded1bc71fb080bd55e8ebcbd8c8cd147075f0a6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/config/WebMvcConfig.java",
+      "role": "implementation",
+      "sha256": "deb9fa630ca98733ec2589e5df72e2ba490556974a51fd936e9b0eceba663b73"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BillingRecord.java",
+      "role": "implementation",
+      "sha256": "89ecd117f30e69f04dff0305f6f0f75b8f12974690e5438ca91214a7158138a2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BlacklistEntry.java",
+      "role": "implementation",
+      "sha256": "d6bd40f390bc2d76853ac12710cb396f956e453f3d679d4a8ac798f61ecd2023"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Channel.java",
+      "role": "implementation",
+      "sha256": "a2d7ea965541b1a6aec06117a0f02ce95e885b40388f0ae2af67f50d558edb53"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Complaint.java",
+      "role": "implementation",
+      "sha256": "b53d53137c2176218cae3604cde13bbf0eb6d6de23fd17d2c9027abe4ce2010c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/ComplaintRatioStats.java",
+      "role": "implementation",
+      "sha256": "1abe284d4508d516f99498af9b75561fd963aebd99fd7ea0f05a869c005be344"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/FrequencyRule.java",
+      "role": "implementation",
+      "sha256": "ee9920dc872d593b7f34df1fa47e1e7f9f2c539cba814cbacd3951dd7bf9dcbb"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java",
+      "role": "implementation",
+      "sha256": "1219df50b6823d713407d31d1eddc3afbd5825c143c9567e60062530c0e30783"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/RouteRule.java",
+      "role": "implementation",
+      "sha256": "fa4f88cf85d183cc8097fafc9b56fdb97f6b4f8493fe569a22ac9c7ad70e6dee"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/SensitiveWord.java",
+      "role": "implementation",
+      "sha256": "f6719ef67796d1ac760261efd3c13d3445bb7c0877684da435483067525ba4a1"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Signature.java",
+      "role": "implementation",
+      "sha256": "3abd41cd7d7a3a5b3da997cb633242c94d7b8e2e175250b012a171d6157ca8cd"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Template.java",
+      "role": "implementation",
+      "sha256": "38bc12beaa5c746b08c3951e51d711144e25413d0889ce69d115d6e1318194d1"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java",
+      "role": "implementation",
+      "sha256": "30e27058cfdab639ed5b0b4551b629ab7b58ce9914d90d5e5620634ddda2e60e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantAccount.java",
+      "role": "implementation",
+      "sha256": "d711c1312e72802d0fb2e051a222e0e3012090b61f47a973c307d6efa4ff31f6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java",
+      "role": "implementation",
+      "sha256": "ae77f647defb036f167df41e504e1c6f8c375eef4c96c79d23c45314428c2744"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/User.java",
+      "role": "implementation",
+      "sha256": "0e3262587e8b06bf66c56fd7bceb585709b9dd4a3694744aa58f098b80e1b500"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/BillingRecordRepository.java",
+      "role": "implementation",
+      "sha256": "d452122781245242c4a6744ab26b2a9e272ffb890e737710d99fecb0a2cf30fb"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/BlacklistEntryRepository.java",
+      "role": "implementation",
+      "sha256": "5a05c19dce9790cf71d797f3fad091b8d7b700253b11c8f0bc83631c85b10205"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/ChannelRepository.java",
+      "role": "implementation",
+      "sha256": "b2fdf59823f69e151aa200acbc3f1b5c9d61222aa5ed345fe7d04533bf9ed5a2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/ComplaintRatioStatsRepository.java",
+      "role": "implementation",
+      "sha256": "21c35081cfdbc39f235d58fe0605609a0eabaadca880a5b7c2f4354e6b6d3854"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/ComplaintRepository.java",
+      "role": "implementation",
+      "sha256": "dfc7835e2e1fc6471529ecee7bb72f22f3c1321e4115b1c1e55df51835977875"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/FrequencyRuleRepository.java",
+      "role": "implementation",
+      "sha256": "5b2a22ffaf1ee8adc3cd9d0b14ff0a76cce7e393bd3a30b704c6de749451a4b7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/MessageTaskRepository.java",
+      "role": "implementation",
+      "sha256": "4a7fa2fc6848bbcb2a694e7c815febcfeeae58a46d86e475246f246d4717646b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/RouteRuleRepository.java",
+      "role": "implementation",
+      "sha256": "0d499e8ade58af3a1c640194497429985ea09ad1b8b44bb4b918a6f303821ad0"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/SensitiveWordRepository.java",
+      "role": "implementation",
+      "sha256": "cdf5598b4722cf7995c13504b83e0bdfe06dd4c741726fa159514890ee49c4a9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/SignatureRepository.java",
+      "role": "implementation",
+      "sha256": "cc31a750deedbb6928a56dd8e7655ffe652483ef42aad09bdfb9e0f8499c6680"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/TemplateRepository.java",
+      "role": "implementation",
+      "sha256": "e1f4632bb154aee16b9636c23cf77e488fd51052474b7a4b4a68bb18f36d4014"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantAccountRepository.java",
+      "role": "implementation",
+      "sha256": "9113cfe444b890fdbef75ac9da02817f33c1e4099b0110f8530676d0b3608751"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java",
+      "role": "implementation",
+      "sha256": "d9f29199701994d73439c6ccafba395534cc090929354943a855c4dbbd5b3aa8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantRepository.java",
+      "role": "implementation",
+      "sha256": "25543cd62410569ea93a05b02d2ca29e30f25eac0cce3d534bcfbe9c9b73017e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/repository/UserRepository.java",
+      "role": "implementation",
+      "sha256": "4b16f1c94e4274844ac567cdec105d0a572a59d2c1a83f177cca2fc0a41f3df9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/account/AuthService.java",
+      "role": "implementation",
+      "sha256": "55981165ac60a3b8e55c0b63718eab471c7a0009c55e25ac214bfd26e2703f69"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/alert/package-info.java",
+      "role": "implementation",
+      "sha256": "0447b63498e86765761a0cf570fe0282e237565796c1ddcd0bb111b2d709ddd5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/billing/BillingService.java",
+      "role": "implementation",
+      "sha256": "17cbb7d724315ab14e1b92344d04f6ef2912650fc74ee645e196c263d476a81b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/channel/package-info.java",
+      "role": "implementation",
+      "sha256": "a01bf23fdf99c749f835fd59ecd9a91ddfb052c4f523b8d49e21fe89b81b0db6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/complaint/ComplaintRatioService.java",
+      "role": "implementation",
+      "sha256": "bf5b4500d95b3d8e12a5f4be0910bfbf9014ccee4401699c7c73fdd9e7b51ed5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java",
+      "role": "implementation",
+      "sha256": "6a481bb2299243f11b000ea8c6cc5e8eec3e2a498db4fb116bbd2d2f1d0e769d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java",
+      "role": "implementation",
+      "sha256": "447ec100f232f0f123895740b51c842b5cffc3d358be6c1879eca00f00ee0b47"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/ChannelSelector.java",
+      "role": "implementation",
+      "sha256": "c124465dd8d16985eddb54c80ae3984641c1bc2e9728eb855d800e2b870eb9bf"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/ContentReviewChecker.java",
+      "role": "implementation",
+      "sha256": "5b772419a654a758c809539fb8e6f98985f6020ea3a767571984e358a3356a8c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/FrequencyChecker.java",
+      "role": "implementation",
+      "sha256": "2fa29e2475f3bb0e53cb6835e6a52cb7efbf24f7b17700c833502d97f287b048"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java",
+      "role": "implementation",
+      "sha256": "632799b566f22c65bc79140f084498d7c276bc9cc1e356c942adb359a69aea04"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingDecision.java",
+      "role": "implementation",
+      "sha256": "fcc4e1eb1f35739b75af03cc4d0e440e179a228f135b405eaefae3114097b371"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingEngine.java",
+      "role": "implementation",
+      "sha256": "004d216b01dfc7c36a554ba04cc7fe14ca9f0061e078d1ae02f678d7202b3058"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/ThirdPartyBlacklistClient.java",
+      "role": "implementation",
+      "sha256": "e218c2eccda5b9cecedfebe533071c11d08e5804acf654167f19454023609c4e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/signature/package-info.java",
+      "role": "implementation",
+      "sha256": "525d250e548ed0e8141653d2f541ba35af3127ddd3ab5ff4394abbfbedf4212d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java",
+      "role": "implementation",
+      "sha256": "b750e58fdeccddc7653c6a91c9ad4e00607187a5759a2c16c638dbb350e11777"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/service/tool/package-info.java",
+      "role": "implementation",
+      "sha256": "466d1fee4e784ec7e692561a7ab62aaaf7ddc41ddc413f06421d6d9ab3e8bd4f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/ProtectedObjectAccessController.java",
+      "role": "implementation",
+      "sha256": "34eff2cf1097753a7bdf00a42cd6bba7b7c93bbe05406be6bbac49016c8cc825"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/AuthController.java",
+      "role": "implementation",
+      "sha256": "26a8d98ada166c5ad7fa58a3c0acfb7c1eb45e7a92f4d4a7df719d72884701f5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/ChannelController.java",
+      "role": "implementation",
+      "sha256": "db7058da7428159e9990a7c096818efce4ce6a8a4ee3e792aef5c549741c5351"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/DashboardController.java",
+      "role": "implementation",
+      "sha256": "ef303508fe6b60d9a192ad0e66468970375a55ded14d6795448b81222c6112fe"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/MessageController.java",
+      "role": "implementation",
+      "sha256": "31894d2d2c60d4cd6e6ec4584203d82c4c876bb96664c7a8a16c9f844d2ba4f5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java",
+      "role": "implementation",
+      "sha256": "dfbbe16d96566281491eae26a401211b7023dd8be8da39babf456ec155d9d426"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantRegistrationObjectController.java",
+      "role": "implementation",
+      "sha256": "8161b24a479c8f30bfdc5d8bbf4b68bd42d22c5804d4eac652d9690c87e4bd6d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/ApiResponse.java",
+      "role": "implementation",
+      "sha256": "38b8122b779a835c448fe040fc38e71e74987311b8033496fe2b3b0cccb66087"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/ComplaintRatioItemResponse.java",
+      "role": "implementation",
+      "sha256": "c017d9ae771a2fd20200c96cfb9f22c8b3e207869745a156cf684f17d1f55f0b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/LoginRequest.java",
+      "role": "implementation",
+      "sha256": "661ae9c2a28a3dd154451f3da061295a8309f7096203a68c3673de8bc09c0ded"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/LoginResponse.java",
+      "role": "implementation",
+      "sha256": "fedd97e7afbd9543e71a7b63b47da1d029b82abf640c27ee692ef504734a2cc7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/SmsSendRequest.java",
+      "role": "implementation",
+      "sha256": "7832b03a9eceea441459c440fd215f7b6d64909bec9503389403d565a486a963"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/SmsSendResponse.java",
+      "role": "implementation",
+      "sha256": "8c938ffa3e1a934a39e5b6806867848f18369f444484c97fc3c6a7fd037615ea"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java",
+      "role": "implementation",
+      "sha256": "45c7037fdc06e8bb0a7b510a15689a53cd410d9baa775622f6d1c30bafe93fe5"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationResponse.java",
+      "role": "implementation",
+      "sha256": "f0ff21877489fe2870f7d14a976d7a8e9358e0d678f571816b2b0b0e08b965ff"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java",
+      "role": "implementation",
+      "sha256": "9097700fe78506ad800e30a141d112a3c537f5ad7494bc4a87bcac9e4cb2400a"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/application-dev.yml",
+      "role": "config",
+      "sha256": "f506592b393b06a606455ce0999b52709728d24dc6b4dd298188ff28583962b8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/application.yml",
+      "role": "config",
+      "sha256": "248ad7d009a88b80bea23f3402a75008dd8dd633406ed204b65b2e65d7cdefbb"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/db/migration/V1200__create_crypto_storage_metadata.sql",
+      "role": "implementation",
+      "sha256": "46881056370047c589bb2abc2bd13774c9ed26dfd06d6a8b076523570851e6f7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/db/migration/V1__init_schema.sql",
+      "role": "implementation",
+      "sha256": "fcea0ad774f8b0e245484c435ce951e0b4337b8ef837d959e2a7b184058e08a9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/logback-spring.xml",
+      "role": "config",
+      "sha256": "63e62bf2315fbc9eafd35a17716b777bb4e3bc54bcc3a705968937f039bbf9b3"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/security/migration/phase03-migration-cli-contract.json",
+      "role": "contract",
+      "sha256": "4a80ec9dfd9433359e2f9f961d15011c887276793d282d269be4abca4511fd84"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/security/migration/ycs-encrypted-snapshot-v1.schema.json",
+      "role": "contract",
+      "sha256": "31bef2a60dd630c352302b228e11094f08bb5de670c2775c0eca41609e4a162f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/security/migration/ycs-writer-fence-v1.schema.json",
+      "role": "contract",
+      "sha256": "14763677412720bfde96b001e78e53e6d45ab4b53e41d84eb0cb6dd9c86f27ac"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/main/resources/security/protected-data-inventory.json",
+      "role": "contract",
+      "sha256": "0f232a20ebcfb161ebd959c57dec1d340383f80b111708ef954542ef75142cd8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/exception/GlobalExceptionHandlerLoggingTest.java",
+      "role": "test",
+      "sha256": "b291ba514cf96d766274845275778aea7a5b429b34fd6dd490f5825f65c8e8dc"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/config/CryptoStorageStartupVerifierTest.java",
+      "role": "test",
+      "sha256": "8f9d454b5c62f8a3873087a40137928e2e42bb9ac876f79e805e95167ecdb98b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/envelope/EnvelopeCodecTest.java",
+      "role": "test",
+      "sha256": "6ad76f5f91b26ecd502908d5a6812ebb480596e3228964c6492f7b7c3c3f8af7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/envelope/ProtectionContextTest.java",
+      "role": "test",
+      "sha256": "c1305dac6a99e5ea4e8df7e49f1d18d7cdd38b9749f220ca964113b44d6483f2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/DeterministicTestKeyAdapter.java",
+      "role": "test",
+      "sha256": "819bb263ac56611b946d363a07b93879e04104833c954755f5d6dcdc5c48828f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/VersionedBlindIndexTest.java",
+      "role": "test",
+      "sha256": "bdb01db622c4206cdacc105ef6efd9c434ea8129d1e142ad0115405aad485b3f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/lifecycle/EnvelopeRewrapServiceTest.java",
+      "role": "test",
+      "sha256": "c1ead16d1401b4d87ee044613aa2b8f283a8e6a8f9e09e6f70310de3a6181773"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/lifecycle/KeyLifecycleServiceTest.java",
+      "role": "test",
+      "sha256": "b09f86943ef20182db97bf859e4138efd49c004eb0e5e7dc4dd800c0d302f10e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/pkcs11/Pkcs11ProviderFactoryTest.java",
+      "role": "test",
+      "sha256": "0b2af130bd9b4db892963942ca27ee9cc5390b81e9059f3f91298a38c5d2e7a6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/key/pkcs11/SunPkcs11KeyAdapterTest.java",
+      "role": "test",
+      "sha256": "c5506440ca42f67467ae768f21b96941253de755707c591df0883987216a17e8"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/logging/SafeLogValueTest.java",
+      "role": "test",
+      "sha256": "c04be3376eccaa3f4c9c20a3511bb94b703051fdcb923604563a998a41b86478"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/logging/SecurityRedactionConverterTest.java",
+      "role": "test",
+      "sha256": "a2e70f8baf774e831a3ececc17e0900895c5e6f9309e09545274310617af38d1"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/logging/SensitiveDataLeakScannerTest.java",
+      "role": "test",
+      "sha256": "82a72540c97e7e85026bb623f9108e2dcc22309e8e860bfb9bc758bc4698a5e1"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/LegacyValueClassifierTest.java",
+      "role": "test",
+      "sha256": "7a722247fc7fcb672484646f65eb8231d8ca7cd4749a5c152f0ec83df4e17ddd"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/MigrationPreflightTest.java",
+      "role": "test",
+      "sha256": "8b19703f85c667decd157f1ec2f2755cb4ea6b29a9732467bb1cebb0db6b9f61"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataManifestTest.java",
+      "role": "test",
+      "sha256": "6e7040d5aff2430f126576ced160326747a69f15dc45f701d9208156921bb108"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataMigrationCommandTest.java",
+      "role": "test",
+      "sha256": "2e8ab94b3479c2fd36e2bee20a2251203c321293b7ef7a8c1b501b9e722ffd51"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProtectedDataMigrationRunnerTest.java",
+      "role": "test",
+      "sha256": "dfaa53656a058f57c0388ce3530601da8a83c7b9e56decdfa5e48501231b4426"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/SignedMigrationManifestVerifierTest.java",
+      "role": "test",
+      "sha256": "86d33a65a5ab4ded0ce8dd11712d0fa7d0d972f6702a1a27fe6b0ae6af11ab83"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/snapshot/EncryptedMySqlSnapshotServiceTest.java",
+      "role": "test",
+      "sha256": "bdce71f2eabe2dac05c993df7e8517cb8280be2c312865f51e20a7f039e6a016"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/object/ObjectCapabilityServiceTest.java",
+      "role": "test",
+      "sha256": "6c04243f9e552b0d68cfce99aed2b18e7d9f23275886fe7a66bb7ec091e87320"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/object/ProtectedObjectServiceTest.java",
+      "role": "test",
+      "sha256": "9ab7a9f51eb01ea621cc71cf200d0ec06a8e5ad622b5c6ebe233b23b12149778"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/object/S3PrivateObjectStoreAdapterTest.java",
+      "role": "test",
+      "sha256": "3bffc83bac38ed7f41d62b5c36bf9840b3bb5413451c2b934e8dde8f56ab0b7c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupServiceTest.java",
+      "role": "test",
+      "sha256": "6b685c3656e4b7a80639db417b2fbf42721d613a4162c4b879b66823041ac22d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/persistence/CurrentProtectedReaderFenceTest.java",
+      "role": "test",
+      "sha256": "5b1240a068d0bb697f427c5f1f6c9ffe2878e26f2d0e858d80a580dc9223c21b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapterTest.java",
+      "role": "test",
+      "sha256": "c67881a1a0558d0ee77067ebd57dce0e8dda6d93ed880c9c2eb74ea73913e766"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/persistence/ProtectedEntityMappingTest.java",
+      "role": "test",
+      "sha256": "51093d56e1de35135579893d0e989106b34e4835c1939acf6f33f427eec6d02d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/common/security/persistence/ProtectedFieldCodecTest.java",
+      "role": "test",
+      "sha256": "d6e98850ff8069260c5ee8b3a9cd0b5d971fb73dd5062df209efd02fae007a35"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/service/billing/BillingServiceTest.java",
+      "role": "test",
+      "sha256": "30c14b75af6b68149bcf5e781d6cac7ecbbc549f096ba6a9c6d63a0a86d4807b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/service/complaint/ComplaintRatioServiceTest.java",
+      "role": "test",
+      "sha256": "137c05f6d456096dab88d95f367aacb9391fd27207c30fb488763523502263f9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/service/message/MessageSubmitServiceTest.java",
+      "role": "test",
+      "sha256": "b892f133d2670952f54e97fce23f5476920a38583e873f0780c62b0aee8f98e9"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/service/routing/RoutingEngineTest.java",
+      "role": "test",
+      "sha256": "e074139758358ac677cdc42c025868bbf6eb2d61f4434adefd2ddc98af8f271b"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/service/tenant/TenantRegistrationProtectionTest.java",
+      "role": "test",
+      "sha256": "b32e24b99f24d6a5da1c38e1131d067952fe9a29e6d1d7339ef7297d3fece87f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase01MySqlIntegrationTest.java",
+      "role": "test",
+      "sha256": "d436783b60e73d0107eb67c847f85600be0add1433adfa0e3dfba39e1125d1a2"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase01RedisIntegrationTest.java",
+      "role": "test",
+      "sha256": "45e1e630ddc56144d6962556a5b3fa12c81e52c3c29346727bfd4f801be7db33"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase01TimezoneContractTest.java",
+      "role": "test",
+      "sha256": "7460fcc186273e51e0f71a398647d945f19f4373facab1b57837dbbb6a6e01a7"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03EncryptedSnapshotHarness.java",
+      "role": "test",
+      "sha256": "15625788c4b03de4c229ecfd31846fe3f6ae171c25ad1f2b3433574024c15b22"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03FixturePreflightTest.java",
+      "role": "test",
+      "sha256": "a4ff08853211a5fc9d85f466913c95a73994d1a48f340ec76c233aa4c4986937"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03LeakScanIntegrationTest.java",
+      "role": "test",
+      "sha256": "5e038af453c419c90661132ff6eae26d81a6a221b2dae3cf46b00ce3eb84ca07"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03MigrationCommandFixture.java",
+      "role": "test",
+      "sha256": "e406defa0b1ed9852891606ede4338206269e967bdfd9a43a10a89235420e536"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03MigrationIntegrationTest.java",
+      "role": "test",
+      "sha256": "759451ed83fca7d350dca50e2f60ab769f2b80de224c4445148c775864199b5c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03ObjectStorageIntegrationTest.java",
+      "role": "test",
+      "sha256": "044ad8f2c1cd00ebc800208d61bd530e6fbbfc580dc3c19b8fc5473e412fadab"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03Pkcs11IntegrationTest.java",
+      "role": "test",
+      "sha256": "c5a2579959cbdbf05aa5829ba5d626f2502eb4dfb6a58191153f38bf2f6a07c6"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03ProtectedPersistenceIntegrationTest.java",
+      "role": "test",
+      "sha256": "14e100a87349ed73e38f8777121d9b067c33999f36606b757a8b56bf7445fcd0"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03RotationRecoveryIntegrationTest.java",
+      "role": "test",
+      "sha256": "df12c2af51fb126fe0942949ca545ab793df4f8cd6638c32fc83a857ef985360"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/verification/Phase03ServiceHarness.java",
+      "role": "test",
+      "sha256": "c94784361fe4f1c31bc30e0e2e33959e382ed3cd9172c8dcd8bac1acf398540d"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/web/HmacSignatureVerifierTest.java",
+      "role": "test",
+      "sha256": "d246ea715b00c34f7a7999dfa84b50cc890f16fefd33d93dc134cd7f51427c48"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/web/ProtectedObjectAccessControllerTest.java",
+      "role": "test",
+      "sha256": "14b599539ce275bb56e2205d220042a28cacd3f1f5131626a0e5182df81f09db"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/java/com/ycsopen/sms/core/web/TenantRegistrationObjectApiTest.java",
+      "role": "test",
+      "sha256": "a3b560a27a73ea1a83fcf8148af290abaf0e5c6bae0d86bef477351963ebde4f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/resources/application-phase01-integration.yml",
+      "role": "test",
+      "sha256": "4dd634fb0c5a723dd77182791077c865eb77ad58ff9a4360ad7f915588f1d1ac"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/resources/application-phase03-integration.yml",
+      "role": "test",
+      "sha256": "bed4fda82e1fa231ca625355bf687f3b475568a2e151bd4e88b37a253ccb971f"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/resources/application-test.yml",
+      "role": "test",
+      "sha256": "b1b00b4510a40bd5e552b2329442f8149b343f4a822ed4d9e898a87c6d7c671e"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/resources/security/migration/phase03-migration-help.txt",
+      "role": "test",
+      "sha256": "930cbebd3e4536f81e149fedfd83baa6e1a3ce3f4015e7a53bb1d180b96a7e1c"
+    },
+    {
+      "mode": "100644",
+      "path": "core/src/test/resources/verification/timezone-contract.json",
+      "role": "test",
+      "sha256": "afb71d5609b151603e8f1d32f4cfec7f2e41a3cbbe43fe8c5ec9ef7e56eac48a"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/PRD.md",
+      "role": "contract",
+      "sha256": "0dda7c4dba1594f1ccd506258aec9e7a85aa9169d396c4e92ba5403ab8ed272d"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/PRD_REVIEW.md",
+      "role": "contract",
+      "sha256": "0f998b3b6cea597fe0b06ed9f26c3383fe41d9428c068ce0169f43fe7e4fa6eb"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/使用手册.md",
+      "role": "contract",
+      "sha256": "425475ed69f05e84b3df6a0e5958b6c0dd5f2f90f2fba8d394eebf8f3da4b801"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/项目规划索引.md",
+      "role": "contract",
+      "sha256": "82ea9f3715de45700841b00c9e31a40a40fa1a36d2a036883be264a217a0b1fc"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/lib/phase-03/run_checks.rb",
+      "role": "implementation",
+      "sha256": "5bb1ed86d02bdaf0cd5b28609ad0acd17e6cc8d090df3c9e2d880353a0e913f2"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/lib/phase-03/service_checks.rb",
+      "role": "implementation",
+      "sha256": "2713b471a7ab62a3359d47a5acd689ff66269030f204add13926b5830e1a8976"
+    },
+    {
+      "mode": "100644",
+      "path": "scripts/lib/phase-03/softhsm-source.json",
+      "role": "contract",
+      "sha256": "0c4e12c248915cb88ccb9889f3b3d57bbab301ce4fcf9006ab6d0a8f23a681ec"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/lib/phase-03/test_run_checks.rb",
+      "role": "test",
+      "sha256": "0d67d9389e996e36eb97b02d9aea10ffc906fc635f53000f3f69764967c2a9f8"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/lib/phase-03/test_service_checks.rb",
+      "role": "test",
+      "sha256": "e702f8db53bf4f587080ecf42a4278ca41e215665d7620f3b250f4a3361c54f7"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/verify-phase-03",
+      "role": "implementation",
+      "sha256": "9031d24507c4cf145492098deb3fdf17322d2591660a272a6a3cdffd6264a013"
+    },
+    {
+      "mode": "100644",
+      "path": "skills/flyway-migration/SKILL.md",
+      "role": "contract",
+      "sha256": "6a8f008e51c7561590da1fe3f94b9ca283ab6ddcc6521fdd3efb163c570ef550"
+    },
+    {
+      "mode": "100755",
+      "path": "skills/flyway-migration/scripts/next_flyway_version.py",
+      "role": "implementation",
+      "sha256": "2be11c7770abdf4b01e1d0f7b45e774ab0f0c9653d3d158e82513926edd62f7f"
+    },
+    {
+      "mode": "100644",
+      "path": "skills/flyway-migration/tests/test_next_flyway_version.py",
+      "role": "test",
+      "sha256": "fbf5d67e15ed068a054380d76d797710c7171ef4afcc9637cc77afc20a36b5c1"
+    }
+  ],
+  "owner": "crypto-storage-bootstrap",
+  "phase": "03-crypto-storage-bootstrap",
+  "schema_version": "phase03-tested-inputs-v1"
+}

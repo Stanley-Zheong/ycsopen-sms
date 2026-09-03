@@ -7,6 +7,8 @@ import com.ycsopen.sms.core.common.security.key.KeyHealth;
 import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
 import com.ycsopen.sms.core.common.security.key.VersionedTokenDigest;
 import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyState;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InOrder;
@@ -397,6 +399,14 @@ class SunPkcs11KeyAdapterTest {
                                         java.util.Collection<String> events,
                                         TestCryptoOperations crypto,
                                         List<Pkcs11KeyDescriptor> descriptors) throws Exception {
+        return adapter(counts, events, crypto, descriptors, null);
+    }
+
+    private SunPkcs11KeyAdapter adapter(Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts,
+                                        java.util.Collection<String> events,
+                                        TestCryptoOperations crypto,
+                                        List<Pkcs11KeyDescriptor> descriptors,
+                                        KeyReferenceRepository lifecycle) throws Exception {
         Path module = temporaryDirectory.resolve("unit-pkcs11.so");
         if (!Files.exists(module)) {
             Files.writeString(module, "unit");
@@ -436,7 +446,46 @@ class SunPkcs11KeyAdapterTest {
                 System.arraycopy(sequence(bytes.length, 31), 0, bytes, 0, bytes.length);
             }
         };
-        return new SunPkcs11KeyAdapter(session, properties, repository, random, mapper(), crypto);
+        return new SunPkcs11KeyAdapter(
+                session, properties, repository, random, mapper(), crypto, lifecycle);
+    }
+
+    private static final class MutableLifecycleReferences implements KeyReferenceRepository {
+        private final Map<String, KeyReference> references = new java.util.LinkedHashMap<>();
+
+        private MutableLifecycleReferences(List<Pkcs11KeyDescriptor> descriptors) {
+            for (Pkcs11KeyDescriptor descriptor : descriptors) {
+                state(descriptor.purpose(), descriptor.keyVersion(),
+                        KeyState.valueOf(descriptor.state().name()), descriptor.keyReference());
+            }
+        }
+
+        void state(Pkcs11KeyDescriptor.Purpose purpose, long version, KeyState state) {
+            KeyReference current = references.get(purpose + ":" + version);
+            state(purpose, version, state, current.providerKeyReference());
+        }
+
+        private void state(Pkcs11KeyDescriptor.Purpose purpose, long version,
+                           KeyState state, String reference) {
+            references.put(purpose + ":" + version, new KeyReference(
+                    KeyReferenceRepository.Purpose.valueOf(purpose.name()), version,
+                    "pkcs11", reference, state, 0, false, 0));
+        }
+
+        @Override
+        public List<KeyReference> findByPurpose(Purpose purpose) {
+            return references.values().stream().filter(value -> value.purpose() == purpose).toList();
+        }
+
+        @Override
+        public List<KeyReference> findAll() {
+            return List.copyOf(references.values());
+        }
+
+        @Override
+        public boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+            return false;
+        }
     }
 
     private static List<Pkcs11KeyDescriptor> descriptors() {
@@ -656,5 +705,42 @@ class SunPkcs11KeyAdapterTest {
     }
 
     private record Boundary(long count, KeyHealth.Status health) {
+    }
+
+    @Test
+    void liveLifecycleSelectionMovesWritesToV2AndRetainsOnlyPermittedHistoricalReads()
+            throws Exception {
+        List<Pkcs11KeyDescriptor> descriptors = new ArrayList<>(descriptors());
+        descriptors.add(new Pkcs11KeyDescriptor(
+                Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 2,
+                "unit-kek-v2", "unit-kek-v2", Pkcs11KeyDescriptor.State.PREPARED,
+                "AES", 256));
+        MutableLifecycleReferences lifecycle = new MutableLifecycleReferences(descriptors);
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, new AtomicLong());
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, new AtomicLong());
+        SunPkcs11KeyAdapter adapter = adapter(counts, new ArrayList<>(),
+                new TestCryptoOperations(new ArrayList<>()), descriptors, lifecycle);
+        ProtectionContext context = databaseContext("live-rotation");
+        byte[] v1Header = new EnvelopeCodec().authenticatedHeader(
+                "unit-kek-v1", 32, EnvelopeCodec.Target.DATABASE_FIELD);
+        WrappedDataKey old = adapter.wrap(sequence(32, 71), v1Header, context);
+
+        lifecycle.state(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
+                KeyState.DECRYPT_ONLY);
+        lifecycle.state(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 2,
+                KeyState.ACTIVE);
+        byte[] v2Header = new EnvelopeCodec().authenticatedHeader(
+                "unit-kek-v2", 32, EnvelopeCodec.Target.DATABASE_FIELD);
+        assertThat(adapter.wrap(sequence(32, 72), v2Header, context).keyReference())
+                .isEqualTo("unit-kek-v2");
+        assertThat(adapter.unwrap(old, v1Header, context)).containsExactly(sequence(32, 71));
+
+        lifecycle.state(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, 1,
+                KeyState.RETIRED);
+        assertThatThrownBy(() -> adapter.unwrap(old, v1Header, context))
+                .isInstanceOf(Pkcs11FailureMapper.Pkcs11OperationException.class)
+                .hasMessageContaining("PKCS11_KEY_UNAVAILABLE");
     }
 }

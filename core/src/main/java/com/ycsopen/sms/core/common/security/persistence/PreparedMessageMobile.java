@@ -5,13 +5,8 @@ import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * Immutable result of preparing one message mobile for persistence and opaque routing.
@@ -19,9 +14,6 @@ import java.util.regex.Pattern;
  */
 public final class PreparedMessageMobile {
 
-    private static final Pattern LOCATOR = Pattern.compile("[a-f0-9]{64}");
-    private static final byte[] ROW_BINDING_DOMAIN =
-            "YCS-BLIND-ROW-BINDING/v1\0".getBytes(StandardCharsets.US_ASCII);
     private static final int MOBILE_CIPHERTEXT_BYTES = 11 + EnvelopeCodec.DATA_TAG_BYTES;
 
     private final long tenantId;
@@ -41,7 +33,7 @@ public final class PreparedMessageMobile {
                           LegacyMobileLookupToken legacyLookupToken) {
         if (tenantId <= 0 || messageId == null || messageId.isEmpty()
                 || envelope == null || legacyLocator == null
-                || !LOCATOR.matcher(legacyLocator).matches()) {
+                || !MessageTaskRowBinding.isCurrentLocator(legacyLocator)) {
             throw new IllegalArgumentException("invalid prepared message mobile");
         }
         CipherEnvelope decoded = new EnvelopeCodec().decode(envelope, EnvelopeCodec.Target.DATABASE_FIELD);
@@ -98,24 +90,8 @@ public final class PreparedMessageMobile {
         if (legacyRowId <= 0) {
             throw new IllegalArgumentException("invalid legacy row binding");
         }
-        byte[] messageIdBytes = messageId.getBytes(StandardCharsets.US_ASCII);
-        byte[] locatorBytes = legacyLocator.getBytes(StandardCharsets.US_ASCII);
-        ByteBuffer binding = ByteBuffer.allocate(
-                ROW_BINDING_DOMAIN.length + Long.BYTES + Long.BYTES
-                        + Integer.BYTES + messageIdBytes.length
-                        + Integer.BYTES + locatorBytes.length
-                        + Integer.BYTES + envelope.length);
-        binding.put(ROW_BINDING_DOMAIN).putLong(tenantId).putLong(legacyRowId)
-                .putInt(messageIdBytes.length).put(messageIdBytes)
-                .putInt(locatorBytes.length).put(locatorBytes)
-                .putInt(envelope.length).put(envelope);
-        try {
-            return MessageDigest.getInstance("SHA-256").digest(binding.array());
-        } catch (NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException("required digest is unavailable");
-        } finally {
-            Arrays.fill(binding.array(), (byte) 0);
-        }
+        return MessageTaskRowBinding.originalRowDigest(
+                tenantId, legacyRowId, messageId, legacyLocator, envelope);
     }
 
     private static BlindIndexPort.OrderedIndexes copyIndexes(

@@ -19,8 +19,10 @@ import software.amazon.awssdk.services.s3.model.GetBucketPolicyRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.Grantee;
+import software.amazon.awssdk.services.s3.model.Grant;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.Permission;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -39,10 +41,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /** AWS SDK v2 adapter for a deny-by-default bucket containing YCSE/v1 ciphertext only. */
-public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort {
+public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort, AutoCloseable {
     private static final Pattern STORAGE_KEY = Pattern.compile("obj_v1_[0-9a-f]{64}");
     private static final Pattern SHA256 = Pattern.compile("[0-9a-f]{64}");
     private static final String PURPOSE = "purpose";
@@ -56,11 +59,21 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
     private final ObjectStoreProperties properties;
     private final EnvelopeCodec envelopeCodec;
     private final SecureRandom secureRandom;
+    private final boolean ownsClient;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     public S3PrivateObjectStoreAdapter(S3Client s3Client,
                                        ObjectStoreProperties properties,
                                        EnvelopeCodec envelopeCodec,
                                        SecureRandom secureRandom) {
+        this(s3Client, properties, envelopeCodec, secureRandom, false);
+    }
+
+    S3PrivateObjectStoreAdapter(S3Client s3Client,
+                                ObjectStoreProperties properties,
+                                EnvelopeCodec envelopeCodec,
+                                SecureRandom secureRandom,
+                                boolean ownsClient) {
         if (s3Client == null || properties == null || envelopeCodec == null || secureRandom == null
                 || !properties.enabled()) {
             throw Failure.invalidInput();
@@ -69,6 +82,7 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
         this.properties = properties;
         this.envelopeCodec = envelopeCodec;
         this.secureRandom = secureRandom;
+        this.ownsClient = ownsClient;
     }
 
     /** Builds the production client from an allowlisted endpoint and an indirect credential provider. */
@@ -85,7 +99,7 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
             var builder = S3Client.builder()
                     .region(Region.of(properties.region()))
                     .credentialsProvider(credentials)
-                    .httpClient(UrlConnectionHttpClient.create())
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .serviceConfiguration(S3Configuration.builder()
                             .pathStyleAccessEnabled(properties.pathStyleAccess())
                             .build());
@@ -94,7 +108,7 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
                 builder.endpointOverride(endpoint);
             }
             return new S3PrivateObjectStoreAdapter(
-                    builder.build(), properties, new EnvelopeCodec(), new SecureRandom());
+                    builder.build(), properties, new EnvelopeCodec(), new SecureRandom(), true);
         } catch (RuntimeException failure) {
             throw Failure.unavailable();
         }
@@ -192,7 +206,9 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
 
     @Override
     public void delete(String storageKey, ObjectPurpose purpose) {
-        head(storageKey, purpose);
+        requireStorageKey(storageKey);
+        requirePurpose(purpose);
+        ensurePrivateBucket();
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(properties.bucket())
@@ -222,12 +238,19 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
 
     private void ensurePrivateBucket() {
         try {
-            boolean hasNonOwnerGrant = s3Client.getBucketAcl(GetBucketAclRequest.builder()
-                            .bucket(properties.bucket()).build())
-                    .grants().stream()
-                    .map(grant -> grant.grantee())
-                    .anyMatch(this::isNonOwnerGrant);
-            if (hasNonOwnerGrant) {
+            var acl = s3Client.getBucketAcl(GetBucketAclRequest.builder()
+                    .bucket(properties.bucket()).build());
+            String ownerId = acl.owner() == null ? null : acl.owner().id();
+            int ownerFullControlGrants = 0;
+            boolean invalidGrant = acl.owner() == null;
+            for (Grant grant : acl.grants()) {
+                if (!isExactOwnerFullControl(grant, ownerId)) {
+                    invalidGrant = true;
+                } else {
+                    ownerFullControlGrants++;
+                }
+            }
+            if (invalidGrant || ownerFullControlGrants != 1) {
                 throw Failure.invalidPolicy();
             }
             try {
@@ -249,8 +272,19 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
         }
     }
 
-    private boolean isNonOwnerGrant(Grantee grantee) {
-        return grantee == null || grantee.type() != Type.CANONICAL_USER;
+    private static boolean isExactOwnerFullControl(Grant grant, String ownerId) {
+        Grantee grantee = grant == null ? null : grant.grantee();
+        if (grantee == null || grantee.type() != Type.CANONICAL_USER
+                || grant.permission() != Permission.FULL_CONTROL) {
+            return false;
+        }
+        String granteeId = grantee.id();
+        if (ownerId == null || ownerId.isBlank()) {
+            // MinIO's S3-compatible default ACL omits both canonical IDs. It remains admissible
+            // only as the sole canonical FULL_CONTROL grant; any identifiable foreign grant fails.
+            return granteeId == null || granteeId.isBlank();
+        }
+        return ownerId.equals(granteeId);
     }
 
     private static boolean isMissingPolicy(S3Exception failure) {
@@ -412,6 +446,14 @@ public final class S3PrivateObjectStoreAdapter implements PrivateObjectStorePort
     private static void abort(ResponseInputStream<?> response) {
         if (response != null) {
             response.abort();
+        }
+    }
+
+    /** Closes only the client built by {@link #create(ObjectStoreProperties)}. */
+    @Override
+    public void close() {
+        if (ownsClient && closed.compareAndSet(false, true)) {
+            s3Client.close();
         }
     }
 }

@@ -14,6 +14,7 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Per-value YCSE/v1 protection boundary for persistence adapters.
@@ -31,7 +32,7 @@ public final class ProtectedFieldCodec {
     private final EnvelopeCodec envelopeCodec;
     private final KeyProtectionPort keyProtectionPort;
     private final SecureRandom secureRandom;
-    private final String keyReference;
+    private final Supplier<String> keyReferenceSource;
 
     public ProtectedFieldCodec(EnvelopeCodec envelopeCodec,
                                KeyProtectionPort keyProtectionPort,
@@ -40,7 +41,19 @@ public final class ProtectedFieldCodec {
         this.envelopeCodec = Objects.requireNonNull(envelopeCodec, "envelopeCodec");
         this.keyProtectionPort = Objects.requireNonNull(keyProtectionPort, "keyProtectionPort");
         this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
-        this.keyReference = requireCanonicalKeyReference(keyReference);
+        String canonical = requireCanonicalKeyReference(keyReference);
+        this.keyReferenceSource = () -> canonical;
+    }
+
+    /** Resolves the database-owned ACTIVE reference for every new protection operation. */
+    public ProtectedFieldCodec(EnvelopeCodec envelopeCodec,
+                               KeyProtectionPort keyProtectionPort,
+                               SecureRandom secureRandom,
+                               Supplier<String> keyReferenceSource) {
+        this.envelopeCodec = Objects.requireNonNull(envelopeCodec, "envelopeCodec");
+        this.keyProtectionPort = Objects.requireNonNull(keyProtectionPort, "keyProtectionPort");
+        this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
+        this.keyReferenceSource = Objects.requireNonNull(keyReferenceSource, "keyReferenceSource");
     }
 
     /** Protects exactly one bounded value as one strict YCSE/v1 envelope. */
@@ -73,6 +86,7 @@ public final class ProtectedFieldCodec {
 
             // Enforce both the selected plaintext ceiling and complete-envelope bound before JCE
             // or the adapter can consume a durable wrap reservation.
+            String keyReference = requireCanonicalKeyReference(keyReferenceSource.get());
             envelopeCodec.maximumCompleteEnvelopeLength(keyReference, plaintextLength, target);
             authenticatedHeader = envelopeCodec.authenticatedHeader(
                     keyReference, plaintextLength, target);

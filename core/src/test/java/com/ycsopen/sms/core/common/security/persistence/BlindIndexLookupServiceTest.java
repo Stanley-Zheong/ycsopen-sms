@@ -76,7 +76,8 @@ class BlindIndexLookupServiceTest {
                     key_version BIGINT NOT NULL,
                     index_value VARCHAR(53) NOT NULL,
                     index_status VARCHAR(16) NOT NULL,
-                    original_row_digest BINARY(32) NOT NULL
+                    original_row_digest BINARY(32) NOT NULL,
+                    row_binding_digest BINARY(32)
                 )
                 """);
         jdbc.update("INSERT INTO ycs_crypto_migration_targets VALUES (?, ?, ?)",
@@ -88,8 +89,8 @@ class BlindIndexLookupServiceTest {
     @Test
     void unionsActiveAndRetiringMetadataDeduplicatesBindingsAndAppliesWhitelistPrecedence() {
         insertBlacklist(931001L, null, "locator-system", "BLACK");
-        insertMetadata(931001L, RETIRING, "RETIRING", repeated(0x31));
-        insertMetadata(931001L, ACTIVE, "ACTIVE", repeated(0x31));
+        insertMetadata(931001L, RETIRING, "RETIRING", rowDigest(931001L));
+        insertMetadata(931001L, ACTIVE, "ACTIVE", rowDigest(931001L));
 
         BlacklistEntryRepository legacy = mock(BlacklistEntryRepository.class);
         when(legacy.findSystemLegacyCompatibilityMatches(rawDigestHex(), BlacklistEntry.Status.ACTIVE))
@@ -139,8 +140,8 @@ class BlindIndexLookupServiceTest {
                 rawDigestHex(), TENANT_ID, BlacklistEntry.Status.ACTIVE);
 
         insertBlacklist(931004L, TENANT_ID, "locator-tenant", "BLACK");
-        insertMetadata(931004L, RETIRING, "RETIRING", repeated(0x41));
-        insertMetadata(931004L, ACTIVE, "ACTIVE", repeated(0x41));
+        insertMetadata(931004L, RETIRING, "RETIRING", rowDigest(931004L));
+        insertMetadata(931004L, ACTIVE, "ACTIVE", rowDigest(931004L));
         assertThat(service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE).blocked())
                 .isTrue();
         verify(legacy, never()).findSystemLegacyCompatibilityMatches(
@@ -163,6 +164,31 @@ class BlindIndexLookupServiceTest {
         insertBlacklist(931005L, TENANT_ID, "locator-conflict", "BLACK");
         insertMetadata(931005L, RETIRING, "RETIRING", repeated(0x61));
         insertMetadata(931005L, ACTIVE, "ACTIVE", repeated(0x62));
+        assertSanitized(() -> service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE));
+    }
+
+    @Test
+    void failsClosedWhenBlacklistIdentityOrPolicyDriftsIsDeletedOrIdIsReused() {
+        long id = 931006L;
+        insertBlacklist(id, TENANT_ID, "locator-bound", "BLACK");
+        byte[] original = rowDigest(id);
+        insertMetadata(id, RETIRING, "RETIRING", original);
+        insertMetadata(id, ACTIVE, "ACTIVE", original);
+        BlindIndexLookupService service = service(mock(BlacklistEntryRepository.class));
+        assertThat(service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE).blocked())
+                .isTrue();
+
+        assertMutationRejected(service, id, "UPDATE blacklist_entries SET mobile_hash='changed' WHERE id=?");
+        assertMutationRejected(service, id, "UPDATE blacklist_entries SET tenant_id=18 WHERE id=?");
+        assertMutationRejected(service, id, "UPDATE blacklist_entries SET list_type='WHITE' WHERE id=?");
+        assertMutationRejected(service, id, "UPDATE blacklist_entries SET status='DISABLED' WHERE id=?");
+        assertMutationRejected(service, id,
+                "UPDATE blacklist_entries SET mobile_encrypted=X'010203' WHERE id=?");
+
+        jdbc.update("DELETE FROM blacklist_entries WHERE id=?", id);
+        assertSanitized(() -> service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE));
+        insertBlacklist(id, TENANT_ID, "locator-bound", "BLACK");
+        jdbc.update("UPDATE blacklist_entries SET mobile_encrypted=X'7A7B7C' WHERE id=?", id);
         assertSanitized(() -> service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE));
     }
 
@@ -205,12 +231,42 @@ class BlindIndexLookupServiceTest {
                                 VersionedBlindIndex index,
                                 String status,
                                 byte[] bindingDigest) {
+        byte[] rowBinding = jdbc.query("""
+                SELECT tenant_id,mobile_encrypted,list_type,status FROM blacklist_entries WHERE id=?
+                """, rs -> rs.next() ? BlindIndexLookupService.blacklistBinding(
+                        rowId, rs.getObject("tenant_id", Long.class),
+                        BlacklistEntry.ListType.valueOf(rs.getString("list_type")),
+                        BlacklistEntry.Status.valueOf(rs.getString("status")),
+                        rs.getBytes("mobile_encrypted"), bindingDigest) : null, rowId);
         jdbc.update("""
                 INSERT INTO ycs_crypto_blind_indexes
                     (target_type, legacy_row_id, field_id, key_purpose, key_version,
-                     index_value, index_status, original_row_digest)
-                VALUES ('BLACKLIST_ENTRY', ?, 'mobile', 'MOBILE_BLIND_INDEX', ?, ?, ?, ?)
-                """, rowId, index.keyVersion(), index.canonicalValue(), status, bindingDigest);
+                     index_value, index_status, original_row_digest, row_binding_digest)
+                VALUES ('BLACKLIST_ENTRY', ?, 'mobile', 'MOBILE_BLIND_INDEX', ?, ?, ?, ?, ?)
+                """, rowId, index.keyVersion(), index.canonicalValue(), status, bindingDigest, rowBinding);
+    }
+
+    private byte[] rowDigest(long rowId) {
+        String mobileHash = jdbc.queryForObject(
+                "SELECT mobile_hash FROM blacklist_entries WHERE id=?", String.class, rowId);
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(mobileHash.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception failure) {
+            throw new AssertionError(failure);
+        }
+    }
+
+    private void assertMutationRejected(
+            BlindIndexLookupService service, long id, String mutation) {
+        jdbc.update(mutation, id);
+        assertSanitized(() -> service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE));
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes WHERE legacy_row_id=?", id);
+        jdbc.update("DELETE FROM blacklist_entries WHERE id=?", id);
+        insertBlacklist(id, TENANT_ID, "locator-bound", "BLACK");
+        byte[] original = rowDigest(id);
+        insertMetadata(id, RETIRING, "RETIRING", original);
+        insertMetadata(id, ACTIVE, "ACTIVE", original);
     }
 
     private static BlacklistEntryRepository.LookupProjection projection(

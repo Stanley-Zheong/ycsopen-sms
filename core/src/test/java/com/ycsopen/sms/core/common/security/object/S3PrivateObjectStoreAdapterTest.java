@@ -34,6 +34,7 @@ import software.amazon.awssdk.services.s3.model.Grantee;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.Permission;
+import software.amazon.awssdk.services.s3.model.Owner;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -258,6 +259,70 @@ class S3PrivateObjectStoreAdapterTest {
     }
 
     @Test
+    void rejectsReadAndFullControlGrantsToForeignCanonicalUsers() {
+        Grant owner = Grant.builder()
+                .grantee(Grantee.builder().type(Type.CANONICAL_USER).id("owner-id").build())
+                .permission(Permission.FULL_CONTROL).build();
+        for (Permission permission : java.util.List.of(Permission.READ, Permission.FULL_CONTROL)) {
+            Grant foreign = Grant.builder()
+                    .grantee(Grantee.builder().type(Type.CANONICAL_USER).id("foreign-id").build())
+                    .permission(permission).build();
+            when(client.getBucketAcl(any(GetBucketAclRequest.class))).thenReturn(
+                    GetBucketAclResponse.builder().owner(Owner.builder().id("owner-id").build())
+                            .grants(owner, foreign).build());
+            assertFailure(() -> adapter.head(
+                            KEY, PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE),
+                    OBJECT_POLICY_INVALID);
+        }
+    }
+
+    @Test
+    void admitsOnlyTheIdentifierlessCanonicalOwnerShapeUsedByMinio() {
+        Grant identifierlessOwner = Grant.builder()
+                .grantee(Grantee.builder().type(Type.CANONICAL_USER).id("").build())
+                .permission(Permission.FULL_CONTROL).build();
+        when(client.getBucketAcl(any(GetBucketAclRequest.class))).thenReturn(
+                GetBucketAclResponse.builder().owner(Owner.builder().build())
+                        .grants(identifierlessOwner).build());
+        when(client.headObject(any(HeadObjectRequest.class))).thenReturn(
+                head(smallEnvelope(PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE),
+                        PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE,
+                        "application/pdf", Map.of()));
+
+        assertThat(adapter.head(KEY, PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE))
+                .isNotNull();
+
+        Grant identifiableForeign = Grant.builder()
+                .grantee(Grantee.builder().type(Type.CANONICAL_USER).id("foreign-id").build())
+                .permission(Permission.FULL_CONTROL).build();
+        when(client.getBucketAcl(any(GetBucketAclRequest.class))).thenReturn(
+                GetBucketAclResponse.builder().owner(Owner.builder().build())
+                        .grants(identifierlessOwner, identifiableForeign).build());
+        assertFailure(() -> adapter.head(
+                        KEY, PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE),
+                OBJECT_POLICY_INVALID);
+    }
+
+    @Test
+    void closesOwnedClientExactlyOnceAndNeverClosesInjectedClient() {
+        ObjectStoreProperties properties = new ObjectStoreProperties(
+                true, BUCKET, "us-east-1", URI.create("https://s3.test.invalid"),
+                Set.of(URI.create("https://s3.test.invalid")),
+                ObjectStoreProperties.CredentialProvider.DEFAULT_CHAIN, true, false);
+        S3Client ownedClient = mock(S3Client.class);
+        S3PrivateObjectStoreAdapter owned = new S3PrivateObjectStoreAdapter(
+                ownedClient, properties, new EnvelopeCodec(), new SecureRandom(), true);
+        owned.close();
+        owned.close();
+        verify(ownedClient).close();
+
+        S3Client injectedClient = mock(S3Client.class);
+        new S3PrivateObjectStoreAdapter(injectedClient, properties,
+                new EnvelopeCodec(), new SecureRandom()).close();
+        verify(injectedClient, never()).close();
+    }
+
+    @Test
     void configurationRejectsUnapprovedAndCredentialBearingEndpointsWithoutEchoingThem() {
         URI endpoint = URI.create("https://user:credential@storage.secret.invalid/private?token=value");
 
@@ -427,7 +492,8 @@ class S3PrivateObjectStoreAdapterTest {
                 .permission(Permission.FULL_CONTROL)
                 .build();
         when(client.getBucketAcl(any(GetBucketAclRequest.class)))
-                .thenReturn(GetBucketAclResponse.builder().grants(owner).build());
+                .thenReturn(GetBucketAclResponse.builder()
+                        .owner(Owner.builder().id("owner-id").build()).grants(owner).build());
         when(client.getBucketPolicy(any(GetBucketPolicyRequest.class))).thenThrow(S3Exception.builder()
                 .statusCode(404)
                 .awsErrorDetails(AwsErrorDetails.builder().errorCode("NoSuchBucketPolicy").build())

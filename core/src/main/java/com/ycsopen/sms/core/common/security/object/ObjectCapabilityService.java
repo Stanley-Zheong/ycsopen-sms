@@ -90,8 +90,8 @@ public final class ObjectCapabilityService {
     }
 
     /**
-     * Executes a downstream object fetch only after capability and current
-     * authorization validation both succeed.
+     * Atomically consumes the capability after validation and authorization, then executes one
+     * downstream fetch. A downstream failure burns the capability; callers must obtain a new one.
      */
     public <T> T authorizeAndFetch(String completeToken,
                                    AccessRequest request,
@@ -110,6 +110,9 @@ public final class ObjectCapabilityService {
                             stored.protectedObjectId(), request.tenant(), request.subject(),
                             stored.purpose(), stored.state(), stored.expiresAt());
             if (!authorized(authorizationRequest)) {
+                throw Failure.denied();
+            }
+            if (!capabilityStore.consumeActive(parsed.lookupId(), clock.instant())) {
                 throw Failure.denied();
             }
             return downstreamFetch.get();
@@ -285,6 +288,9 @@ public final class ObjectCapabilityService {
         boolean create(StoredCapability capability);
 
         Optional<StoredCapability> findByLookupId(String lookupId);
+
+        /** ACTIVE-to-terminal CAS; exactly one concurrent caller may succeed. */
+        boolean consumeActive(String lookupId, Instant now);
     }
 
     /** Immutable safe storage representation for ycs_crypto_object_capabilities. */

@@ -21,6 +21,10 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -100,6 +104,43 @@ class ObjectCapabilityServiceTest {
                 OBJECT_ID, TENANT, SUBJECT, PURPOSE,
                 ObjectAccessAuthorizationPort.CapabilityState.ACTIVE, EXPIRY));
         assertThat(fixture.digest.verifyCalls).hasValue(1);
+        assertThat(fixture.store.only().state())
+                .isEqualTo(ObjectAccessAuthorizationPort.CapabilityState.REVOKED);
+
+        assertDenied(() -> fixture.service.authorizeAndFetch(
+                token, accessRequest(), () -> "replay-must-not-fetch"));
+    }
+
+    @Test
+    void concurrentUsesAtomicallyProduceExactlyOneFetchWinner() throws Exception {
+        Fixture fixture = fixture(true, 2);
+        String token = issueToken(fixture);
+        CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger fetches = new AtomicInteger();
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<Boolean> first = executor.submit(() -> attemptAfter(start, fixture, token, fetches));
+            Future<Boolean> second = executor.submit(() -> attemptAfter(start, fixture, token, fetches));
+            start.countDown();
+            assertThat(java.util.List.of(first.get(), second.get()))
+                    .containsExactlyInAnyOrder(true, false);
+        }
+        assertThat(fetches).hasValue(1);
+        assertThat(fixture.store.only().state())
+                .isEqualTo(ObjectAccessAuthorizationPort.CapabilityState.REVOKED);
+    }
+
+    @Test
+    void downstreamFailureBurnsCapabilityAndRequiresFreshIssue() {
+        Fixture fixture = fixture(true, 2);
+        String token = issueToken(fixture);
+
+        assertThatThrownBy(() -> fixture.service.authorizeAndFetch(
+                token, accessRequest(), () -> {
+                    throw new IllegalStateException("downstream unavailable");
+                })).isInstanceOf(IllegalStateException.class);
+        assertDenied(() -> fixture.service.authorizeAndFetch(
+                token, accessRequest(), () -> "replay-must-not-fetch"));
     }
 
     @Test
@@ -191,12 +232,19 @@ class ObjectCapabilityServiceTest {
         assertThat(fixture.service.authorizeAndFetch(token, accessRequest(), () -> "old-live"))
                 .isEqualTo("old-live");
 
-        fixture.digest.setState(1, FakeDigestPort.KeyState.RETIRED);
-        assertNoFetchDenied(fixture.service, token, accessRequest());
-        fixture.digest.setState(1, FakeDigestPort.KeyState.REVOKED);
-        assertNoFetchDenied(fixture.service, token, accessRequest());
-        fixture.digest.removeVersion(1);
-        assertNoFetchDenied(fixture.service, token, accessRequest());
+        for (FakeDigestPort.KeyState state : java.util.List.of(
+                FakeDigestPort.KeyState.RETIRED, FakeDigestPort.KeyState.REVOKED)) {
+            Fixture unavailable = fixture(true, 1);
+            String unavailableToken = issueToken(unavailable);
+            unavailable.digest.rotateTo(2);
+            unavailable.digest.setState(1, state);
+            assertNoFetchDenied(unavailable.service, unavailableToken, accessRequest());
+        }
+        Fixture missing = fixture(true, 1);
+        String missingToken = issueToken(missing);
+        missing.digest.rotateTo(2);
+        missing.digest.removeVersion(1);
+        assertNoFetchDenied(missing.service, missingToken, accessRequest());
     }
 
     @Test
@@ -310,6 +358,24 @@ class ObjectCapabilityServiceTest {
                 .isEqualTo(ObjectCapabilityService.Failure.Category.CAPABILITY_DENIED);
     }
 
+    private static boolean attemptAfter(CountDownLatch start,
+                                        Fixture fixture,
+                                        String token,
+                                        AtomicInteger fetches) throws InterruptedException {
+        start.await();
+        try {
+            fixture.service.authorizeAndFetch(token, accessRequest(), () -> {
+                fetches.incrementAndGet();
+                return "winner";
+            });
+            return true;
+        } catch (ObjectCapabilityService.Failure denied) {
+            assertThat(denied.category())
+                    .isEqualTo(ObjectCapabilityService.Failure.Category.CAPABILITY_DENIED);
+            return false;
+        }
+    }
+
     private record Fixture(FakeDigestPort digest,
                            FakeStore store,
                            ObjectAccessAuthorizationPort authorization,
@@ -334,14 +400,27 @@ class ObjectCapabilityServiceTest {
         private final AtomicInteger lookupCalls = new AtomicInteger();
 
         @Override
-        public boolean create(ObjectCapabilityService.StoredCapability capability) {
+        public synchronized boolean create(ObjectCapabilityService.StoredCapability capability) {
             return values.putIfAbsent(capability.lookupId(), capability) == null;
         }
 
         @Override
-        public Optional<ObjectCapabilityService.StoredCapability> findByLookupId(String lookupId) {
+        public synchronized Optional<ObjectCapabilityService.StoredCapability> findByLookupId(String lookupId) {
             lookupCalls.incrementAndGet();
             return Optional.ofNullable(values.get(lookupId));
+        }
+
+        @Override
+        public synchronized boolean consumeActive(String lookupId, Instant now) {
+            ObjectCapabilityService.StoredCapability current = values.get(lookupId);
+            if (current == null
+                    || current.state() != ObjectAccessAuthorizationPort.CapabilityState.ACTIVE
+                    || !now.isBefore(current.expiresAt())) {
+                return false;
+            }
+            values.put(lookupId,
+                    current.withState(ObjectAccessAuthorizationPort.CapabilityState.REVOKED));
+            return true;
         }
 
         ObjectCapabilityService.StoredCapability only() {

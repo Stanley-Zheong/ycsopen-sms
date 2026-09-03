@@ -1,0 +1,44 @@
+{
+  "behavior_id": "crypto-storage-bootstrap-01",
+  "case_id": "CASE-CRYPTO-STORAGE-001",
+  "catalog_test": "T-CRYPTO-STORAGE-001:database",
+  "child_results": [
+    {
+      "check_id": "phase03-protected-persistence-integration",
+      "path": "core/target/phase03/results/phase03-protected-persistence-integration.json",
+      "result_digest": "455d46f0f8acd6977f288eaee8fd5b0350a68b0bb8b6d530b9eaf19aeedfe5aa",
+      "sha256": "8ed1f34651b6d374a9a429e04b969a16e3ab1f70b7ed3be6d33a3c989e0c1915"
+    }
+  ],
+  "evidence_path": "EVIDENCE/OBL-CRYPTO-STORAGE-001.json",
+  "exit_code": 0,
+  "inventory": {
+    "accepted_digest": "9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009",
+    "path": "core/src/main/resources/security/protected-data-inventory.json",
+    "sha256": "0f232a20ebcfb161ebd959c57dec1d340383f80b111708ef954542ef75142cd8",
+    "validator_result": {
+      "check_id": "phase03-protected-inventory",
+      "path": "core/target/phase03/results/protected-inventory-result.json",
+      "result_digest": "d0ead7a1b6644fb5fde814cea0f966cbf9a37a50ea15c1bb3c564b4e6395acf6",
+      "sha256": "596368a712348bfe8678a7007549dead01cd27d8185d15a4a2cd6aba391844d0"
+    }
+  },
+  "leak_result": {
+    "path": "core/target/phase03/results/complete-leak-result.json",
+    "result_digest": "b07527ef020c5717d2c00b8b6332e12a4eec71e916267f0f22a016539b4d0acc",
+    "sha256": "b6ae6b4c6ec9c551c42cdeb893d0e92e681432778c51f6d7df9f9e62d84e6c06"
+  },
+  "obligation_id": "OBL-CRYPTO-STORAGE-001",
+  "owner": "crypto-storage-bootstrap",
+  "phase": "03-crypto-storage-bootstrap",
+  "requirement_ids": [
+    "REQ-NFR-DATA-PROTECTION"
+  ],
+  "schema_version": "phase03-obligation-evidence-v1",
+  "status": "PASS",
+  "subject": {
+    "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json",
+    "sha256": "346fa29a94428169f9bb696272fcb0efe646fcaacbe038e10d73de27dd7cc578",
+    "tested_subject_digest": "a9115b1e8a04f683a52604982552d220fac11006d4782be0d76b48e97097c875"
+  }
+}

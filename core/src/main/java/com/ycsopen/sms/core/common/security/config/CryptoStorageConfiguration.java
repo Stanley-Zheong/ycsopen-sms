@@ -12,6 +12,10 @@ import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11CryptoStorageProper
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11FailureMapper;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactory;
 import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
+import com.ycsopen.sms.core.common.security.key.pkcs11.VersionedKeyDescriptorRegistry;
+import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
+import com.ycsopen.sms.core.common.security.key.lifecycle.CryptoKeyLifecycleFactory;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
 import com.ycsopen.sms.core.common.security.object.DenyAllObjectAccessAuthorization;
 import com.ycsopen.sms.core.common.security.object.ObjectAccessAuthorizationPort;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -20,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -36,7 +41,8 @@ public class CryptoStorageConfiguration {
     @Bean(destroyMethod = "close")
     CryptoStorageRuntime cryptoStorageRuntime(Environment environment,
                                               JdbcTemplate jdbcTemplate,
-                                              PlatformTransactionManager transactionManager) {
+                                              PlatformTransactionManager transactionManager,
+                                              KeyReferenceRepository keyReferences) {
         CryptoStorageStartupVerifier.Settings settings = settings(environment);
         settings.validate();
         if (!settings.enabled()) {
@@ -49,16 +55,38 @@ public class CryptoStorageConfiguration {
                 settings.modulePath(), settings.allowedModulePaths(), settings.slotId(),
                 settings.tokenIdentity(),
                 CryptoStorageStartupVerifier.environmentCredential(settings.credentialReference()),
-                settings.descriptors());
+                new VersionedKeyDescriptorRegistry(keyReferences,
+                        VersionedKeyDescriptorRegistry.configured(
+                                environment.getProperty(PREFIX + "key-descriptors"),
+                                settings.descriptors())).load());
         Pkcs11ProviderFactory.Session session = new Pkcs11ProviderFactory(failureMapper).open(properties);
         try {
             SunPkcs11KeyAdapter adapter = new SunPkcs11KeyAdapter(session, properties,
-                    new KekWrapUsageRepository(jdbcTemplate, transactionManager, failureMapper), failureMapper);
+                    new KekWrapUsageRepository(jdbcTemplate, transactionManager, failureMapper),
+                    failureMapper, keyReferences);
             return new CryptoStorageRuntime(settings, adapter, adapter, adapter, adapter, session);
         } catch (RuntimeException failure) {
             session.close();
             throw failure;
         }
+    }
+
+    @Bean
+    KeyReferenceRepository keyReferenceRepository(
+            JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager) {
+        return new KeyReferenceRepository.Jdbc(
+                jdbcTemplate, new TransactionTemplate(transactionManager));
+    }
+
+    @Bean
+    ActiveFieldKeyReference activeFieldKeyReference(KeyReferenceRepository references) {
+        return new ActiveFieldKeyReference(references);
+    }
+
+    @Bean
+    CryptoKeyLifecycleFactory cryptoKeyLifecycleFactory(
+            KeyReferenceRepository references, KeyProtectionPort keyProtectionPort) {
+        return new CryptoKeyLifecycleFactory(references, keyProtectionPort);
     }
 
     @Bean

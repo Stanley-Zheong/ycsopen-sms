@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -147,7 +151,8 @@ public class BlindIndexLookupService {
         parameters.add(FIELD_ID);
         return jdbcTemplate.query("""
                 SELECT bi.legacy_row_id, bi.index_status, bi.original_row_digest,
-                       kr.key_state, entry.id, entry.tenant_id, entry.list_type, entry.status
+                       bi.row_binding_digest, kr.key_state, entry.id, entry.tenant_id,
+                       entry.mobile_encrypted, entry.mobile_hash, entry.list_type, entry.status
                 FROM ycs_crypto_blind_indexes bi
                 JOIN (%s) requested
                   ON requested.key_version = bi.key_version
@@ -163,20 +168,80 @@ public class BlindIndexLookupService {
     private static BlacklistMatch metadataMatch(ResultSet rs) throws SQLException {
         long legacyRowId = rs.getLong("legacy_row_id");
         byte[] digest = rs.getBytes("original_row_digest");
+        byte[] binding = rs.getBytes("row_binding_digest");
         String indexStatus = rs.getString("index_status");
         String keyState = rs.getString("key_state");
         Long resolvedId = rs.getObject("id", Long.class);
         String listType = rs.getString("list_type");
         String status = rs.getString("status");
         if (legacyRowId <= 0 || resolvedId == null || resolvedId != legacyRowId
-                || digest == null || digest.length != 32
+                || digest == null || digest.length != 32 || binding == null || binding.length != 32
                 || !("ACTIVE".equals(keyState) || "RETIRING".equals(keyState))
                 || !Objects.equals(indexStatus, keyState)
                 || listType == null || status == null) {
             throw failure();
         }
-        return new BlacklistMatch(resolvedId, rs.getObject("tenant_id", Long.class),
-                BlacklistEntry.ListType.valueOf(listType), BlacklistEntry.Status.valueOf(status), digest);
+        Long tenantId = rs.getObject("tenant_id", Long.class);
+        byte[] mobileEnvelope = rs.getBytes("mobile_encrypted");
+        String mobileHash = rs.getString("mobile_hash");
+        BlacklistEntry.ListType resolvedListType;
+        BlacklistEntry.Status resolvedStatus;
+        try {
+            resolvedListType = BlacklistEntry.ListType.valueOf(listType);
+            resolvedStatus = BlacklistEntry.Status.valueOf(status);
+        } catch (IllegalArgumentException invalidPolicy) {
+            throw failure();
+        }
+        if (mobileEnvelope == null || mobileEnvelope.length < 1 || mobileHash == null
+                || !MessageDigest.isEqual(digest, sha256(mobileHash.getBytes(StandardCharsets.UTF_8)))
+                || !MessageDigest.isEqual(binding, blacklistBinding(
+                        resolvedId, tenantId, resolvedListType, resolvedStatus,
+                        mobileEnvelope, digest))) {
+            throw failure();
+        }
+        return new BlacklistMatch(resolvedId, tenantId, resolvedListType, resolvedStatus, digest);
+    }
+
+    public static byte[] blacklistBinding(long id,
+                                          Long tenantId,
+                                          BlacklistEntry.ListType listType,
+                                          BlacklistEntry.Status status,
+                                          byte[] mobileEnvelope,
+                                          byte[] originalRowDigest) {
+        if (id < 1 || listType == null || status == null || mobileEnvelope == null
+                || mobileEnvelope.length < 1 || originalRowDigest == null
+                || originalRowDigest.length != 32) {
+            throw failure();
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update("YCS-BLACKLIST-ROW-BINDING/v1\0".getBytes(StandardCharsets.US_ASCII));
+            digest.update(ByteBuffer.allocate(Long.BYTES).putLong(id).array());
+            digest.update(ByteBuffer.allocate(Long.BYTES)
+                    .putLong(tenantId == null ? Long.MIN_VALUE : tenantId).array());
+            updateLengthPrefixed(digest, listType.name());
+            updateLengthPrefixed(digest, status.name());
+            digest.update(sha256(mobileEnvelope));
+            digest.update(originalRowDigest);
+            return digest.digest();
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("Java 21 must provide SHA-256", exception);
+        }
+    }
+
+    private static void updateLengthPrefixed(MessageDigest digest, String value) {
+        byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
+        digest.update((byte) (bytes.length >>> 8));
+        digest.update((byte) bytes.length);
+        digest.update(bytes);
+    }
+
+    private static byte[] sha256(byte[] value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("Java 21 must provide SHA-256", exception);
+        }
     }
 
     private static Map<Long, BlacklistMatch> deduplicate(List<BlacklistMatch> matches) {

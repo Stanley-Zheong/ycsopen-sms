@@ -145,7 +145,7 @@ class ProtectedObjectServiceTest {
 
         assertThat(result.bytes()).containsExactly(plaintext);
         assertThat(fixture.events).containsExactly(
-                "capability-lookup", "capability-digest", "authorization",
+                "capability-lookup", "capability-digest", "authorization", "capability-consume",
                 "metadata-find", "store-head", "store-get", "decrypt-unwrap");
     }
 
@@ -225,6 +225,7 @@ class ProtectedObjectServiceTest {
 
         Fixture orphaned = fixture(true);
         orphaned.repository.failComplete = true;
+        orphaned.repository.failRecordOrphan = true;
         orphaned.objectStore.failDelete = true;
         assertUnavailable(() -> orphaned.service.create(request(
                 PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
@@ -252,7 +253,7 @@ class ProtectedObjectServiceTest {
                 PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
                 new ByteArrayInputStream(new byte[]{2}), 1L, original.protectedObjectId()));
         assertThat(fixture.repository.object(original.protectedObjectId()).state())
-                .isEqualTo(ProtectedObjectMetadataRepository.ObjectState.REPLACED);
+                .isEqualTo(ProtectedObjectMetadataRepository.ObjectState.DELETING);
         assertThat(fixture.repository.object(replacement.protectedObjectId()).state())
                 .isEqualTo(ProtectedObjectMetadataRepository.ObjectState.STAGED);
 
@@ -271,6 +272,29 @@ class ProtectedObjectServiceTest {
                 .satisfies(failure -> assertThat(failure.toString())
                         .doesNotContain("ocap_secret", "secret.invalid", "bucket=", "key=",
                                 "ciphertext=", "provider="));
+    }
+
+    @Test
+    void deleteCommitFailureLeavesDurableDeletingStateForIdempotentReconciliation() {
+        Fixture fixture = fixture(true);
+        ProtectedObjectService.CreatedObject created = fixture.service.create(request(
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
+                new ByteArrayInputStream(new byte[]{7}), 1L, null));
+        fixture.repository.failMarkDeletedOnce = true;
+
+        assertUnavailable(() -> fixture.service.delete(new ProtectedObjectService.DeleteRequest(
+                created.protectedObjectId(), TENANT_SCOPE,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
+
+        assertThat(fixture.repository.object(created.protectedObjectId()).state())
+                .isEqualTo(ProtectedObjectMetadataRepository.ObjectState.DELETING);
+        assertThat(fixture.objectStore.bodies).isEmpty();
+        assertThat(fixture.objectStore.deleteCalls).hasValue(1);
+        assertThat(fixture.service.reconcile(10))
+                .isEqualTo(new ProtectedObjectService.ReconciliationResult(1, 1));
+        assertThat(fixture.repository.object(created.protectedObjectId()).state())
+                .isEqualTo(ProtectedObjectMetadataRepository.ObjectState.DELETED);
+        assertThat(fixture.objectStore.deleteCalls).hasValue(2);
     }
 
     private static Fixture fixture(boolean authorize) {
@@ -641,6 +665,8 @@ class ProtectedObjectServiceTest {
         private final AtomicInteger orphanCalls = new AtomicInteger();
         private ProtectedObjectMetadataRepository.CreateOperation active;
         private boolean failComplete;
+        private boolean failRecordOrphan;
+        private boolean failMarkDeletedOnce;
 
         private FakeRepositoryStore(List<String> events) {
             this.events = events;
@@ -650,6 +676,13 @@ class ProtectedObjectServiceTest {
         public void beginCreate(ProtectedObjectMetadataRepository.CreateOperation operation) {
             beginCalls.incrementAndGet();
             active = operation;
+        }
+
+        @Override
+        public void recordObjectStored(ProtectedObjectMetadataRepository.CreateOperation operation,
+                                       StoredObjectMetadata stored) {
+            objects.put(operation.protectedObjectId(), metadata(operation, stored,
+                    ProtectedObjectMetadataRepository.ObjectState.ORPHANED));
         }
 
         @Override
@@ -675,8 +708,9 @@ class ProtectedObjectServiceTest {
         public void recordOrphan(ProtectedObjectMetadataRepository.CreateOperation operation,
                                  StoredObjectMetadata stored) {
             orphanCalls.incrementAndGet();
-            objects.put(operation.protectedObjectId(), metadata(operation, stored,
-                    ProtectedObjectMetadataRepository.ObjectState.ORPHANED));
+            if (failRecordOrphan) {
+                throw new IllegalStateException("orphan-journal-provider-canary");
+            }
             active = null;
         }
 
@@ -694,7 +728,32 @@ class ProtectedObjectServiceTest {
         }
 
         @Override
+        public Optional<ProtectedObjectMetadataRepository.ProtectedObjectMetadata> reserveDelete(
+                String protectedObjectId,
+                PrivateObjectStorePort.ObjectPurpose purpose,
+                String tenantDraftId) {
+            ProtectedObjectMetadataRepository.ProtectedObjectMetadata current = objects.get(protectedObjectId);
+            if (current == null || current.purpose() != purpose
+                    || !current.tenantDraftId().equals(tenantDraftId)
+                    || current.state() != ProtectedObjectMetadataRepository.ObjectState.STAGED
+                    && current.state() != ProtectedObjectMetadataRepository.ObjectState.REPLACED
+                    && current.state() != ProtectedObjectMetadataRepository.ObjectState.EXPIRED
+                    && current.state() != ProtectedObjectMetadataRepository.ObjectState.ORPHANED) {
+                return Optional.empty();
+            }
+            ProtectedObjectMetadataRepository.ProtectedObjectMetadata deleting = copy(current,
+                    ProtectedObjectMetadataRepository.ObjectState.DELETING,
+                    current.envelopeSha256(), current.envelopeSize());
+            objects.put(protectedObjectId, deleting);
+            return Optional.of(deleting);
+        }
+
+        @Override
         public void markDeleted(String protectedObjectId) {
+            if (failMarkDeletedOnce) {
+                failMarkDeletedOnce = false;
+                throw new IllegalStateException("metadata-delete-provider-canary");
+            }
             ProtectedObjectMetadataRepository.ProtectedObjectMetadata current = objects.get(protectedObjectId);
             objects.put(protectedObjectId, copy(current,
                     ProtectedObjectMetadataRepository.ObjectState.DELETED,
@@ -714,7 +773,8 @@ class ProtectedObjectServiceTest {
             return objects.values().stream()
                     .filter(value -> value.state() == ProtectedObjectMetadataRepository.ObjectState.REPLACED
                             || value.state() == ProtectedObjectMetadataRepository.ObjectState.EXPIRED
-                            || value.state() == ProtectedObjectMetadataRepository.ObjectState.ORPHANED)
+                            || value.state() == ProtectedObjectMetadataRepository.ObjectState.ORPHANED
+                            || value.state() == ProtectedObjectMetadataRepository.ObjectState.DELETING)
                     .limit(limit).toList();
         }
 
@@ -727,6 +787,20 @@ class ProtectedObjectServiceTest {
         public Optional<ObjectCapabilityService.StoredCapability> findCapability(String lookupId) {
             events.add("capability-lookup");
             return Optional.ofNullable(capabilities.get(lookupId));
+        }
+
+        @Override
+        public boolean consumeActiveCapability(String lookupId, Instant now) {
+            ObjectCapabilityService.StoredCapability current = capabilities.get(lookupId);
+            if (current == null
+                    || current.state() != ObjectAccessAuthorizationPort.CapabilityState.ACTIVE
+                    || !now.isBefore(current.expiresAt())) {
+                return false;
+            }
+            capabilities.put(lookupId,
+                    current.withState(ObjectAccessAuthorizationPort.CapabilityState.REVOKED));
+            events.add("capability-consume");
+            return true;
         }
 
         ProtectedObjectMetadataRepository.ProtectedObjectMetadata onlyObject() {

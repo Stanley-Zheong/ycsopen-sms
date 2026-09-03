@@ -3,6 +3,7 @@ package com.ycsopen.sms.core.common.security.persistence;
 import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
+import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
 import com.ycsopen.sms.core.common.security.object.TenantRegistrationObjectSessionService;
 import com.ycsopen.sms.core.domain.entity.Tenant;
 import com.ycsopen.sms.core.web.dto.TenantRegistrationRequest;
@@ -41,7 +42,6 @@ public final class TenantRegistrationProtectionAdapter {
     public static final String UPLOAD_TOKEN_HEADER =
             TenantRegistrationObjectSessionService.UPLOAD_TOKEN_HEADER;
 
-    private static final String KEY_REFERENCE = "field-kek.v1";
     private static final String LOGICAL_OWNER = "crypto-storage-bootstrap";
     private static final String LOGICAL_TABLE = "tenants";
     private static final Pattern SESSION_ID = Pattern.compile(
@@ -60,9 +60,10 @@ public final class TenantRegistrationProtectionAdapter {
     public TenantRegistrationProtectionAdapter(
             KeyProtectionPort keyProtectionPort,
             JdbcTemplate jdbcTemplate,
-            ObjectProvider<TenantRegistrationObjectSessionService> sessionServiceProvider) {
+            ObjectProvider<TenantRegistrationObjectSessionService> sessionServiceProvider,
+            ActiveFieldKeyReference activeFieldKeyReference) {
         this(new ProtectedFieldCodec(new EnvelopeCodec(), keyProtectionPort,
-                        new SecureRandom(), KEY_REFERENCE),
+                        new SecureRandom(), activeFieldKeyReference::current),
                 new JdbcClaimStore(jdbcTemplate, sessionServiceProvider::getIfAvailable,
                         Clock.systemUTC()));
     }

@@ -36,7 +36,24 @@ public final class ProtectedDataMigrationLauncher {
             stderr.print("phase03-migration:error:key_or_provider\n");
             return ProtectedDataMigrationCommand.Exit.KEY_OR_PROVIDER.code();
         }
-        return run(args, stdout, stderr, factories.getFirst().create());
+        ProtectedDataMigrationCommand.CommandServices services;
+        try {
+            services = Objects.requireNonNull(factories.getFirst().create(), "command services");
+        } catch (RuntimeException failure) {
+            stderr.print("phase03-migration:error:key_or_provider\n");
+            return ProtectedDataMigrationCommand.Exit.KEY_OR_PROVIDER.code();
+        }
+        try {
+            return run(args, stdout, stderr, services);
+        } finally {
+            if (services instanceof AutoCloseable closeable) {
+                try {
+                    closeable.close();
+                } catch (Exception ignored) {
+                    // The command result is already final and cleanup errors are never rendered.
+                }
+            }
+        }
     }
 
     /** Invokes the real command surface after an embedding runtime has explicitly composed it. */

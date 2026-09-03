@@ -8,6 +8,7 @@ import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.B
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.Checkpoint;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.LegacyRow;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunState;
+import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.StoredValueKind;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataTarget.Kind;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
 import java.nio.ByteBuffer;
@@ -230,6 +231,17 @@ public final class ProtectedDataMigrationRunner {
         byte[] beforeFingerprint = null;
         byte[] afterFingerprint = null;
         try {
+            if (target.kind() == Kind.LEGACY_DIGEST
+                    && row.storedValueKind() == StoredValueKind.CURRENT_MESSAGE_LOCATOR) {
+                if (!"message_tasks.mobile_hash".equals(target.id())
+                        || !transaction.currentMessageBindingMatches(row, INDEX_FIELD)) {
+                    throw failure(FailureCode.INTEGRITY_OR_BINDING_INVALID);
+                }
+                transaction.recordOutcome(
+                        runId, targetType, MigrationStateRepository.Outcome.SKIPPED,
+                        rowLocatorDigest(targetType, row.bindingRowId()), 0);
+                return RowResult.currentProtectedResult();
+            }
             Classification classification = classifier.classify(target, stored);
             if (classification == Classification.CORRUPT
                     || classification == Classification.AMBIGUOUS) {
@@ -501,6 +513,10 @@ public final class ProtectedDataMigrationRunner {
 
         private static RowResult skippedResult() {
             return new RowResult(0, 0, 1);
+        }
+
+        private static RowResult currentProtectedResult() {
+            return new RowResult(1, 1, 1);
         }
     }
 

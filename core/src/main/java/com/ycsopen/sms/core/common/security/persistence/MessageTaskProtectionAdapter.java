@@ -3,6 +3,7 @@ package com.ycsopen.sms.core.common.security.persistence;
 import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
 import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
+import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.repository.MessageTaskRepository;
@@ -16,7 +17,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.HexFormat;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -28,7 +28,6 @@ public class MessageTaskProtectionAdapter {
 
     public static final String SANITIZED_FAILURE = "PROTECTED_MESSAGE_PERSISTENCE_FAILED";
 
-    private static final String FIELD_KEY_REFERENCE = "field-kek.v1";
     private static final String LOGICAL_OWNER = "crypto-storage-bootstrap";
     private static final String LOGICAL_TABLE = "message_tasks";
     private static final String CONTENT_ROLE = "mobile_encrypted";
@@ -55,9 +54,10 @@ public class MessageTaskProtectionAdapter {
                                         BlindIndexPort blindIndexPort,
                                         MessageTaskRepository messageTaskRepository,
                                         BlindIndexMetadataRepository blindIndexMetadataRepository,
-                                        PlatformTransactionManager transactionManager) {
+                                        PlatformTransactionManager transactionManager,
+                                        ActiveFieldKeyReference activeFieldKeyReference) {
         this(new ProtectedFieldCodec(new EnvelopeCodec(), keyProtectionPort,
-                        new SecureRandom(), FIELD_KEY_REFERENCE),
+                        new SecureRandom(), activeFieldKeyReference::current),
                 blindIndexPort, messageTaskRepository, blindIndexMetadataRepository,
                 new SecureRandom(), transactionManager);
     }
@@ -87,7 +87,6 @@ public class MessageTaskProtectionAdapter {
         String checkedMobile = requireMobile(normalizedMobile);
         byte[] plaintext = mobileAscii(checkedMobile);
         byte[] envelope = null;
-        byte[] locatorEntropy = null;
         byte[] historicalDigest = null;
         try {
             String tenantScope = "tenant:" + checkedTenantId;
@@ -119,9 +118,7 @@ public class MessageTaskProtectionAdapter {
                 throw new IllegalStateException(SANITIZED_FAILURE);
             }
 
-            locatorEntropy = new byte[32];
-            secureRandom.nextBytes(locatorEntropy);
-            String locator = HexFormat.of().formatHex(locatorEntropy);
+            String locator = MessageTaskRowBinding.issueCurrentLocator(secureRandom);
             return new PreparedMessageMobile(
                     checkedTenantId, checkedMessageId, envelope, locator,
                     writeIndexes, queryIndexes, legacyLookupToken);
@@ -130,7 +127,6 @@ public class MessageTaskProtectionAdapter {
         } finally {
             Arrays.fill(plaintext, (byte) 0);
             clear(envelope);
-            clear(locatorEntropy);
             clear(historicalDigest);
         }
     }

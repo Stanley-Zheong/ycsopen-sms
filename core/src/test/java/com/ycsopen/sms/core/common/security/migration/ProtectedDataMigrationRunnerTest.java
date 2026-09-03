@@ -16,10 +16,13 @@ import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.L
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.Outcome;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunState;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunStatus;
+import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.StoredValueKind;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.FailureCode;
+import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.BatchResult;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.MigrationException;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.MigrationRequest;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
+import com.ycsopen.sms.core.common.security.persistence.MessageTaskRowBinding;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -135,6 +138,86 @@ public class ProtectedDataMigrationRunnerTest {
     }
 
     @Test
+    void currentMessageLocatorIsValidatedAndSkippedWhileHistoricalDigestMigrates() throws Exception {
+        String locator = MessageTaskRowBinding.CURRENT_LOCATOR_PREFIX + "A".repeat(43);
+        InMemoryRepository repository = new InMemoryRepository(PAIR,
+                new LegacyRow(1, 1L, "1", "tenant:17",
+                        locator.getBytes(StandardCharsets.US_ASCII),
+                        sha256(locator.getBytes(StandardCharsets.US_ASCII)),
+                        StoredValueKind.CURRENT_MESSAGE_LOCATOR),
+                new LegacyRow(2, 2L, "2", "tenant:17",
+                        "a".repeat(64).getBytes(StandardCharsets.US_ASCII),
+                        sha256("a".repeat(64).getBytes(StandardCharsets.US_ASCII))));
+        ProtectedDataMigrationRunner runner = runner(
+                repository, new TestKeyPort(), hmacPort());
+
+        BatchResult result = runner.migrateBatch(request(
+                RUN_1, "message_tasks.mobile_hash"));
+
+        assertThat(result.scanned()).isEqualTo(2);
+        assertThat(result.migrated()).isEqualTo(2);
+        assertThat(result.verified()).isEqualTo(2);
+        assertThat(result.skipped()).isOne();
+        assertThat(repository.outcomes).containsExactly(Outcome.SKIPPED, Outcome.SUCCEEDED);
+
+        repository.currentMessageBindingValid = false;
+        repository.checkpoint = Checkpoint.discovered();
+        repository.outcomes.clear();
+        assertFailure(runner, RUN_2, "message_tasks.mobile_hash",
+                FailureCode.INTEGRITY_OR_BINDING_INVALID);
+        assertThat(repository.outcomes).isEmpty();
+    }
+
+    @Test
+    void jdbcRepositoryDistinguishesAndValidatesCurrentMessageBinding() throws Exception {
+        JdbcTemplate jdbc = messageFixture();
+        String locator = MessageTaskRowBinding.CURRENT_LOCATOR_PREFIX + "B".repeat(43);
+        String legacy = "c".repeat(64);
+        byte[] envelope = "YCSE-current-envelope".getBytes(StandardCharsets.US_ASCII);
+        jdbc.update("INSERT INTO message_tasks "
+                        + "(id, tenant_id, message_id, mobile_hash, mobile_encrypted) VALUES "
+                        + "(1, 17, 'MSG_1700000000000_ABC12345', ?, ?), "
+                        + "(2, 17, 'MSG_1700000000001_ABC12345', ?, ?)",
+                locator, envelope, legacy, envelope);
+        byte[] binding = MessageTaskRowBinding.originalRowDigest(
+                17, 1, "MSG_1700000000000_ABC12345", locator, envelope);
+        jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
+                        + "(target_type, legacy_row_id, field_id, key_purpose, key_version, "
+                        + "index_value, index_status, original_row_digest) VALUES "
+                        + "('MESSAGE_TASK', 1, 'mobile', 'MOBILE_BLIND_INDEX', 1, ?, 'ACTIVE', ?)",
+                "a".repeat(53), binding);
+        jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
+                        + "(target_type, legacy_row_id, field_id, key_purpose, key_version, "
+                        + "index_value, index_status, original_row_digest) VALUES "
+                        + "('MESSAGE_TASK', 2, 'mobile', 'MOBILE_BLIND_INDEX', 1, ?, 'ACTIVE', ?)",
+                "b".repeat(53), sha256(legacy.getBytes(StandardCharsets.US_ASCII)));
+        MigrationStateRepository.Jdbc repository = new MigrationStateRepository.Jdbc(
+                jdbc, new TransactionTemplate(
+                new DataSourceTransactionManager(jdbc.getDataSource())));
+        ProtectedDataTarget target = resolvedManifest()
+                .requireTarget("message_tasks.mobile_hash");
+
+        List<LegacyRow> rows = repository.transaction(
+                transaction -> transaction.readBatch(target, 0, 10));
+
+        assertThat(rows).extracting(LegacyRow::storedValueKind)
+                .containsExactly(StoredValueKind.CURRENT_MESSAGE_LOCATOR,
+                        StoredValueKind.LEGACY_CANDIDATE);
+        boolean valid = repository.transaction(transaction ->
+                transaction.currentMessageBindingMatches(rows.getFirst(), "mobile"));
+        assertThat(valid).isTrue();
+        boolean complete = repository.transaction(transaction ->
+                transaction.integrityAndBindingComplete(target, "MESSAGE_TASK"));
+        assertThat(complete).isTrue();
+
+        jdbc.update("UPDATE ycs_crypto_blind_indexes SET original_row_digest = ? "
+                + "WHERE legacy_row_id = 1", new byte[32]);
+        boolean tampered = repository.transaction(transaction ->
+                transaction.currentMessageBindingMatches(rows.getFirst(), "mobile"));
+        assertThat(tampered).isFalse();
+    }
+
+    @Test
     void portabilityRowsWithSharedRawHashPrefixReceiveIndependentRandomBindings() throws Exception {
         JdbcTemplate jdbc = portabilityFixture();
         String prefix = "0123456789abcdef".repeat(3) + "0123456789abcde";
@@ -195,7 +278,12 @@ public class ProtectedDataMigrationRunnerTest {
 
     private static void assertFailure(
             ProtectedDataMigrationRunner runner, String runId, FailureCode code) {
-        assertThatThrownBy(() -> runner.migrateBatch(request(runId)))
+        assertFailure(runner, runId, "bulk_sending_items.mobile_encrypted", code);
+    }
+
+    private static void assertFailure(
+            ProtectedDataMigrationRunner runner, String runId, String targetId, FailureCode code) {
+        assertThatThrownBy(() -> runner.migrateBatch(request(runId, targetId)))
                 .isInstanceOfSatisfying(MigrationException.class,
                         failure -> assertThat(failure.code()).isEqualTo(code));
     }
@@ -215,7 +303,11 @@ public class ProtectedDataMigrationRunnerTest {
     }
 
     private static MigrationRequest request(String runId) {
-        return new MigrationRequest(runId, "bulk_sending_items.mobile_encrypted",
+        return request(runId, "bulk_sending_items.mobile_encrypted");
+    }
+
+    private static MigrationRequest request(String runId, String targetId) {
+        return new MigrationRequest(runId, targetId,
                 PAIR, OWNER, 10, ProtectedDataMigrationRunner.DEFAULT_LEASE_DURATION);
     }
 
@@ -251,6 +343,31 @@ public class ProtectedDataMigrationRunnerTest {
                 + "field_id VARCHAR(64) NOT NULL, key_version BIGINT NOT NULL, "
                 + "index_value CHAR(53) NOT NULL, index_status VARCHAR(16) NOT NULL, "
                 + "original_row_digest BINARY(32) NOT NULL)");
+        jdbc.execute("CREATE TABLE ycs_crypto_key_references ("
+                + "purpose VARCHAR(48) NOT NULL, key_version BIGINT NOT NULL, "
+                + "key_state VARCHAR(24) NOT NULL)");
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                + "(purpose, key_version, key_state) VALUES ('MOBILE_BLIND_INDEX', 1, 'ACTIVE')");
+        return jdbc;
+    }
+
+    private static JdbcTemplate messageFixture() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:mem:phase03-message-" + System.nanoTime()
+                + ";MODE=MySQL;DB_CLOSE_DELAY=-1");
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        jdbc.execute("CREATE ALIAS IF NOT EXISTS SHA2 FOR '"
+                + ProtectedDataMigrationRunnerTest.class.getName() + ".sha2'");
+        jdbc.execute("CREATE ALIAS IF NOT EXISTS UNHEX FOR '"
+                + ProtectedDataMigrationRunnerTest.class.getName() + ".unhex'");
+        jdbc.execute("CREATE TABLE message_tasks (id BIGINT PRIMARY KEY, tenant_id BIGINT NOT NULL, "
+                + "message_id VARCHAR(64) NOT NULL, mobile_hash CHAR(64) NOT NULL, "
+                + "mobile_encrypted VARBINARY(255) NOT NULL)");
+        jdbc.execute("CREATE TABLE ycs_crypto_blind_indexes ("
+                + "target_type VARCHAR(64) NOT NULL, legacy_row_id BIGINT NOT NULL, "
+                + "field_id VARCHAR(64) NOT NULL, key_purpose VARCHAR(48) NOT NULL, "
+                + "key_version BIGINT NOT NULL, index_value VARCHAR(53) NOT NULL, "
+                + "index_status VARCHAR(16) NOT NULL, original_row_digest BINARY(32) NOT NULL)");
         jdbc.execute("CREATE TABLE ycs_crypto_key_references ("
                 + "purpose VARCHAR(48) NOT NULL, key_version BIGINT NOT NULL, "
                 + "key_state VARCHAR(24) NOT NULL)");
@@ -307,6 +424,7 @@ public class ProtectedDataMigrationRunnerTest {
         private Checkpoint checkpoint = Checkpoint.discovered();
         private List<Outcome> outcomes = new ArrayList<>();
         private boolean rejectOptimisticUpdate;
+        private boolean currentMessageBindingValid = true;
         private byte[] lastCommittedValue;
 
         private InMemoryRepository(String pair, LegacyRow... rows) {
@@ -368,7 +486,8 @@ public class ProtectedDataMigrationRunnerTest {
                         .map(row -> {
                             byte[] value = values.get(row.bindingRowId());
                             return new LegacyRow(row.bindingRowId(), row.checkpointCursor(),
-                                    row.resourceIdentity(), row.tenantScope(), value, sha256(value));
+                                    row.resourceIdentity(), row.tenantScope(), value, sha256(value),
+                                    row.storedValueKind());
                         }).toList();
             }
 
@@ -394,6 +513,12 @@ public class ProtectedDataMigrationRunnerTest {
             public boolean blindIndexesMatch(
                     String targetType, LegacyRow row, String fieldId, List<BlindIndexEntry> indexes) {
                 return true;
+            }
+
+            @Override
+            public boolean currentMessageBindingMatches(LegacyRow row, String fieldId) {
+                return currentMessageBindingValid
+                        && row.storedValueKind() == StoredValueKind.CURRENT_MESSAGE_LOCATOR;
             }
 
             @Override

@@ -20,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,6 +50,26 @@ class ProtectedFieldCodecTest {
         assertThat(firstEnvelope.dataNonce()).isNotEqualTo(secondEnvelope.dataNonce());
         assertThat(firstEnvelope.wrapNonce()).isNotEqualTo(secondEnvelope.wrapNonce());
         assertThat(keyPort.wrapCalls).isEqualTo(2);
+    }
+
+    @Test
+    void resolvesCurrentWriteReferencePerProtectWhileHistoricalUnwrapUsesEnvelopeReference() {
+        AtomicReference<String> current = new AtomicReference<>("test-kek-v1");
+        RecordingKeyPort keyPort = new RecordingKeyPort("test-kek-v1");
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(
+                ENVELOPE_CODEC, keyPort, new SecureRandom(), current::get);
+        ProtectionContext context = databaseContext("live-field-key");
+
+        byte[] first = codec.protect(new byte[]{1}, context, EnvelopeCodec.Target.DATABASE_FIELD);
+        current.set("test-kek-v2");
+        keyPort.expectedKeyReference = "test-kek-v2";
+        keyPort.returnedKeyReference = "test-kek-v2";
+        byte[] second = codec.protect(new byte[]{2}, context, EnvelopeCodec.Target.DATABASE_FIELD);
+
+        assertThat(ENVELOPE_CODEC.decode(first, EnvelopeCodec.Target.DATABASE_FIELD).keyReference())
+                .isEqualTo("test-kek-v1");
+        assertThat(ENVELOPE_CODEC.decode(second, EnvelopeCodec.Target.DATABASE_FIELD).keyReference())
+                .isEqualTo("test-kek-v2");
     }
 
     @Test
@@ -233,7 +254,7 @@ class ProtectedFieldCodecTest {
         private static final byte[] WRAP_DOMAIN =
                 "YCSE-WRAP-AAD\0".getBytes(StandardCharsets.US_ASCII);
 
-        private final String expectedKeyReference;
+        private String expectedKeyReference;
         private final byte[] wrappingKey;
         private final List<String> events = new ArrayList<>();
         private int wrapCalls;

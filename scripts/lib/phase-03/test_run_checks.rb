@@ -25,10 +25,11 @@ end
 
 Phase03RunChecks.registry_contract!
 ids = Phase03RunChecks::CHECKS.map { |row| row.fetch("id") }
-assert(ids.length == 13, "fixed registry count drifted")
+assert(ids.length == 14, "fixed registry count drifted")
 assert(ids.uniq.length == ids.length, "registry IDs are not unique")
 assert(ids.include?("default-maven"), "default Maven lane missing")
 assert(ids.include?("real-service-integration"), "real-service lane missing")
+assert(ids.include?("production-reachability"), "production reachability lane missing")
 assert(ids.last == "fixture-cleanup", "cleanup must remain the final lane")
 assert(Phase03RunChecks::REAL_TESTS.length == 7, "real test union drifted")
 assert(Phase03RunChecks::REAL_TESTS.include?("Phase03RotationRecoveryIntegrationTest"),
@@ -54,6 +55,21 @@ real_drift = Marshal.load(Marshal.dump(Phase03RunChecks::CHECKS))
 real_drift.find { |row| row.fetch("id") == "real-service-integration" }
           .fetch("argv").map! { |part| part.gsub(/,?Phase03RotationRecoveryIntegrationTest/, "") }
 rejects("real test omission") { Phase03RunChecks.registry_contract!(real_drift) }
+
+reachability_missing = Marshal.load(Marshal.dump(Phase03RunChecks::CHECKS))
+reachability_missing.reject! { |row| row.fetch("id") == "production-reachability" }
+rejects("production reachability omission") do
+  Phase03RunChecks.registry_contract!(reachability_missing)
+end
+
+reachability_drift = Marshal.load(Marshal.dump(Phase03RunChecks::CHECKS))
+reachability_drift.find { |row| row.fetch("id") == "production-reachability" }
+                  .fetch("argv").map! do |part|
+  part.gsub(/,?ObjectStorageConfigurationTest/, "")
+end
+rejects("production reachability test omission") do
+  Phase03RunChecks.registry_contract!(reachability_drift)
+end
 
 assert(Phase03RunChecks.aggregate_status(%w[PASS PASS]) == "PASS", "PASS aggregation failed")
 assert(Phase03RunChecks.aggregate_status(%w[PASS BLOCKED]) == "BLOCKED", "BLOCKED dominance failed")
@@ -183,6 +199,8 @@ Phase03RunChecks::CHILD_BINDINGS.each do |obligation_id, binding|
   assert((binding.fetch("lanes") - ids).empty?, "child references unknown lane")
   assert(binding.fetch("lanes").include?("real-service-integration"),
          "child lacks real-service binding")
+  assert(binding.fetch("lanes").include?("production-reachability"),
+         "child lacks production reachability binding")
   assert(binding.fetch("lanes").include?("fixture-cleanup"), "child lacks cleanup binding")
 end
 

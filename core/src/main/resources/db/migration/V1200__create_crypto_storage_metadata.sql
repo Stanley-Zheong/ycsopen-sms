@@ -84,6 +84,7 @@ CREATE TABLE ycs_crypto_blind_indexes (
     index_value CHAR(53) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
     index_status VARCHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
     original_row_digest BINARY(32) NOT NULL,
+    row_binding_digest BINARY(32) NULL,
     optimistic_version BIGINT UNSIGNED NOT NULL DEFAULT 0,
     created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -293,7 +294,7 @@ CREATE TABLE ycs_crypto_protected_objects (
         'BUSINESS_LICENSE', 'SHORT_LINK_PROOF', 'TRADEMARK_PROOF'
     )),
     CONSTRAINT chk_ycs_crypto_object_state CHECK (object_state IN (
-        'STAGED', 'CLAIMED', 'REPLACED', 'EXPIRED', 'ORPHANED', 'DELETED'
+        'STAGED', 'CLAIMED', 'REPLACED', 'EXPIRED', 'ORPHANED', 'DELETING', 'DELETED'
     )),
     CONSTRAINT chk_ycs_crypto_object_claim_state CHECK (
         (object_state = 'CLAIMED' AND claim_reference IS NOT NULL)

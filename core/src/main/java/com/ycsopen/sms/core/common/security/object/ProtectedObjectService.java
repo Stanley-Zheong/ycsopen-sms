@@ -91,8 +91,14 @@ public final class ProtectedObjectService {
             try {
                 requireStoreWrite(stored, envelope, request.purpose(), request.mediaType());
             } catch (Failure invalidStoreResult) {
-                containSplitWrite(operation, stored);
+                containUndurableSplitWrite(operation, stored);
                 throw invalidStoreResult;
+            }
+            try {
+                metadataRepository.recordObjectStored(operation, stored);
+            } catch (RuntimeException journalFailure) {
+                containUndurableSplitWrite(operation, stored);
+                throw Failure.unavailable();
             }
 
             Optional<ProtectedObjectMetadataRepository.ProtectedObjectMetadata> replaced;
@@ -144,25 +150,21 @@ public final class ProtectedObjectService {
     /** Deletes a known object or leaves an opaque reconciliation record on provider failure. */
     public void delete(DeleteRequest request) {
         requireDeleteRequest(request);
-        ProtectedObjectMetadataRepository.ProtectedObjectMetadata metadata = metadataRepository
-                .find(request.protectedObjectId()).orElseThrow(Failure::invalidInput);
-        if (metadata.purpose() != request.purpose()
-                || !tenantScope(metadata.tenantDraftId()).equals(request.tenantScope())
-                || metadata.state() != ProtectedObjectMetadataRepository.ObjectState.STAGED
-                && metadata.state() != ProtectedObjectMetadataRepository.ObjectState.REPLACED
-                && metadata.state() != ProtectedObjectMetadataRepository.ObjectState.EXPIRED
-                && metadata.state() != ProtectedObjectMetadataRepository.ObjectState.ORPHANED) {
-            throw Failure.invalidInput();
+        ProtectedObjectMetadataRepository.ProtectedObjectMetadata metadata;
+        try {
+            metadata = metadataRepository.reserveDelete(request.protectedObjectId(), request.purpose(),
+                            tenantDraftId(request.tenantScope()))
+                    .orElseThrow(Failure::invalidInput);
+        } catch (Failure failure) {
+            throw failure;
+        } catch (RuntimeException failure) {
+            throw Failure.unavailable();
         }
         try {
             objectStore.delete(metadata.storageKey(), metadata.purpose());
             metadataRepository.markDeleted(metadata.protectedObjectId());
         } catch (RuntimeException failure) {
-            try {
-                metadataRepository.markOrphaned(metadata.protectedObjectId());
-            } catch (RuntimeException ignored) {
-                // A later database retry still sees the nonterminal row and can reconcile it.
-            }
+            // The durable DELETING row owns reconciliation; claim can no longer win this race.
             throw mapStoreFailure(failure);
         }
     }
@@ -178,8 +180,16 @@ public final class ProtectedObjectService {
         int deleted = 0;
         for (ProtectedObjectMetadataRepository.ProtectedObjectMetadata candidate : candidates) {
             try {
-                objectStore.delete(candidate.storageKey(), candidate.purpose());
-                metadataRepository.markDeleted(candidate.protectedObjectId());
+                Optional<ProtectedObjectMetadataRepository.ProtectedObjectMetadata> reserved =
+                        candidate.state() == ProtectedObjectMetadataRepository.ObjectState.DELETING
+                                ? Optional.of(candidate)
+                                : metadataRepository.reserveDelete(candidate.protectedObjectId(),
+                                candidate.purpose(), candidate.tenantDraftId());
+                if (reserved.isEmpty()) {
+                    continue;
+                }
+                objectStore.delete(reserved.get().storageKey(), reserved.get().purpose());
+                metadataRepository.markDeleted(reserved.get().protectedObjectId());
                 deleted++;
             } catch (RuntimeException ignored) {
                 // Keep the safe metadata row in a retryable state; never expose provider text.
@@ -245,7 +255,9 @@ public final class ProtectedObjectService {
                                    StoredObjectMetadata stored) {
         try {
             objectStore.delete(stored.storageKey(), stored.purpose());
-            failOperation(operation.operationId());
+            metadataRepository.reserveDelete(operation.protectedObjectId(), operation.purpose(),
+                            operation.tenantDraftId())
+                    .ifPresent(value -> metadataRepository.markDeleted(value.protectedObjectId()));
             return;
         } catch (RuntimeException ignored) {
             // Persist the safe locator under the deterministic operation if immediate delete failed.
@@ -257,13 +269,29 @@ public final class ProtectedObjectService {
         }
     }
 
+    private void containUndurableSplitWrite(
+            ProtectedObjectMetadataRepository.CreateOperation operation,
+            StoredObjectMetadata stored) {
+        try {
+            objectStore.delete(stored.storageKey(), stored.purpose());
+        } catch (RuntimeException ignored) {
+            // No durable provider locator exists if the journal transition itself failed.
+        }
+        failOperation(operation.operationId());
+    }
+
     private void deleteReplacedOrLeaveForReconciliation(
             ProtectedObjectMetadataRepository.ProtectedObjectMetadata replaced) {
         try {
-            objectStore.delete(replaced.storageKey(), replaced.purpose());
-            metadataRepository.markDeleted(replaced.protectedObjectId());
+            Optional<ProtectedObjectMetadataRepository.ProtectedObjectMetadata> reserved =
+                    metadataRepository.reserveDelete(replaced.protectedObjectId(),
+                            replaced.purpose(), replaced.tenantDraftId());
+            if (reserved.isPresent()) {
+                objectStore.delete(reserved.get().storageKey(), reserved.get().purpose());
+                metadataRepository.markDeleted(reserved.get().protectedObjectId());
+            }
         } catch (RuntimeException ignored) {
-            // completeCreate already made the row REPLACED, a deterministic reconciliation state.
+            // REPLACED or DELETING remains a deterministic reconciliation state.
         }
     }
 
@@ -397,6 +425,12 @@ public final class ProtectedObjectService {
         return "tenant:" + tenantDraftId;
     }
 
+    private static String tenantDraftId(String tenantScope) {
+        String tenantDraftId = tenantScope.substring("tenant:".length());
+        requireUuid(tenantDraftId);
+        return tenantDraftId;
+    }
+
     private String newObjectId() {
         byte[] random = new byte[OBJECT_ID_RANDOM_BYTES];
         try {
@@ -461,10 +495,12 @@ public final class ProtectedObjectService {
     }
 
     private static void requireDeleteRequest(DeleteRequest request) {
-        if (request == null || request.purpose() == null || request.tenantScope() == null) {
+        if (request == null || request.purpose() == null || request.tenantScope() == null
+                || !request.tenantScope().startsWith("tenant:")) {
             throw Failure.invalidInput();
         }
         requireObjectId(request.protectedObjectId());
+        tenantDraftId(request.tenantScope());
     }
 
     private static void requireUuid(String value) {

@@ -10,6 +10,8 @@ import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11FailureMapper;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11KeyDescriptor;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactory;
 import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
+import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
 import com.ycsopen.sms.core.common.security.object.ObjectCapabilityService;
 import com.ycsopen.sms.core.common.security.object.ObjectCapabilityToken;
 import com.ycsopen.sms.core.common.security.object.ObjectStoreProperties;
@@ -189,8 +191,11 @@ class Phase03ObjectStorageIntegrationTest {
                 proveTokenKeyDomains(runtime.adapter(), retiringDigests);
                 proveExactAndOverBoundaries(fixture);
                 RegistrationObjects registration = uploadCompleteRegistration(fixture);
-                proveCapabilityAndCiphertextFaults(fixture, registration.businessLicense(), anonymous, s3);
-                proveDatabaseSafeShapes(fixture, registration);
+                String initialCapability = proveDatabaseSafeShapes(fixture, registration);
+                proveCapabilityAndCiphertextFaults(fixture, registration.businessLicense(),
+                        initialCapability, anonymous, s3);
+                proveConcurrentCapabilityConsumption(fixture, registration.businessLicense());
+                proveDeleteClaimRace(fixture);
                 proveClaimDenialsRollbackAndCommit(fixture, registration);
                 proveCloseAndExpiry(fixture);
                 provePostReservationFailure(fixture);
@@ -253,7 +258,9 @@ class Phase03ObjectStorageIntegrationTest {
         beanFactory.addBean("registrationObjectSessionService", sessions);
         TenantRegistrationProtectionAdapter registration = new TenantRegistrationProtectionAdapter(
                 keyAdapter, jdbc,
-                beanFactory.getBeanProvider(TenantRegistrationObjectSessionService.class));
+                beanFactory.getBeanProvider(TenantRegistrationObjectSessionService.class),
+                new ActiveFieldKeyReference(new KeyReferenceRepository.Jdbc(
+                        jdbc, new TransactionTemplate(transactions))));
         return new Fixture(jdbc, transactions, store, metadata, capabilities, objects, sessions,
                 registration, keyAdapter, clock, bucket);
     }
@@ -361,14 +368,11 @@ class Phase03ObjectStorageIntegrationTest {
 
     private static void proveCapabilityAndCiphertextFaults(Fixture fixture,
                                                             String objectId,
+                                                            String token,
                                                             S3Client anonymous,
                                                             S3Client s3) {
         ObjectRow row = objectRow(fixture, objectId);
         String tenant = "tenant:" + row.tenantDraftId();
-        ObjectCapabilityToken issued = fixture.capabilities().issue(
-                new ObjectCapabilityService.IssueRequest(objectId, tenant, SUBJECT,
-                        ACCESS_PURPOSE, fixture.clock().instant().plus(Duration.ofMinutes(20))));
-        String token = token(issued);
         CountingStore countingStore = new CountingStore(fixture.store());
         ProtectedObjectService reading = new ProtectedObjectService(
                 new ProtectedFieldCodec(new EnvelopeCodec(), fixture.keyAdapter(),
@@ -382,6 +386,7 @@ class Phase03ObjectStorageIntegrationTest {
         Arrays.fill(plaintext, (byte) 0);
         int fetched = countingStore.fetches();
 
+        assertDenied(() -> reading.read(request));
         assertDenied(() -> reading.read(readRequest(objectId, token + "x", tenant,
                 PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
         assertDenied(() -> reading.read(readRequest(objectId, token, "tenant:" + UUID.randomUUID(),
@@ -404,35 +409,134 @@ class Phase03ObjectStorageIntegrationTest {
         byte[] tampered = raw.clone();
         tampered[tampered.length - 1] ^= 1;
         rawPut(s3, row, tampered, row.sha256());
-        assertIntegrity(() -> reading.read(request));
+        assertIntegrity(() -> reading.read(readRequest(objectId,
+                issueCapabilityToken(fixture, objectId, tenant), tenant,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
         rawPut(s3, row, raw, row.sha256());
 
         String tamperedSha = sha256(tampered);
         rawPut(s3, row, tampered, tamperedSha);
         fixture.jdbc().update("UPDATE ycs_crypto_protected_objects SET envelope_digest=UNHEX(?) "
                 + "WHERE protected_object_id=?", tamperedSha, objectId);
-        assertIntegrity(() -> reading.read(request));
+        assertIntegrity(() -> reading.read(readRequest(objectId,
+                issueCapabilityToken(fixture, objectId, tenant), tenant,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
         rawPut(s3, row, raw, row.sha256());
         fixture.jdbc().update("UPDATE ycs_crypto_protected_objects SET envelope_digest=UNHEX(?) "
                 + "WHERE protected_object_id=?", row.sha256(), objectId);
 
+        String revokedToken = issueCapabilityToken(fixture, objectId, tenant);
         fixture.jdbc().update("UPDATE ycs_crypto_object_capabilities SET capability_state='REVOKED' "
-                + "WHERE protected_object_id=?", objectId);
-        assertDenied(() -> reading.read(request));
-        fixture.jdbc().update("UPDATE ycs_crypto_object_capabilities SET capability_state='ACTIVE' "
-                + "WHERE protected_object_id=?", objectId);
+                + "WHERE capability_lookup_id=?", lookupId(revokedToken));
+        assertDenied(() -> reading.read(readRequest(objectId, revokedToken, tenant,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
+        String expiredToken = issueCapabilityToken(fixture, objectId, tenant);
         fixture.jdbc().update("UPDATE ycs_crypto_object_capabilities SET expires_at=? "
-                        + "WHERE protected_object_id=?",
-                Timestamp.from(fixture.clock().instant().minusSeconds(1)), objectId);
-        assertDenied(() -> reading.read(request));
-        fixture.jdbc().update("UPDATE ycs_crypto_object_capabilities SET expires_at=? "
-                        + "WHERE protected_object_id=?",
-                Timestamp.from(fixture.clock().instant().plus(Duration.ofMinutes(20))), objectId);
-        passed(13);
+                        + "WHERE capability_lookup_id=?",
+                Timestamp.from(fixture.clock().instant().minusSeconds(1)), lookupId(expiredToken));
+        assertDenied(() -> reading.read(readRequest(objectId, expiredToken, tenant,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)));
+        passed(14);
     }
 
-    private static void proveDatabaseSafeShapes(Fixture fixture,
-                                                RegistrationObjects registration) {
+    private static String issueCapabilityToken(Fixture fixture, String objectId, String tenant) {
+        return token(fixture.capabilities().issue(new ObjectCapabilityService.IssueRequest(
+                objectId, tenant, SUBJECT, ACCESS_PURPOSE,
+                fixture.clock().instant().plus(Duration.ofMinutes(20)))));
+    }
+
+    private static String lookupId(String token) {
+        return token.substring("ocap_v1_".length(), "ocap_v1_".length() + 22);
+    }
+
+    private static void proveConcurrentCapabilityConsumption(Fixture fixture, String objectId)
+            throws Exception {
+        ObjectRow row = objectRow(fixture, objectId);
+        String tenant = "tenant:" + row.tenantDraftId();
+        String token = issueCapabilityToken(fixture, objectId, tenant);
+        CountDownLatch start = new CountDownLatch(1);
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<Boolean> first = executor.submit(() -> concurrentRead(
+                    fixture, objectId, tenant, token, start));
+            Future<Boolean> second = executor.submit(() -> concurrentRead(
+                    fixture, objectId, tenant, token, start));
+            start.countDown();
+            assertThat(List.of(first.get(), second.get())).containsExactlyInAnyOrder(true, false);
+        }
+        assertThat(fixture.jdbc().queryForObject("SELECT capability_state FROM "
+                        + "ycs_crypto_object_capabilities WHERE capability_lookup_id=?",
+                String.class, lookupId(token))).isEqualTo("REVOKED");
+        passed(2);
+    }
+
+    private static boolean concurrentRead(Fixture fixture,
+                                          String objectId,
+                                          String tenant,
+                                          String token,
+                                          CountDownLatch start) throws InterruptedException {
+        start.await();
+        try {
+            byte[] value = fixture.objectService().read(readRequest(objectId, token, tenant,
+                    PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)).bytes();
+            Arrays.fill(value, (byte) 0);
+            return true;
+        } catch (ProtectedObjectService.Failure failure) {
+            assertThat(failure.category()).isEqualTo(
+                    ProtectedObjectService.Failure.Category.PROTECTED_OBJECT_ACCESS_DENIED);
+            return false;
+        }
+    }
+
+    private static void proveDeleteClaimRace(Fixture fixture) throws Exception {
+        RegistrationObjects race = uploadCompleteRegistration(fixture);
+        ObjectRow row = objectRow(fixture, race.businessLicense());
+        BlockingDeleteStore blocking = new BlockingDeleteStore(fixture.store());
+        ProtectedObjectService deleting = new ProtectedObjectService(
+                new ProtectedFieldCodec(new EnvelopeCodec(), fixture.keyAdapter(),
+                        new SecureRandom(), FIELD_REFERENCE), blocking, fixture.metadata(),
+                fixture.capabilities(), new SecureRandom(), fixture.clock());
+        ProtectedObjectService.DeleteRequest request = new ProtectedObjectService.DeleteRequest(
+                race.businessLicense(), "tenant:" + row.tenantDraftId(),
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE);
+        String credit = creditCode("delete-race");
+
+        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
+            Future<?> deletion = executor.submit(() -> deleting.delete(request));
+            blocking.awaitEntered();
+            assertThat(fixture.jdbc().queryForObject("SELECT object_state FROM "
+                            + "ycs_crypto_protected_objects WHERE protected_object_id=?",
+                    String.class, race.businessLicense())).isEqualTo("DELETING");
+            assertRegistrationFailure(() -> transaction(fixture).executeWithoutResult(status -> {
+                Tenant tenant = insertTenant(fixture.jdbc(), "delete-race", credit);
+                fixture.registration().protectRegistration(tenant, race.request(),
+                        race.session().registrationUploadToken());
+            }), TenantRegistrationProtectionAdapter.Failure.Category
+                    .REGISTRATION_OBJECT_NOT_STAGED);
+            blocking.release();
+            deletion.get();
+        } finally {
+            blocking.release();
+        }
+        assertThat(fixture.jdbc().queryForObject("SELECT object_state FROM "
+                        + "ycs_crypto_protected_objects WHERE protected_object_id=?",
+                String.class, race.businessLicense())).isEqualTo("DELETED");
+        assertThat(fixture.jdbc().queryForObject(
+                "SELECT COUNT(*) FROM tenants WHERE unified_social_credit_code=?",
+                Long.class, credit)).isZero();
+        assertThat(fixture.jdbc().queryForObject("SELECT COUNT(*) FROM "
+                        + "ycs_crypto_protected_objects WHERE protected_object_id=? "
+                        + "AND object_state='CLAIMED'", Long.class, race.businessLicense())).isZero();
+        fixture.sessions().close(race.session().registrationObjectSessionId(),
+                race.session().registrationUploadToken());
+        fixture.objectService().reconcile(100);
+        passed(4);
+    }
+
+    private static String proveDatabaseSafeShapes(Fixture fixture,
+                                                  RegistrationObjects registration) {
+        ObjectRow object = objectRow(fixture, registration.businessLicense());
+        String initialCapability = issueCapabilityToken(fixture, registration.businessLicense(),
+                "tenant:" + object.tenantDraftId());
         fixture.jdbc().queryForObject("SELECT upload_digest_key_version, "
                         + "upload_credential_digest, CONCAT(registration_session_id,'|',"
                         + "tenant_draft_id,'|',HEX(upload_credential_digest)) "
@@ -470,6 +574,7 @@ class Phase03ObjectStorageIntegrationTest {
                 + "AND column_name IN ('upload_token','capability_token','raw_url')", Long.class))
                 .isZero();
         passed(8);
+        return initialCapability;
     }
 
     private static void proveClaimDenialsRollbackAndCommit(Fixture fixture,
@@ -638,17 +743,15 @@ class Phase03ObjectStorageIntegrationTest {
 
     private static void proveOrphanReconciliation(Fixture fixture) {
         var session = fixture.sessions().createSession();
-        ProtectedObjectService orphaning = new ProtectedObjectService(
-                new ProtectedFieldCodec(new EnvelopeCodec(), fixture.keyAdapter(),
-                        new SecureRandom(), FIELD_REFERENCE), new OrphaningStore(fixture.store()),
-                fixture.metadata(), fixture.capabilities(), new SecureRandom(), fixture.clock());
-        TenantRegistrationObjectSessionService orphanSessions =
-                new TenantRegistrationObjectSessionService(fixture.keyAdapter(), orphaning,
-                        fixture.jdbc(), fixture.transactions(), fixture.clock(), new SecureRandom());
-        assertThat(catchUploadFailure(() -> upload(orphanSessions, session,
+        var uploaded = upload(fixture.sessions(), session,
                 TenantRegistrationObjectSessionService.UploadPurpose.LEGAL_REP_ID_BACK,
-                "image/png", png(64, "orphan"))).category()).isEqualTo(
-                TenantRegistrationObjectSessionService.Failure.Category.REGISTRATION_UPLOAD_UNAVAILABLE);
+                "image/png", png(64, "orphan"));
+        assertThat(fixture.jdbc().update("UPDATE ycs_crypto_protected_objects "
+                + "SET object_state='ORPHANED' WHERE protected_object_id=? "
+                + "AND object_state='STAGED'", uploaded.protectedObjectId())).isOne();
+        assertThat(fixture.jdbc().update("UPDATE ycs_crypto_object_operations "
+                + "SET operation_state='RECONCILE_DELETE' WHERE protected_object_id=? "
+                + "AND operation_state='COMPLETED'", uploaded.protectedObjectId())).isOne();
         assertThat(fixture.jdbc().queryForObject("SELECT COUNT(*) FROM "
                 + "ycs_crypto_protected_objects WHERE registration_session_id=? "
                 + "AND object_state='ORPHANED'", Long.class,
@@ -672,6 +775,11 @@ class Phase03ObjectStorageIntegrationTest {
     }
 
     private static void proveRetirementBlockedByLiveReferences(Fixture fixture) {
+        String liveObject = fixture.jdbc().queryForObject("SELECT protected_object_id FROM "
+                + "ycs_crypto_protected_objects WHERE object_state IN ('STAGED','CLAIMED') "
+                + "ORDER BY protected_object_id LIMIT 1", String.class);
+        ObjectRow liveRow = objectRow(fixture, liveObject);
+        issueCapabilityToken(fixture, liveObject, "tenant:" + liveRow.tenantDraftId());
         assertThatThrownBy(() -> fixture.jdbc().update("DELETE FROM ycs_crypto_key_references "
                         + "WHERE purpose='OBJECT_CAPABILITY_DIGEST' AND key_version=1"))
                 .isInstanceOf(DataAccessException.class);
@@ -1272,6 +1380,54 @@ class Phase03ObjectStorageIntegrationTest {
         }
     }
 
+    private static final class BlockingDeleteStore implements PrivateObjectStorePort {
+        private final PrivateObjectStorePort delegate;
+        private final CountDownLatch entered = new CountDownLatch(1);
+        private final CountDownLatch proceed = new CountDownLatch(1);
+
+        private BlockingDeleteStore(PrivateObjectStorePort delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public StoredObjectMetadata put(ObjectPurpose purpose, String mediaType,
+                                        InputStream ciphertext, Long declaredContentLength) {
+            return delegate.put(purpose, mediaType, ciphertext, declaredContentLength);
+        }
+
+        @Override
+        public StoredCiphertext get(String storageKey, ObjectPurpose purpose) {
+            return delegate.get(storageKey, purpose);
+        }
+
+        @Override
+        public StoredObjectMetadata head(String storageKey, ObjectPurpose purpose) {
+            return delegate.head(storageKey, purpose);
+        }
+
+        @Override
+        public void delete(String storageKey, ObjectPurpose purpose) {
+            entered.countDown();
+            try {
+                if (!proceed.await(30, java.util.concurrent.TimeUnit.SECONDS)) {
+                    throw new AssertionError("delete race release unavailable");
+                }
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new AssertionError(interrupted);
+            }
+            delegate.delete(storageKey, purpose);
+        }
+
+        void awaitEntered() throws InterruptedException {
+            assertThat(entered.await(30, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        }
+
+        void release() {
+            proceed.countDown();
+        }
+    }
+
     private static final class PutUnavailableStore implements PrivateObjectStorePort {
         private final PrivateObjectStorePort delegate;
 
@@ -1288,27 +1444,6 @@ class Phase03ObjectStorageIntegrationTest {
         @Override public StoredCiphertext get(String storageKey, ObjectPurpose purpose) { return delegate.get(storageKey, purpose); }
         @Override public StoredObjectMetadata head(String storageKey, ObjectPurpose purpose) { return delegate.head(storageKey, purpose); }
         @Override public void delete(String storageKey, ObjectPurpose purpose) { delegate.delete(storageKey, purpose); }
-    }
-
-    private static final class OrphaningStore implements PrivateObjectStorePort {
-        private final PrivateObjectStorePort delegate;
-
-        private OrphaningStore(PrivateObjectStorePort delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public StoredObjectMetadata put(ObjectPurpose purpose, String mediaType,
-                                        InputStream ciphertext, Long declaredContentLength) {
-            StoredObjectMetadata stored = delegate.put(purpose, mediaType, ciphertext,
-                    declaredContentLength);
-            return new StoredObjectMetadata(stored.storageKey(), stored.purpose(), stored.size(),
-                    "0".repeat(64), stored.mediaType());
-        }
-
-        @Override public StoredCiphertext get(String storageKey, ObjectPurpose purpose) { return delegate.get(storageKey, purpose); }
-        @Override public StoredObjectMetadata head(String storageKey, ObjectPurpose purpose) { return delegate.head(storageKey, purpose); }
-        @Override public void delete(String storageKey, ObjectPurpose purpose) { throw Failure.unavailable(); }
     }
 
     private static final class CountingInputStream extends InputStream {

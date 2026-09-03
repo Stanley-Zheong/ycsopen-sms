@@ -8,6 +8,7 @@ import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.key.VersionedTokenDigest;
 import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
@@ -52,13 +53,25 @@ public final class SunPkcs11KeyAdapter
     private final List<Pkcs11KeyDescriptor> mobileKeys;
     private final Map<OpaqueTokenDigestPort.Purpose, List<Pkcs11KeyDescriptor>> tokenKeys;
     private final AtomicReference<KeyHealth.Status> runtimeStatus;
+    private final KeyReferenceRepository lifecycleReferences;
 
     public SunPkcs11KeyAdapter(Pkcs11ProviderFactory.Session session,
                                Pkcs11CryptoStorageProperties properties,
                                KekWrapUsageRepository wrapUsageRepository,
                                Pkcs11FailureMapper failureMapper) {
         this(session, properties, wrapUsageRepository, new SecureRandom(), failureMapper,
-                new JcaCryptoOperations(session.provider()));
+                new JcaCryptoOperations(session.provider()), null);
+    }
+
+    /** Production constructor whose database lifecycle state is resolved for every operation. */
+    public SunPkcs11KeyAdapter(Pkcs11ProviderFactory.Session session,
+                               Pkcs11CryptoStorageProperties properties,
+                               KekWrapUsageRepository wrapUsageRepository,
+                               Pkcs11FailureMapper failureMapper,
+                               KeyReferenceRepository lifecycleReferences) {
+        this(session, properties, wrapUsageRepository, new SecureRandom(), failureMapper,
+                new JcaCryptoOperations(session.provider()),
+                Objects.requireNonNull(lifecycleReferences, "lifecycleReferences"));
     }
 
     SunPkcs11KeyAdapter(Pkcs11ProviderFactory.Session session,
@@ -67,11 +80,22 @@ public final class SunPkcs11KeyAdapter
                         SecureRandom secureRandom,
                         Pkcs11FailureMapper failureMapper,
                         CryptoOperations operations) {
+        this(session, properties, wrapUsageRepository, secureRandom, failureMapper, operations, null);
+    }
+
+    SunPkcs11KeyAdapter(Pkcs11ProviderFactory.Session session,
+                        Pkcs11CryptoStorageProperties properties,
+                        KekWrapUsageRepository wrapUsageRepository,
+                        SecureRandom secureRandom,
+                        Pkcs11FailureMapper failureMapper,
+                        CryptoOperations operations,
+                        KeyReferenceRepository lifecycleReferences) {
         this.session = Objects.requireNonNull(session, "session");
         this.wrapUsageRepository = Objects.requireNonNull(wrapUsageRepository, "wrapUsageRepository");
         this.secureRandom = Objects.requireNonNull(secureRandom, "secureRandom");
         this.failureMapper = Objects.requireNonNull(failureMapper, "failureMapper");
         this.operations = Objects.requireNonNull(operations, "operations");
+        this.lifecycleReferences = lifecycleReferences;
 
         List<Pkcs11KeyDescriptor> descriptors = properties.keys();
         this.activeKeks = new EnumMap<>(Pkcs11KeyDescriptor.Purpose.class);
@@ -143,7 +167,8 @@ public final class SunPkcs11KeyAdapter
         if (wrappedDataKey == null) {
             throw failure(Pkcs11FailureMapper.Category.OPERATION_FAILED, null, null);
         }
-        Pkcs11KeyDescriptor descriptor = keksByReference.get(wrappedDataKey.keyReference());
+        Pkcs11KeyDescriptor descriptor = currentDescriptor(
+                keksByReference.get(wrappedDataKey.keyReference()));
         if (descriptor == null || !descriptor.state().permitsUnwrap()) {
             throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, descriptor, null);
         }
@@ -258,12 +283,13 @@ public final class SunPkcs11KeyAdapter
             byte[] historicalDigest, BlindIndexPort.Context context, boolean writes) {
         byte[] input = encodeMobileInput(context, historicalDigest);
         try {
-            if (writes && mobileKeys.stream().noneMatch(key ->
+            List<Pkcs11KeyDescriptor> currentMobileKeys = currentDescriptors(mobileKeys);
+            if (writes && currentMobileKeys.stream().noneMatch(key ->
                     key.state() == Pkcs11KeyDescriptor.State.ACTIVE)) {
                 throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, null, null);
             }
             List<VersionedBlindIndex> values = new ArrayList<>();
-            mobileKeys.stream()
+            currentMobileKeys.stream()
                     .filter(key -> key.state() == Pkcs11KeyDescriptor.State.ACTIVE
                             || key.state() == Pkcs11KeyDescriptor.State.RETIRING)
                     .forEach(key -> values.add(new VersionedBlindIndex(
@@ -353,7 +379,7 @@ public final class SunPkcs11KeyAdapter
         if (descriptors == null) {
             throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, null, null);
         }
-        return descriptors;
+        return currentDescriptors(descriptors);
     }
 
     private static byte[] encodeMobileInput(BlindIndexPort.Context context, byte[] digest) {
@@ -383,11 +409,49 @@ public final class SunPkcs11KeyAdapter
 
     private Pkcs11KeyDescriptor activeKek(ProtectionContext context) {
         Pkcs11KeyDescriptor.Purpose purpose = wrappingPurpose(context);
-        Pkcs11KeyDescriptor descriptor = activeKeks.get(purpose);
+        Pkcs11KeyDescriptor descriptor;
+        if (lifecycleReferences == null) {
+            descriptor = activeKeks.get(purpose);
+        } else {
+            descriptor = keksByReference.values().stream()
+                    .filter(key -> key.purpose() == purpose)
+                    .map(this::currentDescriptor)
+                    .filter(key -> key != null && key.state().permitsWrap())
+                    .reduce((left, right) -> {
+                        throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, left, null);
+                    }).orElse(null);
+        }
         if (descriptor == null || !descriptor.state().permitsWrap()) {
             throw failure(Pkcs11FailureMapper.Category.KEY_UNAVAILABLE, descriptor, null);
         }
         return descriptor;
+    }
+
+    private List<Pkcs11KeyDescriptor> currentDescriptors(List<Pkcs11KeyDescriptor> descriptors) {
+        if (lifecycleReferences == null) {
+            return descriptors;
+        }
+        return descriptors.stream().map(this::currentDescriptor)
+                .filter(Objects::nonNull).toList();
+    }
+
+    private Pkcs11KeyDescriptor currentDescriptor(Pkcs11KeyDescriptor configured) {
+        if (configured == null || lifecycleReferences == null) {
+            return configured;
+        }
+        KeyReferenceRepository.Purpose purpose =
+                KeyReferenceRepository.Purpose.valueOf(configured.purpose().name());
+        KeyReferenceRepository.KeyReference current = lifecycleReferences.findByPurpose(purpose)
+                .stream().filter(reference -> reference.keyVersion() == configured.keyVersion())
+                .findFirst().orElse(null);
+        if (current == null || !"pkcs11".equals(current.providerId())
+                || !configured.keyReference().equals(current.providerKeyReference())) {
+            throw failure(Pkcs11FailureMapper.Category.KEY_POLICY, configured, null);
+        }
+        return new Pkcs11KeyDescriptor(configured.purpose(), configured.keyVersion(),
+                configured.keyReference(), configured.alias(),
+                Pkcs11KeyDescriptor.State.valueOf(current.state().name()),
+                configured.algorithm(), configured.keyBits());
     }
 
     private void requireContextPurpose(ProtectionContext context,

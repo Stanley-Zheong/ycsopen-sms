@@ -42,6 +42,15 @@ module Phase03RunChecks
     Phase03RotationRecoveryIntegrationTest
   ].freeze
 
+  # These tests prove that the corrected security components are reachable from shipped
+  # production composition, not merely constructible inside broad integration fixtures.
+  PRODUCTION_REACHABILITY_TESTS = %w[
+    ObjectStorageConfigurationTest
+    ProductionMigrationCommandServicesFactoryTest
+    VersionedKeyDescriptorRegistryTest
+    BlacklistEntryProtectionAdapterTest
+  ].freeze
+
   CHECKS = [
     {
       "id" => "default-maven", "layer" => "unit", "mode" => "DETERMINISTIC",
@@ -90,6 +99,12 @@ module Phase03RunChecks
       "timeout_seconds" => 120, "obligation_ids" => OBLIGATIONS
     },
     {
+      "id" => "production-reachability", "layer" => "composition", "mode" => "DETERMINISTIC",
+      "argv" => ["/usr/bin/env", "mvn", "-f", "core/pom.xml",
+                 "-Dtest=#{PRODUCTION_REACHABILITY_TESTS.join(',')}", "test"],
+      "timeout_seconds" => 900, "obligation_ids" => OBLIGATIONS
+    },
+    {
       "id" => "real-service-integration", "layer" => "integration", "mode" => "REAL",
       "argv" => ["/usr/bin/env", "mvn", "-f", "core/pom.xml", "-Pphase03-integration",
                  "-Dtest=#{REAL_TESTS.join(',')}", "test"],
@@ -123,19 +138,19 @@ module Phase03RunChecks
     "OBL-CRYPTO-STORAGE-001" => {
       "check_id" => "phase03-protected-persistence-integration", "layer" => "database",
       "adapters" => %w[java21-sunpkcs11 mysql-8],
-      "lanes" => %w[default-maven source-contract-audit real-service-integration
+      "lanes" => %w[default-maven source-contract-audit production-reachability real-service-integration
                     protected-inventory-acceptance durable-artifact-leak-scan fixture-cleanup]
     },
     "OBL-CRYPTO-STORAGE-002" => {
       "check_id" => "phase03-object-storage-integration", "layer" => "security",
       "adapters" => %w[java21-sunpkcs11 minio mysql-8],
-      "lanes" => %w[default-maven source-contract-audit real-service-integration
+      "lanes" => %w[default-maven source-contract-audit production-reachability real-service-integration
                     durable-artifact-leak-scan fixture-cleanup]
     },
     "OBL-CRYPTO-STORAGE-003" => {
       "check_id" => "phase03-pkcs11-fault-integration", "layer" => "fault",
       "adapters" => %w[java21-sunpkcs11 softhsm-2.7.0],
-      "lanes" => %w[default-maven service-contract-fixtures source-contract-audit
+      "lanes" => %w[default-maven service-contract-fixtures source-contract-audit production-reachability
                     real-service-integration durable-artifact-leak-scan fixture-cleanup]
     },
     "OBL-CRYPTO-STORAGE-004" => {
@@ -143,6 +158,7 @@ module Phase03RunChecks
       "adapters" => %w[java21-sunpkcs11 mysql-8 softhsm-2.7.0],
       "lanes" => %w[default-maven flyway-owner-fixtures flyway-owner-selection
                     planning-validator-fixtures protected-inventory-fixtures source-contract-audit
+                    production-reachability
                     real-service-integration protected-inventory-acceptance
                     durable-artifact-leak-scan fixture-cleanup]
     }
@@ -195,7 +211,7 @@ module Phase03RunChecks
       raise ConfigurationError, "CHECK_TIMEOUT_INVALID: #{row['id']}" unless row.fetch("timeout_seconds").is_a?(Integer) && row.fetch("timeout_seconds").positive?
       raise ConfigurationError, "CHECK_OBLIGATIONS_INVALID: #{row['id']}" unless (row.fetch("obligation_ids") - OBLIGATIONS).empty?
     end
-    required = %w[default-maven real-service-integration protected-inventory-acceptance
+    required = %w[default-maven production-reachability real-service-integration protected-inventory-acceptance
                   durable-artifact-leak-scan fixture-cleanup source-contract-audit]
     missing = required - ids
     raise ConfigurationError, "CHECK_REQUIRED_LANES_MISSING: #{missing.join(',')}" unless missing.empty?
@@ -203,6 +219,15 @@ module Phase03RunChecks
     command = real.fetch("argv").join(" ")
     missing_tests = REAL_TESTS.reject { |name| command.include?(name) }
     raise ConfigurationError, "CHECK_REAL_TESTS_MISSING: #{missing_tests.join(',')}" unless missing_tests.empty?
+    reachability = checks.find { |row| row.fetch("id") == "production-reachability" }
+    reachability_command = reachability.fetch("argv").join(" ")
+    missing_reachability_tests = PRODUCTION_REACHABILITY_TESTS.reject do |name|
+      reachability_command.include?(name)
+    end
+    unless missing_reachability_tests.empty?
+      raise ConfigurationError,
+            "CHECK_PRODUCTION_REACHABILITY_TESTS_MISSING: #{missing_reachability_tests.join(',')}"
+    end
     child_lanes = CHILD_BINDINGS.values.flat_map { |row| row.fetch("lanes") }.uniq
     missing_child_lanes = child_lanes - ids
     raise ConfigurationError, "CHECK_CHILD_LANES_MISSING: #{missing_child_lanes.join(',')}" unless missing_child_lanes.empty?

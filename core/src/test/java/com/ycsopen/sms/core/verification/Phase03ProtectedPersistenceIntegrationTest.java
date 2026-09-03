@@ -23,6 +23,7 @@ import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.repository.BlacklistEntryRepository;
 import com.ycsopen.sms.core.repository.MessageTaskRepository;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.boot.SpringBootConfiguration;
@@ -122,6 +123,8 @@ class Phase03ProtectedPersistenceIntegrationTest {
 
         DataSource rawDataSource = mysqlDataSource();
         JdbcTemplate rawJdbc = new JdbcTemplate(rawDataSource);
+        migrateQuietly(rawDataSource);
+        seedProductionKeyMetadata(rawJdbc);
         ConfigurableApplicationContext context = startApplicationQuietly(handoff);
         String successfulMessageId = messageId("BOUNDARY");
         String repositoryFailureMessageId = messageId("ROLLBACK");
@@ -129,7 +132,6 @@ class Phase03ProtectedPersistenceIntegrationTest {
         long blacklistRowId = -1;
         String portabilityLocator = null;
         try {
-            seedProductionKeyMetadata(rawJdbc);
             MessageTaskProtectionAdapter writer = context.getBean(MessageTaskProtectionAdapter.class);
             KeyProtectionPort keyProtectionPort = context.getBean(
                     "keyProtectionPort", KeyProtectionPort.class);
@@ -159,9 +161,9 @@ class Phase03ProtectedPersistenceIntegrationTest {
                     + "WHERE purpose='MOBILE_BLIND_INDEX' AND key_version=1");
             passed(2);
 
-            rawJdbc.update("INSERT INTO ycs_crypto_key_references "
-                            + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
-                            + "VALUES ('MOBILE_BLIND_INDEX',2,'pkcs11',?,'RETIRING')",
+            rawJdbc.update("UPDATE ycs_crypto_key_references SET key_state='RETIRING' "
+                            + "WHERE purpose='MOBILE_BLIND_INDEX' AND key_version=2 "
+                            + "AND provider_key_reference=? AND key_state='PREPARED'",
                     MOBILE_RETIRING_REFERENCE);
 
             Pkcs11FailureMapper mapper = new Pkcs11FailureMapper();
@@ -187,6 +189,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
                 String scrubbedBlacklistLocator = randomLocator();
                 rawJdbc.update("UPDATE blacklist_entries SET mobile_hash=? WHERE id=?",
                         scrubbedBlacklistLocator, blacklistRowId);
+                rebindBlacklistMetadata(rawJdbc, blacklistRowId);
                 completeTarget(rawJdbc, "BLACKLIST_ENTRY");
                 assertThat(lookup.lookupBlacklist(TENANT_ID,
                         lookupPrepared.legacyLookupToken(), BlacklistEntry.Status.ACTIVE).blocked()).isTrue();
@@ -297,6 +300,18 @@ class Phase03ProtectedPersistenceIntegrationTest {
                 CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS);
         properties.put("ycsopen.security.crypto-storage.references.snapshot-recovery",
                 CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_REFERENCE);
+        properties.put("ycsopen.security.crypto-storage.key-descriptors",
+                "FIELD_ENCRYPTION_KEK|1|field-kek.v1|"
+                        + CryptoStorageStartupVerifier.FIELD_KEK_ALIAS + ","
+                        + "SNAPSHOT_RECOVERY|1|snapshot-recovery.v1|"
+                        + CryptoStorageStartupVerifier.SNAPSHOT_RECOVERY_ALIAS + ","
+                        + "MOBILE_BLIND_INDEX|1|mobile-index.v1|"
+                        + CryptoStorageStartupVerifier.MOBILE_INDEX_ALIAS + ","
+                        + "MOBILE_BLIND_INDEX|2|mobile-index.v2|" + MOBILE_RETIRING_ALIAS + ","
+                        + "OBJECT_CAPABILITY_DIGEST|1|object-digest.v1|"
+                        + CryptoStorageStartupVerifier.OBJECT_DIGEST_ALIAS + ","
+                        + "REGISTRATION_UPLOAD_DIGEST|1|registration-digest.v1|"
+                        + CryptoStorageStartupVerifier.REGISTRATION_DIGEST_ALIAS);
         String[] arguments = properties.entrySet().stream()
                 .map(entry -> "--" + entry.getKey() + "=" + entry.getValue())
                 .toArray(String[]::new);
@@ -334,10 +349,26 @@ class Phase03ProtectedPersistenceIntegrationTest {
                 MOBILE_ACTIVE_REFERENCE);
         jdbc.update("INSERT INTO ycs_crypto_key_references "
                         + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                        + "VALUES ('MOBILE_BLIND_INDEX',2,'pkcs11',?,'PREPARED')",
+                MOBILE_RETIRING_REFERENCE);
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
                         + "VALUES ('OBJECT_CAPABILITY_DIGEST',1,'pkcs11','object-digest.v1','ACTIVE')");
         jdbc.update("INSERT INTO ycs_crypto_key_references "
                         + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
                         + "VALUES ('REGISTRATION_UPLOAD_DIGEST',1,'pkcs11','registration-digest.v1','ACTIVE')");
+    }
+
+    private static void migrateQuietly(DataSource dataSource) {
+        PrintStream original = System.out;
+        try (PrintStream discarded = new PrintStream(
+                OutputStream.nullOutputStream(), true, StandardCharsets.UTF_8)) {
+            System.setOut(discarded);
+            Flyway.configure().dataSource(dataSource).locations("classpath:db/migration")
+                    .placeholderReplacement(false).load().migrate();
+        } finally {
+            System.setOut(original);
+        }
     }
 
     private static MessageTask message(String messageId) {
@@ -363,7 +394,8 @@ class Phase03ProtectedPersistenceIntegrationTest {
         assertThat(Arrays.copyOf(raw.envelope(), 4))
                 .containsExactly("YCSE".getBytes(StandardCharsets.US_ASCII));
         assertThat(containsSequence(raw.envelope(), mobile.getBytes(StandardCharsets.US_ASCII))).isFalse();
-        assertThat(raw.locator()).matches("[a-f0-9]{64}").isNotEqualTo(rawMobileSha);
+        assertThat(raw.locator()).matches("p3c1_[A-Za-z0-9_-]{43}")
+                .doesNotMatch("[a-f0-9]{64}").isNotEqualTo(rawMobileSha);
         passed(5);
     }
 
@@ -430,7 +462,11 @@ class Phase03ProtectedPersistenceIntegrationTest {
                                      String target,
                                      long legacyRowId,
                                      BlindIndexPort.OrderedIndexes indexes) {
-        byte[] binding = sha256Bytes(target + "|" + legacyRowId);
+        byte[] original = "BLACKLIST_ENTRY".equals(target)
+                ? blacklistOriginalDigest(jdbc, legacyRowId)
+                : sha256Bytes(target + "|" + legacyRowId);
+        byte[] rowBinding = "BLACKLIST_ENTRY".equals(target)
+                ? blacklistBinding(jdbc, legacyRowId, original) : null;
         try {
             for (VersionedBlindIndex index : indexes.values()) {
                 String state = jdbc.queryForObject("SELECT key_state FROM ycs_crypto_key_references "
@@ -438,13 +474,47 @@ class Phase03ProtectedPersistenceIntegrationTest {
                         String.class, index.keyVersion());
                 jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
                                 + "(target_type,legacy_row_id,field_id,key_purpose,key_version,"
-                                + "index_value,index_status,original_row_digest) "
-                                + "VALUES (?,?,'mobile','MOBILE_BLIND_INDEX',?,?,?,?)",
-                        target, legacyRowId, index.keyVersion(), index.canonicalValue(), state, binding);
+                                + "index_value,index_status,original_row_digest,row_binding_digest) "
+                                + "VALUES (?,?,'mobile','MOBILE_BLIND_INDEX',?,?,?,?,?)",
+                        target, legacyRowId, index.keyVersion(), index.canonicalValue(), state,
+                        original, rowBinding);
             }
         } finally {
+            Arrays.fill(original, (byte) 0);
+            if (rowBinding != null) {
+                Arrays.fill(rowBinding, (byte) 0);
+            }
+        }
+    }
+
+    private static void rebindBlacklistMetadata(JdbcTemplate jdbc, long id) {
+        byte[] original = blacklistOriginalDigest(jdbc, id);
+        byte[] binding = blacklistBinding(jdbc, id, original);
+        try {
+            jdbc.update("UPDATE ycs_crypto_blind_indexes SET original_row_digest=?, "
+                            + "row_binding_digest=? WHERE target_type='BLACKLIST_ENTRY' "
+                            + "AND legacy_row_id=? AND field_id='mobile'",
+                    original, binding, id);
+        } finally {
+            Arrays.fill(original, (byte) 0);
             Arrays.fill(binding, (byte) 0);
         }
+    }
+
+    private static byte[] blacklistOriginalDigest(JdbcTemplate jdbc, long id) {
+        String locator = jdbc.queryForObject(
+                "SELECT mobile_hash FROM blacklist_entries WHERE id=?", String.class, id);
+        return sha256Bytes(locator);
+    }
+
+    private static byte[] blacklistBinding(JdbcTemplate jdbc, long id, byte[] original) {
+        return jdbc.queryForObject("SELECT tenant_id,mobile_encrypted,list_type,status "
+                        + "FROM blacklist_entries WHERE id=?",
+                (rs, row) -> BlindIndexLookupService.blacklistBinding(
+                        id, rs.getObject(1, Long.class),
+                        BlacklistEntry.ListType.valueOf(rs.getString(3)),
+                        BlacklistEntry.Status.valueOf(rs.getString(4)),
+                        rs.getBytes(2), original), id);
     }
 
     private static void assertSchemaOnlyPortabilityParity(JdbcTemplate jdbc,
