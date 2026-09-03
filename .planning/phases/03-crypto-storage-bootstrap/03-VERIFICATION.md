@@ -20,7 +20,18 @@ updated: 2026-09-03
 - The previous external agents were terminated by usage limits before completing replay.
 - Result: phase can continue only to "ready-for-replay" state until those two checks complete.
 
+The remaining blocking state is external and cannot be auto-cleared from local code alone.
+
 ## Next immediate action
 
 1. Re-run independent code review and goal verification against the same scoped subject.
 2. If no new blockers, close remaining TODO items and submit the next closure commit.
+
+## Required replay command set (for your next step)
+
+- Independent code review replay: re-run the phase code-review pass and capture `-REVIEW.md` or equivalent blocking findings.
+- Independent goal verification replay: re-run goal-verification and capture objective blocker-free summary.
+- On both replays passing, run a final closure sweep:
+  - mark remaining `Verification and review` TODO items as PASS,
+  - attach final delivery evidence,
+  - then submit the next atomic phase commit.
