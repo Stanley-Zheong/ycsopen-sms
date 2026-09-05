@@ -1,31 +1,31 @@
 {
   "entries": [
     {
-      "evidence_digest": "6e07aceafe5c0c2ca017d23123f2e9b6954157ff18680ab14018cc13b035e4ab",
+      "evidence_digest": "7cb13cfbd499b5ce7f48dfb73d29a15aef407c3154cdfd001d180a4b838593c5",
       "obligation_id": "OBL-CRYPTO-STORAGE-001",
       "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-001.json",
-      "sha256": "47bd84a2cc02a53450cedaac9f51f718d3cac9a5fe3cb2ed59d3320df280275b",
+      "sha256": "9d3ebdd110e8018b1a989e6388a00f56e6444ef920a4f5b59939a5ae9fe27f94",
       "status": "PASS"
     },
     {
-      "evidence_digest": "3bd7fc379f560fc7c9c9398d9553c3e13839e6af1a32e79d1ade53faa4155e76",
+      "evidence_digest": "7d650030c05c66d9b275008cf2050472bfc5ff4373f0e958ce69a51640b9bf6d",
       "obligation_id": "OBL-CRYPTO-STORAGE-002",
       "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-002.json",
-      "sha256": "4bb3b0fbb424abbbb7f95282acccc897f4877092e8a36d43eaf1778446da33c3",
+      "sha256": "5233adcf0347bc8fca3ac3be5acee17bdb77531a915fb856bb460d75eb6ed98e",
       "status": "PASS"
     },
     {
-      "evidence_digest": "a8499dca3a008e9738a36efdfe43f0da74fe22d4d11faa7c13633a32154a9213",
+      "evidence_digest": "0feb7892fbea31353da8c0f243effc98858aa386641cdb4c4bc0bcdaea046aaa",
       "obligation_id": "OBL-CRYPTO-STORAGE-003",
       "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-003.json",
-      "sha256": "32d4381743d6cb50272cf5ffaaf254a7ac8fd4407fa66b3dcf730a2cfd0bb66c",
+      "sha256": "6499bb83df4ae980fbb477c3eecd0abc05b8178ac380b9588c73e627235fface",
       "status": "PASS"
     },
     {
-      "evidence_digest": "3397bf5e828e8723fba8bf15fe2695faa3609e1741a3ddbf22dd1f49195ac511",
+      "evidence_digest": "70bbe6f3b78026c7e329710f9fffe77bb90d073b309251ef3eb68f158f5c6969",
       "obligation_id": "OBL-CRYPTO-STORAGE-004",
       "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-004.json",
-      "sha256": "7d555f4c1c77a768e83a899faee6e3f7430e01b25596d68664b3dfeceaec128d",
+      "sha256": "22ba43d6eabb68b9f4439d597b0761dfba178a15b6aea62d4e88c3c6da7fe387",
       "status": "PASS"
     }
   ],
@@ -36,14 +36,14 @@
     "validator_result": {
       "check_id": "phase03-protected-inventory",
       "path": "core/target/phase03/results/protected-inventory-result.json",
-      "result_digest": "bdf390a24bd42849223c92c1c4f8e598cd0c38cfed66f0ee35b3ce79e8303e52",
-      "sha256": "64a07bbe844daba68f71b71b7c556e881865f9d84a03e1d2f1d5d1d2b3ce55ff"
+      "result_digest": "f11635845c3d1a3dd73466ae7a80b265c241b745e7fd19074ca5492fcdd311c3",
+      "sha256": "3b6c1574207f1c5d62127bcd5f5af2dc7297444dee3a309b23eaca8505a4302a"
     }
   },
   "leak_result": {
     "path": "core/target/phase03/results/complete-leak-result.json",
-    "result_digest": "ca8d64678db4344ab99d86b274636920dac8ddd1aba029290a65ad90dbf48252",
-    "sha256": "4b8199aa0c358b624b436a5db483ec385754b438d06b3e9fb8bdb16c49f0227f"
+    "result_digest": "5b4d2e1fcc50f99cd359178a11c06bbb6e8931c1eae2e8eb7c4c51327f0d0084",
+    "sha256": "f4919d50a3a642e569617b5e1bd5eaf59bad4af56efa73c59275c2ab77660d7c"
   },
   "owner": "crypto-storage-bootstrap",
   "phase": "03-crypto-storage-bootstrap",
@@ -51,7 +51,7 @@
   "status": "PASS",
   "subject": {
     "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json",
-    "sha256": "12c9531010209cca14a8507ff9b7e3df21ef805811c9aaf3c07bfd21af83d843",
-    "tested_subject_digest": "78ab379f0d1e55c34740a6e13962dd558579558f45441ed0d757d5b4a1eb1c7f"
+    "sha256": "4ab907f8f6897533e3967a657ebaf0b57e3d68f141a54a56489793fea7cb1c68",
+    "tested_subject_digest": "10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe"
   }
 }

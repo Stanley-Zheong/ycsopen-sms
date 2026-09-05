@@ -45,9 +45,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,14 +60,20 @@ import static org.mockito.Mockito.when;
 
 class ProductionMigrationCommandServicesFactoryTest {
 
-    @TempDir
     Path directory;
     private KeyPair configurationSigner;
 
     @BeforeEach
     void canonicalizeTemporaryRoot() throws Exception {
-        directory = directory.toRealPath();
+        directory = Files.createTempDirectory(
+                Path.of(System.getProperty("user.home")).toRealPath(),
+                "phase03-migration-factory-").toRealPath();
         configurationSigner = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+    }
+
+    @AfterEach
+    void removeTrustedTemporaryRoot() throws Exception {
+        FileSystemUtils.deleteRecursively(directory);
     }
 
     @Test

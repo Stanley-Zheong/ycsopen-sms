@@ -1546,7 +1546,7 @@
       "mode": "100644",
       "path": "core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProductionMigrationCommandServicesFactoryTest.java",
       "role": "test",
-      "sha256": "b9863815771bc41c7af1f8e59ea0bff07113c714ef20b0640ae256ae2352f95e"
+      "sha256": "c9dee1111327608ead20cf6318a082d5be2e058e4f046d1546dca38f986664ed"
     },
     {
       "mode": "100644",

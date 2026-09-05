@@ -28,4 +28,4 @@ The production object/session/tenant adapters now pass one composed MySQL, MinIO
 
 ## Boundary and closure
 
-The composed proof remains an input rather than a self-authorizing obligation seal. It is now bound with migration recovery, rotation/fault composition, inventory and leak results by the final 14-lane root aggregate and exact-four evidence manifest. Independent GSD verification 4/4, code review Round 12 and Claude Attempt 9 accept that combined corrected subject with no unresolved BLOCKER or HIGH finding. External Git delivery is attested separately by the deterministic Phase 3 annotated tag.
+The composed proof remains an input rather than a self-authorizing obligation seal. It is now bound with migration recovery, rotation/fault composition, inventory and leak results by the final 14-lane root aggregate and exact-four evidence manifest. Independent GSD verification 4/4 and Claude Attempt 10 accept the Linux-portable corrected subject with no unresolved BLOCKER or HIGH finding; the current GSD result is recorded in `03-REVIEW.md`. External Git delivery is attested separately by the deterministic Phase 3 annotated tag.

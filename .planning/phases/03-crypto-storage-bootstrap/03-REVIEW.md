@@ -1,9 +1,22 @@
 ---
 phase: 03-crypto-storage-bootstrap
-reviewed: 2026-09-06T06:35:03+08:00
+reviewed: 2026-09-05T23:16:32Z
 depth: deep
-round: 12
-files_reviewed: 66
+round: 13
+files_reviewed: 12
+files_reviewed_list:
+  - .planning/phases/03-crypto-storage-bootstrap/03-VERIFICATION.md
+  - .planning/phases/03-crypto-storage-bootstrap/CLAUDE-REVIEW.md
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-001.json
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-002.json
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-003.json
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-004.json
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/evidence-manifest.json
+  - .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json
+  - .planning/phases/03-crypto-storage-bootstrap/ITERATIONS.md
+  - .planning/phases/03-crypto-storage-bootstrap/TODO.md
+  - core/src/main/java/com/ycsopen/sms/core/common/security/migration/ProductionMigrationCommandServicesFactory.java
+  - core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProductionMigrationCommandServicesFactoryTest.java
 status: passed
 findings:
   blocker: 0
@@ -13,88 +26,93 @@ findings:
   total: 4
 ---
 
-# Phase 03 Code Review — Round 12
+# Phase 03 Code Review — Round 13
 
 ## Result
 
-The corrected Phase 03 candidate is `passed / no_blockers`. Exact counts are BLOCKER 0, HIGH 0, WARNING 4, INFO 0. Round 11's delivery-subject BLOCKER and required-check HIGH are closed. The remaining warnings do not invalidate the product implementation, tested subject, exact-four evidence, or required-check commands, but should be cleaned up before the final delivery records are sealed.
+The Linux-portable corrected candidate is `PASS / no_blockers`. Exact counts are **BLOCKER 0, HIGH 0, WARNING 4, INFO 0**. No new defect was found in the portability delta or its regenerated evidence. The four warnings are unchanged nonblocking delivery-quality findings inherited from Round 12; none was upgraded by this correction.
 
-## Scope
+## Scope and delta
 
-The review covered the 66 changed implementation, test, configuration, workflow, documentation and validator files in the final candidate. It rechecked the full Phase 03 product diff and performed a deeper incremental review of the Round 11 corrections in:
+Round 13 reviewed the complete tracked delta relative to the already reviewed commit `9e6240a`, plus the unchanged production path-authority implementation needed to verify that the test correction does not weaken shipped behavior. The sole Java subject change is `ProductionMigrationCommandServicesFactoryTest`: JUnit's Linux `/tmp`-rooted `@TempDir` was replaced by a unique temporary directory below canonical `user.home`, followed by `@AfterEach` recursive cleanup.
 
-- `.github/workflows/ci.yml`
-- `.planning/tools/test-delivery-attestation.rb`
-- `.planning/tools/test-phase-03-crypto-evidence.rb`
-- `.planning/tools/test-phase-lifecycle.rb`
-- `.planning/tools/validate-delivery-attestation.rb`
-- `.planning/tools/validate-phase-lifecycle.rb`
-- `scripts/lib/phase-03/run_checks.rb`
-- `scripts/lib/phase-03/test_run_checks.rb`
+- `Files.createTempDirectory(parent, prefix)` provides a distinct path for every per-method test instance, so concurrent test methods do not share a directory or collide.
+- `Path.of(System.getProperty("user.home")).toRealPath()` fails test setup when the property is absent, the path is unavailable, or canonicalization fails; it cannot silently select an untrusted fallback.
+- Spring's `FileSystemUtils.deleteRecursively(Path)` is null-tolerant if setup fails before assignment. Normal success and exception paths clean the directory. A hard process termination may leave a uniquely named test artifact, but cannot create a false PASS, weaken production validation, or contaminate another test invocation.
+- The created path is still passed through the real signed-configuration production composition. No alternate factory, relaxed verifier, production source change, or test-only endpoint entered `core/src/main`.
+- Production `assertNoSymlinkComponents` remains intact at `ProductionMigrationCommandServicesFactory.java:633-653`: every ancestor must be a directory owned by the process owner or root and must not be group/world writable. A host with a nonconforming home ancestor fails closed.
 
-## Round 11 closure
+The focused factory suite passed all 11 tests with the real production checks. The current subject records the changed test as mode `100644` with SHA-256 `c9dee1111327608ead20cf6318a082d5be2e058e4f046d1546dca38f986664ed`, equal to the reviewed worktree bytes.
 
-- The producer and target-tree validator declare the same exact, duplicate-free 15-file trusted-input set. Every current trusted entry exists in the 316-entry tested subject with its actual mode and SHA-256, and rebuilding the subject from the current tree produces byte-equivalent JSON.
-- Delivery validation reconstructs the complete Phase 03 path/role set from the fetched target commit, checks the target producer's literal trusted set against the validator set, and validates every subject content digest and Git mode.
-- All 15 trusted inputs have independent target-tree missing, content-drift and mode-drift cases: 45/45 rejected. The full delivery suite passed 106 cases, including 102 destructive cases, 55 Phase 03 cases and nine workflow-contract cases.
-- The actual `Phase 03 portable registry` job is unconditional and executes both delivery/lifecycle destructive suites, current exact-four evidence validation and the complete pre-push lifecycle command. The display name exactly matches the delivery summary.
-- Phase 1 remains compatible: 21 lifecycle cases passed, the legacy delivery cases passed, and the current workflow's execute/supersede conditions use the exact same three legacy paths with complementary `!= ''` and `== ''` branches.
-- All four owned TODO rows now cite their exact `EVIDENCE/OBL-CRYPTO-STORAGE-00N.json` path; omission is rejected by a dedicated lifecycle mutation.
-- Round 10's product fixes remain present: the FIELD publication fence has one production bean, and protected-object FIELD reservation release remains limited to `OBJECT_STORED`, `RECONCILE_DELETE` or `COMPLETED`.
+## Current-subject evidence binding
+
+- Subject path: `.planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json`
+- Inputs: 316 unique entries validated against current bytes and modes.
+- Canonical subject-manifest digest: `52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683`
+- Serialized subject file SHA-256: `4ab907f8f6897533e3967a657ebaf0b57e3d68f141a54a56489793fea7cb1c68`
+- Tested-subject digest: `10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe`
+- Evidence-manifest SHA-256: `a9ac4a5b5b1df2a931d39d0a4c356e786418151c094182e8b2682c4e2478ee61`
+- Root aggregate: 14/14 PASS, result digest `84d6b662a53902b3efbff3ec761dc7b3c4cf71d13a8386b8b3a81ad107db9be1`
+- Root registry digest: `4b1f32f9e6a2693a5f442cb0f2617f83992423b4a799b2fa319f3f452546edb7`
+- Exact-four evidence: four ordered PASS entries; every recorded obligation file SHA matches its current bytes and the validator reports 4/4 PASS.
+
+All root and obligation records name the same tested-subject digest. The evidence validator independently reconstructed and validated the 316-input subject, so the portability test change is included rather than covered by stale results.
 
 ## Warnings
 
-### WR-01: Workflow structure test is textual rather than semantic
+### WR-01: Workflow structure self-test remains textual rather than semantic
 
 **File:** `.planning/tools/test-delivery-attestation.rb:97-160`
 
-The nine workflow cases correctly protect the current job name, job-level conditional, required command strings and Phase 1 condition sets. The parser does not parse step semantics, however, so a future step-level `if: false`, `continue-on-error: true`, or a command retained only in a comment can evade this self-test. The current workflow has none of these defects and its commands were independently inspected, so this is not a current HIGH finding.
+The nine workflow cases protect the current job name, job conditional and required command strings, but do not parse step semantics. A future disabled step, `continue-on-error`, or command retained only in a comment could evade that self-test. The current workflow has no such defect and the required commands were inspected in Round 12, so this remains nonblocking.
 
-**Fix:** Parse the workflow YAML into step records and require the named destructive/evidence steps to have no disabling condition or error suppression; validate exact normalized `run` command arrays instead of substring presence.
+**Fix:** Parse the workflow YAML into step records, reject disabling/error-suppression fields on required steps, and compare normalized `run` command arrays rather than substrings.
 
-### WR-02: Trusted symlinks are rejected only at the later delivery boundary
+### WR-02: Producer rejects trusted symlinks at the later boundary rather than the initial presence check
 
 **File:** `scripts/lib/phase-03/run_checks.rb:266-293`
 
-`missing_trusted` uses `File.file?`, which follows a symlink, while the later subject selection excludes symlinks. A trusted path replaced by a symlink can therefore be omitted from a locally generated subject instead of failing immediately. The remote target-tree validator still rejects it because a Git symlink is not an accepted regular-blob mode and the trusted path is then missing, so the delivery chain remains fail-closed.
+The early `File.file?` check follows a symlink, while later subject selection excludes symlinks. A trusted symlink is consequently omitted and then rejected as missing by target-tree reconstruction. Delivery remains fail-closed, but the producer's diagnostic is later and less direct than necessary.
 
-**Fix:** Make the producer's initial trusted-input check require `File.file? && !File.symlink?`, and add one producer-side trusted-symlink destructive case.
+**Fix:** Require `File.file? && !File.symlink?` in the producer's initial trusted-input check and add a producer-side trusted-symlink destructive case.
 
-### WR-03: Phase 3 binding revisions may start at an arbitrary positive number
+### WR-03: Phase 3 binding revision tables may start at an arbitrary positive number
 
 **Files:** `.planning/tools/validate-delivery-attestation.rb:1023-1039`, `.planning/tools/validate-phase-lifecycle.rb:414-440`
 
-Both validators require contiguous Phase 3 rows but derive the expected sequence from the first supplied positive number. This preserves digest/status fail-close behavior and rejects gaps, but it allows a singleton table to begin at any positive number and makes `Attempt` ambiguous between historical review attempt and current-subject binding revision.
+The validators enforce contiguity from the first positive number but do not require that first number to be one. Digest and status validation still fail closed, but the displayed attempt/revision semantics can be ambiguous.
 
-**Fix:** Require current-subject binding tables to start at 1, or rename and schema the field as `Binding revision` with an explicit allowed starting value. Add singleton-start and gap mutations to both validator suites.
+**Fix:** Require a current-subject binding table to start at one, or rename and schema the column as `Binding revision` with an explicit allowed starting value; retain gap and singleton-start destructive cases.
 
-### WR-04: Top-level closure hashes still describe the pre-replay reports
+### WR-04: Closure locator records are intentionally pending the Round 13 rebind
 
-**Files:** `.planning/phases/03-crypto-storage-bootstrap/SUMMARY.md:30-32`, `.planning/phases/03-crypto-storage-bootstrap/03-22-SUMMARY.md:38-44`
+**Files:** `.planning/phases/03-crypto-storage-bootstrap/SUMMARY.md:20-35`, `.planning/phases/03-crypto-storage-bootstrap/TODO.md:27-40`, `.planning/phases/03-crypto-storage-bootstrap/ITERATIONS.md:46`
 
-The subject, subject-file, tested-subject, root and evidence digests are current. The three review-file hashes and some final-review prose still describe reports created before the corrected-subject replay. `TODO.md` now accurately leaves those review and scoped-query rows open, and the real pre-push validator correctly blocks until all three current-subject bindings exist, so this is a truthful pending workflow state rather than a fail-open.
+The regenerated verification and Claude report bind the current Linux-portable subject, while the top-level summary still contains the previous subject/root/review hashes and the TODO correctly leaves the local closure rows open. Iteration I-042 also says canonical replay is pending although that replay now exists. This is a truthful fail-closed workflow state, not evidence acceptance of stale output, but the phase closure documents are not yet sealed.
 
-**Fix:** After the GSD goal and Claude replays bind subject `78ab379f...`, refresh the review SHA-256 values and final-review prose, then close the corresponding TODO rows only after pre-push lifecycle validation succeeds.
+**Fix:** After this Round 13 report is accepted, refresh the summary and iteration record with the four current digests and new review hashes; close each TODO row only when its cited artifact and pre-push lifecycle validation pass.
+
+## Regression disposition
+
+The Round 1–12 product/security conclusions remain unchanged. The FIELD publication fence still has one production bean; protected-object reservation completion retains its operation-state predecessor guard; snapshot, migration, MOBILE and token publication/retirement paths are unchanged; and the current evidence subject contains the previously reviewed product fixes. No production file changed relative to `9e6240a`.
 
 ## Verification performed
 
-- `ruby .planning/tools/test-delivery-attestation.rb` — PASS, 106 cases / 102 destructive / 55 Phase 03 / nine workflow cases.
+- `mvn -f core/pom.xml -Dtest=ProductionMigrationCommandServicesFactoryTest test` — PASS, 11 tests, zero failures/errors/skips.
+- `ruby .planning/tools/test-delivery-attestation.rb` — PASS, 106 cases, 102 destructive, 55 Phase 03, nine workflow cases.
 - `ruby .planning/tools/test-phase-lifecycle.rb` — PASS, Phase 1 21 cases and Phase 3 ten cases.
-- `ruby scripts/lib/phase-03/test_run_checks.rb` — PASS, 68 assertions / 14 checks.
-- `ruby .planning/tools/test-phase-03-crypto-evidence.rb` — PASS, 59 cases / two positive / four producer targets.
+- `ruby .planning/tools/test-phase-03-crypto-evidence.rb` — PASS, 59 cases, two positive, four producer targets.
 - Current exact-four evidence validation — PASS, four obligations.
-- Independent producer rebuild, trusted-set equality and all 15 content/mode checks — PASS.
-- Parsed actual CI job name, unconditional execution and required command presence — PASS.
-- `CryptoStorageConfigurationWiringTest,ProtectedObjectMetadataRepositoryJdbcTest` — three tests passed, no failures/errors/skips.
-- `mvn -f core/pom.xml -DskipTests package` — PASS.
-- `git diff --check` — PASS.
-- Canonical root/evidence supplied to this review — root 14/14 PASS and evidence 4/4 PASS; long real-service lanes were not repeated.
+- Independent canonical digest, serialized SHA, 316-input count, changed-test entry, obligation checksum, 14-lane aggregate and registry checks — PASS.
+- `git diff --check 9e6240a --` — PASS.
+
+The canonical real-service root was not rerun in this review. Its current-subject 14/14 aggregate and child bindings were inspected, and the short validators/tests requested for Round 13 were run independently.
 
 ## Delivery binding
 
 | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | e04d225b74fa9c2a18ef9316987278bd370c70fa99b8cb0feeeb305a8e3e2eb1 | 78ab379f0d1e55c34740a6e13962dd558579558f45441ed0d757d5b4a1eb1c7f | PASS |
+| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | 52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683 | 10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe | PASS |
 
 ## Final verdict
 

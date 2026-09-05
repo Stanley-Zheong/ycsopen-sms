@@ -1,17 +1,46 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli
-session: 1d817401-af4a-4b75-b0ee-cb7c4a96f92b
-mode: tool-less-phase-patch-review
-attempt: 9
+session: 804e630e-6a4b-4d51-b44c-48296e2d4741
+mode: tool-less-incremental-patch-review
+attempt: 10
 status: pass
 blocker: 0
 high: 0
-warning: 4
-info: 1
+warning: 2
+info: 3
 ---
 
 # Phase 03 Claude review history
+
+## Attempt 10 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 2, INFO 3. Claude reviewed the only product-subject delta after the already accepted Attempt 9 candidate: the Linux-portable test fixture in `ProductionMigrationCommandServicesFactoryTest`. No production source changed, so the shipped rejection of group/world-writable path ancestors remains intact.
+
+### Attempt 10 explicit confirmations
+
+- Moving the test fixture from JUnit's Linux `/tmp` root to the canonical real user home is a narrow correction for the CI environment mismatch and does not bypass or weaken migration configuration validation.
+- A unique directory is created per test invocation, so parallel test execution does not share mutable state or collide on a path.
+- `@AfterEach` cleanup runs for ordinary success/failure paths, and Spring's recursive deletion API is null-safe if setup fails before assignment.
+- The fixture location is the only semantic test change. The migration assertions and production code remain unchanged.
+- The supplied current-subject executable evidence is consistent with the correction: focused macOS and Linux 11/11, default Maven 365/0/0 with 17 integration-gated skips, canonical root 14/14, exact-four evidence 4/4, evidence fixtures 59, delivery 106/102 destructive and lifecycle 21 + 10 all PASS.
+
+### Attempt 10 nonblocking findings
+
+- WARNING: Claude noted that explicit POSIX `0700` attributes would document independence from a permissive process umask. The Java default temp-directory provider produced an accepted private directory on both tested platforms; a permissive environment would fail closed rather than weaken production security.
+- WARNING: abnormal process termination can leave a uniquely named fixture directory under a long-lived developer home because `@AfterEach` cannot run after `kill -9`, OOM termination or equivalent hard abort. Normal test exits clean it; CI homes are ephemeral.
+- INFO: canonicalizing the already canonical child is redundant but harmless.
+- INFO: null-safe cleanup depends on the documented Spring `FileSystemUtils.deleteRecursively(Path)` behavior.
+- INFO: the default per-method JUnit lifecycle and unique directory creation avoid shared test state.
+
+### Attempt 10 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""` with review policy in the appended system prompt and the exact one-file diff on standard input.
+- Nested tool/file access: none; this was a tool-less static incremental review after Attempt 9's complete-patch review.
+- Session: `804e630e-6a4b-4d51-b44c-48296e2d4741`.
+- Binding: canonical subject-manifest digest `52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683`; tested subject `10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe`; evidence manifest file SHA-256 `a9ac4a5b5b1df2a931d39d0a4c356e786418151c094182e8b2682c4e2478ee61`.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 2, INFO 3.
+- Determination: PASS; no product or delivery blocker/high finding.
 
 ## Attempt 9 verdict
 
@@ -245,7 +274,7 @@ Claude explicitly confirmed schema ordering for new artifacts, authenticated hea
 
 | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | e04d225b74fa9c2a18ef9316987278bd370c70fa99b8cb0feeeb305a8e3e2eb1 | 78ab379f0d1e55c34740a6e13962dd558579558f45441ed0d757d5b4a1eb1c7f | PASS |
+| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | 52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683 | 10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe | PASS |
 
 ## Final verdict
 
