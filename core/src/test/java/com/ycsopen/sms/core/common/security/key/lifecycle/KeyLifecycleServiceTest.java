@@ -4,6 +4,11 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.KeyHealth;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,11 +21,156 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class KeyLifecycleServiceTest {
+
+    @Test
+    void jdbcMobileActivationSynchronizesExistingIndexesAndMakesV2BackfillReplayable() {
+        JdbcTemplate jdbc = lifecycleJdbc("mobile-activation");
+        insertJdbcKey(jdbc, 1, KeyState.ACTIVE);
+        insertJdbcKey(jdbc, 2, KeyState.PREPARED);
+        byte[] binding = digest("current-message-binding");
+        jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
+                        + "(target_type,legacy_row_id,field_id,key_purpose,key_version,index_value,"
+                        + "index_status,original_row_digest) VALUES "
+                        + "('MESSAGE_TASK',42,'mobile','MOBILE_BLIND_INDEX',1,?,'ACTIVE',?)",
+                new VersionedBlindIndex(1, filled((byte) 1)).canonicalValue(), binding);
+        KeyReferenceRepository keys = new KeyReferenceRepository.Jdbc(
+                jdbc, transaction(jdbc));
+        KeyLifecycleService lifecycle = new KeyLifecycleService(keys,
+                new EnvelopeReferenceInventory(Set.of(), List.of()));
+
+        KeyLifecycleService.Activation activation = lifecycle.activate(
+                KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX, 2);
+
+        assertThat(activation.previous().state()).isEqualTo(KeyState.RETIRING);
+        assertThat(activation.active().state()).isEqualTo(KeyState.ACTIVE);
+        assertThat(jdbc.queryForList("SELECT CONCAT(key_version, ':', index_status) "
+                        + "FROM ycs_crypto_blind_indexes ORDER BY key_version", String.class))
+                .containsExactly("1:RETIRING");
+
+        BlindIndexPort.Context context = new BlindIndexPort.Context(
+                "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:7");
+        BlindIndexRotationService rotation = new BlindIndexRotationService(
+                indexes(1, 2), keys, new BlindIndexRotationService.JdbcStore(jdbc, transaction(jdbc)));
+        BlindIndexRotationService.Row row = new BlindIndexRotationService.Row(
+                "MESSAGE_TASK", 42, "mobile", binding, "13800138000", context);
+
+        assertThat(rotation.backfill(row))
+                .extracting(BlindIndexRotationService.MetadataRow::keyVersion,
+                        BlindIndexRotationService.MetadataRow::status)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(1L, KeyState.RETIRING),
+                        org.assertj.core.groups.Tuple.tuple(2L, KeyState.ACTIVE));
+        assertThat(rotation.backfill(row)).hasSize(2);
+        assertThat(jdbc.queryForList("SELECT CONCAT(key_version, ':', index_status) "
+                        + "FROM ycs_crypto_blind_indexes ORDER BY key_version", String.class))
+                .containsExactly("1:RETIRING", "2:ACTIVE");
+    }
+
+    @Test
+    void jdbcMobileActivationRollsBackWhenIndexMetadataDoesNotMatchExpectedKeyState() {
+        JdbcTemplate jdbc = lifecycleJdbc("mobile-mismatch");
+        insertJdbcKey(jdbc, 1, KeyState.ACTIVE);
+        insertJdbcKey(jdbc, 2, KeyState.PREPARED);
+        jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
+                        + "(target_type,legacy_row_id,field_id,key_purpose,key_version,index_value,"
+                        + "index_status,original_row_digest) VALUES "
+                        + "('MESSAGE_TASK',43,'mobile','MOBILE_BLIND_INDEX',1,?,'RETIRING',?)",
+                new VersionedBlindIndex(1, filled((byte) 1)).canonicalValue(),
+                digest("mismatched-binding"));
+        KeyReferenceRepository keys = new KeyReferenceRepository.Jdbc(jdbc, transaction(jdbc));
+
+        assertThatThrownBy(() -> new KeyLifecycleService(keys,
+                new EnvelopeReferenceInventory(Set.of(), List.of())).activate(
+                KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX, 2))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(KeyLifecycleService.SANITIZED_FAILURE);
+        assertThat(keys.findByPurpose(KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX))
+                .extracting(KeyReferenceRepository.KeyReference::keyVersion,
+                        KeyReferenceRepository.KeyReference::state)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(1L, KeyState.ACTIVE),
+                        org.assertj.core.groups.Tuple.tuple(2L, KeyState.PREPARED));
+        assertThat(jdbc.queryForObject("SELECT index_status FROM ycs_crypto_blind_indexes",
+                String.class)).isEqualTo("RETIRING");
+    }
+
+    @Test
+    void mobileBackfillHoldsPurposeLockBeforeIndexWriteAndActivationWaits() throws Exception {
+        JdbcTemplate jdbc = lifecycleJdbc("mobile-key-first-race");
+        insertJdbcKey(jdbc, 1, KeyState.ACTIVE);
+        insertJdbcKey(jdbc, 2, KeyState.PREPARED);
+        KeyReferenceRepository keys = new KeyReferenceRepository.Jdbc(jdbc, transaction(jdbc));
+        CountDownLatch keyLocked = new CountDownLatch(1);
+        CountDownLatch releaseBackfill = new CountDownLatch(1);
+        BlindIndexRotationService.JdbcStore store = new BlindIndexRotationService.JdbcStore(
+                jdbc, transaction(jdbc), () -> {
+                    keyLocked.countDown();
+                    try {
+                        if (!releaseBackfill.await(5, TimeUnit.SECONDS)) {
+                            throw new AssertionError("backfill coordination failed");
+                        }
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw new AssertionError(interrupted);
+                    }
+                });
+        BlindIndexPort.Context context = new BlindIndexPort.Context(
+                "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:7");
+        BlindIndexRotationService rotation = new BlindIndexRotationService(
+                indexes(1), keys, store);
+        BlindIndexRotationService.Row row = new BlindIndexRotationService.Row(
+                "MESSAGE_TASK", 44, "mobile", digest("key-first-race"),
+                "13800138000", context);
+        KeyLifecycleService lifecycle = new KeyLifecycleService(keys,
+                new EnvelopeReferenceInventory(Set.of(), List.of()));
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<?> backfill = executor.submit(() -> rotation.backfill(row));
+            assertThat(keyLocked.await(5, TimeUnit.SECONDS)).isTrue();
+            Future<?> activation = executor.submit(() -> lifecycle.activate(
+                    KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX, 2));
+            assertThatThrownBy(() -> activation.get(200, TimeUnit.MILLISECONDS))
+                    .isInstanceOf(TimeoutException.class);
+            releaseBackfill.countDown();
+            backfill.get(5, TimeUnit.SECONDS);
+            activation.get(5, TimeUnit.SECONDS);
+        }
+
+        assertThat(jdbc.queryForList("SELECT CONCAT(key_version, ':', index_status) "
+                        + "FROM ycs_crypto_blind_indexes ORDER BY key_version", String.class))
+                .containsExactly("1:RETIRING");
+    }
+
+    @Test
+    void mobileBackfillRetriesOnlyExplicitTransientLockFailures() {
+        JdbcTemplate jdbc = lifecycleJdbc("mobile-transient-retry");
+        insertJdbcKey(jdbc, 1, KeyState.ACTIVE);
+        AtomicInteger attempts = new AtomicInteger();
+        BlindIndexRotationService.JdbcStore store = new BlindIndexRotationService.JdbcStore(
+                jdbc, transaction(jdbc), () -> {
+                    if (attempts.incrementAndGet() < 3) {
+                        throw new CannotAcquireLockException("synthetic transient lock loss");
+                    }
+                });
+        KeyReferenceRepository keys = new KeyReferenceRepository.Jdbc(jdbc, transaction(jdbc));
+        BlindIndexPort.Context context = new BlindIndexPort.Context(
+                "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:7");
+
+        assertThat(new BlindIndexRotationService(indexes(1), keys, store).backfill(
+                new BlindIndexRotationService.Row("MESSAGE_TASK", 45, "mobile",
+                        digest("retry-row"), "13800138000", context))).hasSize(1);
+        assertThat(attempts).hasValue(3);
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_blind_indexes", Long.class)).isOne();
+    }
 
     @Test
     void blindIndexRotationWritesSeparateActiveAndRetiringRowsIdempotentlyWithoutLegacyMutation() {
@@ -245,6 +395,44 @@ class KeyLifecycleServiceTest {
         };
     }
 
+    private static JdbcTemplate lifecycleJdbc(String suffix) {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(
+                "jdbc:h2:mem:phase03-key-lifecycle-" + suffix + "-" + System.nanoTime()
+                        + ";MODE=MySQL;DB_CLOSE_DELAY=-1", "sa", "");
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        jdbc.execute("CREATE TABLE ycs_crypto_key_references ("
+                + "purpose VARCHAR(48) NOT NULL, key_version BIGINT NOT NULL, "
+                + "provider_id VARCHAR(32) NOT NULL, provider_key_reference VARCHAR(128) NOT NULL, "
+                + "key_state VARCHAR(24) NOT NULL, wrap_operation_count BIGINT NOT NULL DEFAULT 0, "
+                + "rotation_required BOOLEAN NOT NULL DEFAULT FALSE, "
+                + "optimistic_version BIGINT NOT NULL DEFAULT 0, PRIMARY KEY (purpose,key_version))");
+        jdbc.execute("CREATE TABLE ycs_crypto_blind_indexes ("
+                + "blind_index_id BIGINT AUTO_INCREMENT PRIMARY KEY, target_type VARCHAR(64) NOT NULL, "
+                + "legacy_row_id BIGINT NOT NULL, field_id VARCHAR(64) NOT NULL, "
+                + "key_purpose VARCHAR(48) NOT NULL, key_version BIGINT NOT NULL, "
+                + "index_value CHAR(53) NOT NULL, index_status VARCHAR(16) NOT NULL, "
+                + "original_row_digest BINARY(32) NOT NULL, optimistic_version BIGINT NOT NULL DEFAULT 0, "
+                + "UNIQUE (target_type,legacy_row_id,field_id,key_version))");
+        return jdbc;
+    }
+
+    private static TransactionTemplate transaction(JdbcTemplate jdbc) {
+        return new TransactionTemplate(new DataSourceTransactionManager(jdbc.getDataSource()));
+    }
+
+    private static void insertJdbcKey(JdbcTemplate jdbc, long version, KeyState state) {
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                        + "VALUES ('MOBILE_BLIND_INDEX',?,'pkcs11',?,?)",
+                version, "mobile-v" + version, state.name());
+    }
+
+    private static byte[] filled(byte value) {
+        byte[] bytes = new byte[VersionedBlindIndex.HMAC_BYTES];
+        java.util.Arrays.fill(bytes, value);
+        return bytes;
+    }
+
     private static final class RecordingBlindStore implements BlindIndexRotationService.Store {
         private final Map<Long, BlindIndexRotationService.MetadataRow> rows = new LinkedHashMap<>();
         private int upsertCalls;
@@ -316,7 +504,10 @@ class KeyLifecycleServiceTest {
         }
 
         @Override
-        public synchronized boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+        public synchronized boolean transitionAtomicallyGuarded(
+                Purpose purpose,
+                List<Transition> transitions,
+                java.util.function.BooleanSupplier guard) {
             for (Transition transition : transitions) {
                 KeyReference current = values.stream().filter(key -> key.purpose() == purpose
                                 && key.keyVersion() == transition.keyVersion()).findFirst().orElse(null);
@@ -324,6 +515,9 @@ class KeyLifecycleServiceTest {
                         || current.optimisticVersion() != transition.expectedOptimisticVersion()) {
                     return false;
                 }
+            }
+            if (!guard.getAsBoolean()) {
+                return false;
             }
             for (Transition transition : transitions) {
                 int index = java.util.stream.IntStream.range(0, values.size())

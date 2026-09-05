@@ -1,11 +1,18 @@
 package com.ycsopen.sms.core.common.security.migration;
 
 import com.ycsopen.sms.core.common.security.migration.MigrationPreflight.CheckpointState;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcMobileBlindIndexPublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyState;
+import com.ycsopen.sms.core.common.security.key.lifecycle.MobileBlindIndexPublicationFence;
+import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.persistence.MessageTaskRowBinding;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.HexFormat;
@@ -17,6 +24,7 @@ import java.util.function.Function;
 import java.util.function.LongSupplier;
 import java.util.regex.Pattern;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -240,6 +248,7 @@ public interface MigrationStateRepository {
 
     /** Production JDBC implementation over the V1200 state tables and seven reviewed targets. */
     final class Jdbc implements MigrationStateRepository {
+        private static final int MAXIMUM_TRANSIENT_ATTEMPTS = 3;
         private static final Map<String, TargetSql> TARGETS = Map.of(
                 "mobile_portability.mobile_hash", new TargetSql(
                         "MOBILE_PORTABILITY", "mobile_portability", "mobile_hash", "mobile_hash", null, true),
@@ -260,9 +269,10 @@ public interface MigrationStateRepository {
         private final TransactionTemplate transactions;
         private final LongSupplier migrationRowIds;
         private final SecureRandom locatorRandom;
+        private final Runnable afterMobilePurposeLock;
 
         public Jdbc(JdbcTemplate jdbc, TransactionTemplate transactions) {
-            this(jdbc, transactions, new SecureRandom()::nextLong, new SecureRandom());
+            this(jdbc, transactions, new SecureRandom()::nextLong, new SecureRandom(), () -> { });
         }
 
         Jdbc(
@@ -270,21 +280,45 @@ public interface MigrationStateRepository {
                 TransactionTemplate transactions,
                 LongSupplier migrationRowIds,
                 SecureRandom locatorRandom) {
+            this(jdbc, transactions, migrationRowIds, locatorRandom, () -> { });
+        }
+
+        Jdbc(
+                JdbcTemplate jdbc,
+                TransactionTemplate transactions,
+                LongSupplier migrationRowIds,
+                SecureRandom locatorRandom,
+                Runnable afterMobilePurposeLock) {
             this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
             this.transactions = Objects.requireNonNull(transactions, "transactions");
             this.migrationRowIds = Objects.requireNonNull(migrationRowIds, "migrationRowIds");
             this.locatorRandom = Objects.requireNonNull(locatorRandom, "locatorRandom");
+            this.afterMobilePurposeLock = Objects.requireNonNull(
+                    afterMobilePurposeLock, "afterMobilePurposeLock");
         }
 
         @Override
         public <T> T transaction(Function<Transaction, T> work) {
             Objects.requireNonNull(work, "work");
-            T result = transactions.execute(status -> work.apply(
-                    new JdbcTransaction(jdbc, migrationRowIds, locatorRandom)));
-            if (result == null) {
-                throw new IllegalStateException("migration transaction returned no result");
+            for (int attempt = 1; attempt <= MAXIMUM_TRANSIENT_ATTEMPTS; attempt++) {
+                try {
+                    T result = transactions.execute(status -> work.apply(
+                            new JdbcTransaction(jdbc, migrationRowIds, locatorRandom,
+                                    afterMobilePurposeLock)));
+                    if (result == null) {
+                        throw rejected();
+                    }
+                    return result;
+                } catch (RuntimeException failure) {
+                    if (!retryableLockFailure(failure)) {
+                        throw failure;
+                    }
+                    if (attempt == MAXIMUM_TRANSIENT_ATTEMPTS) {
+                        throw rejected();
+                    }
+                }
             }
-            return result;
+            throw rejected();
         }
 
         public static String targetType(ProtectedDataTarget target) {
@@ -307,12 +341,21 @@ public interface MigrationStateRepository {
             private final JdbcTemplate jdbc;
             private final LongSupplier migrationRowIds;
             private final SecureRandom locatorRandom;
+            private final FieldReferencePublicationFence fieldFence;
+            private final MobileBlindIndexPublicationFence mobileFence;
+            private final Runnable afterMobilePurposeLock;
 
             private JdbcTransaction(
-                    JdbcTemplate jdbc, LongSupplier migrationRowIds, SecureRandom locatorRandom) {
+                    JdbcTemplate jdbc,
+                    LongSupplier migrationRowIds,
+                    SecureRandom locatorRandom,
+                    Runnable afterMobilePurposeLock) {
                 this.jdbc = jdbc;
                 this.migrationRowIds = migrationRowIds;
                 this.locatorRandom = locatorRandom;
+                this.fieldFence = new JdbcFieldReferencePublicationFence(jdbc);
+                this.mobileFence = new JdbcMobileBlindIndexPublicationFence(jdbc);
+                this.afterMobilePurposeLock = afterMobilePurposeLock;
             }
 
             @Override
@@ -475,6 +518,7 @@ public interface MigrationStateRepository {
                 if (target.kind() != ProtectedDataTarget.Kind.DATABASE_FIELD || envelope == null) {
                     throw new IllegalArgumentException("protected field update is invalid");
                 }
+                fieldFence.lockAndValidate(envelope, EnvelopeCodec.Target.DATABASE_FIELD);
                 int updated = jdbc.update("UPDATE " + sql.table() + " SET " + sql.column()
                                 + " = ? WHERE " + sql.identity() + " = ? AND SHA2(" + sql.column()
                                 + ", 256) = ?",
@@ -488,20 +532,66 @@ public interface MigrationStateRepository {
                     List<BlindIndexEntry> indexes) {
                 requireIdentifier(targetType, "targetType");
                 requireIdentifier(fieldId, "fieldId");
+                List<BlindIndexEntry> requested = canonicalIndexes(indexes);
+                if (!mobileFence.lockAndValidate(requested.stream()
+                        .map(index -> new MobileBlindIndexPublicationFence.ExpectedKey(
+                                index.keyVersion(), KeyState.valueOf(index.status())))
+                        .toList())) {
+                    throw rejected();
+                }
+                afterMobilePurposeLock.run();
                 byte[] rowBinding = "BLACKLIST_ENTRY".equals(targetType)
                         ? blacklistRowBinding(row.bindingRowId(), row.originalCellDigest()) : null;
-                for (BlindIndexEntry index : canonicalIndexes(indexes)) {
-                    jdbc.update("INSERT IGNORE INTO ycs_crypto_blind_indexes "
-                                    + "(target_type, legacy_row_id, field_id, key_purpose, key_version, "
-                                    + "index_value, index_status, original_row_digest, row_binding_digest) "
-                                    + "SELECT ?, ?, ?, 'MOBILE_BLIND_INDEX', ?, ?, ?, UNHEX(?), ? "
-                                    + "FROM ycs_crypto_key_references WHERE purpose = 'MOBILE_BLIND_INDEX' "
-                                    + "AND key_version = ? AND key_state = ?",
-                            targetType, row.bindingRowId(), fieldId, index.keyVersion(), index.canonicalValue(),
-                            index.status(), hex(row.originalCellDigest()), rowBinding,
-                            index.keyVersion(), index.status());
+                for (BlindIndexEntry index : requested) {
+                    List<StoredBlindIndex> existing = jdbc.query("""
+                            SELECT key_purpose, index_value, index_status,
+                                   original_row_digest, row_binding_digest
+                              FROM ycs_crypto_blind_indexes
+                             WHERE target_type = ? AND legacy_row_id = ?
+                               AND field_id = ? AND key_version = ?
+                             FOR UPDATE
+                            """, (resultSet, ignored) -> new StoredBlindIndex(
+                            resultSet.getString("key_purpose"), resultSet.getString("index_value"),
+                            resultSet.getString("index_status"),
+                            resultSet.getBytes("original_row_digest"),
+                            resultSet.getBytes("row_binding_digest")),
+                            targetType, row.bindingRowId(), fieldId, index.keyVersion());
+                    if (existing.isEmpty()) {
+                        int inserted = jdbc.update("""
+                                INSERT INTO ycs_crypto_blind_indexes
+                                    (target_type, legacy_row_id, field_id, key_purpose, key_version,
+                                     index_value, index_status, original_row_digest,
+                                     row_binding_digest)
+                                VALUES (?, ?, ?, 'MOBILE_BLIND_INDEX', ?, ?, ?, UNHEX(?), ?)
+                                """, targetType, row.bindingRowId(), fieldId, index.keyVersion(),
+                                index.canonicalValue(), index.status(),
+                                hex(row.originalCellDigest()), rowBinding);
+                        if (inserted != 1) {
+                            throw rejected();
+                        }
+                    } else if (existing.size() != 1
+                            || !same(existing.getFirst(), index, row.originalCellDigest(), rowBinding)) {
+                        throw rejected();
+                    }
                 }
                 return blindIndexesMatch(targetType, row, fieldId, indexes);
+            }
+
+            private static boolean same(
+                    StoredBlindIndex stored,
+                    BlindIndexEntry requested,
+                    byte[] originalRowDigest,
+                    byte[] rowBindingDigest) {
+                return "MOBILE_BLIND_INDEX".equals(stored.keyPurpose())
+                        && stored.indexValue().equals(requested.canonicalValue())
+                        && stored.status().equals(requested.status())
+                        && MessageDigest.isEqual(stored.originalRowDigest(), originalRowDigest)
+                        && sameNullableDigest(stored.rowBindingDigest(), rowBindingDigest);
+            }
+
+            private static boolean sameNullableDigest(byte[] left, byte[] right) {
+                return left == null && right == null
+                        || left != null && right != null && MessageDigest.isEqual(left, right);
             }
 
             @Override
@@ -598,18 +688,18 @@ public interface MigrationStateRepository {
                                     resultSet.getString(3), resultSet.getString(4),
                                     resultSet.getBytes(5)),
                             row.bindingRowId(), fieldId);
-                    List<KeyState> required = jdbc.query(
+                    List<CurrentKeyState> required = jdbc.query(
                             "SELECT key_version, key_state FROM ycs_crypto_key_references "
                                     + "WHERE purpose = 'MOBILE_BLIND_INDEX' "
                                     + "AND key_state IN ('ACTIVE','RETIRING') ORDER BY key_version",
-                            (resultSet, rowNumber) -> new KeyState(
+                            (resultSet, rowNumber) -> new CurrentKeyState(
                                     resultSet.getLong(1), resultSet.getString(2)));
                     if (stored.size() != required.size() || stored.isEmpty()) {
                         return false;
                     }
                     for (int index = 0; index < stored.size(); index++) {
                         CurrentBinding binding = stored.get(index);
-                        KeyState key = required.get(index);
+                        CurrentKeyState key = required.get(index);
                         if (binding.keyVersion() != key.version()
                                 || !binding.status().equals(key.state())
                                 || !"MOBILE_BLIND_INDEX".equals(binding.purpose())
@@ -923,8 +1013,30 @@ public interface MigrationStateRepository {
             }
         }
 
+        private record StoredBlindIndex(
+                String keyPurpose,
+                String indexValue,
+                String status,
+                byte[] originalRowDigest,
+                byte[] rowBindingDigest) {
+        }
+
         private record CurrentMessageRow(
                 long tenantId, String messageId, String locator, byte[] envelope) {
+        }
+
+        private static boolean retryableLockFailure(RuntimeException failure) {
+            for (Throwable current = failure; current != null; current = current.getCause()) {
+                if (current instanceof PessimisticLockingFailureException) {
+                    return true;
+                }
+                if (current instanceof SQLException sql
+                        && ("40001".equals(sql.getSQLState())
+                        || sql.getErrorCode() == 1213 || sql.getErrorCode() == 1205)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private record CurrentBinding(
@@ -935,7 +1047,7 @@ public interface MigrationStateRepository {
                 byte[] originalDigest) {
         }
 
-        private record KeyState(long version, String state) {
+        private record CurrentKeyState(long version, String state) {
         }
     }
 

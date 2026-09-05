@@ -3,9 +3,11 @@ package com.ycsopen.sms.core.common.security.key.lifecycle;
 import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.security.MessageDigest;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -151,12 +153,25 @@ public final class BlindIndexRotationService {
     /** Exact SQL owner for rotation rows; it has no legacy-table dependency or write path. */
     public static final class JdbcStore implements Store {
 
+        private static final int MAXIMUM_TRANSIENT_ATTEMPTS = 3;
+
         private final JdbcTemplate jdbc;
         private final TransactionTemplate transactions;
+        private final Runnable afterPurposeLock;
+        private final MobileBlindIndexPublicationFence publicationFence;
 
         public JdbcStore(JdbcTemplate jdbc, TransactionTemplate transactions) {
+            this(jdbc, transactions, () -> { });
+        }
+
+        JdbcStore(
+                JdbcTemplate jdbc,
+                TransactionTemplate transactions,
+                Runnable afterPurposeLock) {
             this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
             this.transactions = Objects.requireNonNull(transactions, "transactions");
+            this.afterPurposeLock = Objects.requireNonNull(afterPurposeLock, "afterPurposeLock");
+            this.publicationFence = new JdbcMobileBlindIndexPublicationFence(this.jdbc);
         }
 
         @Override
@@ -166,12 +181,35 @@ public final class BlindIndexRotationService {
                     != requested.size()) {
                 throw new IllegalArgumentException("invalid blind-index row set");
             }
-            transactions.executeWithoutResult(status -> {
-                for (MetadataRow row : requested) {
-                    List<MetadataRow> existing = select(row.targetType(), row.legacyRowId(),
-                            row.fieldId(), row.keyVersion(), true);
-                    if (existing.isEmpty()) {
-                        int inserted = jdbc.update("""
+            for (int attempt = 1; attempt <= MAXIMUM_TRANSIENT_ATTEMPTS; attempt++) {
+                try {
+                    transactions.executeWithoutResult(status -> upsertLocked(requested));
+                    return;
+                } catch (RuntimeException failure) {
+                    if (!retryableLockFailure(failure)) {
+                        throw failure;
+                    }
+                    if (attempt == MAXIMUM_TRANSIENT_ATTEMPTS) {
+                        throw failure();
+                    }
+                }
+            }
+            throw failure();
+        }
+
+        private void upsertLocked(List<MetadataRow> requested) {
+            if (!publicationFence.lockAndValidate(requested.stream()
+                    .map(row -> new MobileBlindIndexPublicationFence.ExpectedKey(
+                            row.keyVersion(), row.status()))
+                    .toList())) {
+                throw failure();
+            }
+            afterPurposeLock.run();
+            for (MetadataRow row : requested) {
+                List<MetadataRow> existing = select(row.targetType(), row.legacyRowId(),
+                        row.fieldId(), row.keyVersion(), true);
+                if (existing.isEmpty()) {
+                    int inserted = jdbc.update("""
                                 INSERT INTO ycs_crypto_blind_indexes
                                     (target_type, legacy_row_id, field_id, key_purpose, key_version,
                                      index_value, index_status, original_row_digest)
@@ -179,17 +217,16 @@ public final class BlindIndexRotationService {
                                 FROM ycs_crypto_key_references
                                 WHERE purpose = 'MOBILE_BLIND_INDEX' AND key_version = ?
                                   AND key_state = ?
-                                """, row.targetType(), row.legacyRowId(), row.fieldId(),
-                                row.keyVersion(), row.indexValue(), row.status().name(),
-                                row.originalRowDigest(), row.keyVersion(), row.status().name());
-                        if (inserted != 1) {
-                            throw failure();
-                        }
-                    } else if (!same(existing.getFirst(), row)) {
+                            """, row.targetType(), row.legacyRowId(), row.fieldId(),
+                            row.keyVersion(), row.indexValue(), row.status().name(),
+                            row.originalRowDigest(), row.keyVersion(), row.status().name());
+                    if (inserted != 1) {
                         throw failure();
                     }
+                } else if (!same(existing.getFirst(), row)) {
+                    throw failure();
                 }
-            });
+            }
         }
 
         @Override
@@ -225,6 +262,20 @@ public final class BlindIndexRotationService {
                     && left.indexValue().equals(right.indexValue())
                     && left.status() == right.status()
                     && MessageDigest.isEqual(left.originalRowDigest(), right.originalRowDigest());
+        }
+
+        private static boolean retryableLockFailure(RuntimeException failure) {
+            for (Throwable current = failure; current != null; current = current.getCause()) {
+                if (current instanceof PessimisticLockingFailureException) {
+                    return true;
+                }
+                if (current instanceof SQLException sql
+                        && ("40001".equals(sql.getSQLState())
+                        || sql.getErrorCode() == 1213 || sql.getErrorCode() == 1205)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

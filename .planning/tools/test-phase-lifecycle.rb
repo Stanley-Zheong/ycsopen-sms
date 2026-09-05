@@ -56,6 +56,19 @@ end
 if Phase01Lifecycle.obligation_entry_matches?("phase01-foreign-manifest-v1", exact_entry, "OBL-FOUND-TRACE-004", exact_path)
   abort "UNSUPPORTED_EVIDENCE_SCHEMA_ACCEPTED"
 end
+phase03_entry = {
+  "obligation_id" => "OBL-CRYPTO-STORAGE-001",
+  "path" => ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-001.json",
+  "status" => "PASS"
+}
+unless Phase01Lifecycle.obligation_entry_matches?(
+  Phase01Lifecycle::PHASE03_EVIDENCE_SCHEMA,
+  phase03_entry,
+  "OBL-CRYPTO-STORAGE-001",
+  phase03_entry.fetch("path")
+)
+  abort "PHASE03_ENTRY_EXPLICIT_DISPATCH_REJECTED"
+end
 
 def write(path, content, mode: nil)
   FileUtils.mkdir_p(File.dirname(path))
@@ -165,13 +178,13 @@ def create_entry_review(path)
   MARKDOWN
 end
 
-def create_review(path, manifest_path, manifest_digest, subject_digest, *, blocker: 0, high: 0, escalated: "no", result: "PASS")
+def create_review(path, manifest_path, manifest_digest, subject_digest, *, attempt: 1, blocker: 0, high: 0, escalated: "no", result: "PASS")
   write(path, <<~MARKDOWN)
     # Review
 
     | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
     | --- | --- | --- | --- | --- | --- | --- | --- |
-    | 1 | #{blocker} | #{high} | #{escalated} | #{manifest_path} | #{manifest_digest} | #{subject_digest} | #{result} |
+    | #{attempt} | #{blocker} | #{high} | #{escalated} | #{manifest_path} | #{manifest_digest} | #{subject_digest} | #{result} |
 
     ## Final verdict
 
@@ -436,6 +449,12 @@ Dir.mktmpdir("phase01-lifecycle-") do |workspace|
 
         BLOCKED
       MARKDOWN
+    end],
+    ["phase01-noninitial-binding", exit_baseline, "pre-push-exit", "LIFECYCLE_REVIEW_ATTEMPT_SEQUENCE_INVALID", exit_args, lambda do |root|
+      create_review(
+        File.join(root, ".planning/phases/01-engineering-verification-foundation/01-REVIEW.md"),
+        subject_path, manifest_digest, subject_digest, attempt: 2
+      )
     end]
   ]
   cases.each do |name, baseline, stage, token, extra, change|
@@ -470,4 +489,260 @@ Dir.mktmpdir("phase01-lifecycle-") do |workspace|
   )
 
   puts "PHASE_LIFECYCLE_TEST PASS cases=#{cases.length + 4} negative=#{cases.length + 1} positive=3 exact_seven_dispatch=PASS mutations=4 legacy_dispatch=PASS"
+end
+
+PHASE03_OWNER = "crypto-storage-bootstrap"
+PHASE03_OWNED = %w[
+  OBL-CRYPTO-STORAGE-001
+  OBL-CRYPTO-STORAGE-002
+  OBL-CRYPTO-STORAGE-003
+  OBL-CRYPTO-STORAGE-004
+].freeze
+
+def phase03_lifecycle_fixture(root)
+  relative_phase_dir = ".planning/phases/03-crypto-storage-bootstrap"
+  phase_dir = File.join(root, relative_phase_dir)
+  FileUtils.mkdir_p(File.join(phase_dir, "EVIDENCE"))
+  write(File.join(root, "synthetic.rb"), "puts 'PASS'\n")
+  catalog = PHASE03_OWNED.each_with_index.map do |id, index|
+    catalog_line(
+      id, "REQ-NFR-DATA-PROTECTION", PHASE03_OWNER,
+      "crypto-storage-bootstrap-0#{index + 1}", "T-CRYPTO-STORAGE-00#{index + 1}",
+      "EVIDENCE/#{id}.json"
+    )
+  end
+  write(File.join(root, ".planning/PRD-OBLIGATIONS.md"), "# Catalog\n\n#{catalog.join("\n")}\n")
+  write(File.join(phase_dir, "03-SPEC.md"), "# Phase 03 spec\n")
+  write(File.join(phase_dir, "03-CONTEXT.md"), "# Phase 03 context\n")
+  write(File.join(phase_dir, "INTENT.md"), "# Intent\n")
+  write(File.join(phase_dir, "DESIGN.md"), "# Design\n\nSchema migrations: declared\n")
+  write(File.join(phase_dir, "SCHEMA-CLAIMS.md"), "# Schema claims\n\nV1200 is expand-only.\n")
+  write(File.join(phase_dir, "ITERATIONS.md"), "# Iterations\n")
+  write(File.join(phase_dir, "DECISIONS.md"), "# Decisions\n")
+  write(File.join(phase_dir, "TEST-MATRIX.md"), "# Test matrix\n")
+  write(File.join(phase_dir, "03-01-PLAN.md"), <<~MARKDOWN)
+    # Plan
+
+    <tasks>
+    <task type="auto">
+      <files>synthetic.rb</files>
+      <action>Run the Phase 03 fixture.</action>
+      <verify><automated>ruby synthetic.rb</automated></verify>
+      <done>The Phase 03 fixture passes.</done>
+    </task>
+    </tasks>
+  MARKDOWN
+  write(File.join(phase_dir, "ENTRY-REVIEW.md"), <<~MARKDOWN)
+    # Entry review
+
+    | Criterion ID | Verdict | Evidence | Command or inspection rule |
+    | --- | --- | --- | --- |
+    | PH03-ENTRY-001 | PASS | fixture | ruby synthetic.rb |
+
+    ## Verdict
+
+    PASS
+  MARKDOWN
+
+  subject_path = "#{relative_phase_dir}/EVIDENCE/tested-inputs.json"
+  input_content = File.read(File.join(root, "synthetic.rb"))
+  inputs = [{
+    "path" => "synthetic.rb", "mode" => "100644",
+    "sha256" => Digest::SHA256.hexdigest(input_content), "role" => "test"
+  }]
+  subject = {
+    "schema_version" => "phase03-tested-inputs-v1",
+    "phase" => "03-crypto-storage-bootstrap",
+    "owner" => PHASE03_OWNER,
+    "inputs" => inputs
+  }
+  write(File.join(root, subject_path), JSON.pretty_generate(subject) + "\n")
+  subject_manifest_digest = Digest::SHA256.hexdigest(JSON.generate(Phase01Lifecycle.canonical(subject)))
+  tested_subject_digest = Digest::SHA256.hexdigest(JSON.generate(Phase01Lifecycle.canonical(inputs)))
+  subject_reference = {
+    "path" => subject_path,
+    "sha256" => Digest::SHA256.file(File.join(root, subject_path)).hexdigest,
+    "tested_subject_digest" => tested_subject_digest
+  }
+  inventory_reference = {
+    "path" => "core/src/main/resources/security/protected-data-inventory.json",
+    "sha256" => "1" * 64,
+    "accepted_digest" => "2" * 64,
+    "validator_result" => {
+      "check_id" => "phase03-protected-inventory",
+      "path" => "core/target/phase03/results/protected-inventory-result.json",
+      "sha256" => "3" * 64,
+      "result_digest" => "4" * 64
+    }
+  }
+  leak_reference = {
+    "path" => "core/target/phase03/results/complete-leak-result.json",
+    "sha256" => "5" * 64,
+    "result_digest" => "6" * 64
+  }
+  entries = PHASE03_OWNED.map do |id|
+    path = "#{relative_phase_dir}/EVIDENCE/#{id}.json"
+    write(File.join(root, path), JSON.generate("obligation_id" => id, "status" => "PASS") + "\n")
+    {
+      "obligation_id" => id,
+      "path" => path,
+      "sha256" => Digest::SHA256.file(File.join(root, path)).hexdigest,
+      "status" => "PASS",
+      "evidence_digest" => "7" * 64
+    }
+  end
+  manifest = {
+    "schema_version" => "phase03-evidence-manifest-v1",
+    "phase" => "03-crypto-storage-bootstrap",
+    "owner" => PHASE03_OWNER,
+    "status" => "PASS",
+    "subject" => subject_reference,
+    "inventory" => inventory_reference,
+    "leak_result" => leak_reference,
+    "entries" => entries
+  }
+  manifest_path = "#{relative_phase_dir}/EVIDENCE/evidence-manifest.json"
+  write(File.join(root, manifest_path), JSON.pretty_generate(manifest) + "\n")
+
+  todo = PHASE03_OWNED.map do |id|
+    "- [x] #{id} is closed by the exact-four manifest. Evidence: `EVIDENCE/#{id}.json`."
+  end
+  todo.concat([
+    "- [x] GSD goal verification has no unresolved blocking finding.",
+    "- [x] GSD code review has no unresolved blocking or high finding.",
+    "- [x] Claude convergence review has no unresolved blocking or high finding.",
+    "- [x] Scoped TODO query is empty after the reserved external-delivery item closes.",
+    "- [ ] Annotated delivery tag, required remote check and live delivery attestation pass."
+  ])
+  write(File.join(phase_dir, "TODO.md"), "# TODO\n\n#{todo.join("\n")}\n")
+  create_review(File.join(phase_dir, "03-VERIFICATION.md"), subject_path, subject_manifest_digest, tested_subject_digest, attempt: 2)
+  create_review(File.join(phase_dir, "03-REVIEW.md"), subject_path, subject_manifest_digest, tested_subject_digest, attempt: 2)
+  create_review(File.join(phase_dir, "CLAUDE-REVIEW.md"), subject_path, subject_manifest_digest, tested_subject_digest, attempt: 2)
+
+  write(File.join(root, ".planning/tools/validate-phase-03-crypto-evidence.rb"), <<~RUBY, mode: 0o755)
+    #!/usr/bin/env ruby
+    require "digest"
+    require "json"
+    phase_index = ARGV.index("--phase-dir")
+    owner_index = ARGV.index("--require-owner")
+    phase_dir = phase_index && ARGV[phase_index + 1]
+    owner = owner_index && ARGV[owner_index + 1]
+    manifest_path = File.join(phase_dir.to_s, "EVIDENCE/evidence-manifest.json")
+    errors = []
+    manifest = JSON.parse(File.read(manifest_path))
+    errors << "SCHEMA" unless manifest["schema_version"] == "phase03-evidence-manifest-v1"
+    errors << "OWNER" unless manifest["owner"] == owner
+    errors << "STATUS" unless manifest["status"] == "PASS"
+    subject = manifest["subject"]
+    errors << "SUBJECT" unless subject.is_a?(Hash) && subject["path"] == File.join(phase_dir, "EVIDENCE/tested-inputs.json")
+    entries = manifest["entries"]
+    errors << "ENTRY_SET" unless entries.is_a?(Array) && entries.map { |row| row["obligation_id"] } == #{PHASE03_OWNED.inspect}
+    Array(entries).each do |entry|
+      errors << "ENTRY_STATUS" unless entry["status"] == "PASS"
+      errors << "ENTRY_SHA" unless File.file?(entry["path"]) && Digest::SHA256.file(entry["path"]).hexdigest == entry["sha256"]
+    end
+    if errors.empty?
+      puts "phase03_crypto_evidence=PASS"
+      exit 0
+    end
+    warn "phase03_crypto_evidence=BLOCKED \#{errors.join(',')}"
+    exit 1
+  RUBY
+  [relative_phase_dir, manifest_path, subject_path, subject_manifest_digest, tested_subject_digest]
+end
+
+def phase03_lifecycle_command(root, extra = [])
+  [
+    RbConfig.ruby, VALIDATOR,
+    "--root", root,
+    "--phase", "03",
+    "--package", PHASE03_OWNER,
+    "--stage", "pre-push-exit",
+    *extra
+  ]
+end
+
+def run_phase03_lifecycle_case(root, expected_success:, expected_token:, extra:)
+  stdout, stderr, status = Open3.capture3(*phase03_lifecycle_command(root, extra), chdir: root)
+  output = stdout + stderr
+  unless status.success? == expected_success
+    abort "PHASE03_LIFECYCLE_STATUS_MISMATCH expected=#{expected_success} token=#{expected_token}\n#{output}"
+  end
+  abort "PHASE03_LIFECYCLE_TOKEN_MISSING token=#{expected_token}\n#{output}" unless output.include?(expected_token)
+end
+
+Dir.mktmpdir("phase03-lifecycle-") do |workspace|
+  baseline = File.join(workspace, "baseline")
+  _phase_dir, manifest_path, subject_path, manifest_digest, subject_digest = phase03_lifecycle_fixture(baseline)
+  common = [
+    "--evidence-manifest", manifest_path,
+    "--require-gsd-clear", "--require-claude-clear", "--allow-reserved-delivery"
+  ]
+  run_phase03_lifecycle_case(
+    baseline, expected_success: true,
+    expected_token: "PHASE_LIFECYCLE PASS stage=pre-push-exit phase=03 package=crypto-storage-bootstrap",
+    extra: common
+  )
+  cases = [
+    ["dynamic-artifact", "LIFECYCLE_ARTIFACT_MISSING", common, lambda do |root|
+      FileUtils.rm_f(File.join(root, ".planning/phases/03-crypto-storage-bootstrap/03-SPEC.md"))
+    end],
+    ["dynamic-plan", "LIFECYCLE_PLAN_MISSING", common, lambda do |root|
+      FileUtils.rm_f(File.join(root, ".planning/phases/03-crypto-storage-bootstrap/03-01-PLAN.md"))
+    end],
+    ["declared-schema-claims", "LIFECYCLE_SCHEMA_CLAIMS_REQUIRED", common, lambda do |root|
+      FileUtils.rm_f(File.join(root, ".planning/phases/03-crypto-storage-bootstrap/SCHEMA-CLAIMS.md"))
+    end],
+    ["phase03-evidence-dispatch", "LIFECYCLE_EVIDENCE_INVALID", common, lambda do |root|
+      path = File.join(root, manifest_path)
+      manifest = JSON.parse(File.read(path))
+      manifest["status"] = "BLOCKED"
+      File.write(path, JSON.pretty_generate(manifest) + "\n")
+    end],
+    ["owned-todo-evidence-path", "LIFECYCLE_TODO_EVIDENCE_REFERENCE_MISSING", common, lambda do |root|
+      path = File.join(root, ".planning/phases/03-crypto-storage-bootstrap/TODO.md")
+      File.write(path, File.read(path).sub(
+        " Evidence: `EVIDENCE/OBL-CRYPTO-STORAGE-001.json`.",
+        ""
+      ))
+    end],
+    ["dynamic-gsd-review", "LIFECYCLE_REVIEW_BLOCKING_FINDINGS", common, lambda do |root|
+      create_review(
+        File.join(root, ".planning/phases/03-crypto-storage-bootstrap/03-REVIEW.md"),
+        subject_path, manifest_digest, subject_digest, high: 1, result: "BLOCKED"
+      )
+    end],
+    ["noncontiguous-binding-revision", "LIFECYCLE_REVIEW_ATTEMPT_SEQUENCE_INVALID", common, lambda do |root|
+      write(File.join(root, ".planning/phases/03-crypto-storage-bootstrap/03-REVIEW.md"), <<~MARKDOWN)
+        # Review
+
+        | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
+        | --- | --- | --- | --- | --- | --- | --- | --- |
+        | 2 | 1 | 0 | no | #{subject_path} | #{manifest_digest} | #{subject_digest} | BLOCKED |
+        | 4 | 0 | 0 | no | #{subject_path} | #{manifest_digest} | #{subject_digest} | PASS |
+
+        ## Final verdict
+
+        PASS
+      MARKDOWN
+    end],
+    ["claude-convergence-row", "LIFECYCLE_REVIEW_BLOCKING_FINDINGS", ["--evidence-manifest", manifest_path, "--require-gsd-clear", "--allow-reserved-delivery"], lambda do |root|
+      create_review(
+        File.join(root, ".planning/phases/03-crypto-storage-bootstrap/CLAUDE-REVIEW.md"),
+        subject_path, manifest_digest, subject_digest, high: 1, result: "BLOCKED"
+      )
+    end],
+    ["reserved-delivery-row", "LIFECYCLE_RESERVED_DELIVERY_PREMATURELY_CHECKED", common, lambda do |root|
+      path = File.join(root, ".planning/phases/03-crypto-storage-bootstrap/TODO.md")
+      File.write(path, File.read(path).sub(
+        "- [ ] Annotated delivery tag, required remote check and live delivery attestation pass.",
+        "- [x] Annotated delivery tag, required remote check and live delivery attestation pass."
+      ))
+    end]
+  ]
+  cases.each do |name, token, extra, change|
+    fixture = mutation(workspace, baseline, "phase03-#{name}", &change)
+    run_phase03_lifecycle_case(fixture, expected_success: false, expected_token: token, extra: extra)
+  end
+  puts "PHASE03_LIFECYCLE_TEST PASS cases=#{cases.length + 1} negative=#{cases.length} positive=1 schema=actual nested_subject=PASS"
 end

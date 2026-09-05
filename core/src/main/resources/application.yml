@@ -49,6 +49,7 @@ ycsopen:
       key-attributes: CKA_TOKEN,CKA_PRIVATE,CKA_SENSITIVE,CKA_NOT_EXTRACTABLE
       rotation-required-at: 983040
       hard-ceiling: 1048576
+      snapshot-store-root: ${YCSOPEN_ENCRYPTED_SNAPSHOT_STORE_ROOT:}
       aliases:
         field-encryption-kek: ycs.field-encryption-kek.v1
         snapshot-recovery: ycs.snapshot-recovery.v1

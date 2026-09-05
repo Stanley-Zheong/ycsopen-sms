@@ -11,6 +11,7 @@ import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11KeyDescriptor;
 import com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactory;
 import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
 import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePublicationFence;
 import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
 import com.ycsopen.sms.core.common.security.object.ObjectCapabilityService;
 import com.ycsopen.sms.core.common.security.object.ObjectCapabilityToken;
@@ -260,7 +261,8 @@ class Phase03ObjectStorageIntegrationTest {
                 keyAdapter, jdbc,
                 beanFactory.getBeanProvider(TenantRegistrationObjectSessionService.class),
                 new ActiveFieldKeyReference(new KeyReferenceRepository.Jdbc(
-                        jdbc, new TransactionTemplate(transactions))));
+                        jdbc, new TransactionTemplate(transactions))),
+                new JdbcFieldReferencePublicationFence(jdbc));
         return new Fixture(jdbc, transactions, store, metadata, capabilities, objects, sessions,
                 registration, keyAdapter, clock, bucket);
     }

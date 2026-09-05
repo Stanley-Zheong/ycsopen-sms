@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Current status: evidence for executable obligations is current for the fixed subject, while independent external acceptance (goal verification + code review replay) remains pending for closure.
+Current status: executable obligation evidence and all three independent final reviews are current for the fixed subject, including the CI/delivery/lifecycle trusted-input closure. Only live remote check and annotated-tag attestation remain reserved for post-push delivery.
 
 The catalog and TEST-MATRIX contain exactly four Phase 03 obligation rows. Their evidence is generated from one current-subject root result, not from per-row self-authored PASS claims. Executor-owned entry, prerequisite, obligation and executable-verification TODOs now cite their accepted artifacts; independent review and delivery items remain open for the orchestrator.
 
@@ -10,13 +10,13 @@ The catalog and TEST-MATRIX contain exactly four Phase 03 obligation rows. Their
 
 | Obligation | Evidence digest |
 | --- | --- |
-| `OBL-CRYPTO-STORAGE-001` | `83a5919c327f623d22907f7c957d4459fba5ade31ed7542c96630a73b4413abc` |
-| `OBL-CRYPTO-STORAGE-002` | `7e6d1763e31ca99ddc33cd680d5498b1cdb72de0595e5caa121545f3050a46a6` |
-| `OBL-CRYPTO-STORAGE-003` | `ee26436f9c85633744579cff52fffff56a1c30bbc2452fd07b3de3acb2103bf8` |
-| `OBL-CRYPTO-STORAGE-004` | `c88e6c7ccd21ec8c294c56141106984a6d1b388a56f5860080d831ed143ce643` |
+| `OBL-CRYPTO-STORAGE-001` | `6e07aceafe5c0c2ca017d23123f2e9b6954157ff18680ab14018cc13b035e4ab` |
+| `OBL-CRYPTO-STORAGE-002` | `3bd7fc379f560fc7c9c9398d9553c3e13839e6af1a32e79d1ade53faa4155e76` |
+| `OBL-CRYPTO-STORAGE-003` | `a8499dca3a008e9738a36efdfe43f0da74fe22d4d11faa7c13633a32154a9213` |
+| `OBL-CRYPTO-STORAGE-004` | `3397bf5e828e8723fba8bf15fe2695faa3609e1741a3ddbf22dd1f49195ac511` |
 
-The evidence manifest binds tested subject `a9115b1e8a04f683a52604982552d220fac11006d4782be0d76b48e97097c875`, accepted inventory digest `9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009`, and the complete five-target leak result.
+The evidence manifest binds tested subject `78ab379f0d1e55c34740a6e13962dd558579558f45441ed0d757d5b4a1eb1c7f`, accepted inventory digest `9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009`, and complete leak result `ca8d64678db4344ab99d86b274636920dac8ddd1aba029290a65ad90dbf48252`.
 
 ## Handoff
 
-Executor handoff was previously interrupted by external review findings. The current-subject root and evidence set above reflects the corrected fixed scope; this phase is still blocked on fresh external replay of the same independent checks until they are reissued against this closure window.
+The current-subject root and evidence set above reflects the corrected fixed scope and the 15-file delivery trust boundary. GSD Round 12, Claude Attempt 9 and goal verification 4/4 bind this exact subject; the reserved remote-check/tag row closes only from live delivery evidence.

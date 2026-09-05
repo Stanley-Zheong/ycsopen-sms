@@ -1,17 +1,116 @@
 ---
 phase: 03-crypto-storage-bootstrap
-reviewer: claude-code-cli-2.1.238
-session: 0ae46565-3ddb-4c40-b941-238e8c4786db
+reviewer: claude-code-cli
+session: 1d817401-af4a-4b75-b0ee-cb7c4a96f92b
 mode: tool-less-phase-patch-review
-attempt: 5
-status: authorized
+attempt: 9
+status: pass
 blocker: 0
 high: 0
-warning: 0
-info: 2
+warning: 4
+info: 1
 ---
 
-# Phase 03 Claude plan and entry review
+# Phase 03 Claude review history
+
+## Attempt 9 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 4, INFO 1. Claude reviewed the complete corrected-subject patch after the Round 11 delivery-trust findings, confirmed those findings are closed, and found no new production or delivery blocker/high issue.
+
+### Attempt 9 explicit confirmations
+
+- The producer, target-tree validator and destructive-test fixture contain the same exact 15-file trusted subject list. The validator parses the producer list from the target commit and rejects set drift.
+- Target-tree reconstruction uses immutable Git objects. All 45 combinations of 15 trusted files × missing/content/mode mutation fail closed.
+- `Phase 03 portable registry` has no job-level gate, executes the delivery/lifecycle suites and real current-evidence pre-push validation, and rejects test-only bridges in the packaged production JAR.
+- Phase 1 verification/supersession behavior remains compatible.
+- The single FIELD publication-fence bean and guarded `markDeleted` predecessor states remain correct and regression-covered.
+
+### Attempt 9 nonblocking findings
+
+- WARNING: workflow structure fixtures use line/regex checks rather than a full GitHub Actions semantic interpreter. The current workflow contains no `continue-on-error` or commented-out required command.
+- WARNING: a local trusted-input symlink is omitted by the producer before an explicit producer error, but the target-tree delivery validator rejects the `120000` mode as a missing trusted blob. Delivery remains fail closed.
+- WARNING: Phase 3 binding-table numbering permits a positive local revision offset. Subject/status/digest validation is unaffected.
+- WARNING: goal-verification binding still awaited replay when Claude inspected the patch. TODO and lifecycle validation truthfully kept that item open.
+- INFO: the single-bean Spring regression imports its configuration directly while the broader feature property is disabled; the bean itself is not property-gated, so the asserted composition remains material.
+
+### Attempt 9 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none.
+- Session: `1d817401-af4a-4b75-b0ee-cb7c4a96f92b`.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 4, INFO 1.
+- Determination: corrected-subject Phase 3 delivery closure supported after current goal-verification binding.
+
+## Attempt 8 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 2, INFO 1. Claude reviewed the complete final candidate after delivery/lifecycle validator generalization and CI closure wiring. No production, evidence-trust, compatibility or delivery-check blocker/high finding remains.
+
+### Attempt 8 explicit confirmations
+
+- Phase 3 delivery validation reconstructs the subject from the annotated tag's immutable Git tree through `git ls-tree`/target blobs, validates the nested subject plus exact-four evidence, and does not substitute mutable working-tree files.
+- Phase 1 behavior remains compatible: its literal artifact paths, strict attempt sequence, legacy trace validation and schema behavior remain on the original branch of each generalized validator.
+- The GitHub Actions job is named exactly `Phase 03 portable registry`, always runs on the Phase 3 PR, and packages the production JAR before rejecting either test-only migration bridge class. The obsolete Phase 1 registry is superseded only when all three historical inputs are absent.
+- The duplicate-bean fix and guarded `markDeleted` transition remain correct and regression-covered.
+
+### Attempt 8 nonblocking findings
+
+- WARNING: Phase 3 checked-obligation rows may derive the exact evidence path from the already strict exact-four manifest when the TODO prose names the obligation but omits a literal path. This is a documentation strictness boundary only; manifest entry identity, checksum, status and subject binding still fail closed.
+- WARNING: closure-binding table attempt numbers are monotonic positive binding revisions but share an `Attempt` label with the longer historical Claude attempt sequence. The parser remains unambiguous; the naming can be clarified in a future validator-format revision.
+- INFO: the single-bean Spring test disables the broader crypto-storage feature property while importing the configuration directly. The reviewed bean is not property-gated, and the test plus production composition evidence make this non-material.
+
+### Attempt 8 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none.
+- Session: `3ece9492-e14f-4350-ba9a-2954ba8441e4`.
+- Complete patch size: 768365 bytes / 13449 lines, including tracked and untracked candidate files.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 2, INFO 1.
+- Determination: Phase 3 final delivery closure supported.
+
+## Attempt 7 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 2, INFO 2. The complete post-fix patch and fresh canonical evidence support Phase 3 closure.
+
+### Attempt 7 confirmed corrections
+
+- Attempt 6 duplicate-bean BLOCKER is closed: `JdbcFieldReferencePublicationFence` has no component stereotype, the explicit configuration method is the sole production bean, and the component-scan regression test would fail if duplicate registration returned.
+- Attempt 6 object-state HIGH is closed: `markDeleted` requires one of the three legitimate predecessor states plus the exact non-null FIELD reservation. The JDBC regression test proves `FAILED` remains failed with its reservation and proves all three eligible states release it.
+- No new blocking or high finding was found across publication/retirement locks, snapshot authentication/recovery, signed configuration, executable/credential authority, Spring composition, test-bridge isolation, or evidence trace.
+
+### Attempt 7 nonblocking boundaries
+
+- Java `ProcessBuilder` cannot eliminate the final filesystem path-resolution TOCTOU window; repeated identity/authority checks narrow it and the signed digest remains the authenticity boundary.
+- Repository retry closures must not perform externally visible non-JDBC side effects. Current callers retry only classified transient lock failures after transaction rollback and satisfy this constraint.
+- Fail-closed inventory rejection and the reviewer's tool-less execution boundary were recorded as informational, not implementation gaps.
+
+### Attempt 7 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none.
+- Session: `9e70f9e8-b77b-4338-8c74-848e753d36ef`.
+- Complete patch size: 664337 bytes / 11741 lines, including tracked and untracked candidate files and excluding the resolved debug diary.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 2, INFO 2.
+- Determination: Phase 3 closure supported.
+
+## Attempt 6 verdict
+
+`FAIL` — BLOCKER 1, HIGH 1, WARNING 2, INFO 2. This result invalidated the then-current Round 9 clean claim and prevented delivery.
+
+### Attempt 6 material findings and resolution
+
+| ID | Severity | Finding | Resolution |
+| --- | --- | --- | --- |
+| PH03-R6-B01 | BLOCKER | `JdbcFieldReferencePublicationFence` was registered by both `@Component` and `CryptoStorageConfiguration.@Bean`, so production component scanning could fail with two candidates. | Removed the component stereotype, retained explicit configuration ownership, and added a production-style component-scan single-bean test. |
+| PH03-R6-H01 | HIGH | `markDeleted` released any matching non-null FIELD reservation without checking the operation predecessor state. | Restricted release to `OBJECT_STORED`, `RECONCILE_DELETE`, or `COMPLETED`; added focused negative and positive JDBC state tests. |
+
+### Attempt 6 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""`.
+- Nested tool/file access: none.
+- Session: `08f0ecf3-718e-47c1-b807-20d9a81e17f2`.
+- Complete patch size: 654973 bytes / 11537 lines.
+- Returned counts: BLOCKER 1, HIGH 1, WARNING 2, INFO 2.
+- Determination: delivery blocked until correction, fresh canonical verification and re-review.
 
 ## Attempt 5 verdict
 
@@ -142,6 +241,12 @@ Claude explicitly confirmed schema ordering for new artifacts, authenticated hea
 - Returned counts: BLOCKER 4, HIGH 3, WARNING 4, INFO 3.
 - Execution authorization: NOT AUTHORIZED.
 
+## Closure binding
+
+| Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | e04d225b74fa9c2a18ef9316987278bd370c70fa99b8cb0feeeb305a8e3e2eb1 | 78ab379f0d1e55c34740a6e13962dd558579558f45441ed0d757d5b4a1eb1c7f | PASS |
+
 ## Final verdict
 
-AUTHORIZED
+PASS

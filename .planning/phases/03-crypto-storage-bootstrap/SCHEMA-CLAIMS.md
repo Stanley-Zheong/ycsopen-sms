@@ -3,6 +3,7 @@
 | Claim ID | Schema object/prefix | Owner package | Migration ID | Depends on migration | Compatibility step | Rollback | Cross-owner approval |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | SC-03-001 | ycs.sms.crypto-storage-bootstrap.* | crypto-storage-bootstrap | V1200 | V1 | expand | Revert application readers/writers to the previous compatible path while leaving V1200 additive objects intact; if migrated data requires recovery, stop new claims and restore the preflight-verified encrypted snapshot, then resume with a forward-fix migration. | - |
+| SC-03-002 | ycs.sms.crypto-storage-bootstrap.object-field-reference-reservations | crypto-storage-bootstrap | V1201 | V1200 | expand | Keep the nullable reservation columns and forward-fix readers/writers; rollback never drops reference history while ciphertext may remain live. | - |
 
 V1200 is an umbrella claim for Phase-owned metadata only. It does not claim or modify legacy V1 DDL.
 
@@ -32,4 +33,13 @@ object and requires no `SUPER` privilege. Runtime mutations use the declared
 optimistic versions, state predicates and ceilings in one transaction; exact
 constraints, foreign keys and unique indexes reject invalid stored shapes.
 
-V1201 is the next available migration in the registered V1200-V1299 namespace.
+## V1201 physical object claim
+
+V1201 adds the nullable, exact-purpose `field_key_purpose` and `field_key_version`
+reservation pair to `ycs_crypto_object_operations`, with a composite foreign key to
+`ycs_crypto_key_references` and a check restricting populated rows to
+`FIELD_ENCRYPTION_KEK`. The nullable shape is expand-only for existing V1200 rows;
+the production inventory fails closed on any potentially live operation or
+non-DELETED object lacking one exact reservation.
+
+V1202 is the next available migration in the registered V1200-V1299 namespace.

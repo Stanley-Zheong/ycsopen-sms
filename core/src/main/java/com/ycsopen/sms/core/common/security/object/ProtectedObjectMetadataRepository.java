@@ -2,6 +2,11 @@ package com.ycsopen.sms.core.common.security.object;
 
 import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
 import com.ycsopen.sms.core.common.security.key.VersionedTokenDigest;
+import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcTokenDigestPublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.TokenDigestPublicationFence;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -29,16 +34,27 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
 
     public ProtectedObjectMetadataRepository(JdbcTemplate jdbcTemplate,
                                              PlatformTransactionManager transactionManager) {
-        this(new JdbcStore(jdbcTemplate, transactionManager));
+        this(new JdbcStore(jdbcTemplate, transactionManager,
+                new JdbcFieldReferencePublicationFence(jdbcTemplate),
+                new JdbcTokenDigestPublicationFence(jdbcTemplate)));
     }
 
     ProtectedObjectMetadataRepository(Store store) {
         this.store = Objects.requireNonNull(store, "store");
     }
 
-    public void beginCreate(CreateOperation operation) {
+    ProtectedObjectMetadataRepository(
+            JdbcTemplate jdbcTemplate,
+            PlatformTransactionManager transactionManager,
+            TokenDigestPublicationFence tokenFence) {
+        this(new JdbcStore(jdbcTemplate, transactionManager,
+                new JdbcFieldReferencePublicationFence(jdbcTemplate), tokenFence));
+    }
+
+    public void beginCreate(CreateOperation operation, byte[] envelope) {
         require(operation);
-        store.beginCreate(operation);
+        Objects.requireNonNull(envelope, "envelope");
+        store.beginCreate(operation, envelope);
     }
 
     public Optional<ProtectedObjectMetadata> completeCreate(CreateOperation operation,
@@ -70,9 +86,9 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         store.recordOrphan(operation, stored);
     }
 
-    public void failCreate(String operationId) {
+    public void failCreate(String operationId, boolean absenceConfirmed) {
         requireOperationId(operationId);
-        store.failCreate(operationId);
+        store.failCreate(operationId, absenceConfirmed);
     }
 
     public Optional<ProtectedObjectMetadata> find(String protectedObjectId) {
@@ -279,7 +295,7 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
     }
 
     interface Store {
-        void beginCreate(CreateOperation operation);
+        void beginCreate(CreateOperation operation, byte[] envelope);
 
         void recordObjectStored(CreateOperation operation, StoredObjectMetadata stored);
 
@@ -288,7 +304,7 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
 
         void recordOrphan(CreateOperation operation, StoredObjectMetadata stored);
 
-        void failCreate(String operationId);
+        void failCreate(String operationId, boolean absenceConfirmed);
 
         Optional<ProtectedObjectMetadata> find(String protectedObjectId);
 
@@ -312,23 +328,35 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
     private static final class JdbcStore implements Store {
         private final JdbcTemplate jdbc;
         private final TransactionTemplate transaction;
+        private final FieldReferencePublicationFence fieldFence;
+        private final TokenDigestPublicationFence tokenFence;
 
-        private JdbcStore(JdbcTemplate jdbcTemplate, PlatformTransactionManager transactionManager) {
+        private JdbcStore(
+                JdbcTemplate jdbcTemplate,
+                PlatformTransactionManager transactionManager,
+                FieldReferencePublicationFence fieldFence,
+                TokenDigestPublicationFence tokenFence) {
             this.jdbc = Objects.requireNonNull(jdbcTemplate, "jdbcTemplate");
             this.transaction = new TransactionTemplate(
                     Objects.requireNonNull(transactionManager, "transactionManager"));
+            this.fieldFence = Objects.requireNonNull(fieldFence, "fieldFence");
+            this.tokenFence = Objects.requireNonNull(tokenFence, "tokenFence");
         }
 
         @Override
-        public void beginCreate(CreateOperation operation) {
-            int inserted = jdbc.update("""
-                    INSERT INTO ycs_crypto_object_operations
-                        (operation_id, registration_session_id, object_purpose,
-                         operation_state, attempt_number)
-                    VALUES (?, ?, ?, 'RESERVED', ?)
-                    """, operation.operationId(), operation.registrationSessionId(),
-                    databasePurpose(operation.purpose()), operation.attemptNumber());
-            requireOne(inserted);
+        public void beginCreate(CreateOperation operation, byte[] envelope) {
+            transaction.executeWithoutResult(status -> {
+                long keyVersion = fieldFence.lockAndValidate(
+                        envelope, operation.purpose().envelopeTarget());
+                int inserted = jdbc.update("""
+                        INSERT INTO ycs_crypto_object_operations
+                            (operation_id, registration_session_id, object_purpose,
+                             operation_state, attempt_number, field_key_purpose, field_key_version)
+                        VALUES (?, ?, ?, 'RESERVED', ?, 'FIELD_ENCRYPTION_KEK', ?)
+                        """, operation.operationId(), operation.registrationSessionId(),
+                        databasePurpose(operation.purpose()), operation.attemptNumber(), keyVersion);
+                requireOne(inserted);
+            });
         }
 
         @Override
@@ -420,12 +448,15 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         }
 
         @Override
-        public void failCreate(String operationId) {
+        public void failCreate(String operationId, boolean absenceConfirmed) {
             jdbc.update("""
                     UPDATE ycs_crypto_object_operations
-                       SET operation_state = 'FAILED', optimistic_version = optimistic_version + 1
+                       SET operation_state = 'FAILED',
+                           field_key_purpose = CASE WHEN ? THEN NULL ELSE field_key_purpose END,
+                           field_key_version = CASE WHEN ? THEN NULL ELSE field_key_version END,
+                           optimistic_version = optimistic_version + 1
                      WHERE operation_id = ? AND operation_state = 'RESERVED'
-                    """, operationId);
+                    """, absenceConfirmed, absenceConfirmed, operationId);
         }
 
         @Override
@@ -482,9 +513,14 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                 jdbc.update("""
                         UPDATE ycs_crypto_object_operations
                            SET operation_state = 'COMPLETED', affected_count = 1,
+                               field_key_purpose = NULL, field_key_version = NULL,
                                optimistic_version = optimistic_version + 1
                          WHERE protected_object_id = ?
-                           AND operation_state IN ('OBJECT_STORED', 'RECONCILE_DELETE')
+                           AND operation_state IN (
+                               'OBJECT_STORED', 'RECONCILE_DELETE', 'COMPLETED'
+                           )
+                           AND field_key_purpose = 'FIELD_ENCRYPTION_KEK'
+                           AND field_key_version IS NOT NULL
                         """, protectedObjectId);
             });
         }
@@ -534,7 +570,9 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         public boolean createCapability(ObjectCapabilityService.StoredCapability capability) {
             try {
                 VersionedTokenDigest digest = capability.credentialDigest();
-                int inserted = jdbc.update("""
+                Boolean created = transaction.execute(status -> {
+                    tokenFence.lockAndValidate(digest);
+                    int inserted = jdbc.update("""
                         INSERT INTO ycs_crypto_object_capabilities
                             (capability_lookup_id, protected_object_id, tenant_binding_digest,
                              subject_binding_digest, capability_purpose, digest_key_purpose,
@@ -545,8 +583,10 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                         capability.tenantBindingDigest(), capability.subjectBindingDigest(),
                         capability.purpose(), CAPABILITY_DIGEST_PURPOSE, digest.keyVersion(),
                         digest.digest(), capability.state().name(), Timestamp.from(capability.expiresAt()));
-                requireOne(inserted);
-                return true;
+                    requireOne(inserted);
+                    return true;
+                });
+                return Boolean.TRUE.equals(created);
             } catch (DuplicateKeyException duplicate) {
                 return false;
             }

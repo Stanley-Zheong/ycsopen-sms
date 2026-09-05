@@ -4,6 +4,7 @@ import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
 import com.ycsopen.sms.core.common.security.object.TenantRegistrationObjectSessionService;
 import com.ycsopen.sms.core.domain.entity.Tenant;
 import com.ycsopen.sms.core.web.dto.TenantRegistrationRequest;
@@ -55,24 +56,28 @@ public final class TenantRegistrationProtectionAdapter {
 
     private final ProtectedFieldCodec protectedFieldCodec;
     private final ClaimStore claimStore;
+    private final FieldReferencePublicationFence fieldFence;
 
     @Autowired
     public TenantRegistrationProtectionAdapter(
             KeyProtectionPort keyProtectionPort,
             JdbcTemplate jdbcTemplate,
             ObjectProvider<TenantRegistrationObjectSessionService> sessionServiceProvider,
-            ActiveFieldKeyReference activeFieldKeyReference) {
+            ActiveFieldKeyReference activeFieldKeyReference,
+            FieldReferencePublicationFence fieldFence) {
         this(new ProtectedFieldCodec(new EnvelopeCodec(), keyProtectionPort,
                         new SecureRandom(), activeFieldKeyReference::current),
                 new JdbcClaimStore(jdbcTemplate, sessionServiceProvider::getIfAvailable,
-                        Clock.systemUTC()));
+                        Clock.systemUTC()), fieldFence);
     }
 
     public TenantRegistrationProtectionAdapter(ProtectedFieldCodec protectedFieldCodec,
-                                               ClaimStore claimStore) {
+                                               ClaimStore claimStore,
+                                               FieldReferencePublicationFence fieldFence) {
         this.protectedFieldCodec = Objects.requireNonNull(
                 protectedFieldCodec, "protectedFieldCodec");
         this.claimStore = Objects.requireNonNull(claimStore, "claimStore");
+        this.fieldFence = Objects.requireNonNull(fieldFence, "fieldFence");
     }
 
     /** Rejects unsafe or incomplete wire input before the first tenant database write. */
@@ -134,6 +139,10 @@ public final class TenantRegistrationProtectionAdapter {
             legalEnvelope = protect(tenant, "legal_rep_id_no_encrypted", legalPlaintext);
             contactIdEnvelope = protect(tenant, "contact_id_no_encrypted", contactIdPlaintext);
             contactPhoneEnvelope = protect(tenant, "contact_phone_encrypted", contactPhonePlaintext);
+
+            fieldFence.lockAndValidate(legalEnvelope, EnvelopeCodec.Target.DATABASE_FIELD);
+            fieldFence.lockAndValidate(contactIdEnvelope, EnvelopeCodec.Target.DATABASE_FIELD);
+            fieldFence.lockAndValidate(contactPhoneEnvelope, EnvelopeCodec.Target.DATABASE_FIELD);
 
             ObjectSelection selection = new ObjectSelection(
                     request.businessLicenseObjectId(), request.legalRepIdFrontObjectId(),

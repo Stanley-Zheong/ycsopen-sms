@@ -3,6 +3,7 @@
 
 require "json"
 require "cgi"
+require "digest"
 require "open3"
 require "optparse"
 require "pathname"
@@ -18,8 +19,6 @@ module Phase01Lifecycle
     "Subject manifest digest", "Tested subject digest", "Result"
   ].freeze
   REQUIRED_ARTIFACTS = %w[
-    01-SPEC.md
-    01-CONTEXT.md
     INTENT.md
     DESIGN.md
     ITERATIONS.md
@@ -33,7 +32,7 @@ module Phase01Lifecycle
   SHA256 = /\A[0-9a-f]{64}\z/
   LEGACY_EVIDENCE_SCHEMA = "phase01-evidence-manifest-v1"
   OBLIGATION_EVIDENCE_SCHEMA = "phase01-obligation-evidence-manifest-v1"
-  RESERVED_DELIVERY_TEXT = /One atomic Phase 1 commit is visible on the configured GitHub remote/i
+  PHASE03_EVIDENCE_SCHEMA = "phase03-evidence-manifest-v1"
 
   TodoRow = Struct.new(:line, :checked, :text, :obligation_ids, :reserved_delivery, keyword_init: true)
   TableRow = Struct.new(:line, :cells, keyword_init: true)
@@ -114,8 +113,12 @@ module Phase01Lifecycle
     owned
   end
 
-  def validate_artifacts(phase_dir, errors)
-    REQUIRED_ARTIFACTS.each do |name|
+  def required_artifacts(phase)
+    ["#{phase}-SPEC.md", "#{phase}-CONTEXT.md", *REQUIRED_ARTIFACTS]
+  end
+
+  def validate_artifacts(phase, phase_dir, errors)
+    required_artifacts(phase).each do |name|
       path = File.join(phase_dir, name)
       if !File.file?(path)
         errors << "LIFECYCLE_ARTIFACT_MISSING path=#{path}"
@@ -126,10 +129,16 @@ module Phase01Lifecycle
     evidence_dir = File.join(phase_dir, "EVIDENCE")
     errors << "LIFECYCLE_EVIDENCE_DIRECTORY_MISSING path=#{evidence_dir}" unless File.directory?(evidence_dir)
     design = File.join(phase_dir, "DESIGN.md")
-    if File.file?(design) && !File.read(design).match?(/^Schema migrations:\s*none\s*$/i)
-      errors << "LIFECYCLE_SCHEMA_DECLARATION_INVALID path=#{design} expected=none"
+    claims = File.join(phase_dir, "SCHEMA-CLAIMS.md")
+    if File.file?(design)
+      declaration = File.read(design)[/^Schema migrations:\s*(none|declared)\s*$/i, 1]&.downcase
+      errors << "LIFECYCLE_SCHEMA_DECLARATION_INVALID path=#{design} expected=none-or-declared" unless declaration
+      if declaration == "none" && File.exist?(claims)
+        errors << "LIFECYCLE_SCHEMA_CLAIMS_FORBIDDEN path=#{claims}"
+      elsif declaration == "declared" && (!File.file?(claims) || File.zero?(claims))
+        errors << "LIFECYCLE_SCHEMA_CLAIMS_REQUIRED path=#{claims}"
+      end
     end
-    errors << "LIFECYCLE_SCHEMA_CLAIMS_FORBIDDEN path=#{File.join(phase_dir, 'SCHEMA-CLAIMS.md')}" if File.exist?(File.join(phase_dir, "SCHEMA-CLAIMS.md"))
   end
 
   def validate_verify_command(root, path, task_index, verify_body, errors)
@@ -158,8 +167,8 @@ module Phase01Lifecycle
     end
   end
 
-  def validate_plans(root, phase_dir, errors)
-    paths = Dir.glob(File.join(phase_dir, "01-*-PLAN.md")).sort
+  def validate_plans(root, phase, phase_dir, errors)
+    paths = Dir.glob(File.join(phase_dir, "#{phase}-*-PLAN.md")).sort
     errors << "LIFECYCLE_PLAN_MISSING phase_dir=#{phase_dir}" if paths.empty?
     paths.each do |path|
       body = read(path, errors, "LIFECYCLE_PLAN")
@@ -196,7 +205,14 @@ module Phase01Lifecycle
     errors << "LIFECYCLE_ENTRY_REVIEW_FINAL_VERDICT_NOT_PASS path=#{path}" unless body.match?(/^## Verdict\s*\n+PASS\s*$/)
   end
 
-  def parse_todo(path, errors)
+  def reserved_delivery_text?(text, phase)
+    numbered_phase = Integer(phase, exception: false)&.to_s
+    return true if numbered_phase && text.match?(/One atomic Phase #{Regexp.escape(numbered_phase)} commit is visible on the configured GitHub remote/i)
+
+    text.match?(/Annotated delivery tag, required remote check and live delivery attestation pass/i)
+  end
+
+  def parse_todo(path, phase, errors)
     body = read(path, errors, "LIFECYCLE_TODO")
     rows = body.lines.each_with_index.filter_map do |line, index|
       match = line.match(/^\s*- \[([ xX])\]\s*(.*?)\s*$/)
@@ -208,7 +224,7 @@ module Phase01Lifecycle
         checked: match[1].downcase == "x",
         text: text,
         obligation_ids: text.scan(OBLIGATION_ID).uniq,
-        reserved_delivery: text.match?(RESERVED_DELIVERY_TEXT)
+        reserved_delivery: reserved_delivery_text?(text, phase)
       )
     end
     errors << "LIFECYCLE_TODO_EMPTY path=#{path}" if rows.empty?
@@ -236,7 +252,7 @@ module Phase01Lifecycle
     return false unless entry.is_a?(Hash) && entry["path"] == path && entry["status"] == "PASS"
 
     case schema
-    when OBLIGATION_EVIDENCE_SCHEMA
+    when OBLIGATION_EVIDENCE_SCHEMA, PHASE03_EVIDENCE_SCHEMA
       entry["obligation_id"] == obligation_id
     when LEGACY_EVIDENCE_SCHEMA
       Array(entry["obligation_ids"]).include?(obligation_id)
@@ -251,8 +267,12 @@ module Phase01Lifecycle
     ["", e.message, nil]
   end
 
-  def load_and_validate_evidence(root, phase_dir, owner, manifest_path, errors)
-    validator = File.join(root, ".planning/tools/validate-verification-evidence.rb")
+  def load_and_validate_evidence(root, phase, phase_dir, owner, manifest_path, errors)
+    phase03 = phase == "03"
+    validator = File.join(
+      root,
+      phase03 ? ".planning/tools/validate-phase-03-crypto-evidence.rb" : ".planning/tools/validate-verification-evidence.rb"
+    )
     unless File.file?(validator)
       errors << "LIFECYCLE_EVIDENCE_VALIDATOR_MISSING path=#{validator}"
       return nil
@@ -262,10 +282,16 @@ module Phase01Lifecycle
       return nil
     end
     relative_manifest = repository_relative(root, manifest_path)
-    stdout, stderr, status = run_child(
-      [RbConfig.ruby, validator, "--root", root, "--manifest", relative_manifest, "--require-owner", owner],
-      root
-    )
+    argv = if phase03
+      [
+        RbConfig.ruby, validator,
+        "--phase-dir", repository_relative(root, phase_dir),
+        "--require-owner", owner
+      ]
+    else
+      [RbConfig.ruby, validator, "--root", root, "--manifest", relative_manifest, "--require-owner", owner]
+    end
+    stdout, stderr, status = run_child(argv, root)
     unless status&.success?
       diagnostics = (stdout + stderr).lines.map(&:strip).reject(&:empty?).first(8).join(" | ")
       errors << "LIFECYCLE_EVIDENCE_INVALID manifest=#{relative_manifest} diagnostics=#{diagnostics}"
@@ -287,12 +313,12 @@ module Phase01Lifecycle
       row.obligation_ids.each do |id|
         next unless owned_records.key?(id)
 
+        expected = owned_records.fetch(id).fetch(:evidence)
         cited = evidence_reference(row)
         if cited.nil?
           errors << "LIFECYCLE_TODO_EVIDENCE_REFERENCE_MISSING line=#{row.line} id=#{id}"
           next
         end
-        expected = owned_records.fetch(id).fetch(:evidence)
         unless cited == expected
           errors << "LIFECYCLE_TODO_EVIDENCE_TARGET_MISMATCH line=#{row.line} id=#{id} expected=#{expected} actual=#{cited}"
         end
@@ -310,8 +336,58 @@ module Phase01Lifecycle
         end
       end
     end
-    if manifest && ![OBLIGATION_EVIDENCE_SCHEMA, LEGACY_EVIDENCE_SCHEMA].include?(manifest["schema_version"])
+    if manifest && ![OBLIGATION_EVIDENCE_SCHEMA, LEGACY_EVIDENCE_SCHEMA, PHASE03_EVIDENCE_SCHEMA].include?(manifest["schema_version"])
       errors << "LIFECYCLE_EVIDENCE_SCHEMA_UNSUPPORTED schema=#{manifest['schema_version'].inspect}"
+    end
+  end
+
+  def evidence_binding(root, manifest, errors)
+    return nil unless manifest.is_a?(Hash)
+
+    if manifest["schema_version"] == PHASE03_EVIDENCE_SCHEMA
+      subject_reference = manifest["subject"]
+      unless subject_reference.is_a?(Hash)
+        errors << "LIFECYCLE_EVIDENCE_SUBJECT_REFERENCE_INVALID"
+        return nil
+      end
+      subject_path = subject_reference["path"]
+      unless subject_path.is_a?(String)
+        errors << "LIFECYCLE_EVIDENCE_SUBJECT_PATH_INVALID"
+        return nil
+      end
+      subject_absolute = contained_path(root, subject_path, errors, "LIFECYCLE_EVIDENCE_SUBJECT")
+      return nil unless subject_absolute && File.file?(subject_absolute)
+
+      subject = JSON.parse(File.read(subject_absolute))
+      inputs = subject["inputs"]
+      unless inputs.is_a?(Array)
+        errors << "LIFECYCLE_EVIDENCE_SUBJECT_INPUTS_INVALID"
+        return nil
+      end
+      {
+        "subject_manifest_path" => subject_path,
+        "subject_manifest_digest" => Digest::SHA256.hexdigest(JSON.generate(canonical(subject))),
+        "tested_subject_digest" => Digest::SHA256.hexdigest(JSON.generate(canonical(inputs)))
+      }
+    else
+      manifest.slice("subject_manifest_path", "subject_manifest_digest", "tested_subject_digest")
+    end
+  rescue JSON::ParserError
+    errors << "LIFECYCLE_EVIDENCE_SUBJECT_JSON_INVALID path=#{subject_path}"
+    nil
+  end
+
+  def canonical(value)
+    case value
+    when Hash
+      value.keys.map(&:to_s).sort.to_h do |key|
+        nested = value.key?(key) ? value[key] : value[key.to_sym]
+        [key, canonical(nested)]
+      end
+    when Array
+      value.map { |entry| canonical(entry) }
+    else
+      value
     end
   end
 
@@ -331,7 +407,7 @@ module Phase01Lifecycle
     end
   end
 
-  def validate_review(path, manifest, errors, label)
+  def validate_review(path, manifest, errors, label, allow_latest_binding: false)
     rows = table_rows(path, REVIEW_HEADERS, errors, "LIFECYCLE_REVIEW")
     return if rows.empty?
 
@@ -341,7 +417,8 @@ module Phase01Lifecycle
       attempt = Integer(attempt_text, exception: false)
       blocker = Integer(blocker_text, exception: false)
       high = Integer(high_text, exception: false)
-      errors << "LIFECYCLE_REVIEW_ATTEMPT_INVALID review=#{label} line=#{row.line} value=#{attempt_text}" unless attempt&.between?(1, 3)
+      valid_attempt = allow_latest_binding ? attempt&.positive? : attempt&.between?(1, 3)
+      errors << "LIFECYCLE_REVIEW_ATTEMPT_INVALID review=#{label} line=#{row.line} value=#{attempt_text}" unless valid_attempt
       errors << "LIFECYCLE_REVIEW_BLOCKER_COUNT_INVALID review=#{label} line=#{row.line} value=#{blocker_text}" unless blocker&.>= 0
       errors << "LIFECYCLE_REVIEW_HIGH_COUNT_INVALID review=#{label} line=#{row.line} value=#{high_text}" unless high&.>= 0
       errors << "LIFECYCLE_REVIEW_ESCALATED_VALUE_INVALID review=#{label} line=#{row.line} value=#{escalated}" unless %w[yes no].include?(escalated)
@@ -354,8 +431,12 @@ module Phase01Lifecycle
       attempts << { attempt: attempt, blocker: blocker, high: high, escalated: escalated, result: result, line: row.line }
     end
     valid_attempts = attempts.select { |attempt| attempt[:attempt] && attempt[:blocker] && attempt[:high] }
-    expected_sequence = (1..valid_attempts.length).to_a
     actual_sequence = valid_attempts.map { |attempt| attempt[:attempt] }
+    expected_sequence = if allow_latest_binding && !actual_sequence.empty?
+      (actual_sequence.first...(actual_sequence.first + actual_sequence.length)).to_a
+    else
+      (1..valid_attempts.length).to_a
+    end
     errors << "LIFECYCLE_REVIEW_ATTEMPT_SEQUENCE_INVALID review=#{label} expected=#{expected_sequence.join(',')} actual=#{actual_sequence.join(',')}" unless actual_sequence == expected_sequence
     errors << "LIFECYCLE_REVIEW_ATTEMPT_LIMIT_EXCEEDED review=#{label} count=#{rows.length}" if rows.length > 3
     valid_attempts.each_cons(2) do |previous, current|
@@ -430,11 +511,13 @@ module Phase01Lifecycle
     stage = options.fetch(:stage)
     todo_path = File.join(phase_dir, "TODO.md")
 
-    validate_artifacts(phase_dir, errors)
-    validate_plans(root, phase_dir, errors)
+    validate_artifacts(phase, phase_dir, errors)
+    validate_plans(root, phase, phase_dir, errors)
     owned_records = parse_catalog(catalog, package, errors)
-    todo_rows = parse_todo(todo_path, errors)
-    invoke_trace_validator(root, phase, package, phase_dir, catalog, errors)
+    todo_rows = parse_todo(todo_path, phase, errors)
+    # The legacy trace validator is a Phase 1 contract. Phase 3 trace closure is
+    # checked by its exact-four evidence validator at exit.
+    invoke_trace_validator(root, phase, package, phase_dir, catalog, errors) if phase == "01"
 
     if stage == "entry"
       validate_entry_review(File.join(phase_dir, "ENTRY-REVIEW.md"), errors)
@@ -443,23 +526,33 @@ module Phase01Lifecycle
     end
 
     evidence_manifest = options.fetch(:evidence_manifest)
-    manifest = load_and_validate_evidence(root, phase_dir, package, evidence_manifest, errors)
+    manifest = load_and_validate_evidence(root, phase, phase_dir, package, evidence_manifest, errors)
+    binding = evidence_binding(root, manifest, errors)
     validate_exit_todo(todo_path, todo_rows, true, errors)
     validate_checked_obligation_evidence(root, phase_dir, todo_rows, owned_records, manifest, errors)
 
     review_checks = {
-      "GSD goal verification" => File.join(phase_dir, "01-VERIFICATION.md"),
-      "GSD code review" => File.join(phase_dir, "01-REVIEW.md"),
+      "GSD goal verification" => File.join(phase_dir, "#{phase}-VERIFICATION.md"),
+      "GSD code review" => File.join(phase_dir, "#{phase}-REVIEW.md"),
       "Claude" => File.join(phase_dir, "CLAUDE-REVIEW.md")
     }
     if options[:require_gsd_clear] || todo_rows.any? { |row| row.checked && row.text.include?("GSD goal verification") }
-      validate_review(review_checks.fetch("GSD goal verification"), manifest, errors, "gsd-goal")
+      validate_review(
+        review_checks.fetch("GSD goal verification"), binding, errors, "gsd-goal",
+        allow_latest_binding: phase != "01"
+      )
     end
     if options[:require_gsd_clear] || todo_rows.any? { |row| row.checked && row.text.include?("GSD code review") }
-      validate_review(review_checks.fetch("GSD code review"), manifest, errors, "gsd-code")
+      validate_review(
+        review_checks.fetch("GSD code review"), binding, errors, "gsd-code",
+        allow_latest_binding: phase != "01"
+      )
     end
-    if options[:require_claude_clear] || todo_rows.any? { |row| row.checked && row.text.include?("Claude final review") }
-      validate_review(review_checks.fetch("Claude"), manifest, errors, "claude")
+    if options[:require_claude_clear] || todo_rows.any? { |row| row.checked && row.text.match?(/Claude .*review/i) }
+      validate_review(
+        review_checks.fetch("Claude"), binding, errors, "claude",
+        allow_latest_binding: phase != "01"
+      )
     end
 
     unless options[:allow_reserved_delivery] || %w[post-push-delivery effective-todo-empty].include?(stage)

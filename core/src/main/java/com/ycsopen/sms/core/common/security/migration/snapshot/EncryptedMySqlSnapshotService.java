@@ -47,18 +47,29 @@ public final class EncryptedMySqlSnapshotService {
         if (!request.source().schema().equals(request.subject().schema())) {
             throw SnapshotManifest.invalid();
         }
+        boolean reserved = false;
         boolean complete = false;
-        try (MySqlSnapshotProcess.DumpSession dump = processes.startDump(request.source())) {
-            SnapshotManifest manifest = protectDump(dump.stdout(), request);
-            dump.awaitSuccess();
+        try {
+            freshSchemaGate.requireSnapshotSource(request.source());
+            chunks.beginSnapshot(request.snapshotId());
+            reserved = true;
+            SnapshotManifest manifest;
+            try (MySqlSnapshotProcess.DumpSession dump = processes.startDump(request.source())) {
+                manifest = protectDump(dump.stdout(), request);
+                dump.awaitSuccess();
+            }
+            chunks.putManifest(request.snapshotId(), manifest.canonicalBytes());
             complete = true;
             return manifest;
         } catch (RuntimeException exception) {
-            cleanupFailedSnapshot(request.snapshotId(), exception);
+            if (reserved) {
+                cleanupFailedSnapshot(request.snapshotId(), exception);
+                reserved = false;
+            }
             throw exception;
         } finally {
-            if (!complete) {
-                // The catch owns cleanup for runtime failures; this covers close-time failures.
+            if (reserved && !complete) {
+                // Covers errors whose primary failure is not represented by the catch above.
                 cleanupQuietly(request.snapshotId());
             }
         }
@@ -75,37 +86,103 @@ public final class EncryptedMySqlSnapshotService {
             Database source,
             Database freshTarget) {
         Objects.requireNonNull(admission, "admission");
+        return restore(admittedManifestBytes, new SnapshotAdmission(
+                admission.globalSequence(), admission.signerKeyVersion(),
+                admission.snapshotDigest(), admission.snapshotId(),
+                admission.recoveryKeyReference()), source, freshTarget);
+    }
+
+    /**
+     * Restores from the narrow, database-owned portion of pair admission that binds a snapshot.
+     * Writer artifacts remain a preflight concern and are deliberately not fabricated here.
+     */
+    public RestoreResult restore(
+            byte[] admittedManifestBytes,
+            SnapshotAdmission admission,
+            Database source,
+            Database freshTarget) {
+        Objects.requireNonNull(admission, "admission");
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(freshTarget, "freshTarget");
         SnapshotManifest manifest = SnapshotManifest.parse(admittedManifestBytes);
         String manifestDigest = manifest.digest();
-        if (!manifestDigest.equals(admission.snapshotDigest())
-                || !manifest.snapshotId().equals(admission.snapshotId())
-                || !manifest.recoveryKeyReference().equals(admission.recoveryKeyReference())
-                || manifest.subject().globalSequence() != admission.globalSequence()
-                || !manifest.subject().schema().equals(source.schema())
+        requireAdmittedManifest(manifest, admission);
+        if (!manifest.subject().schema().equals(source.schema())
                 || source.schema().equals(freshTarget.schema())) {
             throw SnapshotManifest.invalid();
         }
+        PlaintextProof expected = proveCompleteRetainedSnapshot(
+                manifest, admittedManifestBytes);
         if (chunks.recoveryComplete(
                 manifest.snapshotId(), freshTarget.schema(), manifestDigest)) {
+            requireTargetMatchesSnapshot(freshTarget, expected);
             return new RestoreResult(manifest.snapshotId(), freshTarget.schema(), true);
         }
 
-        requireCompleteInventory(manifest);
-        authenticateCompleteInventory(manifest);
         freshSchemaGate.requireFresh(source, freshTarget);
 
         try (MySqlSnapshotProcess.RestoreSession restore = processes.startRestore(freshTarget)) {
             streamPlaintext(manifest, restore.stdin());
             restore.awaitSuccess();
         }
+        PlaintextProof afterRestore = proveCompleteRetainedSnapshot(
+                manifest, admittedManifestBytes);
+        if (!expected.equals(afterRestore)) {
+            throw SnapshotManifest.invalid();
+        }
+        requireTargetMatchesSnapshot(freshTarget, afterRestore);
         chunks.markRecoveryComplete(manifest.snapshotId(), freshTarget.schema(), manifestDigest);
         if (!chunks.recoveryComplete(
                 manifest.snapshotId(), freshTarget.schema(), manifestDigest)) {
             throw SnapshotManifest.invalid();
         }
         return new RestoreResult(manifest.snapshotId(), freshTarget.schema(), false);
+    }
+
+    /** Proves the exact retained inventory and authenticates every chunk before pair CAS. */
+    public void requireCompleteRetainedSnapshot(byte[] canonicalManifestBytes) {
+        SnapshotManifest manifest = SnapshotManifest.parse(canonicalManifestBytes);
+        proveCompleteRetainedSnapshot(manifest, canonicalManifestBytes);
+    }
+
+    private PlaintextProof proveCompleteRetainedSnapshot(
+            SnapshotManifest manifest, byte[] canonicalManifestBytes) {
+        byte[] retained = chunks.retainedManifest(manifest.snapshotId()).canonicalManifest();
+        try {
+            if (!MessageDigest.isEqual(canonicalManifestBytes, retained)) {
+                throw SnapshotManifest.invalid();
+            }
+        } finally {
+            clear(retained);
+        }
+        requireCompleteInventory(manifest);
+        return authenticateCompleteInventory(manifest);
+    }
+
+    /** Deletes by immutable snapshot identity plus its exact canonical manifest digest. */
+    public String delete(String snapshotId, String expectedManifestDigest) {
+        byte[] retained = chunks.retainedManifest(snapshotId).canonicalManifest();
+        try {
+            SnapshotManifest manifest = SnapshotManifest.parse(retained);
+            if (!manifest.digest().equals(expectedManifestDigest)) {
+                throw SnapshotManifest.invalid();
+            }
+            chunks.deleteSnapshot(snapshotId);
+            return snapshotId;
+        } finally {
+            clear(retained);
+        }
+    }
+
+    private static void requireAdmittedManifest(
+            SnapshotManifest manifest, SnapshotAdmission admission) {
+        if (!manifest.digest().equals(admission.snapshotDigest())
+                || !manifest.snapshotId().equals(admission.snapshotId())
+                || !manifest.recoveryKeyReference().equals(admission.recoveryKeyReference())
+                || manifest.subject().globalSequence() != admission.globalSequence()
+                || !manifest.subject().signerKeyVersion().equals(admission.signerKeyVersion())) {
+            throw SnapshotManifest.invalid();
+        }
     }
 
     private SnapshotManifest protectDump(InputStream input, CreateRequest request) {
@@ -191,7 +268,9 @@ public final class EncryptedMySqlSnapshotService {
         }
     }
 
-    private void authenticateCompleteInventory(SnapshotManifest manifest) {
+    private PlaintextProof authenticateCompleteInventory(SnapshotManifest manifest) {
+        MessageDigest plaintextDigest = sha256Digest();
+        long plaintextBytes = 0;
         for (SnapshotManifest.Chunk chunk : manifest.chunks()) {
             byte[] envelope = readEnvelope(manifest.snapshotId(), chunk);
             byte[] plaintext = null;
@@ -206,10 +285,54 @@ public final class EncryptedMySqlSnapshotService {
                 if (plaintext.length != chunk.plaintextSize()) {
                     throw SnapshotManifest.invalid();
                 }
+                plaintextBytes = checkedTotal(
+                        plaintextBytes, plaintext.length,
+                        EncryptedSnapshotVerifier.MAXIMUM_SNAPSHOT_PLAINTEXT_BYTES);
+                plaintextDigest.update(plaintext);
             } finally {
                 clear(plaintext);
                 clear(envelope);
             }
+        }
+        if (plaintextBytes != manifest.totalPlaintextBytes()) {
+            throw SnapshotManifest.invalid();
+        }
+        return new PlaintextProof(
+                plaintextBytes, HexFormat.of().formatHex(plaintextDigest.digest()));
+    }
+
+    private void requireTargetMatchesSnapshot(Database target, PlaintextProof expected) {
+        freshSchemaGate.requireRestored(target);
+        MessageDigest targetDigest = sha256Digest();
+        long targetBytes = 0;
+        byte[] buffer = new byte[64 * 1_024];
+        try (MySqlSnapshotProcess.DumpSession dump = processes.startDump(target)) {
+            InputStream input = dump.stdout();
+            while (true) {
+                int read = input.read(buffer);
+                if (read < 0) {
+                    break;
+                }
+                if (read == 0) {
+                    continue;
+                }
+                targetBytes = checkedTotal(
+                        targetBytes, read,
+                        EncryptedSnapshotVerifier.MAXIMUM_SNAPSHOT_PLAINTEXT_BYTES);
+                if (targetBytes > expected.bytes()) {
+                    throw SnapshotManifest.invalid();
+                }
+                targetDigest.update(buffer, 0, read);
+            }
+            dump.awaitSuccess();
+        } catch (IOException exception) {
+            throw SnapshotManifest.invalid();
+        } finally {
+            clear(buffer);
+        }
+        String digest = HexFormat.of().formatHex(targetDigest.digest());
+        if (targetBytes != expected.bytes() || !digest.equals(expected.sha256())) {
+            throw SnapshotManifest.invalid();
         }
     }
 
@@ -347,9 +470,12 @@ public final class EncryptedMySqlSnapshotService {
     }
 
     private static String sha256(byte[] input) {
+        return HexFormat.of().formatHex(sha256Digest().digest(input));
+    }
+
+    private static MessageDigest sha256Digest() {
         try {
-            return HexFormat.of().formatHex(
-                    MessageDigest.getInstance("SHA-256").digest(input));
+            return MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("Java 21 must provide SHA-256", exception);
         }
@@ -383,9 +509,42 @@ public final class EncryptedMySqlSnapshotService {
         }
     }
 
-    @FunctionalInterface
+    /** Immutable snapshot fields reconstructed from the current database pair admission. */
+    public record SnapshotAdmission(
+            long globalSequence,
+            String signerKeyVersion,
+            String snapshotDigest,
+            String snapshotId,
+            String recoveryKeyReference) {
+        public SnapshotAdmission {
+            if (globalSequence < 0) {
+                throw SnapshotManifest.invalid();
+            }
+            Objects.requireNonNull(signerKeyVersion, "signerKeyVersion");
+            Objects.requireNonNull(snapshotDigest, "snapshotDigest");
+            Objects.requireNonNull(snapshotId, "snapshotId");
+            Objects.requireNonNull(recoveryKeyReference, "recoveryKeyReference");
+        }
+    }
+
+    private record PlaintextProof(long bytes, String sha256) {
+        private PlaintextProof {
+            if (bytes < 1 || sha256 == null || !sha256.matches("[a-f0-9]{64}")) {
+                throw SnapshotManifest.invalid();
+            }
+        }
+    }
+
     public interface FreshSchemaGate {
+        /** Must reject a source whose catalog cannot produce deterministic snapshot SQL. */
+        default void requireSnapshotSource(Database source) {
+        }
+
         /** Must reject a missing, nonempty, source-equal or otherwise unowned target schema. */
         void requireFresh(Database source, Database target);
+
+        /** Must reject a restored target whose catalog is outside the deterministic profile. */
+        default void requireRestored(Database target) {
+        }
     }
 }

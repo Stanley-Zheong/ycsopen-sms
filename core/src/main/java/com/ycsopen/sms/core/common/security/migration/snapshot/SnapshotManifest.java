@@ -311,7 +311,7 @@ public record SnapshotManifest(Subject subject,
         }
     }
 
-    static SnapshotException invalid() {
+    public static SnapshotException invalid() {
         return new SnapshotException("encrypted snapshot contract rejected");
     }
 

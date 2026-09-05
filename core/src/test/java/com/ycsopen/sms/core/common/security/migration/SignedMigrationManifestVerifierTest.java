@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -206,6 +207,33 @@ class SignedMigrationManifestVerifierTest {
                     .hasMessage("migration manifest pair rejected");
             assertThat(store.writes()).as(fault.name()).isZero();
         }
+    }
+
+    @Test
+    void productionInventoryProofRunsOnExactSnapshotBytesBeforeCasAndHasTypedFailure()
+            throws Exception {
+        InMemoryPairAdmissionStore rejectedStore = new InMemoryPairAdmissionStore();
+        AtomicInteger proofs = new AtomicInteger();
+        PairFiles pair = writePair(1, "signer-v1", oldKey, node -> { }, node -> { });
+        byte[] expected = Files.readAllBytes(pair.snapshotManifest());
+        SignedMigrationManifestVerifier rejected = new SignedMigrationManifestVerifier(
+                activeOnly(oldKey, "signer-v1"), rejectedStore, CLOCK, bytes -> {
+                    proofs.incrementAndGet();
+                    assertThat(bytes).isEqualTo(expected);
+                    throw new IllegalStateException("retained inventory unavailable");
+                });
+
+        assertRejected(rejected, pair.request(), FailureCode.SNAPSHOT_INVENTORY_INVALID);
+        assertThat(proofs).hasValue(1);
+        assertThat(rejectedStore.writes()).isZero();
+
+        InMemoryPairAdmissionStore acceptedStore = new InMemoryPairAdmissionStore();
+        AtomicReference<byte[]> supplied = new AtomicReference<>();
+        SignedMigrationManifestVerifier accepted = new SignedMigrationManifestVerifier(
+                activeOnly(oldKey, "signer-v1"), acceptedStore, CLOCK, supplied::set);
+        accepted.verifyAndAdmit(pair.request());
+        assertThat(acceptedStore.writes()).isOne();
+        assertThat(supplied.get()).containsOnly((byte) 0);
     }
 
     @Test

@@ -243,6 +243,34 @@ class ProtectedObjectServiceTest {
     }
 
     @Test
+    void fieldReservationIsReleasedOnlyAfterProviderAbsenceIsConfirmed() {
+        Fixture ambiguousPut = fixture(true);
+        ambiguousPut.objectStore.failPutAfterWrite = true;
+        assertUnavailable(() -> ambiguousPut.service.create(request(
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
+                new ByteArrayInputStream(new byte[]{3}), 1L, null)));
+        assertThat(ambiguousPut.repository.absenceConfirmations).containsExactly(false);
+        assertThat(ambiguousPut.objectStore.bodies).hasSize(1);
+
+        Fixture compensated = fixture(true);
+        compensated.repository.failRecordStored = true;
+        assertUnavailable(() -> compensated.service.create(request(
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
+                new ByteArrayInputStream(new byte[]{4}), 1L, null)));
+        assertThat(compensated.repository.absenceConfirmations).containsExactly(true);
+        assertThat(compensated.objectStore.bodies).isEmpty();
+
+        Fixture uncertainCompensation = fixture(true);
+        uncertainCompensation.repository.failRecordStored = true;
+        uncertainCompensation.objectStore.failDelete = true;
+        assertUnavailable(() -> uncertainCompensation.service.create(request(
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
+                new ByteArrayInputStream(new byte[]{5}), 1L, null)));
+        assertThat(uncertainCompensation.repository.absenceConfirmations).containsExactly(false);
+        assertThat(uncertainCompensation.objectStore.bodies).hasSize(1);
+    }
+
+    @Test
     void replacementAndDeleteRemainRetryableAndFailuresLeakNoSensitiveValues() {
         Fixture fixture = fixture(true);
         ProtectedObjectService.CreatedObject original = fixture.service.create(request(
@@ -552,6 +580,7 @@ class ProtectedObjectServiceTest {
         private long forcedHeadSize = -1;
         private boolean failDelete;
         private boolean failHead;
+        private boolean failPutAfterWrite;
         private String providerCanary;
 
         private FakeObjectStore(List<String> events) {
@@ -575,6 +604,9 @@ class ProtectedObjectServiceTest {
                         key, purpose, body.length, sha256(body), mediaType);
                 bodies.put(key, body);
                 metadata.put(key, stored);
+                if (failPutAfterWrite) {
+                    throw Failure.unavailable();
+                }
                 return stored;
             } catch (IOException failure) {
                 throw Failure.unavailable();
@@ -663,8 +695,10 @@ class ProtectedObjectServiceTest {
         private final AtomicInteger beginCalls = new AtomicInteger();
         private final AtomicInteger findCalls = new AtomicInteger();
         private final AtomicInteger orphanCalls = new AtomicInteger();
+        private final List<Boolean> absenceConfirmations = new ArrayList<>();
         private ProtectedObjectMetadataRepository.CreateOperation active;
         private boolean failComplete;
+        private boolean failRecordStored;
         private boolean failRecordOrphan;
         private boolean failMarkDeletedOnce;
 
@@ -673,7 +707,8 @@ class ProtectedObjectServiceTest {
         }
 
         @Override
-        public void beginCreate(ProtectedObjectMetadataRepository.CreateOperation operation) {
+        public void beginCreate(ProtectedObjectMetadataRepository.CreateOperation operation,
+                                byte[] envelope) {
             beginCalls.incrementAndGet();
             active = operation;
         }
@@ -681,6 +716,9 @@ class ProtectedObjectServiceTest {
         @Override
         public void recordObjectStored(ProtectedObjectMetadataRepository.CreateOperation operation,
                                        StoredObjectMetadata stored) {
+            if (failRecordStored) {
+                throw new IllegalStateException("operation-journal-provider-canary");
+            }
             objects.put(operation.protectedObjectId(), metadata(operation, stored,
                     ProtectedObjectMetadataRepository.ObjectState.ORPHANED));
         }
@@ -715,7 +753,8 @@ class ProtectedObjectServiceTest {
         }
 
         @Override
-        public void failCreate(String operationId) {
+        public void failCreate(String operationId, boolean absenceConfirmed) {
+            absenceConfirmations.add(absenceConfirmed);
             active = null;
         }
 

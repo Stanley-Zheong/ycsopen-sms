@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Restartable DEK-only rewrap with old-digest CAS and full-envelope verification. */
 public final class EnvelopeRewrapService {
@@ -68,12 +69,16 @@ public final class EnvelopeRewrapService {
 
         Optional<Candidate> next(String oldKeyReference, long afterSequence);
 
-        /** Envelope CAS and checkpoint advance are one durable transaction. */
+        /**
+         * Calls {@code publicationFence} exactly once as the first operation in the durable
+         * envelope-CAS/checkpoint transaction, before locking or mutating any business row.
+         */
         CommitOutcome replaceByOriginalDigestAndCheckpoint(String oldKeyReference,
                                                            String newKeyReference,
                                                            Candidate candidate,
                                                            byte[] rewrittenEnvelope,
-                                                           byte[] rewrittenEnvelopeDigest);
+                                                           byte[] rewrittenEnvelopeDigest,
+                                                           Runnable publicationFence);
     }
 
     @FunctionalInterface
@@ -102,29 +107,33 @@ public final class EnvelopeRewrapService {
     private final KeyProtectionPort keyProtection;
     private final Store store;
     private final EnvelopeVerifier verifier;
+    private final FieldReferencePublicationFence publicationFence;
 
     public EnvelopeRewrapService(KeyReferenceRepository keyReferences,
                                  EnvelopeCodec envelopeCodec,
                                  KeyProtectionPort keyProtection,
-                                 Store store) {
+                                 Store store,
+                                 FieldReferencePublicationFence publicationFence) {
         this(keyReferences, envelopeCodec, keyProtection, store,
                 (encoded, context, target, expectedReference) -> {
                     byte[] plaintext = new ProtectedFieldCodec(envelopeCodec, keyProtection,
                             new SecureRandom(), expectedReference).unprotect(encoded, context, target);
                     Arrays.fill(plaintext, (byte) 0);
-                });
+                }, publicationFence);
     }
 
     EnvelopeRewrapService(KeyReferenceRepository keyReferences,
                           EnvelopeCodec envelopeCodec,
                           KeyProtectionPort keyProtection,
                           Store store,
-                          EnvelopeVerifier verifier) {
+                          EnvelopeVerifier verifier,
+                          FieldReferencePublicationFence publicationFence) {
         this.keyReferences = Objects.requireNonNull(keyReferences, "keyReferences");
         this.envelopeCodec = Objects.requireNonNull(envelopeCodec, "envelopeCodec");
         this.keyProtection = Objects.requireNonNull(keyProtection, "keyProtection");
         this.store = Objects.requireNonNull(store, "store");
         this.verifier = Objects.requireNonNull(verifier, "verifier");
+        this.publicationFence = Objects.requireNonNull(publicationFence, "publicationFence");
     }
 
     public BatchResult rewrap(String oldKeyReference, int maximumRows) {
@@ -153,9 +162,22 @@ public final class EnvelopeRewrapService {
             byte[] rewritten = rewrapCandidate(candidate, oldKeyReference, newKeyReference);
             byte[] rewrittenDigest = sha256(rewritten);
             try {
-                CommitOutcome outcome = store.replaceByOriginalDigestAndCheckpoint(oldKeyReference,
-                        newKeyReference, candidate, rewritten, rewrittenDigest);
-                if (outcome == CommitOutcome.DRIFT || outcome == null) {
+                AtomicInteger fenceInvocations = new AtomicInteger();
+                CommitOutcome outcome;
+                try {
+                    outcome = store.replaceByOriginalDigestAndCheckpoint(oldKeyReference,
+                            newKeyReference, candidate, rewritten, rewrittenDigest,
+                            () -> {
+                                if (fenceInvocations.incrementAndGet() != 1) {
+                                    throw failure();
+                                }
+                                publicationFence.lockAndValidate(rewritten, candidate.target());
+                            });
+                } catch (RuntimeException failure) {
+                    throw sanitized(failure);
+                }
+                if (fenceInvocations.get() != 1
+                        || outcome == CommitOutcome.DRIFT || outcome == null) {
                     throw failure();
                 }
                 if (outcome == CommitOutcome.APPLIED) {

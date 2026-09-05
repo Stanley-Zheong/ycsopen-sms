@@ -11,6 +11,8 @@ import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunn
 import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier.FailureCode;
 import com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifier.VerificationException;
 import com.ycsopen.sms.core.common.security.migration.WriterFencePort.PairedAdmission;
+import com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotService.RestoreResult;
+import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotManifest;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -35,6 +37,9 @@ public final class ProtectedDataMigrationCommand {
               pause      Pause an admitted migration run
               abort      Abort forward migration without plaintext rollback
               status     Print sanitized run counters
+              snapshot-create   Create a bounded encrypted MySQL snapshot
+              snapshot-restore  Restore an admitted snapshot into a fresh schema
+              snapshot-delete   Delete an exact retained encrypted snapshot
 
             preflight options (all required):
               --writer-manifest PATH
@@ -67,13 +72,32 @@ public final class ProtectedDataMigrationCommand {
             status options (all required):
               --run-id ID
 
+            snapshot-create options (all required):
+              --snapshot-id ID
+              --environment ID
+              --database-instance-fingerprint HEX
+              --schema NAME
+              --flyway-set-digest HEX
+              --global-sequence NONNEGATIVE_DECIMAL
+              --signer-key-version VERSION
+
+            snapshot-restore options (all required):
+              --snapshot-id ID
+              --pair-digest HEX
+              --target-schema NAME
+
+            snapshot-delete options (all required):
+              --snapshot-id ID
+              --snapshot-digest HEX
+
             Exit codes: 0 accepted; 20 invocation/path; 21 canonical/schema;
                         22 signature/trust; 23 subject; 24 writer/replay;
                         25 snapshot; 26 key/provider.
             """;
 
     private static final Set<String> COMMANDS = Set.of(
-            "preflight", "start", "resume", "advance", "pause", "abort", "status");
+            "preflight", "start", "resume", "advance", "pause", "abort", "status",
+            "snapshot-create", "snapshot-restore", "snapshot-delete");
     private static final List<String> PREFLIGHT_OPTIONS = List.of(
             "--writer-manifest", "--writer-signature", "--snapshot-manifest",
             "--snapshot-signature", "--environment", "--database-instance-fingerprint",
@@ -84,6 +108,13 @@ public final class ProtectedDataMigrationCommand {
             "--run-id", "--target", "--pair-digest", "--lease-owner-digest", "--next-state");
     private static final List<String> MUTATION_OPTIONS = List.of("--run-id", "--pair-digest");
     private static final List<String> STATUS_OPTIONS = List.of("--run-id");
+    private static final List<String> SNAPSHOT_CREATE_OPTIONS = List.of(
+            "--snapshot-id", "--environment", "--database-instance-fingerprint", "--schema",
+            "--flyway-set-digest", "--global-sequence", "--signer-key-version");
+    private static final List<String> SNAPSHOT_RESTORE_OPTIONS = List.of(
+            "--snapshot-id", "--pair-digest", "--target-schema");
+    private static final List<String> SNAPSHOT_DELETE_OPTIONS = List.of(
+            "--snapshot-id", "--snapshot-digest");
 
     private final CommandServices services;
 
@@ -120,6 +151,12 @@ public final class ProtectedDataMigrationCommand {
                 case "advance" -> advance(parse(args, ADVANCE_OPTIONS), stdout);
                 case "pause", "abort" -> mutate(args[0], parse(args, MUTATION_OPTIONS), stdout);
                 case "status" -> status(parse(args, STATUS_OPTIONS), stdout);
+                case "snapshot-create" -> snapshotCreate(
+                        parse(args, SNAPSHOT_CREATE_OPTIONS), stdout);
+                case "snapshot-restore" -> snapshotRestore(
+                        parse(args, SNAPSHOT_RESTORE_OPTIONS), stdout);
+                case "snapshot-delete" -> snapshotDelete(
+                        parse(args, SNAPSHOT_DELETE_OPTIONS), stdout);
                 default -> throw commandFailure(Exit.INVOCATION_OR_PATH);
             };
         } catch (CommandException exception) {
@@ -129,6 +166,9 @@ public final class ProtectedDataMigrationCommand {
             Exit exit = verifierExit(exception.code());
             stderr.print("phase03-migration:error:" + exit.wireName() + "\n");
             return exit.code();
+        } catch (SnapshotManifest.SnapshotException exception) {
+            stderr.print("phase03-migration:error:" + Exit.SNAPSHOT_INVALID.wireName() + "\n");
+            return Exit.SNAPSHOT_INVALID.code();
         } catch (IllegalArgumentException exception) {
             stderr.print("phase03-migration:error:" + Exit.INVOCATION_OR_PATH.wireName() + "\n");
             return Exit.INVOCATION_OR_PATH.code();
@@ -232,6 +272,56 @@ public final class ProtectedDataMigrationCommand {
         return Exit.ACCEPTED.code();
     }
 
+    private int snapshotCreate(Map<String, String> options, PrintStream stdout) {
+        long globalSequence;
+        try {
+            globalSequence = Long.parseLong(options.get("--global-sequence"));
+        } catch (NumberFormatException failure) {
+            throw commandFailure(Exit.INVOCATION_OR_PATH);
+        }
+        SnapshotManifest manifest = services.createSnapshot(new SnapshotCreateInvocation(
+                options.get("--snapshot-id"), options.get("--environment"),
+                options.get("--database-instance-fingerprint"), options.get("--schema"),
+                options.get("--flyway-set-digest"), globalSequence,
+                options.get("--signer-key-version")));
+        if (manifest == null) {
+            throw commandFailure(Exit.KEY_OR_PROVIDER);
+        }
+        stdout.print("{\"status\":\"accepted\",\"snapshot_id\":\""
+                + manifest.snapshotId() + "\",\"snapshot_digest\":\""
+                + manifest.digest() + "\",\"chunk_count\":" + manifest.chunks().size()
+                + ",\"total_plaintext_bytes\":" + manifest.totalPlaintextBytes()
+                + ",\"total_envelope_bytes\":" + manifest.totalEnvelopeBytes() + "}\n");
+        return Exit.ACCEPTED.code();
+    }
+
+    private int snapshotRestore(Map<String, String> options, PrintStream stdout) {
+        String pairDigest = options.get("--pair-digest");
+        requireAcceptedPair(pairDigest);
+        RestoreResult result = services.restoreSnapshot(new SnapshotRestoreInvocation(
+                options.get("--snapshot-id"), pairDigest,
+                options.get("--target-schema")));
+        if (result == null) {
+            throw commandFailure(Exit.KEY_OR_PROVIDER);
+        }
+        stdout.print("{\"status\":\"accepted\",\"snapshot_id\":\""
+                + result.snapshotId() + "\",\"target_schema\":\""
+                + result.targetSchema() + "\",\"already_complete\":"
+                + result.alreadyComplete() + "}\n");
+        return Exit.ACCEPTED.code();
+    }
+
+    private int snapshotDelete(Map<String, String> options, PrintStream stdout) {
+        String snapshotId = services.deleteSnapshot(new SnapshotDeleteInvocation(
+                options.get("--snapshot-id"), options.get("--snapshot-digest")));
+        if (snapshotId == null) {
+            throw commandFailure(Exit.KEY_OR_PROVIDER);
+        }
+        stdout.print("{\"status\":\"accepted\",\"snapshot_id\":\""
+                + snapshotId + "\",\"state\":\"DELETED\"}\n");
+        return Exit.ACCEPTED.code();
+    }
+
     private void requireAcceptedPair(String pairDigest) {
         if (!services.acceptedPair(pairDigest)) {
             throw commandFailure(Exit.WRITER_OR_REPLAY);
@@ -291,6 +381,18 @@ public final class ProtectedDataMigrationCommand {
         void abort(RunControlRequest request);
 
         RunStatus status(String runId);
+
+        default SnapshotManifest createSnapshot(SnapshotCreateInvocation invocation) {
+            throw new IllegalStateException("snapshot service is unavailable");
+        }
+
+        default RestoreResult restoreSnapshot(SnapshotRestoreInvocation invocation) {
+            throw new IllegalStateException("snapshot service is unavailable");
+        }
+
+        default String deleteSnapshot(SnapshotDeleteInvocation invocation) {
+            throw new IllegalStateException("snapshot service is unavailable");
+        }
     }
 
     @FunctionalInterface
@@ -303,14 +405,24 @@ public final class ProtectedDataMigrationCommand {
         private final PreflightOperation preflight;
         private final MigrationStateRepository repository;
         private final ProtectedDataMigrationRunner runner;
+        private final SnapshotOperations snapshots;
 
         public DefaultServices(
                 PreflightOperation preflight,
                 MigrationStateRepository repository,
                 ProtectedDataMigrationRunner runner) {
+            this(preflight, repository, runner, SnapshotOperations.UNAVAILABLE);
+        }
+
+        public DefaultServices(
+                PreflightOperation preflight,
+                MigrationStateRepository repository,
+                ProtectedDataMigrationRunner runner,
+                SnapshotOperations snapshots) {
             this.preflight = Objects.requireNonNull(preflight, "preflight");
             this.repository = Objects.requireNonNull(repository, "repository");
             this.runner = Objects.requireNonNull(runner, "runner");
+            this.snapshots = Objects.requireNonNull(snapshots, "snapshots");
         }
 
         @Override
@@ -361,6 +473,63 @@ public final class ProtectedDataMigrationCommand {
         public RunStatus status(String runId) {
             return runner.status(runId);
         }
+
+        @Override
+        public SnapshotManifest createSnapshot(SnapshotCreateInvocation invocation) {
+            return snapshots.create(invocation);
+        }
+
+        @Override
+        public RestoreResult restoreSnapshot(SnapshotRestoreInvocation invocation) {
+            return snapshots.restore(invocation);
+        }
+
+        @Override
+        public String deleteSnapshot(SnapshotDeleteInvocation invocation) {
+            return snapshots.delete(invocation);
+        }
+    }
+
+    public interface SnapshotOperations {
+        SnapshotOperations UNAVAILABLE = new SnapshotOperations() {
+            @Override
+            public SnapshotManifest create(SnapshotCreateInvocation invocation) {
+                throw new IllegalStateException("snapshot service is unavailable");
+            }
+
+            @Override
+            public RestoreResult restore(SnapshotRestoreInvocation invocation) {
+                throw new IllegalStateException("snapshot service is unavailable");
+            }
+
+            @Override
+            public String delete(SnapshotDeleteInvocation invocation) {
+                throw new IllegalStateException("snapshot service is unavailable");
+            }
+        };
+
+        SnapshotManifest create(SnapshotCreateInvocation invocation);
+
+        RestoreResult restore(SnapshotRestoreInvocation invocation);
+
+        String delete(SnapshotDeleteInvocation invocation);
+    }
+
+    public record SnapshotCreateInvocation(
+            String snapshotId,
+            String environment,
+            String databaseInstanceFingerprint,
+            String schema,
+            String flywaySetDigest,
+            long globalSequence,
+            String signerKeyVersion) {
+    }
+
+    public record SnapshotRestoreInvocation(
+            String snapshotId, String pairDigest, String targetSchema) {
+    }
+
+    public record SnapshotDeleteInvocation(String snapshotId, String snapshotDigest) {
     }
 
     public record PreflightInvocation(

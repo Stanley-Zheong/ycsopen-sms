@@ -7,13 +7,20 @@ import com.ycsopen.sms.core.common.security.key.KeyHealth;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
+import com.ycsopen.sms.core.common.security.key.lifecycle.BlindIndexRotationService;
+import com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeReferenceInventory;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyLifecycleService;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
+import com.ycsopen.sms.core.common.security.key.lifecycle.KeyState;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.repository.MessageTaskRepository;
+import org.h2.api.Trigger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,8 +30,17 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DataJpaTest
 @ActiveProfiles("test")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class MessageTaskProtectionAdapterTest {
+public class MessageTaskProtectionAdapterTest {
 
     private static final String KEY_REFERENCE = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
     private static final String MESSAGE_ID = "MSG_1700000000000_ABC12345";
@@ -60,7 +76,12 @@ class MessageTaskProtectionAdapterTest {
                 CREATE TABLE ycs_crypto_key_references (
                     purpose VARCHAR(48) NOT NULL,
                     key_version BIGINT NOT NULL,
+                    provider_id VARCHAR(32) NOT NULL,
+                    provider_key_reference VARCHAR(128) NOT NULL,
                     key_state VARCHAR(24) NOT NULL,
+                    wrap_operation_count BIGINT NOT NULL DEFAULT 0,
+                    rotation_required BOOLEAN NOT NULL DEFAULT FALSE,
+                    optimistic_version BIGINT NOT NULL DEFAULT 0,
                     PRIMARY KEY (purpose, key_version)
                 )
                 """);
@@ -75,11 +96,13 @@ class MessageTaskProtectionAdapterTest {
                     index_value VARCHAR(53) NOT NULL,
                     index_status VARCHAR(16) NOT NULL,
                     original_row_digest BINARY(32) NOT NULL,
+                    optimistic_version BIGINT NOT NULL DEFAULT 0,
                     UNIQUE (target_type, legacy_row_id, field_id, key_version)
                 )
                 """);
         insertKey(1, "RETIRING");
         insertKey(2, "ACTIVE");
+        insertFieldKey(1, KEY_REFERENCE, "ACTIVE");
     }
 
     @Test
@@ -209,6 +232,154 @@ class MessageTaskProtectionAdapterTest {
         assertNoProtectedRows();
     }
 
+    @Test
+    void prepareBeforeActivationCannotSaveAStaleVersionSet() {
+        jdbc.update("DELETE FROM ycs_crypto_key_references");
+        insertKey(1, "ACTIVE");
+        insertKey(2, "PREPARED");
+        insertFieldKey(1, KEY_REFERENCE, "ACTIVE");
+        RecordingBlindIndexPort v1Only = new RecordingBlindIndexPort(List.of(RETIRING_INDEX));
+        MessageTaskProtectionAdapter adapter = adapter(new RecordingKeyPort(), v1Only);
+        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        KeyReferenceRepository keys = jdbcKeys();
+
+        new KeyLifecycleService(keys, new EnvelopeReferenceInventory(Set.of(), List.of()))
+                .activate(KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX, 2);
+
+        assertThatThrownBy(() -> adapter.save(task(17L, MESSAGE_ID), prepared))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE)
+                .hasNoCause();
+        assertNoProtectedRows();
+    }
+
+    @Test
+    void fieldKeyActivationAfterPrepareRejectsStaleEnvelopeWithoutWriting() {
+        insertFieldKey(2, "field-kek-v2", "PREPARED");
+        MessageTaskProtectionAdapter adapter = adapter(
+                new RecordingKeyPort(), new RecordingBlindIndexPort());
+        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        KeyReferenceRepository keys = jdbcKeys();
+
+        new KeyLifecycleService(keys, new EnvelopeReferenceInventory(Set.of(), List.of()))
+                .activate(KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK, 2);
+
+        assertThatThrownBy(() -> adapter.save(task(17L, MESSAGE_ID), prepared))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE)
+                .hasNoCause();
+        assertNoProtectedRows();
+    }
+
+    @Test
+    void saveKeyLockSerializesActivationThenReplayableBackfillAddsV2() throws Exception {
+        jdbc.update("DELETE FROM ycs_crypto_key_references");
+        insertKey(1, "ACTIVE");
+        insertKey(2, "PREPARED");
+        insertFieldKey(1, KEY_REFERENCE, "ACTIVE");
+        insertFieldKey(2, "field-kek-v2", "PREPARED");
+        MessageTaskProtectionAdapter adapter = adapter(
+                new RecordingKeyPort(), new RecordingBlindIndexPort(List.of(RETIRING_INDEX)));
+        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        KeyReferenceRepository keys = jdbcKeys();
+        EnvelopeReferenceInventory.Source messageEnvelopes = messageEnvelopeInventory();
+        EnvelopeReferenceInventory inventory = new EnvelopeReferenceInventory(
+                Set.of(messageEnvelopes.sourceId()), List.of(messageEnvelopes));
+        KeyLifecycleService lifecycle = new KeyLifecycleService(
+                keys, inventory);
+        BlockingBlindIndexInsertTrigger.arm();
+        jdbc.execute("CREATE TRIGGER phase03_hold_blind_insert BEFORE INSERT "
+                + "ON ycs_crypto_blind_indexes FOR EACH ROW CALL '"
+                + BlockingBlindIndexInsertTrigger.class.getName() + "'");
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(3)) {
+            Future<MessageTask> save = executor.submit(
+                    () -> adapter.save(task(17L, MESSAGE_ID), prepared));
+            assertThat(BlockingBlindIndexInsertTrigger.awaitEntered()).isTrue();
+            CountDownLatch activationAttempted = new CountDownLatch(2);
+            Future<KeyLifecycleService.Activation> mobileActivation = executor.submit(() -> {
+                activationAttempted.countDown();
+                return lifecycle.activate(KeyReferenceRepository.Purpose.MOBILE_BLIND_INDEX, 2);
+            });
+            Future<KeyLifecycleService.Activation> fieldActivation = executor.submit(() -> {
+                activationAttempted.countDown();
+                return lifecycle.activate(KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK, 2);
+            });
+            assertThat(activationAttempted.await(5, TimeUnit.SECONDS)).isTrue();
+            assertThatThrownBy(() -> mobileActivation.get(200, TimeUnit.MILLISECONDS))
+                    .isInstanceOf(TimeoutException.class);
+            assertThatThrownBy(() -> fieldActivation.get(200, TimeUnit.MILLISECONDS))
+                    .isInstanceOf(TimeoutException.class);
+
+            BlockingBlindIndexInsertTrigger.release();
+            MessageTask saved = save.get(5, TimeUnit.SECONDS);
+            KeyLifecycleService.Activation rotatedMobile = mobileActivation.get(5, TimeUnit.SECONDS);
+            KeyLifecycleService.Activation rotatedField = fieldActivation.get(5, TimeUnit.SECONDS);
+            assertThat(rotatedMobile.previous().state()).isEqualTo(KeyState.RETIRING);
+            assertThat(rotatedMobile.active().state()).isEqualTo(KeyState.ACTIVE);
+            assertThat(rotatedField.previous().state()).isEqualTo(KeyState.DECRYPT_ONLY);
+            assertThat(rotatedField.active().state()).isEqualTo(KeyState.ACTIVE);
+            assertThat(jdbc.queryForObject("SELECT index_status FROM ycs_crypto_blind_indexes",
+                    String.class)).isEqualTo("RETIRING");
+            assertThat(inventory.snapshot().count(
+                    KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK, 1)).isOne();
+            assertThatThrownBy(() -> lifecycle.retire(
+                    KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK, 1))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage(KeyLifecycleService.SANITIZED_FAILURE);
+
+            byte[] binding = jdbc.queryForObject(
+                    "SELECT original_row_digest FROM ycs_crypto_blind_indexes WHERE key_version=1",
+                    byte[].class);
+            BlindIndexRotationService rotation = new BlindIndexRotationService(
+                    new RecordingBlindIndexPort(), keys,
+                    new BlindIndexRotationService.JdbcStore(jdbc,
+                            new org.springframework.transaction.support.TransactionTemplate(
+                                    new DataSourceTransactionManager(jdbc.getDataSource()))));
+            BlindIndexRotationService.Row row = new BlindIndexRotationService.Row(
+                    "MESSAGE_TASK", saved.getId(), "mobile", binding, MOBILE,
+                    new BlindIndexPort.Context("MESSAGE_TASK", "mobile",
+                            BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"));
+            assertThat(rotation.backfill(row))
+                    .extracting(BlindIndexRotationService.MetadataRow::keyVersion,
+                            BlindIndexRotationService.MetadataRow::status)
+                    .containsExactly(
+                            org.assertj.core.groups.Tuple.tuple(1L, KeyState.RETIRING),
+                            org.assertj.core.groups.Tuple.tuple(2L, KeyState.ACTIVE));
+        } finally {
+            BlockingBlindIndexInsertTrigger.release();
+        }
+    }
+
+    private EnvelopeReferenceInventory.Source messageEnvelopeInventory() {
+        return new EnvelopeReferenceInventory.Source() {
+            @Override
+            public String sourceId() {
+                return "TEST_MESSAGE_ENVELOPES";
+            }
+
+            @Override
+            public List<EnvelopeReferenceInventory.Reference> liveReferences() {
+                return jdbc.query("SELECT id,mobile_encrypted FROM message_tasks ORDER BY id",
+                        (resultSet, rowNumber) -> {
+                            byte[] envelope = resultSet.getBytes(2);
+                            try {
+                                String reference = new EnvelopeCodec().decode(
+                                        envelope, EnvelopeCodec.Target.DATABASE_FIELD).keyReference();
+                                long version = KEY_REFERENCE.equals(reference) ? 1
+                                        : "field-kek-v2".equals(reference) ? 2 : -1;
+                                return new EnvelopeReferenceInventory.Reference(
+                                        sourceId(), EnvelopeReferenceInventory.Kind.DATABASE_ENVELOPE,
+                                        KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK,
+                                        version, digest("message:" + resultSet.getLong(1)));
+                            } finally {
+                                java.util.Arrays.fill(envelope, (byte) 0);
+                            }
+                        });
+            }
+        };
+    }
+
     private MessageTaskProtectionAdapter adapter(KeyProtectionPort keyPort,
                                                  BlindIndexPort blindIndexPort) {
         ProtectedFieldCodec fieldCodec = new ProtectedFieldCodec(
@@ -226,9 +397,24 @@ class MessageTaskProtectionAdapterTest {
 
     private void insertKey(long version, String state) {
         jdbc.update("""
-                        INSERT INTO ycs_crypto_key_references (purpose, key_version, key_state)
-                        VALUES ('MOBILE_BLIND_INDEX', ?, ?)
-                        """, version, state);
+                        INSERT INTO ycs_crypto_key_references
+                            (purpose, key_version, provider_id, provider_key_reference, key_state)
+                        VALUES ('MOBILE_BLIND_INDEX', ?, 'pkcs11', ?, ?)
+                        """, version, "mobile-v" + version, state);
+    }
+
+    private void insertFieldKey(long version, String reference, String state) {
+        jdbc.update("""
+                        INSERT INTO ycs_crypto_key_references
+                            (purpose, key_version, provider_id, provider_key_reference, key_state)
+                        VALUES ('FIELD_ENCRYPTION_KEK', ?, 'pkcs11', ?, ?)
+                        """, version, reference, state);
+    }
+
+    private KeyReferenceRepository jdbcKeys() {
+        DataSourceTransactionManager manager = new DataSourceTransactionManager(jdbc.getDataSource());
+        return new KeyReferenceRepository.Jdbc(
+                jdbc, new org.springframework.transaction.support.TransactionTemplate(manager));
     }
 
     private static MessageTask task(long tenantId, String messageId) {
@@ -248,6 +434,15 @@ class MessageTaskProtectionAdapterTest {
         try {
             return HexFormat.of().formatHex(
                     MessageDigest.getInstance("SHA-256").digest(MOBILE.getBytes(StandardCharsets.US_ASCII)));
+        } catch (Exception failure) {
+            throw new AssertionError(failure);
+        }
+    }
+
+    private static byte[] digest(String value) {
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.US_ASCII));
         } catch (Exception failure) {
             throw new AssertionError(failure);
         }
@@ -305,20 +500,29 @@ class MessageTaskProtectionAdapterTest {
 
     private static final class RecordingBlindIndexPort implements BlindIndexPort {
         private final List<Context> contexts = new java.util.ArrayList<>();
+        private final List<VersionedBlindIndex> indexes;
         private boolean unavailable;
+
+        private RecordingBlindIndexPort() {
+            this(List.of(RETIRING_INDEX, ACTIVE_INDEX));
+        }
+
+        private RecordingBlindIndexPort(List<VersionedBlindIndex> indexes) {
+            this.indexes = List.copyOf(indexes);
+        }
 
         @Override
         public OrderedIndexes writeIndexes(String normalizedMobile, Context suppliedContext) {
             requireAvailable(normalizedMobile);
             contexts.add(suppliedContext);
-            return new OrderedIndexes(List.of(RETIRING_INDEX, ACTIVE_INDEX));
+            return new OrderedIndexes(indexes);
         }
 
         @Override
         public OrderedIndexes queryIndexes(String normalizedMobile, Context suppliedContext) {
             requireAvailable(normalizedMobile);
             contexts.add(suppliedContext);
-            return new OrderedIndexes(List.of(RETIRING_INDEX, ACTIVE_INDEX));
+            return new OrderedIndexes(indexes);
         }
 
         @Override
@@ -329,6 +533,38 @@ class MessageTaskProtectionAdapterTest {
         private void requireAvailable(String normalizedMobile) {
             if (unavailable || !MOBILE.equals(normalizedMobile)) {
                 throw new IllegalStateException("index detail must not escape");
+            }
+        }
+    }
+
+    public static final class BlockingBlindIndexInsertTrigger implements Trigger {
+        private static volatile CountDownLatch entered = new CountDownLatch(0);
+        private static volatile CountDownLatch proceed = new CountDownLatch(0);
+
+        static void arm() {
+            entered = new CountDownLatch(1);
+            proceed = new CountDownLatch(1);
+        }
+
+        static boolean awaitEntered() throws InterruptedException {
+            return entered.await(5, TimeUnit.SECONDS);
+        }
+
+        static void release() {
+            proceed.countDown();
+        }
+
+        @Override
+        public void fire(Connection connection, Object[] oldRow, Object[] newRow)
+                throws SQLException {
+            entered.countDown();
+            try {
+                if (!proceed.await(5, TimeUnit.SECONDS)) {
+                    throw new SQLException("blind-index trigger coordination failed");
+                }
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw new SQLException("blind-index trigger interrupted", interrupted);
             }
         }
     }

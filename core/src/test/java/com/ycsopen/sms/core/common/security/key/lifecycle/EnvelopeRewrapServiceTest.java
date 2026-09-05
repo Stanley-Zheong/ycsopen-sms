@@ -32,6 +32,10 @@ class EnvelopeRewrapServiceTest {
     private static final String OLD_KEY = "field-kek-v1";
     private static final String NEW_KEY = "field-kek-v2";
     private static final EnvelopeCodec ENVELOPES = new EnvelopeCodec();
+    private static final FieldReferencePublicationFence RECORDING_FENCE = (encoded, target) -> {
+        assertThat(ENVELOPES.decode(encoded, target).keyReference()).isEqualTo(NEW_KEY);
+        return 2L;
+    };
 
     @Test
     void rewrapChangesOnlyWrapMetadataVerifiesAndAdvancesCheckpointAtomically() {
@@ -92,7 +96,7 @@ class EnvelopeRewrapServiceTest {
         Fixture fixture = fixture();
         FixedKeys noActive = new FixedKeys(List.of(key(1, OLD_KEY, KeyState.DECRYPT_ONLY)));
         EnvelopeRewrapService service = new EnvelopeRewrapService(noActive, ENVELOPES,
-                fixture.keys, fixture.store);
+                fixture.keys, fixture.store, RECORDING_FENCE);
 
         assertThatThrownBy(() -> service.rewrap(OLD_KEY, 1))
                 .isInstanceOf(IllegalStateException.class)
@@ -113,7 +117,7 @@ class EnvelopeRewrapServiceTest {
         int wrapsBeforeRewrap = stale.wrapCalls.get();
 
         assertThatThrownBy(() -> new EnvelopeRewrapService(activatedDatabase, ENVELOPES,
-                stale, store).rewrap(OLD_KEY, 1))
+                stale, store, RECORDING_FENCE).rewrap(OLD_KEY, 1))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(EnvelopeRewrapService.SANITIZED_FAILURE);
         assertThat(stale.wrapCalls.get()).isEqualTo(wrapsBeforeRewrap);
@@ -124,7 +128,7 @@ class EnvelopeRewrapServiceTest {
 
         FakeKeyPort rebuilt = FakeKeyPort.afterActivation(stale.nonceSequence);
         EnvelopeRewrapService.BatchResult result = new EnvelopeRewrapService(activatedDatabase,
-                ENVELOPES, rebuilt, store).rewrap(OLD_KEY, 1);
+                ENVELOPES, rebuilt, store, RECORDING_FENCE).rewrap(OLD_KEY, 1);
         assertThat(result.applied()).isOne();
         assertThat(store.commitCalls).isOne();
         assertThat(ENVELOPES.decode(store.envelope,
@@ -144,8 +148,45 @@ class EnvelopeRewrapServiceTest {
         InMemoryStore store = new InMemoryStore(encoded, context);
         FixedKeys references = new FixedKeys(List.of(
                 key(1, OLD_KEY, KeyState.DECRYPT_ONLY), key(2, NEW_KEY, KeyState.ACTIVE)));
-        return new Fixture(new EnvelopeRewrapService(references, ENVELOPES, rebuilt, store),
+        return new Fixture(new EnvelopeRewrapService(references, ENVELOPES, rebuilt, store,
+                RECORDING_FENCE),
                 rebuilt, store, context, plaintext);
+    }
+
+    @Test
+    void storeMustInvokePublicationFenceExactlyOnceBeforePublishing() {
+        Fixture omitted = fixture();
+        omitted.store.publicationFenceInvocations = 0;
+        assertThatThrownBy(() -> omitted.service.rewrap(OLD_KEY, 1))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(EnvelopeRewrapService.SANITIZED_FAILURE);
+
+        Fixture duplicated = fixture();
+        duplicated.store.publicationFenceInvocations = 2;
+        assertThatThrownBy(() -> duplicated.service.rewrap(OLD_KEY, 1))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(EnvelopeRewrapService.SANITIZED_FAILURE);
+        assertThat(duplicated.store.checkpoint).isZero();
+    }
+
+    @Test
+    void rejectedPublicationFencePreventsEnvelopeCas() {
+        Fixture fixture = fixture();
+        EnvelopeRewrapService rejected = new EnvelopeRewrapService(
+                new FixedKeys(List.of(
+                        key(1, OLD_KEY, KeyState.DECRYPT_ONLY),
+                        key(2, NEW_KEY, KeyState.ACTIVE))),
+                ENVELOPES, fixture.keys, fixture.store,
+                (encoded, target) -> {
+                    throw new IllegalStateException(FieldReferencePublicationFence.SANITIZED_FAILURE);
+                });
+
+        assertThatThrownBy(() -> rejected.rewrap(OLD_KEY, 1))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(EnvelopeRewrapService.SANITIZED_FAILURE);
+        assertThat(fixture.store.checkpoint).isZero();
+        assertThat(ENVELOPES.decode(fixture.store.envelope,
+                EnvelopeCodec.Target.DATABASE_FIELD).keyReference()).isEqualTo(OLD_KEY);
     }
 
     private static KeyReferenceRepository.KeyReference key(long version,
@@ -194,7 +235,10 @@ class EnvelopeRewrapServiceTest {
         }
 
         @Override
-        public boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+        public boolean transitionAtomicallyGuarded(
+                Purpose purpose,
+                List<Transition> transitions,
+                java.util.function.BooleanSupplier guard) {
             throw new UnsupportedOperationException();
         }
     }
@@ -207,6 +251,7 @@ class EnvelopeRewrapServiceTest {
         private boolean driftNextCommit;
         private int commitCalls;
         private int nextCalls;
+        private int publicationFenceInvocations = 1;
 
         private InMemoryStore(byte[] envelope, ProtectionContext context) {
             this.envelope = envelope.clone();
@@ -237,7 +282,11 @@ class EnvelopeRewrapServiceTest {
                 String newKeyReference,
                 EnvelopeRewrapService.Candidate candidate,
                 byte[] rewrittenEnvelope,
-                byte[] rewrittenEnvelopeDigest) {
+                byte[] rewrittenEnvelopeDigest,
+                Runnable publicationFence) {
+            for (int invocation = 0; invocation < publicationFenceInvocations; invocation++) {
+                publicationFence.run();
+            }
             commitCalls++;
             if (driftNextCommit) {
                 driftNextCommit = false;

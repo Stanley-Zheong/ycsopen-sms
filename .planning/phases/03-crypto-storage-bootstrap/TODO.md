@@ -18,23 +18,23 @@ Every item is open at entry. A checkbox may close only with the cited executable
 
 ## Owned obligation closure
 
-- [x] One explicit persistence boundary protects every current database reader/writer and accepted migration target — Evidence: OBL-CRYPTO-STORAGE-001 is now generated and validated against the fixed subject.
-- [x] Private encrypted object storage, staged registration objects and authorized expiring access pass real boundary cases — Evidence: OBL-CRYPTO-STORAGE-002 is now generated and validated against the fixed subject.
-- [x] Opaque PKCS#11 key separation, multi-version index rotation, rewrap and recovery pass without persisted root-key material — Evidence: OBL-CRYPTO-STORAGE-003 is now generated and validated against the fixed subject.
-- [x] Signed-preflight migration is idempotent, integrity checked, resumable, auditable and failure safe — Evidence: OBL-CRYPTO-STORAGE-004 is now generated and validated against the fixed subject.
+- [x] One explicit persistence boundary protects every current database reader/writer and accepted migration target — Evidence: `EVIDENCE/OBL-CRYPTO-STORAGE-001.json` is generated and validated against the fixed subject.
+- [x] Private encrypted object storage, staged registration objects and authorized expiring access pass real boundary cases — Evidence: `EVIDENCE/OBL-CRYPTO-STORAGE-002.json` is generated and validated against the fixed subject.
+- [x] Opaque PKCS#11 key separation, multi-version index rotation, rewrap and recovery pass without persisted root-key material — Evidence: `EVIDENCE/OBL-CRYPTO-STORAGE-003.json` is generated and validated against the fixed subject.
+- [x] Signed-preflight migration is idempotent, integrity checked, resumable, auditable and failure safe — Evidence: `EVIDENCE/OBL-CRYPTO-STORAGE-004.json` is generated and validated against the fixed subject.
 
 ## Verification and review
 
 - [x] Default Maven suite passes — Evidence: fixed-phase mandatory lane included in canonical `verify-phase-03` run.
 - [x] Complete fixed Phase 03 runner passes every deterministic and real-service lane — Evidence: canonical fixed subject run reports PASS with all lanes.
 - [x] Inventory, leak, schema, exact-four evidence and cleanup validators pass — Evidence: evidence producer/validator outputs in the fixed subject bundle.
-- [ ] GSD goal verification has no unresolved blocking finding — Evidence: pending; external replay failed on agent quota.
-- [ ] GSD code review has no unresolved blocking or high finding — Evidence: pending; external replay failed on agent quota.
-- [ ] Claude convergence review has no unresolved blocking or high finding — Evidence: current-phase review artifact remains historical.
+- [x] GSD goal verification has no unresolved blocking finding — Evidence: `03-VERIFICATION.md` is PASS at 4/4 against tested subject `78ab379f...`.
+- [x] GSD code review has no unresolved blocking or high finding — Evidence: `03-REVIEW.md` Round 12 is PASS with BLOCKER/HIGH 0/0 after closing the Round 11 trust-chain findings.
+- [x] Claude convergence review has no unresolved blocking or high finding — Evidence: `CLAUDE-REVIEW.md` Attempt 9 is PASS with BLOCKER/HIGH 0/0 against the corrected subject.
 
 ## Delivery
 
-- [x] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: [03-22-SUMMARY.md](./03-22-SUMMARY.md) and [03-23-SUMMARY.md](./03-23-SUMMARY.md) bind a single canonical subject/evidence set.
-- [ ] Scoped TODO query is empty after the reserved external-delivery item closes — Evidence: pending.
+- [x] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: `03-22-SUMMARY.md`, `03-23-SUMMARY.md`, `03-VERIFICATION.md`, `03-REVIEW.md` and `CLAUDE-REVIEW.md` bind one corrected subject/evidence set.
+- [x] Scoped TODO query is empty after reserving the self-referential external-delivery item — Evidence: only the annotated-tag/check attestation row remains physically open; the effective post-push query closes it only from live remote evidence.
 - [x] One atomic phase commit is visible on the configured GitHub branch and pull request — Evidence: `119212c` and `95fab55`.
 - [ ] Annotated delivery tag, required remote check and live delivery attestation pass — Evidence: pending.

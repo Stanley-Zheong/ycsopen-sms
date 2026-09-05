@@ -96,6 +96,10 @@ assert(paths.none? { |path| producer_outputs.include?(File.basename(path)) },
 assert(subject.fetch("inputs").all? { |row| row.fetch("sha256").match?(Phase03RunChecks::SHA256) },
        "subject digest invalid")
 
+Dir.mktmpdir("phase03-missing-trust-root-") do |root|
+  rejects("missing trusted subject input") { Phase03RunChecks.build_subject(root) }
+end
+
 Dir.mktmpdir("phase03-runner-root-") do |root|
   FileUtils.mkdir_p(File.join(root, "core/target/phase03"))
   accepted = Phase03RunChecks.contained_result_root(root, "core/target/phase03/results")

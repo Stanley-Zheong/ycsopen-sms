@@ -6,6 +6,8 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePublicationFence;
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -35,16 +37,18 @@ public final class BlacklistEntryProtectionAdapter {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final SecureRandom random;
+    private final FieldReferencePublicationFence fieldFence;
 
     public BlacklistEntryProtectionAdapter(
             KeyProtectionPort keyProtection,
             BlindIndexPort blindIndexes,
             JdbcTemplate jdbc,
             PlatformTransactionManager transactionManager,
-            ActiveFieldKeyReference activeFieldKeyReference) {
+            ActiveFieldKeyReference activeFieldKeyReference,
+            FieldReferencePublicationFence fieldFence) {
         this(new ProtectedFieldCodec(new EnvelopeCodec(), keyProtection, new SecureRandom(),
                         activeFieldKeyReference::current), blindIndexes, jdbc,
-                new TransactionTemplate(transactionManager), new SecureRandom());
+                new TransactionTemplate(transactionManager), new SecureRandom(), fieldFence);
     }
 
     BlacklistEntryProtectionAdapter(
@@ -53,11 +57,23 @@ public final class BlacklistEntryProtectionAdapter {
             JdbcTemplate jdbc,
             TransactionTemplate transactions,
             SecureRandom random) {
+        this(codec, blindIndexes, jdbc, transactions, random,
+                new JdbcFieldReferencePublicationFence(jdbc));
+    }
+
+    BlacklistEntryProtectionAdapter(
+            ProtectedFieldCodec codec,
+            BlindIndexPort blindIndexes,
+            JdbcTemplate jdbc,
+            TransactionTemplate transactions,
+            SecureRandom random,
+            FieldReferencePublicationFence fieldFence) {
         this.codec = Objects.requireNonNull(codec, "codec");
         this.blindIndexes = Objects.requireNonNull(blindIndexes, "blindIndexes");
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
         this.transactions = Objects.requireNonNull(transactions, "transactions");
         this.random = Objects.requireNonNull(random, "random");
+        this.fieldFence = Objects.requireNonNull(fieldFence, "fieldFence");
     }
 
     public long create(Long tenantId,
@@ -93,6 +109,8 @@ public final class BlacklistEntryProtectionAdapter {
             byte[] protectedEnvelope = envelope;
             byte[] boundDigest = originalDigest;
             Long created = transactions.execute(status -> {
+                fieldFence.lockAndValidate(
+                        protectedEnvelope, EnvelopeCodec.Target.DATABASE_FIELD);
                 List<ExpectedKey> expectedKeys = lockQueryableKeySet(indexes.values());
                 int inserted = jdbc.update("""
                         INSERT INTO blacklist_entries

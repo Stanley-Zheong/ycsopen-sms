@@ -71,7 +71,8 @@ def copy_contract(root)
     File.join(PHASE_DIR, "TEST-MATRIX.md"),
     INVENTORY_PATH,
     File.join(EVIDENCE_DIR, "schema/phase03-obligation-evidence.schema.json"),
-    File.join(EVIDENCE_DIR, "schema/phase03-evidence-manifest.schema.json")
+    File.join(EVIDENCE_DIR, "schema/phase03-evidence-manifest.schema.json"),
+    *Phase03RunChecks::TRUSTED_SUBJECT_INPUTS
   ].each do |relative|
     destination = File.join(root, relative)
     FileUtils.mkdir_p(File.dirname(destination))

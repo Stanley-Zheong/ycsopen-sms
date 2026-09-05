@@ -6,6 +6,7 @@ import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
 import com.ycsopen.sms.core.common.security.key.KeyHealth;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
 import com.ycsopen.sms.core.common.security.persistence.TenantRegistrationProtectionAdapter;
 import com.ycsopen.sms.core.domain.entity.Tenant;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -227,10 +229,43 @@ class TenantRegistrationProtectionTest {
         assertThat(submit.getAnnotation(Transactional.class)).isNotNull();
     }
 
+    @Test
+    void staleFieldEnvelopeIsRejectedBeforeAnyObjectClaim() {
+        AtomicInteger claims = new AtomicInteger();
+        TenantRegistrationProtectionAdapter adapter = adapter(new RecordingKeyPort(),
+                (tenantId, sessionId, uploadToken, selected) -> {
+                    claims.incrementAndGet();
+                    return new TenantRegistrationProtectionAdapter.ClaimedObjects(
+                            selected.businessLicenseObjectId(),
+                            selected.legalRepIdFrontObjectId(),
+                            selected.legalRepIdBackObjectId(),
+                            selected.shortlinkDomainProofObjectId(),
+                            selected.trademarkProofObjectId());
+                }, (envelope, target) -> {
+                    throw new IllegalStateException(FieldReferencePublicationFence.SANITIZED_FAILURE);
+                });
+        Tenant tenant = new Tenant();
+        tenant.setId(73L);
+        tenant.setTenantNo("T_STALE");
+
+        assertFailure(() -> adapter.protectRegistration(tenant, completeRequest(), TOKEN),
+                TenantRegistrationProtectionAdapter.Failure.Category
+                        .REGISTRATION_PROTECTION_UNAVAILABLE);
+        assertThat(claims).hasValue(0);
+    }
+
     private static TenantRegistrationProtectionAdapter adapter(
             RecordingKeyPort keys, TenantRegistrationProtectionAdapter.ClaimStore claims) {
+        return adapter(keys, claims, (envelope, target) -> 1L);
+    }
+
+    private static TenantRegistrationProtectionAdapter adapter(
+            RecordingKeyPort keys,
+            TenantRegistrationProtectionAdapter.ClaimStore claims,
+            FieldReferencePublicationFence fieldFence) {
         return new TenantRegistrationProtectionAdapter(new ProtectedFieldCodec(
-                new EnvelopeCodec(), keys, new FixedSecureRandom(), KEY_REFERENCE), claims);
+                new EnvelopeCodec(), keys, new FixedSecureRandom(), KEY_REFERENCE), claims,
+                fieldFence);
     }
 
     private static ProtectionContext context(String field) {

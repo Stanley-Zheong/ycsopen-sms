@@ -87,14 +87,25 @@ public final class SignedMigrationManifestVerifier implements WriterFencePort.Pa
     private final Clock clock;
     private final ObjectMapper json;
     private final Map<String, ResolvedAnchor> anchors;
+    private final SnapshotInventoryProof snapshotInventoryProof;
 
     public SignedMigrationManifestVerifier(
             MigrationPreflightProperties properties,
             PairAdmissionStore admissionStore,
             Clock clock) {
+        this(properties, admissionStore, clock, bytes -> { });
+    }
+
+    public SignedMigrationManifestVerifier(
+            MigrationPreflightProperties properties,
+            PairAdmissionStore admissionStore,
+            Clock clock,
+            SnapshotInventoryProof snapshotInventoryProof) {
         this.properties = Objects.requireNonNull(properties, "properties");
         this.admissionStore = Objects.requireNonNull(admissionStore, "admissionStore");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.snapshotInventoryProof = Objects.requireNonNull(
+                snapshotInventoryProof, "snapshotInventoryProof");
         this.json = strictMapper();
         this.anchors = resolveAnchors(properties.signerAnchors());
     }
@@ -129,6 +140,14 @@ public final class SignedMigrationManifestVerifier implements WriterFencePort.Pa
             byte[] pairDigest = pairDigest(shared, writerDigest, snapshotDigest);
             verifySignature(anchor.publicKey(), WRITER_ROLE, pairDigest, writerDigest, writerSignature);
             verifySignature(anchor.publicKey(), SNAPSHOT_ROLE, pairDigest, snapshotDigest, snapshotSignature);
+            byte[] inventoryBytes = snapshotBytes.clone();
+            try {
+                snapshotInventoryProof.requireComplete(inventoryBytes);
+            } catch (RuntimeException failure) {
+                throw rejected(FailureCode.SNAPSHOT_INVENTORY_INVALID);
+            } finally {
+                Arrays.fill(inventoryBytes, (byte) 0);
+            }
 
             PairTuple tuple = new PairTuple(
                     shared.migrationSetId(), hex(subjectDigest(shared)), shared.globalSequence(),
@@ -150,6 +169,12 @@ public final class SignedMigrationManifestVerifier implements WriterFencePort.Pa
         } catch (RuntimeException exception) {
             throw rejected(FailureCode.PAIR_ADMISSION_FAILED);
         }
+    }
+
+    @FunctionalInterface
+    public interface SnapshotInventoryProof {
+        /** Must completely validate the exact canonical snapshot bytes before pair CAS. */
+        void requireComplete(byte[] canonicalSnapshotManifest);
     }
 
     private ParsedManifest parseCanonical(byte[] bytes, ManifestRole role) {

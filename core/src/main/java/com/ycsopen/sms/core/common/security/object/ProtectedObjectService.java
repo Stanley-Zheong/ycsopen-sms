@@ -80,12 +80,14 @@ public final class ProtectedObjectService {
                     plaintext, context, request.purpose().envelopeTarget());
             requireCompleteEnvelope(envelope, request.purpose());
 
-            metadataRepository.beginCreate(operation);
+            metadataRepository.beginCreate(operation, envelope);
             try {
                 stored = objectStore.put(request.purpose(), request.mediaType(),
                         new ByteArrayInputStream(envelope), (long) envelope.length);
             } catch (RuntimeException storeFailure) {
-                failOperation(operation.operationId());
+                // A provider exception can occur after the remote write. Without a returned
+                // locator absence is not proven, so retain the FIELD reservation fail-closed.
+                failOperation(operation.operationId(), false);
                 throw mapStoreFailure(storeFailure);
             }
             try {
@@ -117,7 +119,7 @@ public final class ProtectedObjectService {
             throw Failure.invalidInput();
         } catch (RuntimeException failure) {
             if (operation != null && stored == null) {
-                failOperation(operation.operationId());
+                failOperation(operation.operationId(), false);
             }
             throw Failure.unavailable();
         } finally {
@@ -272,12 +274,14 @@ public final class ProtectedObjectService {
     private void containUndurableSplitWrite(
             ProtectedObjectMetadataRepository.CreateOperation operation,
             StoredObjectMetadata stored) {
+        boolean absenceConfirmed = false;
         try {
             objectStore.delete(stored.storageKey(), stored.purpose());
+            absenceConfirmed = true;
         } catch (RuntimeException ignored) {
-            // No durable provider locator exists if the journal transition itself failed.
+            // Retain the FIELD reservation until reconciliation proves the object absent.
         }
-        failOperation(operation.operationId());
+        failOperation(operation.operationId(), absenceConfirmed);
     }
 
     private void deleteReplacedOrLeaveForReconciliation(
@@ -295,9 +299,9 @@ public final class ProtectedObjectService {
         }
     }
 
-    private void failOperation(String operationId) {
+    private void failOperation(String operationId, boolean absenceConfirmed) {
         try {
-            metadataRepository.failCreate(operationId);
+            metadataRepository.failCreate(operationId, absenceConfirmed);
         } catch (RuntimeException ignored) {
             // Do not replace the stable service failure with repository or provider diagnostics.
         }

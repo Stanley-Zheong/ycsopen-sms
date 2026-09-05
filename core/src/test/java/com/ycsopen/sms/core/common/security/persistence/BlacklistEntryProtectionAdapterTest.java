@@ -53,6 +53,8 @@ class BlacklistEntryProtectionAdapterTest {
                 CREATE TABLE ycs_crypto_key_references (
                     purpose VARCHAR(48) NOT NULL,
                     key_version BIGINT NOT NULL,
+                    provider_id VARCHAR(32) NOT NULL,
+                    provider_key_reference VARCHAR(128) NOT NULL,
                     key_state VARCHAR(24) NOT NULL,
                     PRIMARY KEY (purpose, key_version)
                 )
@@ -74,6 +76,9 @@ class BlacklistEntryProtectionAdapterTest {
                 """);
         insertKey(1, "RETIRING");
         insertKey(2, "ACTIVE");
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                + "VALUES ('FIELD_ENCRYPTION_KEK',1,'pkcs11',?,'ACTIVE')", KEY_REFERENCE);
         ProtectedFieldCodec codec = new ProtectedFieldCodec(
                 new EnvelopeCodec(), new RecordingKeyPort(), new FixedSecureRandom(), KEY_REFERENCE);
         adapter = new BlacklistEntryProtectionAdapter(codec, new RecordingBlindIndexPort(), jdbc,
@@ -178,8 +183,10 @@ class BlacklistEntryProtectionAdapterTest {
     }
 
     private void insertKey(long version, String state) {
-        jdbc.update("INSERT INTO ycs_crypto_key_references (purpose,key_version,key_state) "
-                + "VALUES ('MOBILE_BLIND_INDEX',?,?)", version, state);
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                + "(purpose,key_version,provider_id,provider_key_reference,key_state) "
+                + "VALUES ('MOBILE_BLIND_INDEX',?,'pkcs11',?,?)",
+                version, "mobile-v" + version, state);
     }
 
     private static byte[] sha256(String value) {

@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /** Fixed-argument, bounded bridge to the real Phase 3 service fixtures. */
-final class Phase03ServiceHarness {
+public final class Phase03ServiceHarness {
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final Path ROOT = locateRepositoryRoot();
@@ -50,7 +50,7 @@ final class Phase03ServiceHarness {
         }
     }
 
-    private static ServiceSession startMySql() {
+    public static ServiceSession startMySql() {
         String runId = "mysql-" + randomHex(6);
         String username = "phase01_" + randomHex(4);
         String password = randomHex(24);
@@ -390,7 +390,7 @@ final class Phase03ServiceHarness {
         }
     }
 
-    static final class ServiceSession implements AutoCloseable {
+    public static final class ServiceSession implements AutoCloseable {
         private final String service;
         private final String runId;
         private final String host;
@@ -429,11 +429,11 @@ final class Phase03ServiceHarness {
             return new ServiceSession("softhsm", runId, identity, null, null, null, handoff);
         }
 
-        String host() {
+        public String host() {
             return host;
         }
 
-        int port() {
+        public int port() {
             return port;
         }
 
@@ -444,11 +444,11 @@ final class Phase03ServiceHarness {
             return containerName;
         }
 
-        String username() {
+        public String username() {
             return username;
         }
 
-        String password() {
+        public String password() {
             return password;
         }
 

@@ -483,7 +483,10 @@ class SunPkcs11KeyAdapterTest {
         }
 
         @Override
-        public boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+        public boolean transitionAtomicallyGuarded(
+                Purpose purpose,
+                List<Transition> transitions,
+                java.util.function.BooleanSupplier guard) {
             return false;
         }
     }

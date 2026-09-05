@@ -15,7 +15,11 @@ import com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapter;
 import com.ycsopen.sms.core.common.security.key.pkcs11.VersionedKeyDescriptorRegistry;
 import com.ycsopen.sms.core.common.security.key.lifecycle.ActiveFieldKeyReference;
 import com.ycsopen.sms.core.common.security.key.lifecycle.CryptoKeyLifecycleFactory;
+import com.ycsopen.sms.core.common.security.key.lifecycle.FieldReferencePublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePublicationFence;
 import com.ycsopen.sms.core.common.security.key.lifecycle.KeyReferenceRepository;
+import com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeReferenceInventory;
+import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotChunkStore;
 import com.ycsopen.sms.core.common.security.object.DenyAllObjectAccessAuthorization;
 import com.ycsopen.sms.core.common.security.object.ObjectAccessAuthorizationPort;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -84,9 +88,24 @@ public class CryptoStorageConfiguration {
     }
 
     @Bean
+    FieldReferencePublicationFence fieldReferencePublicationFence(JdbcTemplate jdbcTemplate) {
+        return new JdbcFieldReferencePublicationFence(jdbcTemplate);
+    }
+
+    @Bean
     CryptoKeyLifecycleFactory cryptoKeyLifecycleFactory(
-            KeyReferenceRepository references, KeyProtectionPort keyProtectionPort) {
-        return new CryptoKeyLifecycleFactory(references, keyProtectionPort);
+            KeyReferenceRepository references,
+            KeyProtectionPort keyProtectionPort,
+            FieldReferencePublicationFence publicationFence,
+            JdbcTemplate jdbcTemplate,
+            Environment environment) {
+        Path snapshotRoot = path(environment.getProperty(PREFIX + "snapshot-store-root"));
+        EnvelopeReferenceInventory.Source snapshotSource = snapshotRoot == null
+                ? EnvelopeReferenceInventory.unavailableSnapshotEnvelopeSource()
+                : EnvelopeReferenceInventory.snapshotEnvelopeSource(
+                        jdbcTemplate, new SnapshotChunkStore.FileStore(snapshotRoot));
+        return new CryptoKeyLifecycleFactory(
+                references, keyProtectionPort, publicationFence, jdbcTemplate, snapshotSource);
     }
 
     @Bean

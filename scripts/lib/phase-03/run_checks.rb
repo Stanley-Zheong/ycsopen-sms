@@ -28,6 +28,26 @@ module Phase03RunChecks
   RESULT_SCHEMA = "phase03-root-lane-result-v1"
   AGGREGATE_SCHEMA = "phase03-root-aggregate-v1"
   SHA256 = /\A[0-9a-f]{64}\z/
+  # Delivery is part of the Phase 3 trust boundary. Keep every executable planning
+  # validator plus the exact required-check workflow in the sealed subject so a
+  # tagged commit cannot weaken its own attestation without changing the subject.
+  TRUSTED_SUBJECT_INPUTS = %w[
+    .github/workflows/ci.yml
+    .planning/PHASE-ARTIFACT-TEMPLATE.md
+    .planning/phases/01-engineering-verification-foundation/EVIDENCE/local-chrome-entry.json
+    .planning/tools/phase01-chrome-entry-contract.rb
+    .planning/tools/planning-validator-support.rb
+    .planning/tools/test-delivery-attestation.rb
+    .planning/tools/test-phase-lifecycle.rb
+    .planning/tools/test-planning-validators.rb
+    .planning/tools/validate-delivery-attestation.rb
+    .planning/tools/validate-phase-entry.rb
+    .planning/tools/validate-phase-lifecycle.rb
+    .planning/tools/validate-trace-closure.rb
+    .planning/tools/validate-ui-contract.rb
+    .planning/tools/validate-verification-evidence.rb
+    .planning/tools/verification-evidence.rb
+  ].freeze
 
   OBLIGATIONS = Phase3CryptoEvidence::OBLIGATIONS.keys.freeze
   CASES = Phase3CryptoEvidence::OBLIGATIONS.values.map { |row| row.fetch("case_id") }.freeze
@@ -65,7 +85,7 @@ module Phase03RunChecks
     {
       "id" => "flyway-owner-selection", "layer" => "validator", "mode" => "DETERMINISTIC",
       "argv" => ["/usr/bin/env", "python3", "skills/flyway-migration/scripts/next_flyway_version.py",
-                 "--owner", "crypto-storage-bootstrap", "--check", "V1201"],
+                 "--owner", "crypto-storage-bootstrap", "--check", "V1202"],
       "timeout_seconds" => 120, "obligation_ids" => OBLIGATIONS
     },
     {
@@ -244,11 +264,17 @@ module Phase03RunChecks
   end
 
   def subject_paths(root)
+    missing_trusted = TRUSTED_SUBJECT_INPUTS.reject { |relative| File.file?(File.join(root, relative)) }
+    unless missing_trusted.empty?
+      raise ConfigurationError, "TRUSTED_SUBJECT_INPUT_MISSING: #{missing_trusted.join(',')}"
+    end
+
     patterns = [
       "core/pom.xml", "core/src/main/**/*", "core/src/test/**/*", "core/docs/**/*",
       "docs/**/*", "scripts/lib/phase-03/**/*", "scripts/verify-phase-03",
       ".planning/tools/*phase-03*", ".planning/tools/phase3-crypto-evidence.rb",
-      "#{PHASE_DIR}/**/*", "skills/flyway-migration/**/*"
+      "#{PHASE_DIR}/**/*", "skills/flyway-migration/**/*",
+      *TRUSTED_SUBJECT_INPUTS
     ]
     paths = patterns.flat_map { |pattern| Dir.glob(File.join(root, pattern), File::FNM_DOTMATCH) }
     paths.select { |path| File.file?(path) && !File.symlink?(path) }
@@ -271,7 +297,7 @@ module Phase03RunChecks
     inputs = subject_paths(root).map do |relative|
       path = File.join(root, relative)
       stat = File.stat(path)
-      role = if relative.match?(%r{(?:^|/)(?:test|tests)(?:/|_)}) || relative.end_with?("Test.java")
+      role = if relative.match?(%r{(?:^|/)(?:test|tests)(?:[-_/]|$)}) || relative.end_with?("Test.java")
                "test"
              elsif relative.end_with?(".md", ".json")
                "contract"

@@ -2,6 +2,8 @@ package com.ycsopen.sms.core.common.security.object;
 
 import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
 import com.ycsopen.sms.core.common.security.key.VersionedTokenDigest;
+import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcTokenDigestPublicationFence;
+import com.ycsopen.sms.core.common.security.key.lifecycle.TokenDigestPublicationFence;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -558,18 +560,28 @@ public final class TenantRegistrationObjectSessionService {
 
         private final JdbcTemplate jdbc;
         private final TransactionTemplate transactions;
+        private final TokenDigestPublicationFence tokenFence;
 
         public JdbcSessionStore(JdbcTemplate jdbc,
                                 PlatformTransactionManager transactionManager) {
+            this(jdbc, transactionManager, new JdbcTokenDigestPublicationFence(jdbc));
+        }
+
+        JdbcSessionStore(JdbcTemplate jdbc,
+                         PlatformTransactionManager transactionManager,
+                         TokenDigestPublicationFence tokenFence) {
             this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
             this.transactions = new TransactionTemplate(
                     Objects.requireNonNull(transactionManager, "transactionManager"));
+            this.tokenFence = Objects.requireNonNull(tokenFence, "tokenFence");
         }
 
         @Override
         public boolean create(StoredSession session) {
             try {
-                return jdbc.update("""
+                Boolean created = transactions.execute(status -> {
+                    tokenFence.lockAndValidate(session.credentialDigest());
+                    return jdbc.update("""
                         INSERT INTO ycs_crypto_registration_sessions
                             (registration_session_id, tenant_draft_id, session_state,
                              upload_digest_purpose, upload_digest_key_version,
@@ -578,6 +590,8 @@ public final class TenantRegistrationObjectSessionService {
                         """, session.registrationSessionId(), session.tenantDraftId(),
                         DIGEST_PURPOSE, session.credentialDigest().keyVersion(),
                         session.credentialDigest().digest(), Timestamp.from(session.expiresAt())) == 1;
+                });
+                return Boolean.TRUE.equals(created);
             } catch (DuplicateKeyException collision) {
                 return false;
             } catch (RuntimeException failure) {

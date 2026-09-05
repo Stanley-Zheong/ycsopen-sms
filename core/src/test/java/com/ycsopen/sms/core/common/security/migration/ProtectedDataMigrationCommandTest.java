@@ -13,6 +13,8 @@ import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunn
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionRequest;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunner.TransitionResult;
 import com.ycsopen.sms.core.common.security.migration.WriterFencePort.PairedAdmission;
+import com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotService.RestoreResult;
+import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotManifest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -134,7 +136,7 @@ class ProtectedDataMigrationCommandTest {
     }
 
     @Test
-    void exposesOnlyTheSevenFixedSubcommandsAndSanitizedResults() {
+    void exposesOnlyTheTenFixedSubcommandsAndSanitizedResults() {
         RecordingServices services = new RecordingServices();
         Invocation start = invoke(services,
                 "start", "--run-id", RUN_ID, "--target", "bulk_sending_items.mobile_encrypted",
@@ -154,15 +156,45 @@ class ProtectedDataMigrationCommandTest {
         Invocation abort = invoke(services,
                 "abort", "--run-id", RUN_ID, "--pair-digest", DIGEST);
         Invocation status = invoke(services, "status", "--run-id", RUN_ID);
+        Invocation create = invoke(services,
+                "snapshot-create", "--snapshot-id", "snapshot-v1",
+                "--environment", "test", "--database-instance-fingerprint", DIGEST,
+                "--schema", "phase03", "--flyway-set-digest", OTHER_DIGEST,
+                "--global-sequence", "7", "--signer-key-version", "signer-v1");
+        Invocation restore = invoke(services,
+                "snapshot-restore", "--snapshot-id", "snapshot-v1",
+                "--pair-digest", DIGEST, "--target-schema", "phase03_restore");
+        Invocation delete = invoke(services,
+                "snapshot-delete", "--snapshot-id", "snapshot-v1",
+                "--snapshot-digest", services.snapshot().digest());
 
-        assertThat(List.of(start.exit(), resume.exit(), advance.exit(), pause.exit(), abort.exit(), status.exit()))
+        assertThat(List.of(start.exit(), resume.exit(), advance.exit(), pause.exit(), abort.exit(),
+                status.exit(), create.exit(), restore.exit(), delete.exit()))
                 .containsOnly(0);
-        assertThat(services.mutationCalls).isEqualTo(5);
+        assertThat(services.mutationCalls).isEqualTo(8);
         assertThat(advance.stdout()).contains("\"previous_state\":\"DISCOVERED\"")
                 .contains("\"current_state\":\"BACKFILLED\"")
                 .doesNotContain("plaintext");
         assertThat(status.stdout()).contains("\"scanned\":1").doesNotContain("plaintext");
+        assertThat(create.stdout()).contains("\"snapshot_id\":\"snapshot-v1\"")
+                .contains("\"snapshot_digest\":\"").doesNotContain("password");
+        assertThat(restore.stdout()).contains("\"target_schema\":\"phase03_restore\"")
+                .contains("\"already_complete\":false");
+        assertThat(delete.stdout()).contains("\"state\":\"DELETED\"");
         assertThat(invoke(services, "rollback").exit()).isEqualTo(20);
+    }
+
+    @Test
+    void snapshotOperationalFailureUsesTypedSnapshotExit() {
+        RecordingServices services = new RecordingServices();
+        services.snapshotFailure = true;
+
+        Invocation result = invoke(services,
+                "snapshot-delete", "--snapshot-id", "snapshot-v1",
+                "--snapshot-digest", DIGEST);
+
+        assertThat(result.exit()).isEqualTo(25);
+        assertThat(result.stderr()).isEqualTo("phase03-migration:error:snapshot_invalid\n");
     }
 
     private static Stream<Arguments> malformedInvocations() {
@@ -232,6 +264,7 @@ class ProtectedDataMigrationCommandTest {
         private int acceptedPairCalls;
         private int mutationCalls;
         private int pairWrites;
+        private boolean snapshotFailure;
         private PreflightInvocation lastPreflight;
 
         @Override
@@ -282,6 +315,45 @@ class ProtectedDataMigrationCommandTest {
         @Override
         public RunStatus status(String runId) {
             return new RunStatus(runId, RunState.RUNNING, DIGEST, 1, 1, 1, 0);
+        }
+
+        @Override
+        public SnapshotManifest createSnapshot(
+                ProtectedDataMigrationCommand.SnapshotCreateInvocation invocation) {
+            mutationCalls++;
+            failSnapshotIfRequested();
+            return snapshot();
+        }
+
+        @Override
+        public RestoreResult restoreSnapshot(
+                ProtectedDataMigrationCommand.SnapshotRestoreInvocation invocation) {
+            mutationCalls++;
+            failSnapshotIfRequested();
+            return new RestoreResult(invocation.snapshotId(), invocation.targetSchema(), false);
+        }
+
+        @Override
+        public String deleteSnapshot(
+                ProtectedDataMigrationCommand.SnapshotDeleteInvocation invocation) {
+            mutationCalls++;
+            failSnapshotIfRequested();
+            return invocation.snapshotId();
+        }
+
+        private SnapshotManifest snapshot() {
+            return new SnapshotManifest(
+                    new SnapshotManifest.Subject(
+                            "phase03", "test", DIGEST, "phase03", OTHER_DIGEST, 7,
+                            "signer-v1"),
+                    "snapshot-v1", "snapshot-key-v1", 1, 146,
+                    List.of(new SnapshotManifest.Chunk(0, true, 1, 146, DIGEST)));
+        }
+
+        private void failSnapshotIfRequested() {
+            if (snapshotFailure) {
+                throw SnapshotManifest.invalid();
+            }
         }
 
         private BatchResult batch(MigrationRequest request) {

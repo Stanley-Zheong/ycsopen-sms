@@ -16,6 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -27,12 +29,20 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EncryptedMySqlSnapshotServiceTest {
+
+    @TempDir
+    Path directory;
 
     private static final int CHUNK_BYTES = Math.toIntExact(
             EncryptedSnapshotVerifier.MAXIMUM_CHUNK_PLAINTEXT_BYTES);
@@ -55,6 +65,29 @@ class EncryptedMySqlSnapshotServiceTest {
         assertChunking(CHUNK_BYTES + 1L, List.of((long) CHUNK_BYTES, 1L), 2);
         assertChunking(CHUNK_BYTES * 2L + 17L,
                 List.of((long) CHUNK_BYTES, (long) CHUNK_BYTES, 17L), 3);
+    }
+
+    @Test
+    void durableReservationIsVisibleBeforeTheFirstRecoveryKeyWrap() {
+        MemoryStore store = new MemoryStore();
+        AtomicBoolean observed = new AtomicBoolean();
+        RawTestKeyPort keyPort = new RawTestKeyPort(RECOVERY_KEY, () -> {
+            assertThat(store.reserved).isTrue();
+            assertThatThrownBy(store::retainedManifests)
+                    .isInstanceOf(SnapshotManifest.SnapshotException.class);
+            observed.set(true);
+        });
+        EncryptedMySqlSnapshotService service = new EncryptedMySqlSnapshotService(
+                codec(RECOVERY_KEY, keyPort), new FakeProcess(257), store,
+                (source, target) -> { });
+
+        SnapshotManifest manifest = service.create(new CreateRequest(
+                SOURCE, SUBJECT, SNAPSHOT_ID, RECOVERY_KEY));
+
+        assertThat(observed).isTrue();
+        assertThat(store.retainedManifests())
+                .extracting(SnapshotChunkStore.RetainedManifest::snapshotId)
+                .containsExactly(manifest.snapshotId());
     }
 
     @Test
@@ -153,6 +186,64 @@ class EncryptedMySqlSnapshotServiceTest {
     }
 
     @Test
+    void productionAdmissionProofUsesExactRetainedBytesAndDeleteRequiresExactDigest() {
+        Fixture fixture = createFixture(257, SNAPSHOT_ID, RECOVERY_KEY);
+        EncryptedMySqlSnapshotService service = fixture.service();
+
+        service.requireCompleteRetainedSnapshot(fixture.manifest.canonicalBytes());
+        byte[] different = fixture.manifest.canonicalBytes();
+        different[different.length - 1] ^= 1;
+        assertThatThrownBy(() -> service.requireCompleteRetainedSnapshot(different))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+        assertThatThrownBy(() -> service.delete(SNAPSHOT_ID, "0".repeat(64)))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+
+        assertThat(service.delete(SNAPSHOT_ID, fixture.manifest.digest()))
+                .isEqualTo(SNAPSHOT_ID);
+        assertThat(fixture.store.envelopes).isEmpty();
+        assertThat(fixture.store.manifest).isNull();
+    }
+
+    @Test
+    void deletingDottedPrefixSnapshotPreservesOtherSnapshotCompletionMarkers() throws Exception {
+        SnapshotChunkStore.FileStore store = new SnapshotChunkStore.FileStore(
+                Files.createDirectory(directory.resolve("completion-isolation")));
+        String digestA = "a".repeat(64);
+        String digestDotted = "b".repeat(64);
+        store.markRecoveryComplete("a", "restore_a", digestA);
+        store.markRecoveryComplete("a.b", "restore_ab", digestDotted);
+
+        store.deleteSnapshot("a");
+
+        assertThat(store.recoveryComplete("a", "restore_a", digestA)).isFalse();
+        assertThat(store.recoveryComplete("a.b", "restore_ab", digestDotted)).isTrue();
+    }
+
+    @Test
+    void concurrentFirstMarkersForTwoTargetsShareOneRaceSafeSnapshotDirectory()
+            throws Exception {
+        CyclicBarrier creators = new CyclicBarrier(2);
+        SnapshotChunkStore.FileStore store = new SnapshotChunkStore.FileStore(
+                Files.createDirectory(directory.resolve("concurrent-completions")),
+                ignored -> await(creators));
+        String digest = "c".repeat(64);
+
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(() ->
+                    store.markRecoveryComplete("snapshot.concurrent", "restore_one", digest));
+            var second = executor.submit(() ->
+                    store.markRecoveryComplete("snapshot.concurrent", "restore_two", digest));
+            first.get(5, TimeUnit.SECONDS);
+            second.get(5, TimeUnit.SECONDS);
+        }
+
+        assertThat(store.recoveryComplete(
+                "snapshot.concurrent", "restore_one", digest)).isTrue();
+        assertThat(store.recoveryComplete(
+                "snapshot.concurrent", "restore_two", digest)).isTrue();
+    }
+
+    @Test
     void partialRestoreNeverCreatesARecoveryCompletionMarker() {
         Fixture fixture = createFixture(1024, SNAPSHOT_ID, RECOVERY_KEY);
         fixture.process.failRestoreAfter = 113;
@@ -178,6 +269,59 @@ class EncryptedMySqlSnapshotServiceTest {
         assertThat(fixture.process.restoredBytes.toByteArray())
                 .isEqualTo(pattern(65_539));
         assertThat(fixture.store.completed).isTrue();
+    }
+
+    @Test
+    void staleCompletionRejectsDroppedOrMutatedTargetAndUnchangedTargetRemainsIdempotent() {
+        Fixture dropped = createFixture(4_097, SNAPSHOT_ID, RECOVERY_KEY);
+        assertThat(dropped.restore(dropped.manifest).alreadyComplete()).isFalse();
+        dropped.process.targetAvailable = false;
+        assertThatThrownBy(() -> dropped.restore(dropped.manifest))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+
+        Fixture mutated = createFixture(4_097, "snapshot-mutated", RECOVERY_KEY);
+        assertThat(mutated.restore(mutated.manifest).alreadyComplete()).isFalse();
+        byte[] changed = mutated.process.restoredBytes.toByteArray();
+        changed[changed.length - 1] ^= 1;
+        mutated.process.targetDumpOverride = changed;
+        assertThatThrownBy(() -> mutated.restore(mutated.manifest))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+
+        mutated.process.targetDumpOverride = null;
+        assertThat(mutated.restore(mutated.manifest).alreadyComplete()).isTrue();
+        assertThat(mutated.process.restoreStarts).isOne();
+    }
+
+    @Test
+    void staleCompletionRejectsDeletedOrCorruptedRetainedChunkBeforeTargetDump() {
+        Fixture deleted = createFixture(4_097, SNAPSHOT_ID, RECOVERY_KEY);
+        deleted.restore(deleted.manifest);
+        int dumpsBeforeDelete = deleted.process.targetDumpStarts;
+        deleted.store.remove(0);
+        assertThatThrownBy(() -> deleted.restore(deleted.manifest))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+        assertThat(deleted.process.targetDumpStarts).isEqualTo(dumpsBeforeDelete);
+
+        Fixture corrupted = createFixture(4_097, "snapshot-corrupted", RECOVERY_KEY);
+        corrupted.restore(corrupted.manifest);
+        int dumpsBeforeCorruption = corrupted.process.targetDumpStarts;
+        byte[] envelope = corrupted.store.require(0);
+        envelope[envelope.length - 1] ^= 1;
+        corrupted.store.replace(0, envelope);
+        assertThatThrownBy(() -> corrupted.restore(corrupted.manifest))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+        assertThat(corrupted.process.targetDumpStarts).isEqualTo(dumpsBeforeCorruption);
+    }
+
+    @Test
+    void firstRestoreMismatchDoesNotPublishCompletionMarker() {
+        Fixture fixture = createFixture(4_097, SNAPSHOT_ID, RECOVERY_KEY);
+        fixture.process.targetDumpOverride = new byte[]{1, 2, 3};
+
+        assertThatThrownBy(() -> fixture.restore(fixture.manifest))
+                .isInstanceOf(SnapshotManifest.SnapshotException.class);
+        assertThat(fixture.store.completed).isFalse();
+        assertThat(fixture.process.restoreStarts).isOne();
     }
 
     @Test
@@ -262,8 +406,12 @@ class EncryptedMySqlSnapshotServiceTest {
     }
 
     private static ProtectedFieldCodec codec(String recoveryKey) {
+        return codec(recoveryKey, new RawTestKeyPort(recoveryKey));
+    }
+
+    private static ProtectedFieldCodec codec(String recoveryKey, KeyProtectionPort keyPort) {
         return new ProtectedFieldCodec(
-                new EnvelopeCodec(), new RawTestKeyPort(recoveryKey),
+                new EnvelopeCodec(), keyPort,
                 new SequenceSecureRandom(), recoveryKey);
     }
 
@@ -301,6 +449,14 @@ class EncryptedMySqlSnapshotServiceTest {
             value[index] = PatternInputStream.valueAt(index);
         }
         return value;
+    }
+
+    private static void await(CyclicBarrier barrier) {
+        try {
+            barrier.await(5, TimeUnit.SECONDS);
+        } catch (Exception failure) {
+            throw new IllegalStateException(failure);
+        }
     }
 
     private static String sha256(byte[] input) {
@@ -362,9 +518,22 @@ class EncryptedMySqlSnapshotServiceTest {
         private int puts;
         private boolean completed;
         private String completionDigest;
+        private byte[] manifest;
+        private boolean reserved;
+
+        @Override
+        public void beginSnapshot(String snapshotId) {
+            if (reserved) {
+                throw SnapshotManifest.invalid();
+            }
+            reserved = true;
+        }
 
         @Override
         public void putComplete(String snapshotId, int index, byte[] completeEnvelope) {
+            if (!reserved) {
+                throw SnapshotManifest.invalid();
+            }
             puts++;
             if (envelopes.putIfAbsent(index, completeEnvelope.clone()) != null) {
                 throw SnapshotManifest.invalid();
@@ -404,6 +573,26 @@ class EncryptedMySqlSnapshotServiceTest {
         @Override
         public void deleteSnapshot(String snapshotId) {
             envelopes.clear();
+            manifest = null;
+            reserved = false;
+        }
+
+        @Override
+        public void putManifest(String snapshotId, byte[] canonicalManifest) {
+            SnapshotManifest parsed = SnapshotManifest.parse(canonicalManifest);
+            if (!snapshotId.equals(parsed.snapshotId()) || manifest != null) {
+                throw SnapshotManifest.invalid();
+            }
+            manifest = canonicalManifest.clone();
+        }
+
+        @Override
+        public List<RetainedManifest> retainedManifests() {
+            if (reserved && manifest == null) {
+                throw SnapshotManifest.invalid();
+            }
+            return manifest == null ? List.of() : List.of(new RetainedManifest(
+                    SnapshotManifest.parse(manifest).snapshotId(), manifest));
         }
 
         byte[] require(int index) {
@@ -418,6 +607,10 @@ class EncryptedMySqlSnapshotServiceTest {
             envelopes.put(index, envelope.clone());
         }
 
+        void remove(int index) {
+            envelopes.remove(index);
+        }
+
         List<byte[]> values() {
             return envelopes.values().stream().map(byte[]::clone).toList();
         }
@@ -426,28 +619,47 @@ class EncryptedMySqlSnapshotServiceTest {
             MemoryStore copy = new MemoryStore();
             envelopes.forEach((index, value) -> copy.envelopes.put(index, value.clone()));
             copy.puts = puts;
+            copy.manifest = manifest == null ? null : manifest.clone();
+            copy.reserved = reserved;
             return copy;
         }
     }
 
     private static final class FakeProcess implements MySqlSnapshotProcess {
-        private final PatternInputStream dumpInput;
+        private final long dumpBytes;
+        private PatternInputStream dumpInput;
         private final ByteArrayOutputStream restoredBytes = new ByteArrayOutputStream();
         private int dumpStarts;
+        private int targetDumpStarts;
         private int restoreStarts;
         private int failRestoreAfter = -1;
+        private boolean targetAvailable = true;
+        private byte[] targetDumpOverride;
 
         private FakeProcess(long dumpBytes) {
-            this.dumpInput = new PatternInputStream(dumpBytes);
+            this.dumpBytes = dumpBytes;
         }
 
         @Override
         public DumpSession startDump(Database source) {
             dumpStarts++;
+            boolean target = !source.schema().equals(SOURCE.schema());
+            InputStream output;
+            if (target) {
+                targetDumpStarts++;
+                if (!targetAvailable) {
+                    throw SnapshotManifest.invalid();
+                }
+                output = new ByteArrayInputStream(targetDumpOverride == null
+                        ? restoredBytes.toByteArray() : targetDumpOverride.clone());
+            } else {
+                dumpInput = new PatternInputStream(dumpBytes);
+                output = dumpInput;
+            }
             return new DumpSession() {
                 @Override
                 public InputStream stdout() {
-                    return dumpInput;
+                    return output;
                 }
 
                 @Override
@@ -572,9 +784,15 @@ class EncryptedMySqlSnapshotServiceTest {
 
     private static final class RawTestKeyPort implements KeyProtectionPort {
         private final String keyReference;
+        private final Runnable beforeWrap;
 
         private RawTestKeyPort(String keyReference) {
+            this(keyReference, () -> { });
+        }
+
+        private RawTestKeyPort(String keyReference, Runnable beforeWrap) {
             this.keyReference = keyReference;
+            this.beforeWrap = beforeWrap;
         }
 
         @Override
@@ -582,6 +800,7 @@ class EncryptedMySqlSnapshotServiceTest {
                 byte[] dataEncryptionKey,
                 byte[] authenticatedHeader,
                 ProtectionContext semanticContext) {
+            beforeWrap.run();
             byte[] wrapped = new byte[WrappedDataKey.WRAPPED_DEK_BYTES];
             System.arraycopy(dataEncryptionKey, 0, wrapped, 0, dataEncryptionKey.length);
             return new WrappedDataKey(

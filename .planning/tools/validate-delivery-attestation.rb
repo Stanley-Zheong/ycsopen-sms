@@ -24,6 +24,7 @@ module Phase01DeliveryAttestation
   REMOTE_NAME = /\A[A-Za-z0-9][A-Za-z0-9._-]*\z/
   ROLES = %w[implementation test config contract validator].freeze
   SUBJECT_FIELDS = %w[schema_version phase inputs].freeze
+  PHASE03_SUBJECT_FIELDS = %w[schema_version phase owner inputs].freeze
   INPUT_FIELDS = %w[path mode sha256 role].freeze
   EVIDENCE_FIELDS = %w[
     schema_version phase owner subject_manifest_path subject_manifest_digest
@@ -46,6 +47,65 @@ module Phase01DeliveryAttestation
     OBL-FOUND-UI-DRIFT-001 OBL-FOUND-UI-DRIFT-002 OBL-NFR-BROWSER
   ].freeze
   EXPECTED_CI_LOCATORS = [".github/workflows/ci.yml", "scripts/verify-phase-01"].freeze
+  PHASE03_EVIDENCE_FIELDS = %w[
+    schema_version phase owner status subject inventory leak_result entries
+  ].freeze
+  PHASE03_SUBJECT_REFERENCE_FIELDS = %w[path sha256 tested_subject_digest].freeze
+  PHASE03_INVENTORY_REFERENCE_FIELDS = %w[path sha256 accepted_digest validator_result].freeze
+  PHASE03_LEAK_REFERENCE_FIELDS = %w[path sha256 result_digest].freeze
+  PHASE03_RESULT_REFERENCE_FIELDS = %w[check_id path sha256 result_digest].freeze
+  PHASE03_ENTRY_FIELDS = %w[obligation_id path sha256 status evidence_digest].freeze
+  PHASE03_OBLIGATION_FIELDS = %w[
+    schema_version phase owner obligation_id requirement_ids behavior_id catalog_test
+    case_id evidence_path status exit_code subject inventory leak_result child_results
+  ].freeze
+  PHASE03_OBLIGATIONS = {
+    "OBL-CRYPTO-STORAGE-001" => {
+      "requirement_ids" => ["REQ-NFR-DATA-PROTECTION"],
+      "behavior_id" => "crypto-storage-bootstrap-01",
+      "catalog_test" => "T-CRYPTO-STORAGE-001:database",
+      "case_id" => "CASE-CRYPTO-STORAGE-001",
+      "check_id" => "phase03-protected-persistence-integration"
+    },
+    "OBL-CRYPTO-STORAGE-002" => {
+      "requirement_ids" => ["REQ-NFR-DATA-PROTECTION"],
+      "behavior_id" => "crypto-storage-bootstrap-02",
+      "catalog_test" => "T-CRYPTO-STORAGE-002:security",
+      "case_id" => "CASE-CRYPTO-STORAGE-002",
+      "check_id" => "phase03-object-storage-integration"
+    },
+    "OBL-CRYPTO-STORAGE-003" => {
+      "requirement_ids" => ["REQ-NFR-DATA-PROTECTION"],
+      "behavior_id" => "crypto-storage-bootstrap-03",
+      "catalog_test" => "T-CRYPTO-STORAGE-003:fault",
+      "case_id" => "CASE-CRYPTO-STORAGE-003",
+      "check_id" => "phase03-pkcs11-fault-integration"
+    },
+    "OBL-CRYPTO-STORAGE-004" => {
+      "requirement_ids" => ["REQ-NFR-DATA-PROTECTION"],
+      "behavior_id" => "crypto-storage-bootstrap-04",
+      "catalog_test" => "T-CRYPTO-STORAGE-004:database",
+      "case_id" => "CASE-CRYPTO-STORAGE-004",
+      "check_id" => "phase03-migration-integration"
+    }
+  }.freeze
+  PHASE03_TRUSTED_SUBJECT_INPUTS = %w[
+    .github/workflows/ci.yml
+    .planning/PHASE-ARTIFACT-TEMPLATE.md
+    .planning/phases/01-engineering-verification-foundation/EVIDENCE/local-chrome-entry.json
+    .planning/tools/phase01-chrome-entry-contract.rb
+    .planning/tools/planning-validator-support.rb
+    .planning/tools/test-delivery-attestation.rb
+    .planning/tools/test-phase-lifecycle.rb
+    .planning/tools/test-planning-validators.rb
+    .planning/tools/validate-delivery-attestation.rb
+    .planning/tools/validate-phase-entry.rb
+    .planning/tools/validate-phase-lifecycle.rb
+    .planning/tools/validate-trace-closure.rb
+    .planning/tools/validate-ui-contract.rb
+    .planning/tools/validate-verification-evidence.rb
+    .planning/tools/verification-evidence.rb
+  ].freeze
   TAG_FIELDS = %w[
     phase package branch commit tree subject_manifest_path subject_manifest_digest
     tested_subject_digest evidence_manifest_path evidence_manifest_digest
@@ -66,7 +126,7 @@ module Phase01DeliveryAttestation
   UNSUPPORTED_LITERAL = Object.new.freeze
   Context = Struct.new(
     :phase, :package, :phase_name, :tag_ref, :subject_schema, :evidence_schema,
-    :registry_path,
+    :registry_path, :local_pr_schema, :subject_kind,
     keyword_init: true
   )
 
@@ -94,7 +154,9 @@ module Phase01DeliveryAttestation
       tag_ref: "refs/tags/ycsopen-sms/phase-#{phase}/delivery",
       subject_schema: "phase#{phase}-tested-inputs-v1",
       evidence_schema: "phase#{phase}-evidence-manifest-v1",
-      registry_path: "scripts/lib/phase-#{phase}/run_checks.rb"
+      registry_path: "scripts/lib/phase-#{phase}/run_checks.rb",
+      local_pr_schema: "phase#{phase}-local-pr-check-v1",
+      subject_kind: phase == "03" ? :phase03_tree : :registry
     )
   end
 
@@ -434,6 +496,8 @@ module Phase01DeliveryAttestation
   end
 
   def code_owned_subject_entries(git_dir, commit, context, errors)
+    return phase03_code_owned_subject_entries(git_dir, commit, context, errors) if context.subject_kind == :phase03_tree
+
     registry_path = context.registry_path
     source = target_blob(git_dir, commit, registry_path, errors, "SUBJECT_REGISTRY")
     return [] unless source
@@ -493,6 +557,102 @@ module Phase01DeliveryAttestation
     by_path.values.sort_by { |entry| entry["path"] }
   end
 
+  def phase03_subject_path?(path, context)
+    phase_prefix = ".planning/phases/#{context.phase_name}/"
+    return true if PHASE03_TRUSTED_SUBJECT_INPUTS.include?(path)
+    return true if path == "core/pom.xml" || path == "scripts/verify-phase-03"
+    return true if path.start_with?("core/src/main/", "core/src/test/", "core/docs/", "docs/")
+    return true if path.start_with?("scripts/lib/phase-03/", "skills/flyway-migration/", phase_prefix)
+    return true if path == ".planning/tools/phase3-crypto-evidence.rb"
+
+    path.start_with?(".planning/tools/") && File.basename(path).include?("phase-03")
+  end
+
+  def phase03_mutable_subject_path?(path, context)
+    phase_prefix = ".planning/phases/#{context.phase_name}/"
+    return false unless path.start_with?(phase_prefix)
+
+    basename = File.basename(path)
+    producer_output = path.start_with?("#{phase_prefix}EVIDENCE/") &&
+      (basename == "tested-inputs.json" || basename == "evidence-manifest.json" ||
+       basename.match?(/\AOBL-CRYPTO-STORAGE-00[1-4]\.json\z/))
+    mutable_record = basename.match?(/(?:SUMMARY|VERIFICATION|REVIEW)\.md\z/) ||
+      %w[TODO.md ITERATIONS.md DECISIONS.md TEST-MATRIX.md].include?(basename)
+    producer_output || mutable_record
+  end
+
+  def phase03_subject_role(path)
+    if path.match?(%r{(?:^|/)(?:test|tests)(?:[-_/]|$)}) || path.end_with?("Test.java")
+      "test"
+    elsif path.end_with?(".md", ".json")
+      "contract"
+    elsif path.end_with?(".yml", ".yaml", ".xml")
+      "config"
+    elsif path.include?("validate-") || path.include?("scanner")
+      "validator"
+    else
+      "implementation"
+    end
+  end
+
+  def phase03_code_owned_subject_entries(git_dir, commit, context, errors)
+    registry_source = target_blob(git_dir, commit, context.registry_path, errors, "SUBJECT_REGISTRY")
+    if registry_source
+      ast = Ripper.sexp(registry_source)
+      if ast
+        assignments = []
+        walk_ast(ast) do |node|
+          next unless node[0] == :assign && node.dig(1, 0) == :var_field && node.dig(1, 1, 0) == :@const
+          assignments << [node.dig(1, 1, 1), node[2]]
+        end
+        constants = {}
+        pending = assignments.dup
+        loop do
+          before = pending.length
+          pending = pending.reject do |name, expression|
+            value = literal_value(expression, constants)
+            next false if value.equal?(UNSUPPORTED_LITERAL)
+            constants[name] = value
+            true
+          end
+          break if pending.empty? || pending.length == before
+        end
+        producer_inputs = constants["TRUSTED_SUBJECT_INPUTS"]
+        unless producer_inputs.is_a?(Array) && producer_inputs.all? { |path| path.is_a?(String) }
+          errors << "SUBJECT_REGISTRY_TRUSTED_INPUTS_NOT_LITERAL"
+        else
+          missing = PHASE03_TRUSTED_SUBJECT_INPUTS - producer_inputs
+          extra = producer_inputs - PHASE03_TRUSTED_SUBJECT_INPUTS
+          errors << "SUBJECT_REGISTRY_TRUSTED_INPUT_SET_MISMATCH missing=#{missing.sort.join(',')} extra=#{extra.sort.join(',')}" unless missing.empty? && extra.empty?
+          errors << "SUBJECT_REGISTRY_TRUSTED_INPUT_DUPLICATE" unless producer_inputs.uniq.length == producer_inputs.length
+        end
+      else
+        errors << "SUBJECT_REGISTRY_RUBY_INVALID"
+      end
+    end
+
+    stdout, _stderr, status = bare_git(git_dir, "ls-tree", "-r", "-z", commit)
+    unless status&.success?
+      errors << "SUBJECT_TREE_LOOKUP_FAILED"
+      return []
+    end
+
+    tree_paths = []
+    entries = stdout.split("\0").filter_map do |row|
+      match = row.match(/\A(100[0-7]{3}) blob [0-9a-f]{40}\t(.+)\z/)
+      next unless match
+      path = match[2]
+      tree_paths << path
+      next unless phase03_subject_path?(path, context)
+      next if phase03_mutable_subject_path?(path, context)
+
+      { "path" => path, "role" => phase03_subject_role(path) }
+    end.sort_by { |entry| entry["path"] }
+    trusted_missing = PHASE03_TRUSTED_SUBJECT_INPUTS - tree_paths
+    errors << "SUBJECT_TRUSTED_INPUT_MISSING_FROM_TREE paths=#{trusted_missing.sort.join(',')}" unless trusted_missing.empty?
+    entries
+  end
+
   def validate_subject(git_dir, commit, subject_path, context, errors)
     bytes = target_blob(git_dir, commit, subject_path, errors, "SUBJECT_MANIFEST")
     return [nil, nil, nil] unless bytes
@@ -500,9 +660,11 @@ module Phase01DeliveryAttestation
     subject = parse_json(bytes, errors, "SUBJECT_MANIFEST")
     return [nil, nil, nil] unless subject
 
-    exact_hash(subject, SUBJECT_FIELDS, errors, "SUBJECT")
+    subject_fields = context.subject_kind == :phase03_tree ? PHASE03_SUBJECT_FIELDS : SUBJECT_FIELDS
+    exact_hash(subject, subject_fields, errors, "SUBJECT")
     errors << "SUBJECT_SCHEMA_UNSUPPORTED" unless subject["schema_version"] == context.subject_schema
     errors << "SUBJECT_PHASE_MISMATCH" unless subject["phase"] == context.phase_name
+    errors << "SUBJECT_OWNER_MISMATCH" if context.subject_kind == :phase03_tree && subject["owner"] != context.package
     inputs = subject["inputs"]
     unless inputs.is_a?(Array)
       errors << "SUBJECT_INPUTS_INVALID"
@@ -572,18 +734,30 @@ module Phase01DeliveryAttestation
     return nil unless manifest
 
     schema = manifest["schema_version"]
-    fields = schema == OBLIGATION_EVIDENCE_SCHEMA ? OBLIGATION_EVIDENCE_FIELDS : EVIDENCE_FIELDS
+    fields = if schema == OBLIGATION_EVIDENCE_SCHEMA
+      OBLIGATION_EVIDENCE_FIELDS
+    elsif context.subject_kind == :phase03_tree && schema == context.evidence_schema
+      PHASE03_EVIDENCE_FIELDS
+    else
+      EVIDENCE_FIELDS
+    end
     exact_hash(manifest, fields, errors, "EVIDENCE_MANIFEST")
     errors << "EVIDENCE_SCHEMA_UNSUPPORTED" unless [context.evidence_schema, OBLIGATION_EVIDENCE_SCHEMA].include?(schema)
     errors << "EVIDENCE_PHASE_MISMATCH" unless manifest["phase"] == context.phase_name
     errors << "EVIDENCE_OWNER_MISMATCH" unless manifest["owner"] == context.package
-    errors << "EVIDENCE_SUBJECT_PATH_MISMATCH" unless manifest["subject_manifest_path"] == subject_path
-    errors << "EVIDENCE_SUBJECT_MANIFEST_DIGEST_MISMATCH" unless manifest["subject_manifest_digest"] == subject_manifest_digest
-    errors << "EVIDENCE_TESTED_SUBJECT_DIGEST_MISMATCH" unless manifest["tested_subject_digest"] == tested_subject_digest
+    unless context.subject_kind == :phase03_tree
+      errors << "EVIDENCE_SUBJECT_PATH_MISMATCH" unless manifest["subject_manifest_path"] == subject_path
+      errors << "EVIDENCE_SUBJECT_MANIFEST_DIGEST_MISMATCH" unless manifest["subject_manifest_digest"] == subject_manifest_digest
+      errors << "EVIDENCE_TESTED_SUBJECT_DIGEST_MISMATCH" unless manifest["tested_subject_digest"] == tested_subject_digest
+    end
 
     if schema == OBLIGATION_EVIDENCE_SCHEMA
       validate_obligation_evidence_entries(
         git_dir, commit, manifest, subject_path, subject_manifest_digest, tested_subject_digest, errors
+      )
+    elsif context.subject_kind == :phase03_tree && schema == context.evidence_schema
+      validate_phase03_evidence(
+        git_dir, commit, manifest, subject_path, tested_subject_digest, context, errors
       )
     elsif schema == context.evidence_schema
       validate_legacy_evidence_entries(
@@ -591,6 +765,124 @@ module Phase01DeliveryAttestation
       )
     end
     Digest::SHA256.hexdigest(bytes)
+  end
+
+  def validate_sha256(value, errors, label)
+    errors << "#{label}_SHA256_INVALID" unless value.is_a?(String) && value.match?(SHA256)
+  end
+
+  def validate_phase03_generated_reference(record, fields, expected_path, errors, label, expected_check: nil)
+    exact_hash(record, fields, errors, label)
+    return unless record.is_a?(Hash)
+
+    errors << "#{label}_PATH_MISMATCH" unless record["path"] == expected_path
+    errors << "#{label}_PATH_INVALID" unless canonical_relative_path?(record["path"])
+    validate_sha256(record["sha256"], errors, label)
+    validate_sha256(record["result_digest"], errors, "#{label}_RESULT") if fields.include?("result_digest")
+    errors << "#{label}_CHECK_ID_MISMATCH" if expected_check && record["check_id"] != expected_check
+  end
+
+  def validate_phase03_evidence(git_dir, commit, manifest, subject_path, tested_subject_digest, context, errors)
+    errors << "EVIDENCE_STATUS_NOT_PASS" unless manifest["status"] == "PASS"
+
+    subject_reference = manifest["subject"]
+    exact_hash(subject_reference, PHASE03_SUBJECT_REFERENCE_FIELDS, errors, "PHASE03_SUBJECT_REFERENCE")
+    if subject_reference.is_a?(Hash)
+      errors << "EVIDENCE_SUBJECT_PATH_MISMATCH" unless subject_reference["path"] == subject_path
+      validate_sha256(subject_reference["sha256"], errors, "PHASE03_SUBJECT_REFERENCE")
+      subject_bytes = target_blob(git_dir, commit, subject_path, errors, "PHASE03_SUBJECT_REFERENCE")
+      errors << "PHASE03_SUBJECT_REFERENCE_CHECKSUM_MISMATCH" if subject_bytes && subject_reference["sha256"] != Digest::SHA256.hexdigest(subject_bytes)
+      errors << "EVIDENCE_TESTED_SUBJECT_DIGEST_MISMATCH" unless subject_reference["tested_subject_digest"] == tested_subject_digest
+    end
+
+    inventory = manifest["inventory"]
+    exact_hash(inventory, PHASE03_INVENTORY_REFERENCE_FIELDS, errors, "PHASE03_INVENTORY_REFERENCE")
+    if inventory.is_a?(Hash)
+      expected_inventory_path = "core/src/main/resources/security/protected-data-inventory.json"
+      errors << "PHASE03_INVENTORY_REFERENCE_PATH_MISMATCH" unless inventory["path"] == expected_inventory_path
+      inventory_bytes = target_blob(git_dir, commit, inventory["path"], errors, "PHASE03_INVENTORY_REFERENCE") if canonical_relative_path?(inventory["path"])
+      if inventory_bytes
+        errors << "PHASE03_INVENTORY_REFERENCE_CHECKSUM_MISMATCH" unless inventory["sha256"] == Digest::SHA256.hexdigest(inventory_bytes)
+        inventory_document = parse_json(inventory_bytes, errors, "PHASE03_INVENTORY_REFERENCE")
+        errors << "PHASE03_INVENTORY_ACCEPTED_DIGEST_MISMATCH" if inventory_document && inventory["accepted_digest"] != digest_value(inventory_document)
+      end
+      validate_sha256(inventory["sha256"], errors, "PHASE03_INVENTORY_REFERENCE")
+      validate_sha256(inventory["accepted_digest"], errors, "PHASE03_INVENTORY_ACCEPTED")
+      validate_phase03_generated_reference(
+        inventory["validator_result"], PHASE03_RESULT_REFERENCE_FIELDS,
+        "core/target/phase03/results/protected-inventory-result.json", errors,
+        "PHASE03_INVENTORY_VALIDATOR_RESULT", expected_check: "phase03-protected-inventory"
+      )
+    end
+
+    leak = manifest["leak_result"]
+    validate_phase03_generated_reference(
+      leak, PHASE03_LEAK_REFERENCE_FIELDS,
+      "core/target/phase03/results/complete-leak-result.json", errors, "PHASE03_LEAK_REFERENCE"
+    )
+
+    entries = manifest["entries"]
+    unless entries.is_a?(Array)
+      errors << "PHASE03_EVIDENCE_ENTRIES_INVALID"
+      return
+    end
+    expected_ids = PHASE03_OBLIGATIONS.keys
+    ids = entries.filter_map { |entry| entry["obligation_id"] if entry.is_a?(Hash) }
+    errors << "PHASE03_EVIDENCE_ENTRY_SET_INVALID" unless ids == expected_ids
+    errors << "PHASE03_EVIDENCE_ENTRY_DUPLICATE" unless ids.uniq.length == ids.length
+    entries.each_with_index do |entry, index|
+      exact_hash(entry, PHASE03_ENTRY_FIELDS, errors, "PHASE03_EVIDENCE_ENTRY index=#{index}")
+      next unless entry.is_a?(Hash)
+
+      obligation_id = expected_ids[index]
+      expected = PHASE03_OBLIGATIONS[obligation_id]
+      expected_path = ".planning/phases/#{context.phase_name}/EVIDENCE/#{obligation_id}.json"
+      errors << "PHASE03_EVIDENCE_ENTRY_ID_MISMATCH index=#{index}" unless entry["obligation_id"] == obligation_id
+      errors << "PHASE03_EVIDENCE_ENTRY_PATH_MISMATCH index=#{index}" unless entry["path"] == expected_path
+      errors << "PHASE03_EVIDENCE_ENTRY_STATUS_NOT_PASS index=#{index}" unless entry["status"] == "PASS"
+      validate_sha256(entry["sha256"], errors, "PHASE03_EVIDENCE_ENTRY index=#{index}")
+      validate_sha256(entry["evidence_digest"], errors, "PHASE03_EVIDENCE_ENTRY index=#{index}_EVIDENCE")
+      record_bytes = target_blob(git_dir, commit, entry["path"], errors, "PHASE03_EVIDENCE_ENTRY index=#{index}")
+      next unless record_bytes
+
+      errors << "PHASE03_EVIDENCE_ENTRY_CHECKSUM_MISMATCH index=#{index}" unless entry["sha256"] == Digest::SHA256.hexdigest(record_bytes)
+      record = parse_json(record_bytes, errors, "PHASE03_OBLIGATION_EVIDENCE index=#{index}")
+      next unless record
+
+      errors << "PHASE03_EVIDENCE_ENTRY_DIGEST_MISMATCH index=#{index}" unless entry["evidence_digest"] == digest_value(record)
+      validate_phase03_obligation_record(record, obligation_id, expected, subject_reference, inventory, leak, errors)
+    end
+  end
+
+  def validate_phase03_obligation_record(record, obligation_id, expected, subject, inventory, leak, errors)
+    label = "PHASE03_OBLIGATION_EVIDENCE id=#{obligation_id}"
+    exact_hash(record, PHASE03_OBLIGATION_FIELDS, errors, label)
+    return unless record.is_a?(Hash)
+
+    errors << "#{label}_SCHEMA_MISMATCH" unless record["schema_version"] == "phase03-obligation-evidence-v1"
+    errors << "#{label}_PHASE_MISMATCH" unless record["phase"] == "03-crypto-storage-bootstrap"
+    errors << "#{label}_OWNER_MISMATCH" unless record["owner"] == "crypto-storage-bootstrap"
+    errors << "#{label}_ID_MISMATCH" unless record["obligation_id"] == obligation_id
+    errors << "#{label}_STATUS_NOT_PASS" unless record["status"] == "PASS" && record["exit_code"] == 0
+    errors << "#{label}_SUBJECT_BINDING_MISMATCH" unless record["subject"] == subject
+    errors << "#{label}_INVENTORY_BINDING_MISMATCH" unless record["inventory"] == inventory
+    errors << "#{label}_LEAK_BINDING_MISMATCH" unless record["leak_result"] == leak
+    %w[requirement_ids behavior_id catalog_test case_id].each do |field|
+      errors << "#{label}_TRACE_MISMATCH field=#{field}" unless record[field] == expected[field]
+    end
+    expected_evidence_path = "EVIDENCE/#{obligation_id}.json"
+    errors << "#{label}_EVIDENCE_PATH_MISMATCH" unless record["evidence_path"] == expected_evidence_path
+    children = record["child_results"]
+    unless children.is_a?(Array) && children.length == 1
+      errors << "#{label}_CHILD_RESULT_SET_INVALID"
+      return
+    end
+    check_id = expected["check_id"]
+    validate_phase03_generated_reference(
+      children.first, PHASE03_RESULT_REFERENCE_FIELDS,
+      "core/target/phase03/results/#{check_id}.json", errors,
+      "#{label}_CHILD_RESULT", expected_check: check_id
+    )
   end
 
   def validate_legacy_evidence_entries(git_dir, commit, manifest, subject_path, subject_manifest_digest, tested_subject_digest, errors)
@@ -709,7 +1001,7 @@ module Phase01DeliveryAttestation
     stripped.delete_prefix("|").delete_suffix("|").split("|", -1).map(&:strip)
   end
 
-  def validate_review(git_dir, commit, path, subject_path, subject_manifest_digest, tested_subject_digest, errors)
+  def validate_review(git_dir, commit, path, subject_path, subject_manifest_digest, tested_subject_digest, context, errors)
     bytes = target_blob(git_dir, commit, path, errors, "REVIEW")
     return unless bytes
     lines = bytes.lines
@@ -724,22 +1016,37 @@ module Phase01DeliveryAttestation
       break if !line.lstrip.start_with?("|")
       cells
     end
-    if rows.empty? || rows.last.length != REVIEW_HEADERS.length
+    if rows.empty? || rows.any? { |row| row.length != REVIEW_HEADERS.length }
       errors << "REVIEW_ROWS_INVALID path=#{path}"
       return
     end
-    attempt, blocker, high, escalated, record_subject_path, record_subject_digest, record_tested_digest, result = rows.last
-    errors << "REVIEW_ATTEMPT_INVALID path=#{path}" unless Integer(attempt, exception: false)&.between?(1, 3)
+    attempts = rows.map do |row|
+      attempt, _blocker, _high, _escalated, record_subject_path, record_subject_digest, record_tested_digest, _result = row
+      attempt_number = Integer(attempt, exception: false)
+      valid_attempt = context.phase == "01" ? attempt_number&.between?(1, 3) : attempt_number&.positive?
+      errors << "REVIEW_ATTEMPT_INVALID path=#{path}" unless valid_attempt
+      errors << "REVIEW_SUBJECT_PATH_MISMATCH path=#{path}" unless record_subject_path == subject_path
+      errors << "REVIEW_SUBJECT_MANIFEST_DIGEST_MISMATCH path=#{path}" unless record_subject_digest == subject_manifest_digest
+      errors << "REVIEW_TESTED_SUBJECT_DIGEST_MISMATCH path=#{path}" unless record_tested_digest == tested_subject_digest
+      attempt_number
+    end
+    valid_attempts = attempts.compact
+    expected_attempts = if context.phase == "01" || valid_attempts.empty?
+      (1..valid_attempts.length).to_a
+    else
+      (valid_attempts.first...(valid_attempts.first + valid_attempts.length)).to_a
+    end
+    errors << "REVIEW_ATTEMPT_SEQUENCE_INVALID path=#{path}" unless valid_attempts == expected_attempts
+    errors << "REVIEW_ATTEMPT_LIMIT_EXCEEDED path=#{path}" if rows.length > 3
+
+    _attempt, blocker, high, escalated, _record_subject_path, _record_subject_digest, _record_tested_digest, result = rows.last
     errors << "REVIEW_BLOCKING_FINDINGS path=#{path}" unless blocker == "0" && high == "0"
     errors << "REVIEW_ESCALATED path=#{path}" unless escalated == "no"
     errors << "REVIEW_RESULT_NOT_PASS path=#{path}" unless result == "PASS"
-    errors << "REVIEW_SUBJECT_PATH_MISMATCH path=#{path}" unless record_subject_path == subject_path
-    errors << "REVIEW_SUBJECT_MANIFEST_DIGEST_MISMATCH path=#{path}" unless record_subject_digest == subject_manifest_digest
-    errors << "REVIEW_TESTED_SUBJECT_DIGEST_MISMATCH path=#{path}" unless record_tested_digest == tested_subject_digest
     errors << "REVIEW_FINAL_VERDICT_NOT_PASS path=#{path}" unless bytes.match?(/^## Final verdict\s*\n+PASS\s*$/)
   end
 
-  def parse_local_pr_state(root, relative, errors)
+  def parse_local_pr_state(root, relative, context, errors)
     bytes = read_local(root, relative, errors, "FIXTURE_PR_STATE")
     return nil unless bytes
     state = parse_json(bytes, errors, "FIXTURE_PR_STATE")
@@ -748,7 +1055,7 @@ module Phase01DeliveryAttestation
       check_conclusion external_actor
     ]
     exact_hash(state, expected, errors, "FIXTURE_PR_STATE") if state
-    errors << "FIXTURE_PR_STATE_SCHEMA_INVALID" if state && state["schema_version"] != LOCAL_PR_SCHEMA
+    errors << "FIXTURE_PR_STATE_SCHEMA_INVALID" if state && state["schema_version"] != context.local_pr_schema
     state
   end
 
@@ -914,7 +1221,10 @@ module Phase01DeliveryAttestation
         .planning/phases/#{context.phase_name}/#{context.phase}-REVIEW.md
         .planning/phases/#{context.phase_name}/CLAUDE-REVIEW.md
       ].each do |path|
-        validate_review(git_dir, commit, path, payload["subject_manifest_path"], subject_manifest_digest, tested_subject_digest, errors)
+        validate_review(
+          git_dir, commit, path, payload["subject_manifest_path"], subject_manifest_digest,
+          tested_subject_digest, context, errors
+        )
       end
 
       state = if is_local
@@ -922,7 +1232,7 @@ module Phase01DeliveryAttestation
           errors << "FIXTURE_PR_STATE_REQUIRED"
           nil
         else
-          parse_local_pr_state(root, options[:fixture_pr_state], errors)
+          parse_local_pr_state(root, options[:fixture_pr_state], context, errors)
         end
       else
         github_external_state(configured_url, summary[:pr_locator], summary[:check_name], commit, errors)

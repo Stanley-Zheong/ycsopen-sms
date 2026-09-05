@@ -133,19 +133,36 @@ public final class KeyLifecycleService {
     /** A retired metadata row remains for audit and provider cleanup is intentionally absent. */
     public RetirementProof retire(KeyReferenceRepository.Purpose purpose, long keyVersion) {
         try {
+            if (purpose == KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK
+                    && (!inventory.containsSource(EnvelopeReferenceInventory.OBJECT_RESERVATION_SOURCE)
+                    || !inventory.containsSource(EnvelopeReferenceInventory.DATABASE_FIELD_SOURCE))) {
+                throw failure();
+            }
+            if (purpose == KeyReferenceRepository.Purpose.SNAPSHOT_RECOVERY
+                    && !inventory.containsSource(EnvelopeReferenceInventory.SNAPSHOT_SOURCE)) {
+                throw failure();
+            }
             KeyReferenceRepository.KeyReference current = key(purpose, keyVersion);
             KeyState expected = previousState(purpose);
             if (current.state() != expected || repository.uniqueActive(purpose).isEmpty()) {
                 throw failure();
             }
-            EnvelopeReferenceInventory.Snapshot snapshot = inventory.snapshot();
-            long live = snapshot.count(purpose, keyVersion);
-            RetirementProof proof = new RetirementProof(live, snapshot.digest());
-            if (live != 0 || !repository.transitionAtomically(purpose, List.of(
+            EnvelopeReferenceInventory.Snapshot[] guardedSnapshot = new EnvelopeReferenceInventory.Snapshot[1];
+            if (!repository.transitionAtomicallyGuarded(purpose, List.of(
                     new KeyReferenceRepository.Transition(keyVersion, expected,
-                            current.optimisticVersion(), KeyState.RETIRED)))) {
+                            current.optimisticVersion(), KeyState.RETIRED)), () -> {
+                EnvelopeReferenceInventory.Snapshot snapshot = inventory.snapshot(purpose);
+                guardedSnapshot[0] = snapshot;
+                return repository.uniqueActive(purpose).isPresent()
+                        && snapshot.count(purpose, keyVersion) == 0;
+            })) {
                 throw failure();
             }
+            EnvelopeReferenceInventory.Snapshot snapshot = guardedSnapshot[0];
+            if (snapshot == null) {
+                throw failure();
+            }
+            RetirementProof proof = new RetirementProof(0, snapshot.digest());
             refreshed(purpose, keyVersion, KeyState.RETIRED);
             return proof;
         } catch (RuntimeException failure) {

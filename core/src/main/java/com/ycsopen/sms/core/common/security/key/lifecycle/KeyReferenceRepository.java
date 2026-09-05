@@ -4,10 +4,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 
 /**
@@ -85,7 +88,15 @@ public interface KeyReferenceRepository {
     List<KeyReference> findAll();
 
     /** Applies all transitions under one purpose lock; all-or-nothing on any stale input. */
-    boolean transitionAtomically(Purpose purpose, List<Transition> transitions);
+    default boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+        return transitionAtomicallyGuarded(purpose, transitions, () -> true);
+    }
+
+    /** Runs the guard after taking the purpose lock and before any transition. */
+    boolean transitionAtomicallyGuarded(
+            Purpose purpose,
+            List<Transition> transitions,
+            BooleanSupplier guard);
 
     default Optional<KeyReference> uniqueActive(Purpose purpose) {
         Objects.requireNonNull(purpose, "purpose");
@@ -127,7 +138,16 @@ public interface KeyReferenceRepository {
 
         @Override
         public boolean transitionAtomically(Purpose purpose, List<Transition> transitions) {
+            return transitionAtomicallyGuarded(purpose, transitions, () -> true);
+        }
+
+        @Override
+        public boolean transitionAtomicallyGuarded(
+                Purpose purpose,
+                List<Transition> transitions,
+                BooleanSupplier guard) {
             Objects.requireNonNull(purpose, "purpose");
+            Objects.requireNonNull(guard, "guard");
             List<Transition> requested = List.copyOf(Objects.requireNonNull(transitions, "transitions"));
             if (requested.isEmpty() || requested.stream().map(Transition::keyVersion).distinct().count()
                     != requested.size()) {
@@ -147,9 +167,19 @@ public interface KeyReferenceRepository {
                         return false;
                     }
                 }
+                if (!guard.getAsBoolean()) {
+                    status.setRollbackOnly();
+                    return false;
+                }
                 long activeBefore = locked.stream().filter(key -> key.state().ownsActiveSlot()).count();
                 if (activeBefore > 1) {
                     throw new IllegalStateException("key lifecycle invariant failed");
+                }
+                Map<Long, Integer> lockedBlindIndexes = purpose == Purpose.MOBILE_BLIND_INDEX
+                        ? lockAndValidateBlindIndexes(requested) : Map.of();
+                if (lockedBlindIndexes == null) {
+                    status.setRollbackOnly();
+                    return false;
                 }
                 for (Transition transition : requested) {
                     int updated = jdbc.update("UPDATE ycs_crypto_key_references SET key_state = ?, "
@@ -163,6 +193,11 @@ public interface KeyReferenceRepository {
                         return false;
                     }
                 }
+                if (purpose == Purpose.MOBILE_BLIND_INDEX
+                        && !synchronizeBlindIndexes(requested, lockedBlindIndexes)) {
+                    status.setRollbackOnly();
+                    return false;
+                }
                 EnumSet<KeyState> resultingActive = EnumSet.of(KeyState.ACTIVE, KeyState.ROTATION_REQUIRED);
                 long activeAfter = locked.stream().map(key -> requested.stream()
                                 .filter(change -> change.keyVersion() == key.keyVersion())
@@ -174,6 +209,54 @@ public interface KeyReferenceRepository {
                 return true;
             });
             return Boolean.TRUE.equals(result);
+        }
+
+        /**
+         * Locks every index row whose lifecycle is about to change. Existing metadata must still
+         * describe the expected key state; otherwise activation fails instead of publishing a
+         * mixed key/index view.
+         */
+        private Map<Long, Integer> lockAndValidateBlindIndexes(List<Transition> transitions) {
+            Map<Long, Integer> counts = new HashMap<>();
+            for (Transition transition : transitions) {
+                List<String> statuses = jdbc.queryForList(
+                        "SELECT index_status FROM ycs_crypto_blind_indexes "
+                                + "WHERE key_purpose = 'MOBILE_BLIND_INDEX' AND key_version = ? "
+                                + "ORDER BY blind_index_id FOR UPDATE",
+                        String.class, transition.keyVersion());
+                if (statuses.stream().anyMatch(value -> !transition.expectedState().name().equals(value))) {
+                    return null;
+                }
+                counts.put(transition.keyVersion(), statuses.size());
+            }
+            return Map.copyOf(counts);
+        }
+
+        /** Moves retained ACTIVE metadata to RETIRING in the same transaction as its key. */
+        private boolean synchronizeBlindIndexes(
+                List<Transition> transitions,
+                Map<Long, Integer> lockedCounts) {
+            for (Transition transition : transitions) {
+                int expected = lockedCounts.getOrDefault(transition.keyVersion(), 0);
+                if (transition.newState() != KeyState.ACTIVE
+                        && transition.newState() != KeyState.RETIRING) {
+                    if (expected != 0) {
+                        return false;
+                    }
+                    continue;
+                }
+                int updated = jdbc.update(
+                        "UPDATE ycs_crypto_blind_indexes SET index_status = ?, "
+                                + "optimistic_version = optimistic_version + 1 "
+                                + "WHERE key_purpose = 'MOBILE_BLIND_INDEX' AND key_version = ? "
+                                + "AND index_status = ?",
+                        transition.newState().name(), transition.keyVersion(),
+                        transition.expectedState().name());
+                if (updated != expected) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private List<KeyReference> select(String sql, Object... arguments) {

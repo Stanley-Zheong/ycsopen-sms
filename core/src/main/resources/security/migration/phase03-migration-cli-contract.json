@@ -35,6 +35,27 @@
       "signer_key_version"
     ]
   },
+  "signed_snapshot_configuration": {
+    "allowed_executable_roots": ["/usr/bin", "/opt/ycsopen/mysql-client"],
+    "acl_probe": {"linux": "/usr/bin/ls -ldn", "macos": "/bin/ls -lde"},
+    "child_environment_allowlist": ["MYSQL_PWD", "LC_ALL", "LANG", "TZ"],
+    "runtime_identity_probes": {
+      "effective_uid": "/usr/bin/id -u",
+      "real_uid": "/usr/bin/id -ru"
+    },
+    "runtime_identity_rule": "effective_equals_real_and_both_non_root",
+    "execution_identity": "signed_raw_canonical_path_below_root_owned_trust_root",
+    "executable_authority_validated_before_hsm": true,
+    "executable_digest_fields": ["mysqldumpSha256", "mysqlSha256"],
+    "executable_path_fields": ["mysqldumpPath", "mysqlPath"],
+    "executable_recheck_before_each_launch": true,
+    "filesystem_contract": "posix_metadata_and_os_acl_probe_fail_closed",
+    "helper_environment_allowlist": ["LC_ALL", "LANG"],
+    "helper_probe_failure": "timeout_overflow_stderr_nonzero_or_malformed_fail_closed",
+    "path_contract": "raw_canonical_no_symlink",
+    "service_identity": "non_root",
+    "store_root_must_equal_bootstrap_root": true
+  },
   "stderr": {
     "format": "phase03-migration:error:<exit-name>\\n",
     "protected_values_allowed": false,
@@ -55,7 +76,14 @@
       "verified",
       "skipped",
       "quarantined",
-      "end_of_target"
+      "end_of_target",
+      "snapshot_id",
+      "snapshot_digest",
+      "chunk_count",
+      "total_plaintext_bytes",
+      "total_envelope_bytes",
+      "target_schema",
+      "already_complete"
     ]
   },
   "subcommands": {
@@ -108,6 +136,41 @@
         "--lease-owner-digest",
         "--batch-size"
       ]
+    },
+    "snapshot-create": {
+      "catalog_contract": "innodb_stable_nonnull_unique_order_no_routines_or_events",
+      "database_owned_recovery_key": true,
+      "fixed_mysql_argv": true,
+      "global_sequence_minimum": 0,
+      "mutates": true,
+      "options": [
+        "--snapshot-id",
+        "--environment",
+        "--database-instance-fingerprint",
+        "--schema",
+        "--flyway-set-digest",
+        "--global-sequence",
+        "--signer-key-version"
+      ]
+    },
+    "snapshot-delete": {
+      "completion_namespace": "exact_per_snapshot_directory",
+      "concurrent_first_completion_directory_creation": "race_safe",
+      "current_pair_required": false,
+      "exact_snapshot_digest_required": true,
+      "mutates": true,
+      "options": ["--snapshot-id", "--snapshot-digest"]
+    },
+    "snapshot-restore": {
+      "accepted_pair_digest_required": true,
+      "completion_marker_authoritative": false,
+      "dedicated_exclusive_target_required": true,
+      "fresh_schema_required": true,
+      "manifest_source": "canonical_file_store",
+      "mutates": true,
+      "options": ["--snapshot-id", "--pair-digest", "--target-schema"],
+      "retained_inventory_reauthenticated_on_every_call": true,
+      "target_redump_length_and_sha256_required": true
     },
     "status": {
       "mutates": false,
