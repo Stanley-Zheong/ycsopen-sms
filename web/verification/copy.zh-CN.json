@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0.0",
+  "contractId": "COPY-ZH-CN-V1",
+  "locale": "zh-CN",
+  "acceptance": {
+    "classification": "foundation-fixture",
+    "closesProductAcceptance": false,
+    "productAcceptanceOwner": "final-release-acceptance"
+  },
+  "technicalTokens": [
+    {
+      "value": "YCSAN-SMS",
+      "classification": "production-surface",
+      "reason": "product-name"
+    }
+  ],
+  "source": {
+    "path": "web/src/pages/LoginPage.tsx",
+    "classification": "production-surface",
+    "entries": [
+      { "kind": "jsx-text", "value": "YCSAN-SMS 登录", "classification": "production-surface" },
+      { "kind": "aria-label", "value": "用户名", "classification": "production-surface" },
+      { "kind": "placeholder", "value": "用户名", "classification": "production-surface" },
+      { "kind": "aria-label", "value": "密码", "classification": "production-surface" },
+      { "kind": "placeholder", "value": "密码", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "记住用户名", "classification": "production-surface" },
+      { "kind": "error", "value": "用户名或密码错误，或账号已被锁定", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "登录", "classification": "production-surface" }
+    ]
+  },
+  "runtime": {
+    "route": "/login",
+    "classification": "production-surface",
+    "rootSelector": "shared-auth-login-page",
+    "requiredSelectors": [
+      "shared-auth-login-page",
+      "shared-auth-login-card",
+      "shared-auth-login-username",
+      "shared-auth-login-password",
+      "shared-auth-login-remember",
+      "shared-auth-login-submit",
+      "shared-auth-login-error"
+    ],
+    "errorSelector": "shared-auth-login-error",
+    "responder": {
+      "status": 401,
+      "marker": { "name": "X-YCS-Scenario", "value": "LOGIN-SMOKE-V1" },
+      "body": { "code": "AUTH_INVALID_CREDENTIALS", "message": "用户名或密码错误" }
+    }
+  },
+  "export": {
+    "contractId": "ZH-CN-EXPORT-FIXTURE-V1",
+    "classification": "foundation-fixture",
+    "productAcceptance": false,
+    "headers": [
+      { "value": "手机号", "classification": "foundation-fixture" },
+      { "value": "发送状态", "classification": "foundation-fixture" },
+      { "value": "失败原因", "classification": "foundation-fixture" }
+    ],
+    "syntheticRows": [
+      ["13800000000", "失败", "合成失败原因，包含逗号"],
+      ["13900000000", "成功", "合成\"引用\"原因"]
+    ]
+  }
+}

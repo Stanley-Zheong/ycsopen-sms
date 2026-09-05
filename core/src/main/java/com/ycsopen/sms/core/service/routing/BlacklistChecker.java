@@ -1,10 +1,8 @@
 package com.ycsopen.sms.core.service.routing;
 
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
-import com.ycsopen.sms.core.repository.BlacklistEntryRepository;
+import com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupService;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * F-5.1 黑名单检测 —— 路由前置拦截，硬性要求。
@@ -15,42 +13,33 @@ import java.util.List;
 @Component
 public class BlacklistChecker {
 
-    private final BlacklistEntryRepository blacklistEntryRepository;
+    private final BlindIndexLookupService blindIndexLookupService;
     private final ThirdPartyBlacklistClient thirdPartyBlacklistClient;
 
-    public BlacklistChecker(BlacklistEntryRepository blacklistEntryRepository,
+    public BlacklistChecker(BlindIndexLookupService blindIndexLookupService,
                              ThirdPartyBlacklistClient thirdPartyBlacklistClient) {
-        this.blacklistEntryRepository = blacklistEntryRepository;
+        this.blindIndexLookupService = blindIndexLookupService;
         this.thirdPartyBlacklistClient = thirdPartyBlacklistClient;
     }
 
     public Result check(RoutingContext ctx) {
-        // 白名单优先：机构级白名单命中直接放行 (F-5.2)
-        List<BlacklistEntry> tenantWhite = blacklistEntryRepository
-                .findByMobileHashAndTenantIdAndStatus(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
-                .stream().filter(e -> e.getListType() == BlacklistEntry.ListType.WHITE).toList();
-        if (!tenantWhite.isEmpty()) {
+        BlindIndexLookupService.BlacklistLookupResult lookup = blindIndexLookupService.lookupBlacklist(
+                ctx.getTenantId(), ctx.getLegacyMobileLookupToken(), BlacklistEntry.Status.ACTIVE);
+        if (lookup.tenantWhitelist()) {
             return Result.pass();
         }
-
-        // ① 系统级黑名单
-        boolean systemHit = blacklistEntryRepository
-                .findByMobileHashAndTenantIdIsNullAndStatus(ctx.getMobileHash(), BlacklistEntry.Status.ACTIVE)
-                .stream().anyMatch(e -> e.getListType() == BlacklistEntry.ListType.BLACK);
-        if (systemHit) {
+        if (lookup.blockReason()
+                == BlindIndexLookupService.BlacklistLookupResult.BlockReason.SYSTEM_BLACKLIST) {
             return Result.blocked("系统级黑名单命中");
         }
-
-        // ② 机构级黑名单
-        boolean tenantHit = blacklistEntryRepository
-                .findByMobileHashAndTenantIdAndStatus(ctx.getMobileHash(), ctx.getTenantId(), BlacklistEntry.Status.ACTIVE)
-                .stream().anyMatch(e -> e.getListType() == BlacklistEntry.ListType.BLACK);
-        if (tenantHit) {
+        if (lookup.blockReason()
+                == BlindIndexLookupService.BlacklistLookupResult.BlockReason.TENANT_BLACKLIST) {
             return Result.blocked("机构级黑名单命中（如历史退订用户）");
         }
 
         // ③ 第三方风险名单服务（F-5.3：超时/异常按配置降级，不阻塞主链路）
-        ThirdPartyBlacklistClient.CheckResult thirdParty = thirdPartyBlacklistClient.check(ctx.getMobileHash());
+        ThirdPartyBlacklistClient.CheckResult thirdParty = thirdPartyBlacklistClient.check(
+                ctx.getOpaqueMobileQueryValue());
         if (thirdParty.hit()) {
             return Result.blocked("第三方风险名单命中：" + thirdParty.sourceDescription());
         }

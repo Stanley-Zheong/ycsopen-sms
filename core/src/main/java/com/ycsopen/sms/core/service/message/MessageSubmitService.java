@@ -1,11 +1,11 @@
 package com.ycsopen.sms.core.service.message;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
-import com.ycsopen.sms.core.common.security.HashUtil;
+import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
+import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
-import com.ycsopen.sms.core.repository.MessageTaskRepository;
 import com.ycsopen.sms.core.repository.SignatureRepository;
 import com.ycsopen.sms.core.repository.TemplateRepository;
 import com.ycsopen.sms.core.service.billing.BillingService;
@@ -37,18 +37,18 @@ public class MessageSubmitService {
     private final SignatureRepository signatureRepository;
     private final RoutingEngine routingEngine;
     private final BillingService billingService;
-    private final MessageTaskRepository messageTaskRepository;
+    private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
 
     public MessageSubmitService(TemplateRepository templateRepository,
                                  SignatureRepository signatureRepository,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
-                                 MessageTaskRepository messageTaskRepository) {
+                                 MessageTaskProtectionAdapter messageTaskProtectionAdapter) {
         this.templateRepository = templateRepository;
         this.signatureRepository = signatureRepository;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
-        this.messageTaskRepository = messageTaskRepository;
+        this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
     }
 
     @Transactional
@@ -74,10 +74,15 @@ public class MessageSubmitService {
         // 直接对应 PRD 检视 Finding #2，是本类存在这段渲染逻辑而不是把模板原文丢给路由引擎的原因。
         String finalContent = renderContent(signature.getSignContent(), template.getContent(), request.templateParams());
 
-        String mobileHash = HashUtil.sha256Hex(request.phoneNumber());
+        String messageId = "MSG_" + System.currentTimeMillis() + "_"
+                + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        PreparedMessageMobile preparedMobile = messageTaskProtectionAdapter.prepare(
+                tenantId, messageId, request.phoneNumber());
+
         RoutingContext ctx = RoutingContext.builder()
                 .tenantId(tenantId)
-                .mobileHash(mobileHash)
+                .mobileQueryIndexes(preparedMobile.queryIndexes())
+                .legacyMobileLookupToken(preparedMobile.legacyLookupToken())
                 .clientIp(clientIp)
                 .content(finalContent)
                 .templateId(template.getId())
@@ -90,22 +95,18 @@ public class MessageSubmitService {
                     "提交被拒绝[%s]：%s".formatted(decision.getRejectStage(), decision.getRejectReason()));
         }
 
-        String messageId = "MSG_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
         MessageTask task = new MessageTask();
         task.setMessageId(messageId);
         task.setTenantId(tenantId);
         task.setTemplateId(template.getId());
         task.setSignatureId(signature.getId());
-        task.setMobileEncrypted(request.phoneNumber()); // TODO: 应传入已加密值，见 core/docs/ROADMAP.md 字段加密收尾项
-        task.setMobileHash(mobileHash);
         task.setContent(decision.getFinalContent());
         task.setSendStatus(MessageTask.SendStatus.PENDING);
         task.setChannelId(decision.getSelectedChannelId());
-        messageTaskRepository.save(task);
+        MessageTask savedTask = messageTaskProtectionAdapter.save(task, preparedMobile);
 
         // F-8.1 预扣：通道单价从 Channel 读取，此处简化为固定演示单价；生产实现应查 Channel.price。
-        billingService.reserve(tenantId, task.getId(), new java.math.BigDecimal("0.05"));
+        billingService.reserve(tenantId, savedTask.getId(), new java.math.BigDecimal("0.05"));
 
         // TODO(F-6.7/CMPP + 上游 HTTP 连接器): 真正把消息投递给 decision.getSelectedChannelId()
         // 对应的上游通道——这是当前仓库里最大的一块"占位而非实现"，见 core/docs/ROADMAP.md。

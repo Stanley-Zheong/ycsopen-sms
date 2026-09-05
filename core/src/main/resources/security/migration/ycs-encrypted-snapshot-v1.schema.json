@@ -1,0 +1,130 @@
+{
+  "$id": "https://ycsopen.com/security/migration/ycs-encrypted-snapshot-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "chunk_count": {
+      "maximum": 104858,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "chunks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "envelope_size": {
+            "maximum": 10485905,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "final": {
+            "type": "boolean"
+          },
+          "index": {
+            "maximum": 104857,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "plaintext_size": {
+            "maximum": 10485760,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sha256_digest": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "envelope_size",
+          "final",
+          "index",
+          "plaintext_size",
+          "sha256_digest"
+        ],
+        "type": "object"
+      },
+      "maxItems": 104858,
+      "minItems": 1,
+      "type": "array"
+    },
+    "completed": {
+      "const": true
+    },
+    "database_instance_fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "environment": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "type": "string"
+    },
+    "flyway_set_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "global_sequence": {
+      "maximum": 9223372036854775807,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "manifest_schema": {
+      "const": "ycs-encrypted-snapshot/v1"
+    },
+    "migration_set_id": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "type": "string"
+    },
+    "recovery_key_reference": {
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._/-]{0,127}$",
+      "type": "string"
+    },
+    "schema": {
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_]{1,64}$",
+      "type": "string"
+    },
+    "signer_key_version": {
+      "maxLength": 32,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "type": "string"
+    },
+    "total_envelope_bytes": {
+      "maximum": 1099526832186,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "total_plaintext_bytes": {
+      "maximum": 1099511627776,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "chunk_count",
+    "chunks",
+    "completed",
+    "database_instance_fingerprint",
+    "environment",
+    "flyway_set_digest",
+    "global_sequence",
+    "manifest_schema",
+    "migration_set_id",
+    "recovery_key_reference",
+    "schema",
+    "signer_key_version",
+    "snapshot_id",
+    "total_envelope_bytes",
+    "total_plaintext_bytes"
+  ],
+  "title": "YCS encrypted-snapshot manifest v1",
+  "type": "object"
+}

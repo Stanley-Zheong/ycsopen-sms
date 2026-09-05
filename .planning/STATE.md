@@ -1,3 +1,12 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: YCSOpen SMS v1.0
+status: executing
+last_updated: "2026-09-01"
+completion_metric: scoped_todo_empty
+---
+
 # Project State
 
 ## Project reference
@@ -10,22 +19,21 @@
 
 ## Current position
 
-**Current phase**: Phase 1 — Engineering verification and drift-control foundation
-**Current plan**: Not created
-**Execution authorization**: Not granted; Phase 1 `ENTRY-REVIEW.md` has not produced a blocking-free verdict.
+Phase: 03 (crypto-storage-bootstrap) — EXECUTING
+Plan: dependency-ordered Phase 03 implementation
+**Current phase**: Phase 3 — Crypto storage bootstrap
+**Current plan**: Plans `03-14` and `03-18` now have committed implementation and summary evidence. Real seven-target migration/encrypted snapshot recovery and typed safe logging pass; Phase 03 obligation TODO rows remain open pending leak scanning, rotation/composed-fault closure and evidence composition.
+**Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
-No schedule, effort, staffing, velocity, completion-date, progress-bar, or percentage status is maintained.
+The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Instantiate `.planning/phases/01-engineering-verification-foundation/` from `.planning/PHASE-ARTIFACT-TEMPLATE.md`.
-2. Trace every Phase 1 atomic obligation into permanent behavior IDs and planned tests/evidence.
-3. Run the Phase 1 bootstrap entry command from `.planning/ROADMAP.md`.
-4. Have an independent verification subagent write criterion-level `ENTRY-REVIEW.md` PASS/BLOCKER findings with evidence and commands.
-5. Apply the bounded revision cycle: no more than three review attempts per cycle; a non-decreasing blocking count or a still-blocked third attempt escalates while every affected TODO remains open. Only new developer decisions or new executable evidence may start a new cycle. Execute only Phase 1 after a blocking-free result.
-6. At exit, run GSD verification/code review and Claude review under the same bounded cycle. Every Claude BLOCKER/HIGH fix must be re-reviewed, and the final result must contain no BLOCKER/HIGH.
-7. Prove Phase 1 obligations and TODO empty, create one atomic commit, push it to the configured GitHub remote, and record the remote SHA before advancing state.
+1. Execute Phase 03 plans in declared dependency-wave order.
+2. Keep all Phase 03 TODO rows open until implementation evidence proves each obligation.
+3. Run code review, independent goal verification, Claude completion review and the scoped TODO query.
+4. Commit, push and record the Phase 03 delivery attestation only after the scoped TODO is empty.
 
 ## Accumulated decisions
 
@@ -45,35 +53,54 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Termination depends on every active-work/session/callback/resource/finance/retention participant and maintains a machine-readable participant inventory.
 - Real HTTP upstream, real CMPP upstream, and final cross-protocol composition have stable atomic obligation IDs.
 - Every entry, plan, GSD, UI, code, and Claude review uses a bounded revision cycle. Escalation never grants completion; affected TODOs remain open until a later cycle reaches a blocking-free result.
-- Each completed phase is pushed to the configured GitHub remote and records its remote SHA.
+- Each completed phase is one atomic commit plus one external annotated delivery tag. Dependency entry resolves the configured remote branch/tag target, target-tree subject/evidence/review digests, and PR/check PASS; committed `SUMMARY.md` records locators rather than a self SHA.
+- Phase 03 obligation PASS evidence must bind the exact-four catalog/TEST-MATRIX trace to canonical live input hashes, the accepted inventory digest, complete leak coverage, and fixed real/deterministic child-result identities and digests; OBL-001 independently rejects unresolved inventory and missing no-index targets.
+- Phase 03 real fixture evidence requires digest-locked MySQL and MinIO operations plus an executable source-verified SoftHSM token; source-manifest validation or a mock substitute cannot satisfy the runtime prerequisite.
+- Current message submission generates its immutable identity before one protected prepare operation, routes only ordered opaque query values, and saves task/envelope/per-version indexes only through `MessageTaskProtectionAdapter`.
+- `HashUtil` is deleted after a repository-wide zero-reference audit; checkpoint-gated legacy lookup is confined to an opaque in-memory capability and package-scoped `LegacyMobileHashReader`.
+- The current 11-byte message mobile with fixed `field-kek.v1` reference produces a 136-byte physical YCSE value; 156 bytes is the separately verified complete-envelope capacity bound.
 
 ## Known implementation reality
 
 - Current backend and frontend tests cover only narrow scaffolding behavior.
-- Frontend lint, Playwright, UI manifest validation, and stable test-ID coverage are absent.
+- Frontend lint, the `/login` Playwright structural scenario, the UI manifest, and seven stable test IDs pass Plan 05 regression; Plan 06 now records independently validated durable runtime evidence for one current local Google Chrome run at 1440x900. Plan 10 still owns canonical obligation sealing, so no Phase 1 obligation is closed yet.
+- The reusable simplified-Chinese source/runtime/error/export validator passes Plan 07 with exact `/login` and synthetic CSV contracts, 20 destructive/configuration cases, and an environment-free local-Chrome command. This is foundation evidence only; Phase 56 retains product-wide Chinese acceptance.
+- The Plan 09 shared registry now covers exactly seven obligations with 23 literal checks: portable CI selects 20 checks and no browser layer, while local `--all` selects 19 checks including the exact copy command, a dedicated local visual mutation command, and current standard-path Chrome validation. The CI structural scenario and local visual scenario are physically separate files and exact argv contracts.
+- Plan 10 attempt 1 materialized seven summaries over a 105-input subject, but Plan 11 review invalidated that seal: TRACE-004 omitted executed validators/tests, CI consulted the macOS Chrome path, the browser runtime was bound to an older subject, lifecycle/delivery consumed the retired manifest shape, and execution/evidence hardening defects remained. Those summaries and digests are historical until correction, full rerun, and fresh review pass.
+- The post-Claude-Attempt-1 correction cycle seals 194 actual inputs under subject digests `5380d594...63b6` / `9fcb0d74...0e54`; local `--all` passes 19/19 and normal portable `--ci` passes 20/20. Both CI scenario commands report `local_google_chrome=not-run`; the validator, server, and portable artifact also pass when OS policy denies Chrome read/execute access. The current standard-path Chrome runtime is bound to the same digests and has SHA-256 `dbd8e12d...a3c3`; the exact-seven manifest SHA-256 is `18db7794...43c4`.
+- Portable self-binding, CI/local physical separation, exact argv/scope/layer guards, exact five-file portable call-graph digests, strict server args, component path substitution/TOCTOU, explicit `NOFOLLOW` fail-closed behavior, descriptor/file/stdin/base64 bounds, PNG CRC/zlib/layout/full critical state/resource bounds, Java reparented-descendant cleanup, and OCI index-to-platform-child/config provenance have focused destructive regressions. Repository/runner/Node boundary suites pass 12/40/5 focused cases; literal, obfuscated, dependency, byte-drift, server-flag, and local-reference mutations fail closed. These facts authorize fresh GSD and Claude review, not TODO closure or delivery.
 - JWT/RBAC, tenant isolation, HMAC body verification, Redis replay protection, idempotency, real dispatch, receipts, and billing closure are incomplete.
 - Trial quota is disconnected from sending.
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
+- Plan 03 now provides a passing opt-in real fixture lane: JDBC against the admitted MySQL digest, signed MinIO object lifecycle with anonymous rejection, and Java SunPKCS11 AES-GCM/HMAC against a source-verified SoftHSM 2.7.0 token. This is prerequisite evidence only and closes no obligation TODO.
+- Plan 04 now provides the strict immutable YCSE/v1 binary and canonical AAD contract with passing byte, mutation, capacity and bounded-reader tests. Production key-provider, persistence, storage and migration evidence remain open.
+- Plan 05 now provides opaque key, versioned blind-index and purpose-separated capability/upload digest ports with passing deterministic vectors. The deterministic adapter is test-only evidence and production PKCS11, persistence and lifecycle evidence remain open.
+- Plan 06 now provides the production Java 21 SunPKCS11 provider/session and opaque-key adapter, with durable independent pre-nonce reservation, purpose-separated aliases/domains, the 1,048,576 hard ceiling and sanitized failures proven by unit mapping/order tests. Real SoftHSM/MySQL adapter evidence remains owned by Plan 07, and every Phase 03 obligation TODO remains open.
+- Plan 07 now enforces reference-only production startup and proves the same production SunPKCS11 adapter against a source/hash-locked SoftHSM 2.7.0 fixture plus real MySQL reservation state, including AES-GCM/AAD, purpose-separated HMAC, restart, failure burn, concurrency and the exact ceiling. This is SoftHSM protocol conformance rather than physical-HSM certification, and every Phase 03 obligation TODO remains open.
+- Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
+- Plan 09 provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 adopts it in the live message service, and Plan 10 now adds checkpoint-aware lookup plus real Connector/J/PKCS11 raw-row, AAD, outage and rollback proof. Every Phase 03 obligation TODO remains open.
+- Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
+- Plan 12 provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Plan 27 provides the production signed writer/snapshot pair verifier, closed schemas, trust rotation and atomic pair CAS. Plan 13 adds the bounded transactional migration command/runner, Plan 29 adopts the last current tenant-registration writer, Plan 20 adds explicit lifecycle/rewrap, and Plan 30 passes the real object-registration service composition. Real migration recovery, rotation/fault composition, leak/evidence sealing and every Phase 03 obligation TODO remain open.
 
 ## Authoritative TODO seeds
 
-- [ ] Instantiate and trace Phase 1 artifacts — Evidence: not recorded.
-- [ ] Integrate the repository-present obligation, phase-entry, TODO, schema-conflict, and dependency validators into Phase 1 verification evidence — Evidence: validator self-tests pass, but Phase 1 artifacts and evidence are absent.
-- [ ] Produce real UI manifest/route/DOM/test-ID/Playwright inventories and Phase 1 drift evidence — Evidence: validator fixture passes; no real production inventory is recorded.
-- [ ] Produce blocking-free Phase 1 `ENTRY-REVIEW.md` — Evidence: not recorded.
-- [ ] Execute Phase 1 GSD verification and code review with no unresolved blocker — Evidence: not recorded.
-- [ ] Produce final Phase 1 Claude result with no BLOCKER/HIGH — Evidence: not recorded.
-- [ ] Prove Phase 1 owned obligations and TODO empty — Evidence: not recorded.
-- [ ] Push the atomic Phase 1 commit and record its configured GitHub remote SHA — Evidence: not recorded.
+- [x] Repair and independently authorize the Phase 1 entry contract — Evidence: Plan 00 completed inside its 14-file hard cap; six consumers migrated; second independent review `8 PASS / 0 BLOCKER`; review SHA `0f43058d4002faffb12839734ca47c5938951c0765d9627e4ea5ba24f6079024`; real bootstrap PASS for seven obligations and 13 plans.
+- [ ] Integrate the repository-present obligation, phase-entry, TODO, schema-conflict, and dependency validators into Phase 1 verification evidence — Evidence: validator self-tests pass; accepted integrated Phase 1 evidence is not recorded.
+- [ ] Produce real UI manifest/route/DOM/test-ID/Playwright inventories and Phase 1 drift evidence — Evidence: interrupted files exist, but no accepted real production inventory or passing evidence is recorded.
+- [x] Produce blocking-free Phase 1 `ENTRY-REVIEW.md` for the simplified local-Chrome contract — Evidence: reviewer `phase1_plan00_entry_reviewer2` independently recorded `8 PASS / 0 BLOCKER`; local evidence SHA `dc4cc3c7dc02c202174786d84586bee5a28ee48580ee4dd6a5142fea51cd6306`.
+- [x] Execute Phase 1 GSD verification and code review with no unresolved blocker — Evidence: final 194-input reports PASS with goal score 7/7 and code-review BLOCKER/HIGH/WARNING counts 0/0/0; report SHA-256 values are recorded in `01-11-SUMMARY.md`.
+- [x] Produce final Phase 1 Claude result with no BLOCKER/HIGH — Evidence: `CLAUDE-REVIEW.md` Attempt 2 is PASS with BLOCKER 0 and HIGH 0, bound to the current subject and evidence digests.
+- [x] Prove Phase 1 owned obligations and non-delivery TODO empty — Evidence: all seven obligation summaries and review rows validate; pre-push lifecycle PASS leaves only the reserved external-delivery row physically open.
+- [ ] Push the atomic Phase 1 commit, create the deterministic annotated delivery tag, and pass live remote/target-tree/PR-check attestation — Evidence: no final push, tag, or live delivery PASS has occurred.
 - [ ] Before Phase 45 implementation, record product-owner confirmation of the F-11.9 complaint-ratio threshold source/default or an approved replacement version — Evidence: not recorded.
 - [ ] Before Phase 52 assurance, record product-owner confirmation of the relationship and traffic profile for the PRD's TPS and daily-volume baselines — Evidence: not recorded.
 
 ## Blockers
 
-- Phase 1 implementation remains fail-closed until its artifact package and entry review pass.
-- Atomic obligation, phase-entry, UI, and schema-registry validator self-tests pass; Phase 1 remains responsible for integrating those commands into repository verification and recording real evidence before any business phase can enter execution.
-- The real Phase 2 directory does not exist; its Ruby entry command currently returns `phase_entry=BLOCKED`, so no UI design or implementation entry is authorized.
+- No Phase 03 execution-entry blocker remains; independent entry review and Claude Attempt 5 are authorized.
+- Real MySQL/MinIO/SoftHSM fixture execution is available after Plan 03-03; production crypto/storage/migration/leak implementation and canonical obligation evidence remain open.
+- Phase 03 completion remains blocked until its scoped TODO is empty, independent verification passes, and commit/push delivery attestation is recorded.
 
 ## Coverage state
 
@@ -86,6 +113,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/ROADMAP.md`, Phase 1.
+**Resume from**: Plan 19, then Plans 21, 22 and 23 in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/independent/Claude review for the Phase boundary; execute each plan-owned real-service lane once when it becomes the active dependency.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
-**When updating state**: Replace explicit TODOs with executable evidence only after remote commit visibility; never add schedule or percentage status.
+**When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Preserve the scoped TODO query as the sole completion metric.

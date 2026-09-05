@@ -25,6 +25,18 @@ Select exactly one dependency-unblocked phase from `ROADMAP.md`.
 Do not begin another module merely because a shared file is nearby.
 If execution reveals another module, record it as a dependency or later-phase TODO and keep the active phase fenced.
 
+## Mandatory execution steering checkpoint
+
+Run this checkpoint after every implementation batch and before starting the next batch. It is a delivery-control check, not another review ceremony.
+
+1. Compare the authoritative phase TODO before and after the batch. Every batch must either remove an evidenced TODO dependency or produce a concrete artifact required to close one; otherwise stop and change course.
+2. List verification commands already run for the unchanged subject. Do not repeat a passing full-suite, real-service, entry, independent-review, or Claude gate unless its relevant subject changed or the phase is at its final boundary.
+3. Compare implementation/test output with process-document output. Documentation records decisions, deviations, evidence, and handoff facts concisely; it does not restate source code or manufacture progress.
+4. Re-read the active phase objective and the current batch's owned files. Defer requirements not owned by the PRD obligation or established architecture instead of inventing production behavior to satisfy over-broad plan prose.
+5. Record only a material correction in `ITERATIONS.md`. A checkpoint that confirms the course needs no ceremonial artifact.
+
+If any check shows drift, narrow or re-sequence the remaining work immediately. Completion continues to depend only on the verified scoped TODO set.
+
 ## Canonical phase directory
 
 Use `.planning/phases/<NN>-<package-id>/`.
@@ -89,6 +101,7 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 6. Run the roadmap's exact `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb ...` command against the now-populated spec, context, intent, design, plans, TODO, TEST-MATRIX, decisions, iterations, evidence directory, owned atomic trace, schema claims when declared, dependency evidence, and UI artifacts when applicable. At entry, every owned obligation has exactly one open TODO checkbox and no current-phase checkbox may be pre-checked; completed dependencies, by contrast, must have no unchecked TODO.
 7. Spawn an independent entry verification subagent to check completeness, rigor, executability, PRD traceability, and scope focus. Under its own bounded revision cycle, it writes a unique row per criterion in `ENTRY-REVIEW.md` using the exact columns `Criterion ID | Verdict | Evidence | Command or inspection rule`; verdict is exactly `PASS` or `BLOCKER`, and a final `## Verdict` section is exactly `PASS` only when every row passes.
 8. After correction, rerun the same execution-entry command with the completed `ENTRY-REVIEW.md`. Missing artifacts, missing owned IDs, non-runnable checks, contradictions, or any BLOCKER fail closed; only the final zero-exit, blocking-free result authorizes implementation.
+9. Gate D is evaluated against its evidence-bound entry subject and is not a post-wave/current-tree gate. Ordinary implementation changes and Gate-E records, including planned deletion of baseline artifacts and appended iteration/decision evidence, do not trigger current-tree entry revalidation. If an executable plan, dependency, specification or pre-entry acceptance contract changes after authorization, return to Gate D, bind a new clean subject, regenerate entry evidence and obtain a fresh independent review before resuming implementation.
 
 ## Gate E — implementation and iteration record
 
@@ -98,6 +111,7 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 4. Record meaningful failures, discoveries, deviations, and corrections in `ITERATIONS.md`.
 5. Update `DECISIONS.md` before implementing a consequential deviation.
 6. Keep `TODO.md` synchronized item by item; a checked item cites evidence rather than merely claiming completion.
+7. Run the mandatory execution steering checkpoint after each implementation batch before selecting more work.
 
 ## Gate F — acceptance automation
 
@@ -121,9 +135,11 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 
 1. For a production UI phase, run `/usr/bin/env ruby .planning/tools/validate-ui-contract.rb --phase <NN> --package <package-id> --stage production` and require PASS. This reruns design plus React/real-browser/executed-evidence validation. Phase 2 instead reruns its scoped `--stage design` gate because it owns no React implementation.
 2. Confirm the phase directory and implementation diff contain no unrelated work.
-3. Record final commands and evidence in `<NN>-VERIFICATION.md` and `SUMMARY.md`.
+3. Record final commands and evidence in `<NN>-VERIFICATION.md`. Committed evidence binds the canonical target-tree `tested-inputs.json`, `subject_manifest_digest`, and `tested_subject_digest`; it never claims or contains its own final commit identity.
 4. Confirm GSD and Claude have final blocking-free results and no review cycle is left in escalated/unresolved state.
-5. Confirm the scoped TODO query is empty.
-6. Create one atomic phase commit that includes specification, design, decisions, code, tests, and evidence references.
-7. Push the commit to the configured GitHub remote and record the remote branch and commit SHA in `SUMMARY.md`.
-8. Advance `STATE.md` only after the remote commit is visible.
+5. Confirm the scoped TODO query is empty except for the one reserved external-delivery item.
+6. Create one atomic phase commit that includes specification, design, decisions, code, tests, and evidence references. Do not create a second implementation commit to record the first commit's identity.
+7. Before that commit, `SUMMARY.md` records only the configured remote name/URL, full branch ref, deterministic `refs/tags/ycsopen-sms/phase-<NN>/delivery` locator, PR locator, and required check name; final commit identity exists exclusively in the later external tag.
+8. Push the one commit, create and push one annotated delivery tag targeting it, and place phase/package/branch/commit/tree, subject-manifest path/digest, tested-subject digest, evidence-manifest path/digest, PR/check locators, tagger identity, external check actor, and `PASS` in the tag payload.
+9. Run the repository delivery-attestation validator. It resolves the configured remote live, requires branch target equality with the peeled annotated-tag target, fetches that target into an isolated object store, safely derives the registry-owned input union without executing target code, recomputes every target-tree path/mode/SHA-256/role plus subject/evidence/review digests, and independently resolves the PR/check result and actor.
+10. Only that live PASS closes the reserved external-delivery TODO in the effective scoped query and permits `STATE.md` to advance. Local branch, tracking ref, commit, tag, status, or fixture state never proves delivery.

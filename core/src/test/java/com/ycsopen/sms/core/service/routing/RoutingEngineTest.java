@@ -31,7 +31,6 @@ class RoutingEngineTest {
     private RoutingContext sampleContext() {
         return RoutingContext.builder()
                 .tenantId(1L)
-                .mobileHash("hash-13800001111")
                 .clientIp("127.0.0.1")
                 .content("【优创硕安】您的验证码是：123456，5分钟内有效。")
                 .build();

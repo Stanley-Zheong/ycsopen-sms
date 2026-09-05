@@ -1,0 +1,402 @@
+{
+  "manifest_version": "ycs-protected-data-inventory/v1",
+  "manifest_schema": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/schema/protected-data-inventory.schema.json",
+  "envelope_contract": {
+    "path": ".planning/phases/03-crypto-storage-bootstrap/ENVELOPE-CONTRACT.md",
+    "version": "YCSE/v1",
+    "maximum_overhead_bytes": 145,
+    "database_plaintext_ceiling_bytes": 110,
+    "opaque_object_id_ceiling_bytes": 64
+  },
+  "targets": [
+    {
+      "id": "users.phone_encrypted", "table": "users", "column": "phone_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/User.java", "tokens": ["@Column(name = \"phone_encrypted\", length = 255)", "private byte[] phoneEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/account/AuthService.java", "tokens": ["userRepository.findByUsername", "userRepository.save(user)"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/account/AuthService.java", "tokens": ["userRepository.save(user)"] }
+      ],
+      "reason": "Current authentication hydration/save preserves a hidden opaque byte[] exactly and exposes no protected getter or serialization path."
+    },
+    {
+      "id": "tenants.legal_rep_id_no_encrypted", "table": "tenants", "column": "legal_rep_id_no_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 18, "maximum_complete_envelope_bytes": 163, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_no_encrypted\", length = 255)", "private byte[] legalRepIdNoEncrypted"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdNo"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "legal_rep_id_no_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
+      ],
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
+    },
+    {
+      "id": "tenants.contact_id_no_encrypted", "table": "tenants", "column": "contact_id_no_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 18, "maximum_complete_envelope_bytes": 163, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"contact_id_no_encrypted\", length = 255)", "private byte[] contactIdNoEncrypted"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String contactIdNo"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "contact_id_no_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
+      ],
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
+    },
+    {
+      "id": "tenants.contact_phone_encrypted", "table": "tenants", "column": "contact_phone_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"contact_phone_encrypted\", length = 255)", "private byte[] contactPhoneEncrypted"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String contactPhone"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "contact_phone_encrypted", "protectedFieldCodec.protect"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
+      ],
+      "reason": "The live registration writer authenticates the allocated tenant identity and assigns only a YCSE/v1 envelope through the dedicated adapter."
+    },
+    {
+      "id": "signatures.applicant_phone_encrypted", "table": "signatures", "column": "applicant_phone_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "V1 protected column has no executable Java mapping; migration remains mandatory."
+    },
+    {
+      "id": "signatures.applicant_id_no_encrypted", "table": "signatures", "column": "applicant_id_no_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 18, "maximum_complete_envelope_bytes": 163, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "V1 protected column has no executable Java mapping; migration remains mandatory."
+    },
+    {
+      "id": "channels.account_encrypted", "table": "channels", "column": "account_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Credential cells use the canonical 110-byte in-place ceiling; the current Channel entity omits them."
+    },
+    {
+      "id": "channels.password_encrypted", "table": "channels", "column": "password_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Credential cells use the canonical 110-byte in-place ceiling; the current Channel entity omits them."
+    },
+    {
+      "id": "mobile_portability.mobile_encrypted", "table": "mobile_portability", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "REQUIRED_VERSIONED_HMAC",
+      "tenant_column": null, "identity_column": "mobile_hash", "readers": [], "writers": [],
+      "reason": "Schema-only protected mobile remains in the encryption and exact-five digest migration unions."
+    },
+    {
+      "id": "blacklist_entries.mobile_encrypted", "table": "blacklist_entries", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "REQUIRED_VERSIONED_HMAC",
+      "tenant_column": "tenant_id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BlacklistEntry.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/BlacklistEntryRepository.java", "tokens": ["interface LookupProjection", "entry.mobileHash as legacyIndex", "entry.listType as listType"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupService.java", "tokens": ["ycs_crypto_blind_indexes", "legacyFallbackAllowed", "deduplicate"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileHashReader.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["blindIndexLookupService.lookupBlacklist", "getLegacyMobileLookupToken"] }
+      ],
+      "writers": [],
+      "reason": "Current routing uses the metadata-first owner and an opaque compatibility capability; only the package-scoped legacy reader can execute raw-SHA lookup before COMPLETE."
+    },
+    {
+      "id": "tenant_api_keys.app_secret_encrypted", "table": "tenant_api_keys", "column": "app_secret_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] }
+      ],
+      "writers": [],
+      "reason": "Current incomplete authentication lookup selects only ID, tenant and status; the protected secret is not hydrated before an explicit signature owner exists."
+    },
+    {
+      "id": "tenant_protocol_credentials.account_encrypted", "table": "tenant_protocol_credentials", "column": "account_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Credential cell is schema-only today and remains a mandatory migration target."
+    },
+    {
+      "id": "tenant_protocol_credentials.password_encrypted", "table": "tenant_protocol_credentials", "column": "password_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Credential cell is schema-only today and remains a mandatory migration target."
+    },
+    {
+      "id": "message_tasks.mobile_encrypted", "table": "message_tasks", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "REQUIRED_VERSIONED_HMAC",
+      "tenant_column": "tenant_id", "identity_column": "message_id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
+      ],
+      "reason": "The live submission service prepares once before routing, routes only ordered opaque query values, and persists the YCSE envelope, non-queryable locator, and per-version indexes only through the adapter transaction."
+    },
+    {
+      "id": "bulk_sending_items.mobile_encrypted", "table": "bulk_sending_items", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "EXCLUDED_NO_EQUALITY_CONTRACT",
+      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Mandatory protected migration target; V1 has no mobile_hash companion and source has no equality query owner."
+    },
+    {
+      "id": "uplink_records.mobile_encrypted", "table": "uplink_records", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "EXCLUDED_NO_EQUALITY_CONTRACT",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Mandatory protected migration target; V1 has no mobile_hash companion and source has no equality query owner."
+    },
+    {
+      "id": "unsubscribe_records.mobile_encrypted", "table": "unsubscribe_records", "column": "mobile_encrypted",
+      "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
+      "source_bound_bytes": 11, "maximum_complete_envelope_bytes": 156, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "REQUIRED_VERSIONED_HMAC",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Schema-only protected mobile remains in the encryption and exact-five digest migration unions."
+    },
+    {
+      "id": "tenants.business_license_url", "table": "tenants", "column": "business_license_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 10485760, "maximum_complete_envelope_bytes": 10485905, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"business_license_url\")", "private String businessLicenseObjectId"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.BUSINESS_LICENSE", "object_state = 'CLAIMED'", "claim_reference"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] }
+      ],
+      "reason": "The required 10 MiB proof is accepted only as a purpose-bound staged object ID and claimed atomically with tenant persistence."
+    },
+    {
+      "id": "tenants.legal_rep_id_front_url", "table": "tenants", "column": "legal_rep_id_front_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 5242880, "maximum_complete_envelope_bytes": 5243025, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_front_url\")", "private String legalRepIdFrontObjectId"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdFrontObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.LEGAL_REPRESENTATIVE_ID_FRONT", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The required front image is retained only as its purpose-bound opaque object ID after atomic claim."
+    },
+    {
+      "id": "tenants.legal_rep_id_back_url", "table": "tenants", "column": "legal_rep_id_back_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 5242880, "maximum_complete_envelope_bytes": 5243025, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_back_url\")", "private String legalRepIdBackObjectId"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String legalRepIdBackObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.LEGAL_REPRESENTATIVE_ID_BACK", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The required back image is retained only as its purpose-bound opaque object ID after atomic claim."
+    },
+    {
+      "id": "tenants.shortlink_domain_proof_url", "table": "tenants", "column": "shortlink_domain_proof_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 10485760, "maximum_complete_envelope_bytes": 10485905, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"shortlink_domain_proof_url\")", "private String shortlinkDomainProofObjectId"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String shortlinkDomainProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.SHORT_LINK_PROOF", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The optional proof is omitted or retained only as its purpose-bound opaque object ID after atomic claim."
+    },
+    {
+      "id": "tenants.trademark_proof_url", "table": "tenants", "column": "trademark_proof_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 10485760, "maximum_complete_envelope_bytes": 10485905, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "id", "identity_column": "id",
+      "readers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"trademark_proof_url\")", "private String trademarkProofObjectId"] }
+      ],
+      "writers": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String trademarkProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["ObjectPurpose.TRADEMARK_PROOF", "object_state = 'CLAIMED'"] }
+      ],
+      "reason": "The optional proof is omitted or retained only as its purpose-bound opaque object ID after atomic claim."
+    },
+    {
+      "id": "signatures.evidence_url", "table": "signatures", "column": "evidence_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 10485760, "maximum_complete_envelope_bytes": 10485905, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": "tenant_id", "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Signature evidence is a protected object reference even though the current entity omits it."
+    },
+    {
+      "id": "export_tasks.file_url", "table": "export_tasks", "column": "file_url",
+      "kind": "PROTECTED_OBJECT_REFERENCE", "classification": "PROTECTED", "storage_representation": "OPAQUE_PROTECTED_OBJECT_ID",
+      "source_bound_bytes": 10485760, "maximum_complete_envelope_bytes": 10485905, "storage_capacity_bytes": 255,
+      "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
+      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "reason": "Export object references must become opaque protected-object IDs before the future export owner executes."
+    }
+  ],
+  "digest_targets": [
+    { "id": "mobile_portability.mobile_hash", "table": "mobile_portability", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Exact-five legacy digest target; schema-only today." },
+    { "id": "blacklist_entries.mobile_hash", "table": "blacklist_entries", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "CURRENT_EXECUTABLE", "reason": "Current blacklist equality lookup uses the legacy digest." },
+    { "id": "third_party_risk_check_logs.mobile_hash", "table": "third_party_risk_check_logs", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Deployed databases may contain rows even though current Java has no reader or writer." },
+    { "id": "message_tasks.mobile_hash", "table": "message_tasks", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "CURRENT_EXECUTABLE", "reason": "Existing rows remain a legacy migration target; current message submission writes a non-queryable row locator and separate versioned HMAC metadata rows." },
+    { "id": "unsubscribe_records.mobile_hash", "table": "unsubscribe_records", "column": "mobile_hash", "classification": "LEGACY_SHA256_MIGRATION_TARGET", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "reason": "Exact-five legacy digest target; schema-only today." }
+  ],
+  "candidates": [
+    {
+      "id": "users.password_hash", "table": "users", "column": "password_hash", "classification": "EXCLUDED_PHASE_5_HASH",
+      "executable": true, "migratable": false, "future_owner": null,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/User.java", "tokens": ["@Column(name = \"password_hash\", nullable = false)", "private String passwordHash"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/account/AuthService.java", "tokens": ["passwordEncoder.matches"] }
+      ],
+      "reason": "Password hashing and credential policy are owned by Phase 5 and are not reversible encryption."
+    },
+    { "id": "users.avatar_url", "table": "users", "column": "avatar_url", "classification": "NOT_PROTECTED_WITH_REASON", "executable": false, "migratable": false, "future_owner": null, "sources": [], "reason": "PRD protected-data list does not classify the public avatar locator as reversible protected data." },
+    {
+      "id": "tenants.unified_social_credit_code", "table": "tenants", "column": "unified_social_credit_code", "classification": "NOT_PROTECTED_WITH_REASON",
+      "executable": true, "migratable": false, "future_owner": null,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"unified_social_credit_code\", nullable = false, unique = true)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["findByUnifiedSocialCreditCode", "setUnifiedSocialCreditCode"] }
+      ],
+      "reason": "PRD encryption list excludes this business identifier; access and masking policy remain later work."
+    },
+    { "id": "tenants.legal_rep_name", "table": "tenants", "column": "legal_rep_name", "classification": "NOT_PROTECTED_WITH_REASON", "executable": true, "migratable": false, "future_owner": null, "sources": [{ "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setLegalRepName"] }], "reason": "PRD encryption list protects identity numbers and phone, not the display name." },
+    { "id": "tenants.contact_name", "table": "tenants", "column": "contact_name", "classification": "NOT_PROTECTED_WITH_REASON", "executable": true, "migratable": false, "future_owner": null, "sources": [{ "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["setContactName"] }], "reason": "PRD encryption list protects contact identity number and phone, not the display name." },
+    { "id": "tenants.registered_address", "table": "tenants", "column": "registered_address", "classification": "NOT_PROTECTED_WITH_REASON", "executable": false, "migratable": false, "future_owner": null, "sources": [], "reason": "PRD encryption list excludes the business address; access and masking policy remain later work." },
+    { "id": "tenants.business_address", "table": "tenants", "column": "business_address", "classification": "NOT_PROTECTED_WITH_REASON", "executable": false, "migratable": false, "future_owner": null, "sources": [], "reason": "PRD encryption list excludes the business address; access and masking policy remain later work." },
+    { "id": "tenants.contract_attachment_url", "table": "tenants", "column": "contract_attachment_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "contract-pricing-postpaid", "sources": [], "reason": "Future contract attachment surface has no executable source reader or writer today." },
+    { "id": "tenant_callback_configs.delivery_callback_url", "table": "tenant_callback_configs", "column": "delivery_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "webhook-delivery-transport", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
+    { "id": "tenant_callback_configs.uplink_callback_url", "table": "tenant_callback_configs", "column": "uplink_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "uplink-normalization-operations", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
+    { "id": "tenant_callback_configs.unsubscribe_callback_url", "table": "tenant_callback_configs", "column": "unsubscribe_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "unsubscribe-compliance", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
+    { "id": "delivery_reports.raw_payload", "table": "delivery_reports", "column": "raw_payload", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "http-upstream-delivery-closure", "sources": [], "reason": "Future receipt owner must classify provider payload contents before adding an executable writer." },
+    { "id": "uplink_records.push_url", "table": "uplink_records", "column": "push_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "uplink-normalization-operations", "sources": [], "reason": "Future uplink owner must validate and reject embedded credentials before execution." },
+    { "id": "short_links.target_url", "table": "short_links", "column": "target_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "shortlink-safety-review", "sources": [], "reason": "Future short-link owner controls validation; no executable source surface exists today." },
+    { "id": "operation_logs.request_url", "table": "operation_logs", "column": "request_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "privileged-data-access-audit", "sources": [], "reason": "Future audit owner must strip query credentials before adding an executable writer." }
+  ],
+  "source_surfaces": [
+    {
+      "id": "message-submit-persistence", "role": "WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_ENVELOPE_AND_VERSIONED_INDEX_WRITE", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java", "tokens": ["BlindIndexPort.OrderedIndexes mobileQueryIndexes", "never raw SHA-256"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "@Column(name = \"mobile_hash\", nullable = false, length = 64)", "private byte[] mobileEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/MessageTaskRepository.java", "tokens": ["JpaRepository<MessageTask, Long>"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
+      ],
+      "reason": "The live caller generates the immutable identity, prepares once before routing, exposes only ordered opaque query values, and saves the envelope plus separate write-compatible index rows through the protected adapter."
+    },
+    {
+      "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_FIELD_AND_OBJECT_CLAIM", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "TenantRegistrationResponse.from"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId", "String legalRepIdNo", "String legalRepIdFrontObjectId", "String legalRepIdBackObjectId", "String contactIdNo", "String contactPhone", "String shortlinkDomainProofObjectId", "String trademarkProofObjectId"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "protectedFieldCodec.protect", "verifier.claim", "object_state = 'CLAIMED'"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.validateRequest", "registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationResponse.java", "tokens": ["Public registration state", "TenantRegistrationResponse from"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantRepository.java", "tokens": ["JpaRepository<Tenant, Long>", "findByUnifiedSocialCreditCode"] }
+      ],
+      "reason": "The live endpoint allocates a stable tenant identity, writes three YCSE/v1 field envelopes and claims every selected staged object in one transaction, while returning only public state."
+    },
+    {
+      "id": "auth-user-hydration-save", "role": "READER_WRITER", "disposition": "ADOPTED_OPAQUE_MAPPING_EXACT_BYTE_PRESERVATION", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/account/AuthService.java", "tokens": ["userRepository.findByUsername", "userRepository.save(user)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/User.java", "tokens": ["@Column(name = \"phone_encrypted\", length = 255)", "private byte[] phoneEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/UserRepository.java", "tokens": ["JpaRepository<User, Long>", "findByUsername"] }
+      ],
+      "reason": "Plan 08 maps the protected cell as hidden opaque bytes and proves exact-byte preservation across unrelated authentication writes."
+    },
+    {
+      "id": "hmac-api-key-hydration", "role": "READER", "disposition": "ADOPTED_SECRET_EXCLUDING_AUTHENTICATION_PROJECTION", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] }
+      ],
+      "reason": "The current incomplete authentication path selects only ID, tenant and status; app_secret_encrypted is absent from the closed query and projection."
+    },
+    {
+      "id": "blacklist-lookup-hydration", "role": "READER", "disposition": "ADOPTED_METADATA_FIRST_CHECKPOINT_GATED_LOOKUP", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/BlacklistChecker.java", "tokens": ["blindIndexLookupService.lookupBlacklist", "getLegacyMobileLookupToken"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/BlindIndexLookupService.java", "tokens": ["ycs_crypto_blind_indexes", "legacyFallbackAllowed", "deduplicate"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/LegacyMobileHashReader.java", "tokens": ["findSystemLegacyCompatibilityMatches", "findTenantLegacyCompatibilityMatches"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/BlacklistEntry.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "@Column(name = \"mobile_hash\", nullable = false)", "private byte[] mobileEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/BlacklistEntryRepository.java", "tokens": ["interface LookupProjection", "entry.mobileHash as legacyIndex", "entry.listType as listType"] }
+      ],
+      "reason": "Routing delegates an opaque lookup capability to the sole ACTIVE/RETIRING metadata owner; only its package-scoped legacy reader may use the historical digest before the exact target is COMPLETE."
+    },
+    {
+      "id": "tenant-lifecycle-analytics-hydration-save", "role": "READER_WRITER", "disposition": "ADOPTED_OPAQUE_ENTITY_PRESERVATION_AND_ID_ONLY_ANALYTICS", "obligation_blocking": false,
+      "sources": [
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["tenantRepository.findById", "tenantRepository.save(tenant)"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/complaint/ComplaintRatioService.java", "tokens": ["tenantRepository.findAllIds()", "IdProjection"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Tenant.java", "tokens": ["@Column(name = \"legal_rep_id_no_encrypted\", length = 255)", "@Column(name = \"contact_phone_encrypted\", length = 255)", "private byte[] legalRepIdNoEncrypted", "private byte[] contactPhoneEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantRepository.java", "tokens": ["JpaRepository<Tenant, Long>", "interface IdProjection", "select tenant.id as id"] }
+      ],
+      "reason": "Lifecycle writes preserve hidden opaque bytes under Plan 08 and complaint analytics enumerates only tenant IDs."
+    }
+  ],
+  "obligation_readiness": {
+    "status": "READY",
+    "blocking_surface_ids": [],
+    "reason": "All current executable reader/writer surfaces use protected adapters or closed projections; migration and phase-boundary evidence remain separately required."
+  }
+}

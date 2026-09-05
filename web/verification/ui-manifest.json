@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0.0",
+  "scope": {
+    "mode": "observed-production-facts",
+    "routePrefixes": ["/login"]
+  },
+  "playwrightSources": ["web/test/phase01/login-scenario.spec.ts"],
+  "redirects": [
+    { "from": "/", "to": "/login", "index": false }
+  ],
+  "pages": [
+    {
+      "pageId": "public-auth-login",
+      "route": "/login",
+      "relationKind": "verified-selector-closure",
+      "component": {
+        "symbol": "LoginPage",
+        "source": "web/src/pages/LoginPage.tsx"
+      },
+      "selectors": [
+        {
+          "dataTestId": "shared-auth-login-page",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-PAGE",
+          "playwrightId": "PW-FOUND-LOGIN-PAGE",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-card",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-CARD",
+          "playwrightId": "PW-FOUND-LOGIN-CARD",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-username",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-USERNAME",
+          "playwrightId": "PW-FOUND-LOGIN-USERNAME",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-password",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-PASSWORD",
+          "playwrightId": "PW-FOUND-LOGIN-PASSWORD",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-remember",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-REMEMBER",
+          "playwrightId": "PW-FOUND-LOGIN-REMEMBER",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-submit",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-SUBMIT",
+          "playwrightId": "PW-FOUND-LOGIN-SUBMIT",
+          "rowContract": null
+        },
+        {
+          "dataTestId": "shared-auth-login-error",
+          "source": "web/src/pages/LoginPage.tsx",
+          "repeated": false,
+          "obligationIds": ["OBL-FOUND-TRACE-003"],
+          "requirementIds": ["PROJECT-PLANNING-TRACE"],
+          "behaviorIds": ["engineering-verification-foundation-03"],
+          "catalogTest": "T-FOUND-TRACE-003:integration",
+          "caseId": "CASE-FOUND-LOGIN-ERROR",
+          "playwrightId": "PW-FOUND-LOGIN-ERROR",
+          "rowContract": null
+        }
+      ]
+    }
+  ]
+}

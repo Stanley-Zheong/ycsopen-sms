@@ -1,8 +1,11 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /** F-2.6/F-6.4 HTTP API 凭证。 */
 @Entity
@@ -20,8 +23,12 @@ public class TenantApiKey {
     @Column(name = "app_key", nullable = false, unique = true)
     private String appKey;
 
-    @Column(name = "app_secret_encrypted", nullable = false)
-    private String appSecretEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "app_secret_encrypted", nullable = false, length = 255)
+    private byte[] appSecretEncrypted;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;

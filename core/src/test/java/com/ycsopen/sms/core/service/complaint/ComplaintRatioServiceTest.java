@@ -2,12 +2,12 @@ package com.ycsopen.sms.core.service.complaint;
 
 import com.ycsopen.sms.core.domain.entity.Channel;
 import com.ycsopen.sms.core.domain.entity.ComplaintRatioStats;
-import com.ycsopen.sms.core.domain.entity.Tenant;
 import com.ycsopen.sms.core.repository.ChannelRepository;
 import com.ycsopen.sms.core.repository.ComplaintRatioStatsRepository;
 import com.ycsopen.sms.core.repository.ComplaintRepository;
 import com.ycsopen.sms.core.repository.MessageTaskRepository;
 import com.ycsopen.sms.core.repository.TenantRepository;
+import com.ycsopen.sms.core.repository.TenantRepository.IdProjection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,10 +42,8 @@ class ComplaintRatioServiceTest {
                 complaintRepository, complaintRatioStatsRepository, threshold);
     }
 
-    private Tenant tenant(long id) {
-        Tenant t = new Tenant();
-        t.setId(id);
-        return t;
+    private IdProjection tenant(long id) {
+        return () -> id;
     }
 
     private Channel channel(long id) {
@@ -56,7 +54,7 @@ class ComplaintRatioServiceTest {
 
     @Test
     void ratioAtExactlyThreeInThousand_shouldBeMarkedOverThreshold() {
-        when(tenantRepository.findAll()).thenReturn(List.of(tenant(1L)));
+        when(tenantRepository.findAllIds()).thenReturn(List.of(tenant(1L)));
         when(channelRepository.findAll()).thenReturn(List.of());
         // 1000 条发送，3 条投诉 => 0.003 恰好等于默认阈值
         when(messageTaskRepository.countByTenantIdAndCreatedAtBetween(eq(1L), any(), any())).thenReturn(1000L);
@@ -75,7 +73,7 @@ class ComplaintRatioServiceTest {
 
     @Test
     void ratioBelowThreshold_shouldNotBeFlagged() {
-        when(tenantRepository.findAll()).thenReturn(List.of(tenant(1L)));
+        when(tenantRepository.findAllIds()).thenReturn(List.of(tenant(1L)));
         when(channelRepository.findAll()).thenReturn(List.of());
         when(messageTaskRepository.countByTenantIdAndCreatedAtBetween(eq(1L), any(), any())).thenReturn(10000L);
         when(complaintRepository.countByTenantIdAndCreatedAtBetween(eq(1L), any(), any())).thenReturn(1L); // 0.0001
@@ -91,7 +89,7 @@ class ComplaintRatioServiceTest {
 
     @Test
     void zeroSendCount_shouldNotDivideByZero_ratioIsZero() {
-        when(tenantRepository.findAll()).thenReturn(List.of());
+        when(tenantRepository.findAllIds()).thenReturn(List.of());
         when(channelRepository.findAll()).thenReturn(List.of(channel(5L)));
         when(messageTaskRepository.countByChannelIdAndCreatedAtBetween(eq(5L), any(), any())).thenReturn(0L);
         when(complaintRepository.countByChannelIdAndCreatedAtBetween(eq(5L), any(), any())).thenReturn(0L);

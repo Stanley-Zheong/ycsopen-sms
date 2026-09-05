@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.time.Duration;
-
 /**
  * F-5.3 第三方风险名单服务对接（参考 ycsansms.md 9.3 节接口约定，形如"泰迪短信黑名单"）。
  * <p>接口协议：POST {baseUrl}/api/check/v2/forbid，见 PRD 9.3 节；本类只做单号检测，
@@ -45,19 +43,16 @@ public class ThirdPartyBlacklistClient {
     }
 
     /**
-     * @param mobileHash 注意：真实调用第三方接口需要明文号码而非哈希——这里以哈希为参数是为了让
-     *                   {@link BlacklistChecker} 的调用签名统一、且不把明文号码传入日志/异常栈；
-     *                   生产实现需要在本类内部临时解密（通过依赖注入 FieldEncryptor），解密后的明文
-     *                   只在这一次 HTTP 调用的生命周期内存在，不落任何日志。当前为 TODO（F-5.3 完整对接）。
+     * @param opaqueMobileQueryValue 版本化 HMAC 查询值；不接收手机号明文或原始 SHA-256。
      */
-    public CheckResult check(String mobileHash) {
+    public CheckResult check(String opaqueMobileQueryValue) {
         if (!enabled) {
             return CheckResult.notHit(); // 未启用第三方检测时直接放行，不算"降级"
         }
         try {
             // TODO(F-5.3): 补全真实请求体（appId/callee/level/score/timestamp/sign）与响应解析，
             // 当前先返回"未命中"占位，保证路由链路可跑通，便于先验证黑名单/内容审核/频控三段逻辑。
-            log.debug("third-party blacklist check called for hash={} (stub, not yet wired to real endpoint)", mobileHash);
+            log.debug("third-party blacklist check called with opaque query value (stub, not yet wired to real endpoint)");
             return CheckResult.notHit();
         } catch (Exception e) {
             log.warn("third-party blacklist check failed, applying fail-open={} degrade policy", failOpen, e);

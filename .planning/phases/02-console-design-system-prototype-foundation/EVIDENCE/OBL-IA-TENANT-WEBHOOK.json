@@ -1,0 +1,89 @@
+{
+  "schema_version": "phase02-ui-obligation-evidence-v1",
+  "phase": "02-console-design-system-prototype-foundation",
+  "owner": "console-design-system-prototype-foundation",
+  "obligation_id": "OBL-IA-TENANT-WEBHOOK",
+  "requirement_ids": [
+    "PROJECT-TENANT-IA"
+  ],
+  "behavior_id": "console-design-system-prototype-foundation-07",
+  "catalog_test": "T-IA-TENANT-WEBHOOK:static",
+  "case_id": "C-OBL-IA-TENANT-WEBHOOK",
+  "playwright_id": "pw-obl-ia-tenant-webhook",
+  "evidence_path": "EVIDENCE/OBL-IA-TENANT-WEBHOOK.json",
+  "route": "/tenant/webhooks",
+  "page_id": "tenant-webhooks",
+  "test_id": "tenant-webhooks-prototype-shell-075",
+  "status": "PASS",
+  "exit_code": 0,
+  "assertions": [
+    {
+      "id": "actual-route-rendered",
+      "status": "PASS"
+    },
+    {
+      "id": "checked-in-html-source",
+      "status": "PASS"
+    },
+    {
+      "id": "page-contract-visible",
+      "status": "PASS"
+    }
+  ],
+  "run": {
+    "report_path": ".planning/phases/02-console-design-system-prototype-foundation/EVIDENCE/runs/phase02-latest/playwright-report.json",
+    "report_sha256": "586cf933abbe4d8e350b0c4fffe0f8e19965041df9ca48a1031f87c4a87c68ce",
+    "started_at": "2026-08-31T11:25:20.532Z",
+    "duration_ms": 29304.856,
+    "browser": "Google Chrome",
+    "browser_version": "151.0.7922.174",
+    "executable_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "expected": 83,
+    "passed": 83,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "sources": [
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/TEST-MATRIX.md",
+      "sha256": "18cd29cca87852c76a9c4709c143b67808fe29c07b5b3634fcc1f4c3d2af04d3"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/UI-ELEMENTS.md",
+      "sha256": "fd66902451d0a27e3c1646ccb5ff0a233d22faf98292188a143d3c170eafaf0f"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/prototype.spec.ts",
+      "sha256": "f26a82b1f52ada92e43f45b9bdf566290175a0bc708194c70614a0c64398bbdd"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/playwright.config.ts",
+      "sha256": "78a0735bf6fa38a92fce41a7318e9bca5b13d687f012b1b0e961d1466f435609"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/prototype.html",
+      "sha256": "5cf18ca3a3e8d895741cbfffe09ecd88c4307cc6490d4c497313a02978cdf406"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/console-design.pen",
+      "sha256": "7345cbd6e1364d0ea58cded020e67a01a979cd8fe801610d09f6f729cd0dea0f"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/tokens.css",
+      "sha256": "8ca11f40e53391619c09bd26e98d0d729600d1bebdac681fdab3af5231befc50"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/design-output/ycsan-style-snapshot.json",
+      "sha256": "cfa15910ac77b3d0d80d00dae2139f57cf083fdb21ca2ff31e5d2fb486b2e19b"
+    },
+    {
+      "path": ".planning/phases/02-console-design-system-prototype-foundation/EVIDENCE/ycsan-reference-1440x900.png",
+      "sha256": "4a109c7f9d651b632e850632d98220df35d208c4d5427594fcbd86f6ed2cb3e0"
+    }
+  ]
+}

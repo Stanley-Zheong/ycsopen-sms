@@ -1,0 +1,26 @@
+{
+  "schema_version": "phase02-ycsan-style-snapshot-v1",
+  "reference": {
+    "remote": "https://github.com/Stanley-Zheong/ycsan.git",
+    "commit": "f4f8aae9c05a5b527aafd725b1d7410a3b3ad31b",
+    "source_path": "app/globals.css",
+    "source_sha256": "6931f74f3bbe90f76b972c907b9b519bc93a348fe3e74ba20f7eacfb3ce1fc53"
+  },
+  "capture": {
+    "path": ".planning/phases/02-console-design-system-prototype-foundation/EVIDENCE/ycsan-reference-1440x900.png",
+    "sha256": "4a109c7f9d651b632e850632d98220df35d208c4d5427594fcbd86f6ed2cb3e0",
+    "size": 497203,
+    "browser": "Google Chrome",
+    "browser_version": "151.0.7922.174",
+    "viewport": { "width": 1440, "height": 900 }
+  },
+  "adopted_tokens": {
+    "text": "#123250",
+    "primary": "#0c85e8",
+    "primary_deep": "#0b61aa"
+  },
+  "phase_adaptations": {
+    "accent": "#31c9b6",
+    "note": "The teal accent is a Phase 2 console adaptation; it is not claimed as a literal token from the pinned ycsan source."
+  }
+}

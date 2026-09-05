@@ -1,0 +1,29 @@
+{
+  "schema_version": "phase01-browser-source-entry-attestation-v1",
+  "phase": "01-engineering-verification-foundation",
+  "criterion_id": "ENTRY-02-GATE-D-CHROME-PROBES",
+  "verdict": "PASS",
+  "reviewer": {
+    "kind": "independent-subagent",
+    "task": "phase1_entry_reviewer2-attempt3-chrome-only"
+  },
+  "admission": {
+    "path": "EVIDENCE/browser-source-admission.json",
+    "mode": "100644",
+    "sha256": "1fbb259e62dd499168e0cd97e0e775fe65ef6b61ad474df5b18c19991c84570b"
+  },
+  "probes": [
+    {
+      "id": "chrome-151",
+      "path": "EVIDENCE/browser-source-probes/chrome-151.json",
+      "mode": "100644",
+      "sha256": "47c3c83e3dffe7826b7525c09c7b40fbd0bf2aac3dea72565159b1ce60263687"
+    },
+    {
+      "id": "chrome-152",
+      "path": "EVIDENCE/browser-source-probes/chrome-152.json",
+      "mode": "100644",
+      "sha256": "57d1fecc3f549b3f56ef7d9682e8429995b78c6f51974b81baf0ab796490a4bd"
+    }
+  ]
+}

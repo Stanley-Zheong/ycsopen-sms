@@ -1,0 +1,103 @@
+{
+  "$id": "https://ycsopen.com/security/migration/ycs-writer-fence-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "database_instance_fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "environment": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "maxLength": 30,
+      "type": "string"
+    },
+    "flyway_set_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "global_sequence": {
+      "maximum": 9223372036854775807,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "issued_at": {
+      "format": "date-time",
+      "maxLength": 30,
+      "type": "string"
+    },
+    "manifest_schema": {
+      "const": "ycs-writer-fence/v1"
+    },
+    "migration_set_id": {
+      "maxLength": 64,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+      "type": "string"
+    },
+    "schema": {
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_]{1,64}$",
+      "type": "string"
+    },
+    "signer_key_version": {
+      "maxLength": 32,
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+      "type": "string"
+    },
+    "writers": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "maxLength": 64,
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+            "type": "string"
+          },
+          "migration_compatible": {
+            "const": true
+          },
+          "source_digest": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 32,
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,31}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "migration_compatible",
+          "source_digest",
+          "version"
+        ],
+        "type": "object"
+      },
+      "maxItems": 1024,
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "database_instance_fingerprint",
+    "environment",
+    "expires_at",
+    "flyway_set_digest",
+    "global_sequence",
+    "issued_at",
+    "manifest_schema",
+    "migration_set_id",
+    "schema",
+    "signer_key_version",
+    "writers"
+  ],
+  "title": "YCS writer-fence manifest v1",
+  "type": "object"
+}

@@ -1,0 +1,57 @@
+{
+  "entries": [
+    {
+      "evidence_digest": "7cb13cfbd499b5ce7f48dfb73d29a15aef407c3154cdfd001d180a4b838593c5",
+      "obligation_id": "OBL-CRYPTO-STORAGE-001",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-001.json",
+      "sha256": "9d3ebdd110e8018b1a989e6388a00f56e6444ef920a4f5b59939a5ae9fe27f94",
+      "status": "PASS"
+    },
+    {
+      "evidence_digest": "7d650030c05c66d9b275008cf2050472bfc5ff4373f0e958ce69a51640b9bf6d",
+      "obligation_id": "OBL-CRYPTO-STORAGE-002",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-002.json",
+      "sha256": "5233adcf0347bc8fca3ac3be5acee17bdb77531a915fb856bb460d75eb6ed98e",
+      "status": "PASS"
+    },
+    {
+      "evidence_digest": "0feb7892fbea31353da8c0f243effc98858aa386641cdb4c4bc0bcdaea046aaa",
+      "obligation_id": "OBL-CRYPTO-STORAGE-003",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-003.json",
+      "sha256": "6499bb83df4ae980fbb477c3eecd0abc05b8178ac380b9588c73e627235fface",
+      "status": "PASS"
+    },
+    {
+      "evidence_digest": "70bbe6f3b78026c7e329710f9fffe77bb90d073b309251ef3eb68f158f5c6969",
+      "obligation_id": "OBL-CRYPTO-STORAGE-004",
+      "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/OBL-CRYPTO-STORAGE-004.json",
+      "sha256": "22ba43d6eabb68b9f4439d597b0761dfba178a15b6aea62d4e88c3c6da7fe387",
+      "status": "PASS"
+    }
+  ],
+  "inventory": {
+    "accepted_digest": "9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009",
+    "path": "core/src/main/resources/security/protected-data-inventory.json",
+    "sha256": "0f232a20ebcfb161ebd959c57dec1d340383f80b111708ef954542ef75142cd8",
+    "validator_result": {
+      "check_id": "phase03-protected-inventory",
+      "path": "core/target/phase03/results/protected-inventory-result.json",
+      "result_digest": "f11635845c3d1a3dd73466ae7a80b265c241b745e7fd19074ca5492fcdd311c3",
+      "sha256": "3b6c1574207f1c5d62127bcd5f5af2dc7297444dee3a309b23eaca8505a4302a"
+    }
+  },
+  "leak_result": {
+    "path": "core/target/phase03/results/complete-leak-result.json",
+    "result_digest": "5b4d2e1fcc50f99cd359178a11c06bbb6e8931c1eae2e8eb7c4c51327f0d0084",
+    "sha256": "f4919d50a3a642e569617b5e1bd5eaf59bad4af56efa73c59275c2ab77660d7c"
+  },
+  "owner": "crypto-storage-bootstrap",
+  "phase": "03-crypto-storage-bootstrap",
+  "schema_version": "phase03-evidence-manifest-v1",
+  "status": "PASS",
+  "subject": {
+    "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json",
+    "sha256": "4ab907f8f6897533e3967a657ebaf0b57e3d68f141a54a56489793fea7cb1c68",
+    "tested_subject_digest": "10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe"
+  }
+}

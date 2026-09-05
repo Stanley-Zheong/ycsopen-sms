@@ -1,0 +1,477 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "fileutils"
+require "json"
+require "open3"
+require "optparse"
+require "securerandom"
+require "timeout"
+require "zlib"
+require "rubygems/package"
+require_relative "lib/phase-03/service_checks"
+
+module Phase03
+  class SoftHsmProvisioner
+    COMMAND_TIMEOUT = 600
+    OUTPUT_LIMIT = 1_048_576
+    TOKEN_LABEL = "phase03-real-token"
+
+    PREFLIGHT_SOURCE = <<~'C'
+      #include "cryptoki.h"
+      #include <stdio.h>
+      #include <stdlib.h>
+      #include <string.h>
+      #include <sys/stat.h>
+
+      static int failed = 0;
+      static void require_rv(CK_RV rv, const char *step) {
+        if (rv != CKR_OK) {
+          fprintf(stderr, "PKCS11 preflight failed step=%s rv=0x%lx\n", step, (unsigned long)rv);
+          failed = 1;
+        }
+      }
+      static void trim(char *value) {
+        size_t size = strlen(value);
+        while (size > 0 && (value[size - 1] == '\n' || value[size - 1] == '\r')) value[--size] = '\0';
+      }
+      static int has_mechanism(CK_MECHANISM_TYPE *values, CK_ULONG count, CK_MECHANISM_TYPE wanted) {
+        for (CK_ULONG i = 0; i < count; i++) if (values[i] == wanted) return 1;
+        return 0;
+      }
+      static int owned_token(CK_TOKEN_INFO *info) {
+        static const char expected[] = "phase03-real-token";
+        if (memcmp(info->label, expected, sizeof(expected) - 1) != 0) return 0;
+        for (size_t i = sizeof(expected) - 1; i < sizeof(info->label); i++) if (info->label[i] != ' ') return 0;
+        return 1;
+      }
+      static int check_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE key, CK_KEY_TYPE wanted) {
+        CK_OBJECT_CLASS klass = 0;
+        CK_KEY_TYPE key_type = 0;
+        CK_BBOOL token = CK_FALSE, private_value = CK_FALSE, sensitive = CK_FALSE, extractable = CK_TRUE;
+        CK_ATTRIBUTE attrs[] = {
+          {CKA_CLASS, &klass, sizeof(klass)}, {CKA_KEY_TYPE, &key_type, sizeof(key_type)},
+          {CKA_TOKEN, &token, sizeof(token)}, {CKA_PRIVATE, &private_value, sizeof(private_value)},
+          {CKA_SENSITIVE, &sensitive, sizeof(sensitive)}, {CKA_EXTRACTABLE, &extractable, sizeof(extractable)}
+        };
+        CK_RV rv = C_GetAttributeValue(session, key, attrs, sizeof(attrs) / sizeof(attrs[0]));
+        require_rv(rv, "get-key-attributes");
+        return rv == CKR_OK && klass == CKO_SECRET_KEY && key_type == wanted && token == CK_TRUE &&
+               private_value == CK_TRUE && sensitive == CK_TRUE && extractable == CK_FALSE;
+      }
+      int main(int argc, char **argv) {
+        if (argc != 2) { fprintf(stderr, "PIN source argument required\n"); return 64; }
+        struct stat pin_stat;
+        if (stat(argv[1], &pin_stat) != 0 || !S_ISREG(pin_stat.st_mode) || (pin_stat.st_mode & 077) != 0) {
+          fprintf(stderr, "PIN source permissions invalid\n"); return 65;
+        }
+        FILE *pins = fopen(argv[1], "r");
+        char so_pin[128] = {0}, user_pin[128] = {0};
+        if (!pins || !fgets(so_pin, sizeof(so_pin), pins) || !fgets(user_pin, sizeof(user_pin), pins)) {
+          fprintf(stderr, "PIN source unreadable\n"); if (pins) fclose(pins); return 66;
+        }
+        fclose(pins); trim(so_pin); trim(user_pin);
+        if (strlen(so_pin) < 16 || strlen(user_pin) < 16) { fprintf(stderr, "PIN source too short\n"); return 67; }
+
+        CK_RV rv = C_Initialize(NULL_PTR); require_rv(rv, "initialize"); if (failed) return 68;
+        CK_ULONG slot_count = 0;
+        rv = C_GetSlotList(CK_FALSE, NULL_PTR, &slot_count); require_rv(rv, "slot-count");
+        CK_SLOT_ID *slots = calloc(slot_count, sizeof(CK_SLOT_ID));
+        if (!slots || slot_count == 0) { fprintf(stderr, "No SoftHSM slot available\n"); C_Finalize(NULL_PTR); return 69; }
+        rv = C_GetSlotList(CK_FALSE, slots, &slot_count); require_rv(rv, "slot-list");
+        CK_UTF8CHAR label[32]; memset(label, ' ', sizeof(label)); memcpy(label, "phase03-real-token", 18);
+        rv = C_InitToken(slots[0], (CK_UTF8CHAR_PTR)so_pin, (CK_ULONG)strlen(so_pin), label);
+        require_rv(rv, "init-token"); free(slots); if (failed) { C_Finalize(NULL_PTR); return 70; }
+
+        /* SoftHSM assigns the token's stable slot ID when the module is next
+           initialized. Re-open the module so the handoff records the same ID
+           that independent PKCS#11 consumers will enumerate. */
+        rv = C_Finalize(NULL_PTR); require_rv(rv, "finalize-after-init-token");
+        if (failed) { return 70; }
+        rv = C_Initialize(NULL_PTR); require_rv(rv, "reinitialize-after-init-token");
+        if (failed) { return 70; }
+
+        slot_count = 0; rv = C_GetSlotList(CK_TRUE, NULL_PTR, &slot_count); require_rv(rv, "token-slot-count");
+        slots = calloc(slot_count, sizeof(CK_SLOT_ID));
+        rv = C_GetSlotList(CK_TRUE, slots, &slot_count); require_rv(rv, "token-slot-list");
+        CK_SLOT_ID slot = 0; CK_ULONG owned_count = 0;
+        for (CK_ULONG i = 0; i < slot_count; i++) {
+          CK_TOKEN_INFO token_info;
+          rv = C_GetTokenInfo(slots[i], &token_info); require_rv(rv, "token-info");
+          if (rv == CKR_OK && owned_token(&token_info)) { slot = slots[i]; owned_count++; }
+        }
+        free(slots);
+        if (failed || owned_count != 1) {
+          fprintf(stderr, "Owned token identity count invalid count=%lu\n", (unsigned long)owned_count);
+          C_Finalize(NULL_PTR); return 71;
+        }
+
+        CK_SESSION_HANDLE session = 0;
+        rv = C_OpenSession(slot, CKF_SERIAL_SESSION | CKF_RW_SESSION, NULL_PTR, NULL_PTR, &session);
+        require_rv(rv, "open-session");
+        rv = C_Login(session, CKU_SO, (CK_UTF8CHAR_PTR)so_pin, (CK_ULONG)strlen(so_pin)); require_rv(rv, "login-so");
+        rv = C_InitPIN(session, (CK_UTF8CHAR_PTR)user_pin, (CK_ULONG)strlen(user_pin)); require_rv(rv, "init-user-pin");
+        rv = C_Logout(session); require_rv(rv, "logout-so");
+        rv = C_Login(session, CKU_USER, (CK_UTF8CHAR_PTR)user_pin, (CK_ULONG)strlen(user_pin)); require_rv(rv, "login-user");
+        if (failed) { C_CloseSession(session); C_Finalize(NULL_PTR); return 72; }
+
+        CK_ULONG mechanism_count = 0;
+        rv = C_GetMechanismList(slot, NULL_PTR, &mechanism_count); require_rv(rv, "mechanism-count");
+        CK_MECHANISM_TYPE *mechanisms = calloc(mechanism_count, sizeof(CK_MECHANISM_TYPE));
+        rv = C_GetMechanismList(slot, mechanisms, &mechanism_count); require_rv(rv, "mechanism-list");
+        int mechanism_ok = has_mechanism(mechanisms, mechanism_count, CKM_AES_KEY_GEN) &&
+          has_mechanism(mechanisms, mechanism_count, CKM_AES_GCM) &&
+          has_mechanism(mechanisms, mechanism_count, CKM_GENERIC_SECRET_KEY_GEN) &&
+          has_mechanism(mechanisms, mechanism_count, CKM_SHA256_HMAC);
+        free(mechanisms);
+        if (!mechanism_ok || failed) { fprintf(stderr, "Required mechanism unavailable\n"); C_Logout(session); C_CloseSession(session); C_Finalize(NULL_PTR); return 73; }
+
+        CK_BBOOL yes = CK_TRUE, no = CK_FALSE;
+        CK_ULONG aes_size = 32, hmac_size = 32;
+        CK_OBJECT_CLASS secret_class = CKO_SECRET_KEY;
+        CK_KEY_TYPE aes_type = CKK_AES, hmac_type = CKK_GENERIC_SECRET;
+        CK_UTF8CHAR aes_label[] = "phase03-aes-kek";
+        CK_UTF8CHAR hmac_label[] = "phase03-hmac-key";
+        CK_ATTRIBUTE aes_attrs[] = {
+          {CKA_CLASS, &secret_class, sizeof(secret_class)}, {CKA_KEY_TYPE, &aes_type, sizeof(aes_type)},
+          {CKA_TOKEN, &yes, sizeof(yes)}, {CKA_PRIVATE, &yes, sizeof(yes)}, {CKA_SENSITIVE, &yes, sizeof(yes)},
+          {CKA_EXTRACTABLE, &no, sizeof(no)}, {CKA_ENCRYPT, &yes, sizeof(yes)}, {CKA_DECRYPT, &yes, sizeof(yes)},
+          {CKA_WRAP, &yes, sizeof(yes)}, {CKA_UNWRAP, &yes, sizeof(yes)}, {CKA_VALUE_LEN, &aes_size, sizeof(aes_size)},
+          {CKA_LABEL, aes_label, sizeof(aes_label) - 1}
+        };
+        CK_ATTRIBUTE hmac_attrs[] = {
+          {CKA_CLASS, &secret_class, sizeof(secret_class)}, {CKA_KEY_TYPE, &hmac_type, sizeof(hmac_type)},
+          {CKA_TOKEN, &yes, sizeof(yes)}, {CKA_PRIVATE, &yes, sizeof(yes)}, {CKA_SENSITIVE, &yes, sizeof(yes)},
+          {CKA_EXTRACTABLE, &no, sizeof(no)}, {CKA_SIGN, &yes, sizeof(yes)}, {CKA_VERIFY, &yes, sizeof(yes)},
+          {CKA_VALUE_LEN, &hmac_size, sizeof(hmac_size)}, {CKA_LABEL, hmac_label, sizeof(hmac_label) - 1}
+        };
+        CK_MECHANISM aes_gen = {CKM_AES_KEY_GEN, NULL_PTR, 0};
+        CK_MECHANISM hmac_gen = {CKM_GENERIC_SECRET_KEY_GEN, NULL_PTR, 0};
+        CK_OBJECT_HANDLE aes_key = 0, hmac_key = 0;
+        rv = C_GenerateKey(session, &aes_gen, aes_attrs, sizeof(aes_attrs) / sizeof(aes_attrs[0]), &aes_key);
+        require_rv(rv, "generate-aes");
+        rv = C_GenerateKey(session, &hmac_gen, hmac_attrs, sizeof(hmac_attrs) / sizeof(hmac_attrs[0]), &hmac_key);
+        require_rv(rv, "generate-hmac");
+        int aes_ok = !failed && check_key(session, aes_key, CKK_AES);
+        int hmac_ok = !failed && check_key(session, hmac_key, CKK_GENERIC_SECRET);
+        CK_MECHANISM hmac = {CKM_SHA256_HMAC, NULL_PTR, 0};
+        CK_BYTE message[] = "phase03-synthetic-preflight";
+        CK_BYTE signature[64]; CK_ULONG signature_len = sizeof(signature);
+        rv = C_SignInit(session, &hmac, hmac_key); require_rv(rv, "hmac-init");
+        rv = C_Sign(session, message, sizeof(message) - 1, signature, &signature_len); require_rv(rv, "hmac-sign");
+        rv = C_Logout(session); require_rv(rv, "logout-user");
+        rv = C_CloseSession(session); require_rv(rv, "close-session");
+        rv = C_Finalize(NULL_PTR); require_rv(rv, "finalize");
+        memset(so_pin, 0, sizeof(so_pin)); memset(user_pin, 0, sizeof(user_pin));
+        if (failed || !aes_ok || !hmac_ok || signature_len != 32) {
+          fprintf(stderr, "Preflight assertions failed failed=%d aes=%d hmac=%d hmac-bytes=%lu\n",
+                  failed, aes_ok, hmac_ok, (unsigned long)signature_len);
+          return 74;
+        }
+        printf("token_initialized=1 owned_slot=%lu mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32\n",
+               (unsigned long)slot);
+        return 0;
+      }
+    C
+
+    def initialize(argv, out: $stdout, err: $stderr)
+      @out = out
+      @err = err
+      @options = { provision: false, initialize_token: false, preflight: false, cleanup: false }
+      parser.parse!(argv)
+    end
+
+    def run
+      manifest = ServiceChecks.load_manifest!(required_option(:manifest))
+      destination = ServiceChecks.owned_destination!(required_option(:destination))
+      cleanup_only = @options[:cleanup] && !@options[:provision] && !existing_mode?
+      validate_mode! unless cleanup_only
+      cleanup_destination(destination) if cleanup_only
+      if cleanup_only
+        ServiceChecks.validate_cleanup!(destination)
+        @out.puts(JSON.generate("status" => "PASS", "cleanup" => "PASS"))
+        return 0
+      end
+
+      FileUtils.mkdir_p(destination, mode: 0o700)
+      paths = @options[:provision] ? provision(manifest, destination) : admit_existing(destination)
+      version_output, = command([paths.fetch(:cli), "--version"])
+      ServiceChecks.validate_runtime_version!(version_output)
+      report = nil
+      if @options[:initialize_token] || @options[:preflight]
+        report = initialize_and_preflight(destination, paths)
+        ServiceChecks.validate_preflight_report!(report)
+      end
+      handoff = write_handoff(destination, manifest, paths, report)
+      result = sanitized_result(manifest, paths, report, handoff)
+      if @options[:cleanup]
+        cleanup_destination(destination)
+        ServiceChecks.validate_cleanup!(destination)
+        result["cleanup"] = "PASS"
+      else
+        result["cleanup"] = "DEFERRED_TO_OWNER"
+      end
+      @out.puts(JSON.generate(result))
+      0
+    rescue ServiceChecks::CheckError => e
+      cleanup_destination(@options[:destination]) if @options[:destination]
+      @err.puts(JSON.generate("status" => blocked_error?(e.error_id) ? "BLOCKED" : "FAIL",
+                              "error_id" => e.error_id, "diagnostic" => ServiceChecks.sanitize(e.message)))
+      2
+    rescue OptionParser::ParseError, KeyError, ArgumentError => e
+      cleanup_destination(@options[:destination]) if @options[:destination]
+      @err.puts(JSON.generate("status" => "FAIL", "error_id" => "SOFTHSM_ARGUMENT_INVALID",
+                              "diagnostic" => ServiceChecks.sanitize(e.message)))
+      64
+    rescue StandardError => e
+      cleanup_destination(@options[:destination]) if @options[:destination]
+      @err.puts(JSON.generate("status" => "FAIL", "error_id" => "SOFTHSM_PROVISION_FAILED",
+                              "diagnostic" => ServiceChecks.sanitize(e.message)))
+      2
+    end
+
+    private
+
+    def parser
+      OptionParser.new do |opts|
+        opts.on("--manifest PATH") { |value| @options[:manifest] = value }
+        opts.on("--destination PATH") { |value| @options[:destination] = value }
+        opts.on("--provision") { @options[:provision] = true }
+        opts.on("--existing-cli PATH") { |value| @options[:existing_cli] = value }
+        opts.on("--existing-library PATH") { |value| @options[:existing_library] = value }
+        opts.on("--existing-header PATH") { |value| @options[:existing_header] = value }
+        opts.on("--initialize-token") { @options[:initialize_token] = true }
+        opts.on("--preflight") { @options[:preflight] = true }
+        opts.on("--cleanup") { @options[:cleanup] = true }
+      end
+    end
+
+    def required_option(name)
+      @options.fetch(name) { raise ServiceChecks::CheckError.new("SOFTHSM_ARGUMENT_INVALID", "missing --#{name.to_s.tr('_', '-')}") }
+    end
+
+    def existing_mode?
+      @options.values_at(:existing_cli, :existing_library, :existing_header).any?
+    end
+
+    def validate_mode!
+      if @options[:provision] == existing_mode?
+        raise ServiceChecks::CheckError.new("SOFTHSM_SOURCE_MODE_INVALID", "select exactly one of --provision or explicit existing paths")
+      end
+      if existing_mode? && @options.values_at(:existing_cli, :existing_library, :existing_header).any?(&:nil?)
+        raise ServiceChecks::CheckError.new("SOFTHSM_EXISTING_PATH_MISSING", "existing admission requires CLI, library and header paths")
+      end
+      if @options[:preflight] && !@options[:initialize_token]
+        raise ServiceChecks::CheckError.new("SOFTHSM_TOKEN_NOT_INITIALIZED", "preflight requires --initialize-token")
+      end
+    end
+
+    def provision(manifest, destination)
+      archive = File.join(destination, "source.tar.gz")
+      source_parent = File.join(destination, "source")
+      build = File.join(destination, "build")
+      install = File.join(destination, "install")
+      command(["/usr/bin/curl", "--fail", "--location", "--proto", "=https", "--tlsv1.2",
+               "--output", archive, manifest.fetch("archive_url")])
+      ServiceChecks.verify_archive_digest!(archive, manifest.fetch("archive_sha256"))
+      extract_archive(archive, source_parent, manifest.fetch("archive_root"))
+      source = File.join(source_parent, manifest.fetch("archive_root"))
+      capability_patch_sha256 = ServiceChecks.apply_softhsm_capability_patch!(source)
+      cmake = command_path!("cmake", "SOFTHSM_BUILD_TOOL_MISSING")
+      openssl_root = openssl_root!
+      configure = [cmake, "-S", source, "-B", build, "-DCMAKE_INSTALL_PREFIX=#{install}",
+                   "-DCMAKE_INSTALL_SYSCONFDIR=#{File.join(install, 'etc')}",
+                   "-DCMAKE_INSTALL_LOCALSTATEDIR=#{File.join(install, 'var')}",
+                   "-DOPENSSL_ROOT_DIR=#{openssl_root}", *manifest.fetch("build_arguments")]
+      command(configure)
+      command([cmake, "--build", build, "--parallel", "2"])
+      command([cmake, "--install", build])
+      paths = discover_runtime!(install)
+      paths.merge(header: File.join(source, "src/lib/pkcs11/cryptoki.h"), branch: "provision",
+                  capability_patch_sha256: capability_patch_sha256)
+    end
+
+    def admit_existing(_destination)
+      cli = canonical_regular_file!(@options.fetch(:existing_cli), executable: true)
+      library = canonical_regular_file!(@options.fetch(:existing_library))
+      header = canonical_regular_file!(@options.fetch(:existing_header))
+      { cli: cli, library: library, header: header, branch: "existing-path" }
+    end
+
+    def discover_runtime!(install)
+      cli = File.join(install, "bin/softhsm2-util")
+      candidates = Dir[File.join(install, "{lib,lib64}/softhsm/libsofthsm2.{so,dylib}")].sort
+      unless File.file?(cli) && File.executable?(cli) && candidates.length == 1 && File.file?(candidates.first)
+        raise ServiceChecks::CheckError.new("SOFTHSM_RUNTIME_DISCOVERY_FAILED", "exact CLI/library were not found below the build destination")
+      end
+      { cli: File.realpath(cli), library: File.realpath(candidates.first) }
+    end
+
+    def canonical_regular_file!(path, executable: false)
+      unless File.file?(path) && !File.symlink?(path) && (!executable || File.executable?(path))
+        raise ServiceChecks::CheckError.new("SOFTHSM_EXISTING_PATH_INVALID", "existing runtime path is not an admissible regular file")
+      end
+      File.realpath(path)
+    end
+
+    def initialize_and_preflight(destination, paths)
+      runtime = File.join(destination, "runtime")
+      token_dir = File.join(runtime, "tokens")
+      FileUtils.mkdir_p(token_dir, mode: 0o700)
+      config = File.join(runtime, "softhsm2.conf")
+      File.write(config, "directories.tokendir = #{token_dir}\nobjectstore.backend = file\nobjectstore.umask = 0077\nlog.level = ERROR\nslots.removable = false\nslots.mechanisms = ALL\nlibrary.reset_on_fork = false\n", mode: "wb", perm: 0o600)
+      pin_source = File.join(runtime, "pins")
+      File.write(pin_source, "#{SecureRandom.hex(24)}\n#{SecureRandom.hex(24)}\n", mode: "wb", perm: 0o600)
+      helper_source = File.join(runtime, "preflight.c")
+      helper = File.join(runtime, "preflight")
+      File.write(helper_source, PREFLIGHT_SOURCE, mode: "wb", perm: 0o600)
+      cc = ENV.fetch("CC", "/usr/bin/cc")
+      command([cc, "-std=c11", "-O2", "-I", File.dirname(paths.fetch(:header)), helper_source,
+               paths.fetch(:library), "-Wl,-rpath,#{File.dirname(paths.fetch(:library))}",
+               "-Wl,-rpath,#{File.join(openssl_root!, 'lib')}", "-o", helper])
+      stdout, = command([helper, pin_source], env: { "SOFTHSM2_CONF" => config })
+      match = stdout.strip.match(/\Atoken_initialized=1 owned_slot=([0-9]+) mechanism_count=4 key_count=2 nonextractable_count=2 hmac_bytes=32\z/)
+      unless match
+        raise ServiceChecks::CheckError.new("SOFTHSM_PREFLIGHT_OUTPUT_INVALID", "native preflight result was incomplete")
+      end
+      {
+        "token_initialized" => true,
+        "mechanisms" => ServiceChecks::REQUIRED_MECHANISMS,
+        "keys" => %w[AES HMAC].map do |kind|
+          { "kind" => kind }.merge(ServiceChecks::REQUIRED_KEY_ATTRIBUTES)
+        end,
+        "hmac_output_bytes" => 32,
+        "slot" => Integer(match[1], 10),
+        "config" => config,
+        "pin_source" => pin_source,
+        "token_dir" => token_dir
+      }
+    end
+
+    def write_handoff(destination, manifest, paths, report)
+      handoff = File.join(destination, "runtime/handoff.json")
+      payload = {
+        "schema_version" => "ycs-softhsm-handoff/v1",
+        "version" => manifest.fetch("version"),
+        "source_sha256" => manifest.fetch("archive_sha256"),
+        "capability_patch_sha256" => paths.fetch(:capability_patch_sha256, nil),
+        "cli" => paths.fetch(:cli), "library" => paths.fetch(:library), "header" => paths.fetch(:header),
+        "config" => report&.fetch("config", nil), "pin_source" => report&.fetch("pin_source", nil),
+        "slot" => report&.fetch("slot", nil),
+        "token_dir" => report&.fetch("token_dir", nil)
+      }
+      File.write(handoff, JSON.generate(payload), mode: "wb", perm: 0o600)
+      handoff
+    end
+
+    def sanitized_result(manifest, paths, report, handoff)
+      {
+        "status" => "PASS", "branch" => paths.fetch(:branch),
+        "source" => {
+          "tag" => manifest.fetch("tag"), "commit" => manifest.fetch("commit"),
+          "archive_sha256" => manifest.fetch("archive_sha256"),
+          "capability_patch_sha256" => paths.fetch(:capability_patch_sha256, nil)
+        },
+        "runtime" => {
+          "version" => manifest.fetch("version"),
+          "cli_sha256" => ServiceChecks.sha256_file(paths.fetch(:cli)),
+          "library_sha256" => ServiceChecks.sha256_file(paths.fetch(:library)),
+          "handoff_sha256" => ServiceChecks.sha256_file(handoff),
+          "token_label_sha256" => Digest::SHA256.hexdigest(TOKEN_LABEL),
+          "mechanism_count" => report ? report.fetch("mechanisms").length : 0,
+          "key_count" => report ? report.fetch("keys").length : 0,
+          "nonextractable_key_count" => report ? report.fetch("keys").count { |key| key["CKA_EXTRACTABLE"] == false } : 0
+        }
+      }
+    end
+
+    def extract_archive(archive, destination, root)
+      FileUtils.mkdir_p(destination, mode: 0o700)
+      root_prefix = root + "/"
+      Zlib::GzipReader.open(archive) do |gzip|
+        Gem::Package::TarReader.new(gzip) do |tar|
+          tar.each do |entry|
+            name = entry.full_name
+            # GitHub codeload archives begin with one POSIX PAX global-header
+            # record. It carries metadata only and is not extracted.
+            next if name == "pax_global_header" && entry.header.typeflag == "g"
+            unless name == root || name.start_with?(root_prefix)
+              raise ServiceChecks::CheckError.new("SOFTHSM_ARCHIVE_ROOT_MISMATCH", "archive entry escapes the locked root")
+            end
+            relative = name.delete_prefix(root_prefix)
+            next if name == root || relative.empty?
+            clean = Pathname.new(relative).cleanpath.to_s
+            if clean == ".." || clean.start_with?("../") || Pathname.new(relative).absolute?
+              raise ServiceChecks::CheckError.new("SOFTHSM_ARCHIVE_PATH_INVALID", "archive contains an unsafe path")
+            end
+            target = File.join(destination, root, clean)
+            if entry.directory?
+              FileUtils.mkdir_p(target, mode: 0o700)
+            elsif entry.file?
+              FileUtils.mkdir_p(File.dirname(target), mode: 0o700)
+              File.open(target, "wb", entry.header.mode & 0o777) { |file| IO.copy_stream(entry, file) }
+            else
+              raise ServiceChecks::CheckError.new("SOFTHSM_ARCHIVE_LINK_FORBIDDEN", "archive contains a non-regular entry")
+            end
+          end
+        end
+      end
+    rescue Zlib::GzipFile::Error, Gem::Package::TarInvalidError
+      raise ServiceChecks::CheckError.new("SOFTHSM_ARCHIVE_MALFORMED", "source archive could not be safely extracted")
+    end
+
+    def openssl_root!
+      openssl = command_path!("openssl", "SOFTHSM_OPENSSL_MISSING")
+      resolved = File.realpath(openssl)
+      File.dirname(File.dirname(resolved))
+    end
+
+    def command_path!(name, error_id)
+      path = ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).map { |part| File.join(part, name) }
+                .find { |candidate| File.file?(candidate) && File.executable?(candidate) }
+      raise ServiceChecks::CheckError.new(error_id, "required build/runtime executable is unavailable") unless path
+
+      File.realpath(path)
+    end
+
+    def command(argv, env: {})
+      stdout = stderr = nil
+      status = nil
+      Timeout.timeout(COMMAND_TIMEOUT) do
+        stdout, stderr, status = Open3.capture3(env, *argv)
+      end
+      if stdout.bytesize > OUTPUT_LIMIT || stderr.bytesize > OUTPUT_LIMIT
+        raise ServiceChecks::CheckError.new("SOFTHSM_COMMAND_OUTPUT_LIMIT", "subprocess output exceeded the bounded limit")
+      end
+      unless status.success?
+        diagnostic = ServiceChecks.sanitize(stderr.lines.last(8).join(" "))
+        raise ServiceChecks::CheckError.new(
+          "SOFTHSM_COMMAND_FAILED",
+          "subprocess failed exit=#{status.exitstatus || 'signal'} signal=#{status.termsig || 'none'}: #{diagnostic}"
+        )
+      end
+      [stdout, stderr]
+    rescue Timeout::Error
+      raise ServiceChecks::CheckError.new("SOFTHSM_COMMAND_TIMEOUT", "subprocess exceeded the bounded timeout")
+    end
+
+    def cleanup_destination(destination)
+      return unless destination
+
+      absolute = ServiceChecks.owned_destination!(destination)
+      FileUtils.remove_entry_secure(absolute) if File.exist?(absolute) || File.symlink?(absolute)
+    rescue ServiceChecks::CheckError
+      raise
+    rescue StandardError
+      raise ServiceChecks::CheckError.new("SOFTHSM_CLEANUP_FAILED", "run-owned destination could not be cleaned")
+    end
+
+    def blocked_error?(error_id)
+      error_id.match?(/MISSING|TIMEOUT|UNAVAILABLE|BUILD_TOOL/)
+    end
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  exit Phase03::SoftHsmProvisioner.new(ARGV).run
+end

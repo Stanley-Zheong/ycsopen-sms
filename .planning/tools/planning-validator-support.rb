@@ -3,8 +3,11 @@
 
 require "digest"
 require "json"
+require "open3"
 require "pathname"
+require "rbconfig"
 require "set"
+require "yaml"
 
 module PlanningValidatorSupport
   ELEMENT_TEST_ID = /\A(?:admin|tenant|shared|public)-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*\z/
@@ -39,6 +42,10 @@ module PlanningValidatorSupport
   SchemaOwner = Struct.new(
     :id, :domain, :prefix, :owner, :range_start, :range_end, :dependencies,
     :compatibility, :rollback, :protocol, keyword_init: true
+  )
+  PlanNode = Struct.new(
+    :id, :phase, :plan, :wave, :dependencies, :files, :read_first, :path,
+    keyword_init: true
   )
 
   module_function
@@ -81,6 +88,37 @@ module PlanningValidatorSupport
     end
     errors << "EMPTY_#{label.upcase}_TABLE: #{path}" if rows.empty?
     rows
+  end
+
+  def markdown_tables(path, expected_headers, errors, label)
+    body = read(path, errors, label)
+    return [] if body.empty?
+
+    lines = body.lines.map(&:strip)
+    header_indexes = lines.each_index.select do |index|
+      table_cells(lines[index])&.map(&:downcase) == expected_headers.map(&:downcase)
+    end
+    if header_indexes.empty?
+      errors << "BAD_#{label.upcase}_HEADER: #{path} expected=#{expected_headers.join(' | ')}"
+      return []
+    end
+
+    header_indexes.map.with_index do |header_index, table_index|
+      rows = []
+      lines.drop(header_index + 1).each do |line|
+        break unless line.start_with?("|") && line.end_with?("|")
+
+        cells = table_cells(line)
+        next if cells.length == expected_headers.length && cells.all? { |cell| cell.match?(/\A:?-{3,}:?\z/) }
+        if cells.length != expected_headers.length
+          errors << "BAD_#{label.upcase}_COLUMN_COUNT: #{path} table=#{table_index + 1} expected=#{expected_headers.length} actual=#{cells.length}"
+          next
+        end
+        rows << cells
+      end
+      errors << "EMPTY_#{label.upcase}_TABLE: #{path} table=#{table_index + 1}" if rows.empty?
+      rows
+    end
   end
 
   def table_cells(line)
@@ -154,19 +192,42 @@ module PlanningValidatorSupport
       summary_path = File.join(directory, "SUMMARY.md")
       verification_path = File.join(directory, "#{token}-VERIFICATION.md")
       todo_path = File.join(directory, "TODO.md")
-      summary = read(summary_path, errors, "dependency summary")
       verification = read(verification_path, errors, "dependency verification")
       validate_todo(todo_path, errors, require_empty: true)
-      unless summary.match?(/Remote(?: commit)? SHA:\s*`?[0-9a-f]{40}`?/i)
-        errors << "DEPENDENCY_REMOTE_SHA_MISSING: #{summary_path}"
-      end
-      unless summary.match?(/Remote(?: URL)?:\s*\S+/i)
-        errors << "DEPENDENCY_REMOTE_MISSING: #{summary_path}"
-      end
+      read(summary_path, errors, "dependency summary")
       unless verification.match?(/^## Verdict\s*\n+PASS\s*$/)
         errors << "DEPENDENCY_VERIFICATION_NOT_PASS: #{verification_path}"
       end
+      validate_dependency_delivery_attestation(root, token, directory, summary_path, errors)
     end
+  end
+
+  def validate_dependency_delivery_attestation(root, phase_token, directory, summary_path, errors)
+    validator = File.join(root, ".planning/tools/validate-delivery-attestation.rb")
+    unless File.file?(validator)
+      errors << "DEPENDENCY_DELIVERY_VALIDATOR_MISSING: #{validator}"
+      return
+    end
+    evidence_manifest = File.join(directory, "EVIDENCE/evidence-manifest.json")
+    stdout, stderr, status = Open3.capture3(
+      RbConfig.ruby,
+      validator,
+      "--phase", phase_token,
+      "--summary", repository_relative(root, summary_path),
+      "--evidence-manifest", repository_relative(root, evidence_manifest),
+      "--require-pr-check-pass",
+      chdir: root
+    )
+    return if status.success?
+
+    diagnostics = (stdout + stderr).lines.map(&:strip).reject(&:empty?).first(8).join(" | ")
+    errors << "DEPENDENCY_DELIVERY_ATTESTATION_INVALID: phase=#{phase_token} diagnostics=#{diagnostics}"
+  rescue Errno::ENOENT => error
+    errors << "DEPENDENCY_DELIVERY_ATTESTATION_EXECUTION_FAILED: phase=#{phase_token} error=#{error.class}"
+  end
+
+  def repository_relative(root, path)
+    Pathname(File.expand_path(path)).relative_path_from(Pathname(File.expand_path(root))).to_s
   end
 
   def catalog_records(path, errors)
@@ -225,10 +286,32 @@ module PlanningValidatorSupport
     errors << "ENTRY_REVIEW_FINAL_VERDICT_MISSING: #{path}" unless body.match?(/^## Verdict\s*\n+PASS\s*$/)
   end
 
+  def validate_entry_evidence(path, review_path, errors)
+    body = read(path, errors, "entry evidence")
+    return if body.empty?
+
+    errors << "ENTRY_EVIDENCE_SUBJECT_MISSING: #{path}" unless body.match?(/^Review subject commit: `[0-9a-f]{40}`$/)
+    errors << "ENTRY_EVIDENCE_RECORDER_MISSING: #{path}" unless body.match?(/^Evidence recorder identity: \S.+$/)
+    errors << "ENTRY_EVIDENCE_TOOL_BOUNDARY_MISSING: #{path}" unless body.match?(/^Tool boundary: \S.+$/)
+    errors << "ENTRY_EVIDENCE_IDENTITY_ASSURANCE_MISSING: #{path}" unless body.match?(/^Identity assurance: \S.+$/)
+    successful_commands = body.scan(/^Exit status: `0`$/).length
+    errors << "ENTRY_EVIDENCE_COMMAND_TRANSCRIPT_INCOMPLETE: #{path} successful=#{successful_commands}" if successful_commands < 4
+
+    digest = Digest::SHA256.file(path).hexdigest
+    review = read(review_path, errors, "entry review")
+    errors << "ENTRY_EVIDENCE_DIGEST_MISSING: expected=#{digest}" unless review.include?("ENTRY-EVIDENCE-SHA256: #{digest}")
+  rescue Errno::ENOENT, Errno::EACCES
+    # read/Digest diagnostics are normalized above or by this fallback.
+    errors << "ENTRY_EVIDENCE_DIGEST_UNAVAILABLE: #{path}" unless errors.any? { |error| error.include?(path) }
+  end
+
   def validate_plans(plan_paths, errors)
     errors << "PLAN_MISSING: expected at least one plan" if plan_paths.empty?
+    nodes = []
     plan_paths.each do |path|
       body = read(path, errors, "plan")
+      node = parse_plan_node(path, body, errors)
+      nodes << node unless node.nil?
       tasks = body.scan(/<task\b[^>]*>(.*?)<\/task>/m).flatten
       errors << "PLAN_TASK_MISSING: #{path}" if tasks.empty?
       tasks.each_with_index do |task, index|
@@ -238,8 +321,315 @@ module PlanningValidatorSupport
             errors << "PLAN_TASK_FIELD_MISSING: plan=#{path} task=#{index + 1} field=#{field}"
           end
         end
+        automated = task[/<automated>\s*(.*?)\s*<\/automated>/m, 1]
+        rg_invocation_with_escaped_alternation = automated&.lines&.any? do |line|
+          line.split(/\s*(?:&&|\|\||;)\s*/).any? do |invocation|
+            rg_command = invocation[/\brg\b.*\z/]
+            rg_command&.include?("\\|")
+          end
+        end
+        if rg_invocation_with_escaped_alternation
+          errors << "PLAN_RG_ESCAPED_ALTERNATION: plan=#{path} task=#{index + 1}"
+        end
       end
     end
+
+    validate_plan_graph(nodes, errors)
+  end
+
+  def parse_plan_node(path, body, errors)
+    filename = File.basename(path)
+    filename_match = filename.match(/\A(?<phase>\d{2})-(?<plan>\d{2})-PLAN\.md\z/)
+    if filename_match.nil?
+      errors << "PLAN_FILENAME_BAD: #{path}"
+      return nil
+    end
+
+    unless body.start_with?("---\n") || body.start_with?("---\r\n")
+      errors << "PLAN_FRONTMATTER_MISSING: #{path}"
+      return nil
+    end
+    boundary = body.match(/\A---\r?\n(.*?)\r?\n---\r?\n/m)
+    if boundary.nil?
+      errors << "PLAN_FRONTMATTER_UNTERMINATED: #{path}"
+      return nil
+    end
+
+    data = begin
+      YAML.safe_load(
+        boundary[1],
+        permitted_classes: [],
+        permitted_symbols: [],
+        aliases: false
+      )
+    rescue Psych::Exception => error
+      errors << "PLAN_FRONTMATTER_YAML_INVALID: #{path} error=#{error.class}"
+      return nil
+    end
+    unless data.is_a?(Hash)
+      errors << "PLAN_FRONTMATTER_NOT_MAPPING: #{path}"
+      return nil
+    end
+
+    phase = data["phase"]
+    plan = data["plan"]
+    wave = data["wave"]
+    dependencies = data["depends_on"]
+    files = data["files_modified"]
+    read_first = plan_read_first_paths(path, body, errors)
+    valid = true
+
+    unless phase.is_a?(String) && phase.match?(/\A#{Regexp.escape(filename_match[:phase])}-[a-z0-9]+(?:-[a-z0-9]+)*\z/)
+      errors << "PLAN_PHASE_BAD: path=#{path} value=#{phase.inspect}"
+      valid = false
+    end
+    unless plan.is_a?(String) && plan.match?(/\A\d{2}\z/)
+      errors << "PLAN_ID_BAD: path=#{path} value=#{plan.inspect}"
+      valid = false
+    end
+    if plan.is_a?(String) && plan.match?(/\A\d{2}\z/) && plan != filename_match[:plan]
+      errors << "PLAN_ID_FILENAME_MISMATCH: path=#{path} filename=#{filename_match[:plan]} frontmatter=#{plan}"
+      valid = false
+    end
+    unless wave.is_a?(Integer) && wave >= 0
+      errors << "PLAN_WAVE_BAD: path=#{path} value=#{wave.inspect}"
+      valid = false
+    end
+    unless dependencies.is_a?(Array) && dependencies.all? { |value| value.is_a?(String) && value.match?(/\A\d{2}-\d{2}\z/) }
+      errors << "PLAN_DEPENDS_ON_BAD: path=#{path} value=#{dependencies.inspect}"
+      valid = false
+    end
+    unless files.is_a?(Array) && !files.empty? && files.all? { |value| valid_plan_file_path?(value) }
+      errors << "PLAN_FILES_MODIFIED_BAD: path=#{path} value=#{files.inspect}"
+      valid = false
+    end
+
+    if dependencies.is_a?(Array)
+      duplicate_dependencies = duplicates(dependencies)
+      unless duplicate_dependencies.empty?
+        errors << "PLAN_DEPENDENCY_DUPLICATE: path=#{path} ids=#{duplicate_dependencies.sort.join(',')}"
+        valid = false
+      end
+    end
+    if files.is_a?(Array)
+      duplicate_files = duplicates(files)
+      unless duplicate_files.empty?
+        errors << "PLAN_FILES_MODIFIED_DUPLICATE: path=#{path} files=#{duplicate_files.sort.join(',')}"
+        valid = false
+      end
+    end
+    return nil unless valid
+
+    PlanNode.new(
+      id: "#{filename_match[:phase]}-#{plan}",
+      phase: phase,
+      plan: plan,
+      wave: wave,
+      dependencies: dependencies,
+      files: files,
+      read_first: read_first,
+      path: path
+    )
+  end
+
+  def plan_read_first_paths(path, body, errors)
+    blocks = body.scan(/<read_first>\s*(.*?)\s*<\/read_first>/m).flatten
+    paths = blocks.flat_map do |block|
+      block.lines.filter_map do |line|
+        stripped = line.strip
+        next if stripped.empty?
+
+        match = stripped.match(/\A-\s+(.+?)\s*\z/)
+        if match.nil?
+          errors << "PLAN_READ_FIRST_BAD: path=#{path} value=#{stripped.inspect}"
+          next
+        end
+        value = match[1].delete_prefix("`").delete_suffix("`")
+        unless valid_plan_file_path?(value)
+          errors << "PLAN_READ_FIRST_BAD: path=#{path} value=#{value.inspect}"
+          next
+        end
+        value
+      end
+    end
+    # Re-reading one shared prerequisite in separate tasks is intentional and
+    # collapses to one plan-level consumer edge.
+    paths.uniq
+  end
+
+  def valid_plan_file_path?(value)
+    return false unless value.is_a?(String)
+    return false if value.empty? || value.start_with?("/") || value.include?("\\")
+
+    segments = value.split("/", -1)
+    segments.none? { |segment| segment.empty? || segment == "." || segment == ".." }
+  end
+
+  def validate_plan_graph(nodes, errors)
+    grouped = nodes.group_by(&:id)
+    grouped.each do |id, matches|
+      errors << "PLAN_ID_DUPLICATE: id=#{id} paths=#{matches.map(&:path).sort.join(',')}" if matches.length > 1
+    end
+
+    phase_groups = nodes.group_by { |node| node.id.split("-", 2).first }
+    phase_groups.each_value do |phase_nodes|
+      phases = phase_nodes.map(&:phase).uniq
+      if phases.length > 1
+        errors << "PLAN_PHASE_SET_MISMATCH: phases=#{phases.sort.join(',')} paths=#{phase_nodes.map(&:path).sort.join(',')}"
+      end
+    end
+
+    by_id = grouped.transform_values(&:first)
+    nodes.each do |node|
+      node.dependencies.each do |dependency_id|
+        if dependency_id == node.id
+          errors << "PLAN_DEPENDENCY_SELF: plan=#{node.id}"
+          next
+        end
+        dependency = by_id[dependency_id]
+        if dependency.nil?
+          errors << "PLAN_DEPENDENCY_UNKNOWN: plan=#{node.id} dependency=#{dependency_id}"
+          next
+        end
+        unless dependency.wave < node.wave
+          errors << "PLAN_DEPENDENCY_WAVE_NOT_EARLIER: plan=#{node.id} wave=#{node.wave} dependency=#{dependency_id} dependency_wave=#{dependency.wave}"
+        end
+      end
+    end
+
+    plan_dependency_cycles(by_id).each do |cycle|
+      errors << "PLAN_DEPENDENCY_CYCLE: #{cycle.join('->')}"
+    end
+
+    validate_planned_artifact_wiring(nodes, by_id, errors)
+    validate_shared_file_dependency_wiring(nodes, by_id, errors)
+
+    nodes.group_by(&:wave).sort.each do |wave, wave_nodes|
+      owners = Hash.new { |hash, key| hash[key] = [] }
+      wave_nodes.each do |node|
+        node.files.each { |file| owners[file] << node.id }
+      end
+      owners.sort.each do |file, plan_ids|
+        unique_ids = plan_ids.uniq.sort
+        next unless unique_ids.length > 1
+
+        errors << "PLAN_SAME_WAVE_FILE_OVERLAP: wave=#{wave} file=#{file} plans=#{unique_ids.join(',')}"
+      end
+    end
+  end
+
+  # Every file with owners in multiple waves is an incremental ownership chain,
+  # regardless of whether the file already exists in the repository. Wave order
+  # alone is not an executable prerequisite: each later owner must be able to
+  # reach the immediately preceding owner through depends_on. Chaining adjacent
+  # owners makes all earlier mutations transitively reachable without requiring
+  # a redundant complete graph.
+  def validate_shared_file_dependency_wiring(nodes, by_id, errors)
+    owners = Hash.new { |hash, key| hash[key] = [] }
+    nodes.each do |node|
+      node.files.each { |file| owners[file] << node }
+    end
+
+    owners.sort.each do |file, file_nodes|
+      ordered = file_nodes.uniq { |node| node.id }.sort_by { |node| [node.wave, node.id] }
+      next unless ordered.length > 1
+
+      ordered.each_cons(2) do |earlier, later|
+        # Same-wave ambiguity is reported by PLAN_SAME_WAVE_FILE_OVERLAP.
+        next unless earlier.wave < later.wave
+        next if plan_dependency_reachable?(later.id, earlier.id, by_id)
+
+        errors << "PLAN_SHARED_FILE_DEPENDENCY_MISSING: file=#{file} earlier=#{earlier.id} earlier_wave=#{earlier.wave} later=#{later.id} later_wave=#{later.wave}"
+      end
+    end
+  end
+
+  def validate_planned_artifact_wiring(nodes, by_id, errors)
+    producers = Hash.new { |hash, key| hash[key] = [] }
+    nodes.each do |node|
+      node.files.each { |file| producers[file] << node }
+    end
+
+    nodes.sort_by(&:id).each do |consumer|
+      consumer.read_first.sort.each do |file|
+        # Existing files are shared repository inputs or incremental modifications,
+        # not uniquely created planned artifacts.
+        next if File.exist?(File.expand_path(file, Dir.pwd))
+
+        candidates = producers[file]
+        # An absent path with no files_modified owner is an external/generated input;
+        # another validator or the plan's executable preflight owns its availability.
+        next if candidates.empty?
+
+        earlier = candidates.select { |candidate| candidate.wave < consumer.wave }
+        if earlier.empty?
+          # A plan may read and create its own new artifact. A same/later-wave
+          # producer in another plan cannot supply the consumer.
+          next if candidates.any? { |candidate| candidate.id == consumer.id }
+
+          errors << "PLAN_ARTIFACT_DEPENDENCY_MISSING: consumer=#{consumer.id} file=#{file} producer=#{candidates.map(&:id).uniq.sort.join(',')} producer_wave=#{candidates.map(&:wave).uniq.sort.join(',')} consumer_wave=#{consumer.wave}"
+          next
+        end
+
+        latest_wave = earlier.map(&:wave).max
+        latest = earlier.select { |candidate| candidate.wave == latest_wave }
+        if latest.length > 1
+          errors << "PLAN_ARTIFACT_PRODUCER_AMBIGUOUS: consumer=#{consumer.id} file=#{file} producers=#{latest.map(&:id).uniq.sort.join(',')} wave=#{latest_wave}"
+          next
+        end
+
+        # Multiple writers in distinct waves are an explicit incremental chain.
+        # The consumer binds to the latest earlier writer; that writer is itself
+        # checked as a consumer when it declares read_first for the same path.
+        producer = latest.first
+        unless plan_dependency_reachable?(consumer.id, producer.id, by_id)
+          errors << "PLAN_ARTIFACT_DEPENDENCY_MISSING: consumer=#{consumer.id} file=#{file} producer=#{producer.id} producer_wave=#{producer.wave} consumer_wave=#{consumer.wave}"
+        end
+      end
+    end
+  end
+
+  def plan_dependency_reachable?(consumer_id, producer_id, by_id)
+    pending = by_id.fetch(consumer_id).dependencies.dup
+    visited = Set.new
+    until pending.empty?
+      dependency_id = pending.shift
+      next unless visited.add?(dependency_id)
+      return true if dependency_id == producer_id
+
+      dependency = by_id[dependency_id]
+      pending.concat(dependency.dependencies) unless dependency.nil?
+    end
+    false
+  end
+
+  def plan_dependency_cycles(by_id)
+    state = {}
+    stack = []
+    cycles = Set.new
+    visit = lambda do |id|
+      state[id] = :visiting
+      stack << id
+      by_id.fetch(id).dependencies.sort.each do |dependency_id|
+        next unless by_id.key?(dependency_id)
+
+        if state[dependency_id] == :visiting
+          start = stack.index(dependency_id)
+          cycle = stack[start..] + [dependency_id]
+          rotations = cycle[0...-1].each_index.map do |index|
+            body = cycle[0...-1].rotate(index)
+            body + [body.first]
+          end
+          cycles << rotations.min.join("->")
+        elsif state[dependency_id].nil?
+          visit.call(dependency_id)
+        end
+      end
+      stack.pop
+      state[id] = :visited
+    end
+    by_id.keys.sort.each { |id| visit.call(id) if state[id].nil? }
+    cycles.to_a.sort.map { |cycle| cycle.split("->") }
   end
 
   def validate_todo(path, errors, require_empty:, owned_ids: nil)

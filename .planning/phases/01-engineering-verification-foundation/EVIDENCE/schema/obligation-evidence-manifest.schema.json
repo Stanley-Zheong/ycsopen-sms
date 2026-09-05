@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ycsopen-sms.invalid/schema/phase01-obligation-evidence-manifest-v1.json",
+  "title": "Phase 1 exact-seven obligation evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "phase", "owner", "subject_manifest_path",
+    "subject_manifest_digest", "tested_subject_digest", "entries",
+    "runtime_artifact", "ci_locators"
+  ],
+  "properties": {
+    "schema_version": { "const": "phase01-obligation-evidence-manifest-v1" },
+    "phase": { "const": "01-engineering-verification-foundation" },
+    "owner": { "const": "engineering-verification-foundation" },
+    "subject_manifest_path": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json" },
+    "subject_manifest_digest": { "$ref": "#/$defs/sha256" },
+    "tested_subject_digest": { "$ref": "#/$defs/sha256" },
+    "entries": {
+      "type": "array", "minItems": 7, "maxItems": 7,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["obligation_id", "path", "sha256", "status", "case_id", "behavior_id", "catalog_test", "evidence_path"],
+        "properties": {
+          "obligation_id": { "type": "string" }, "path": { "type": "string" },
+          "sha256": { "$ref": "#/$defs/sha256" }, "status": { "const": "PASS" },
+          "case_id": { "type": "string" }, "behavior_id": { "type": "string" },
+          "catalog_test": { "type": "string" }, "evidence_path": { "type": "string" }
+        }
+      }
+    },
+    "runtime_artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "media_type", "size"],
+      "properties": {
+        "path": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/local-chrome-runtime.json" },
+        "sha256": { "$ref": "#/$defs/sha256" }, "media_type": { "const": "application/json" },
+        "size": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ci_locators": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": { "path": { "type": "string" }, "sha256": { "$ref": "#/$defs/sha256" } }
+      }
+    }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
+}

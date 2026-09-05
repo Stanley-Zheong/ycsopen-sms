@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "lib/phase-03/run_checks"
+
+exit Phase03RunChecks.cli(ARGV)
