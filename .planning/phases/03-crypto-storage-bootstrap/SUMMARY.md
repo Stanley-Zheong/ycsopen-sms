@@ -20,16 +20,16 @@ Delivery required check: `Phase 03 portable registry`
 
 - Subject manifest path: `.planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json`
 - Subject inputs: 316.
-- Canonical subject-manifest digest: `52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683`
-- Serialized subject file SHA-256: `4ab907f8f6897533e3967a657ebaf0b57e3d68f141a54a56489793fea7cb1c68`
-- Tested subject digest: `10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe`
+- Canonical subject-manifest digest: `ef4002d2d3a4518c38a52ba97a3e6f482441e8a54bdea82eb5dd082c1bc81bac`
+- Serialized subject file SHA-256: `4a4cc5e45890fe5dccbe0a24b166b5b8f447f0b22f670161aca7eb783129c58c`
+- Tested subject digest: `acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0`
 - Root registry digest: `4b1f32f9e6a2693a5f442cb0f2617f83992423b4a799b2fa319f3f452546edb7`
-- Root aggregate result digest: `84d6b662a53902b3efbff3ec761dc7b3c4cf71d13a8386b8b3a81ad107db9be1`
+- Root aggregate result digest: `9ddf7fa7de8cb49a6110f10cb309bd1bdbdeb7244074bf38cc240f9cdc5a9e3a`
 - Evidence manifest path: `.planning/phases/03-crypto-storage-bootstrap/EVIDENCE/evidence-manifest.json`
-- Evidence manifest SHA-256: `a9ac4a5b5b1df2a931d39d0a4c356e786418151c094182e8b2682c4e2478ee61`
-- GSD goal verification SHA-256: `4a75fc5d4c561298c630a508715c92680fb5a16195528635d65c45e2dff22f11`
-- GSD code review SHA-256: `a4d78f2144e468c304018248988405ae6ef47c565fbfe30ba53593c57714402b`
-- Claude review SHA-256: `13ebf7f5bac86231d22903d230610400028febf844dc60fb36e7443dbbe754a7`
+- Evidence manifest SHA-256: `e6ce5f0998ccc4ef3e758e6fd92fa3487555bdea6cbe855103c55ccb3769bb01`
+- GSD goal verification SHA-256: `cb75444bff6996b6d61e3229d76f90dc5db27c154ccb2f09a5def097525154a2`
+- GSD code review SHA-256: `c07b831535575932891480ec21e4afd3e20d0bc7d1c849e5735ba96bf4a8c4fc`
+- Claude review SHA-256: `881c2484facba40558c93f97816dbaaac61cb76f721d7f8a3b9dcf652d927650`
 
 All four exact obligation summaries are PASS and checksum-bound by the evidence manifest.
 

@@ -1,9 +1,9 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli
-session: 804e630e-6a4b-4d51-b44c-48296e2d4741
+session: 2c99f091-0f05-413b-aa99-1b7d3fdbbdc4
 mode: tool-less-incremental-patch-review
-attempt: 10
+attempt: 11
 status: pass
 blocker: 0
 high: 0
@@ -12,6 +12,35 @@ info: 3
 ---
 
 # Phase 03 Claude review history
+
+## Attempt 11 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 2, INFO 3. Claude reviewed the exact two-file delta after commit `762a36a`: explicit ripgrep provisioning/probing in the Phase 3 CI job and the two matching destructive workflow mutations.
+
+### Attempt 11 explicit confirmations
+
+- Installing the distro `ripgrep` package with `--no-install-recommends` is proportionate to the real regex-engine canary and introduces no third-party repository, `curl | shell`, secret, product runtime or service-image dependency.
+- The two new validator checks and two mutations follow the existing workflow-contract pattern and prevent silent removal of either the installation or executable probe.
+- No Phase 1 lifecycle, product, browser or mobile surface changes in this delta.
+- Main-agent full-file inspection resolves Claude's diff-context caveat: the step is inside `phase-03-portable`, which is fixed to `runs-on: ubuntu-latest`; it is not present in the Phase 1 job or a cross-platform matrix.
+- The supplied current-subject verification is coherent: root 14/14, exact-four 4/4, evidence fixtures 59, delivery 108/104 destructive with 11 workflow cases, and lifecycle 21 + 10 PASS.
+
+### Attempt 11 nonblocking findings
+
+- WARNING: the incremental diff did not display the enclosing job header, so Claude could not independently confirm `ubuntu-latest` from its tool-less input. The repository's full workflow confirms this condition; it is recorded as a static-review boundary, not an implementation gap.
+- WARNING: the Ubuntu archive selects the ripgrep version available for the pinned runner image rather than a separately pinned package version. This is low-risk test-tool drift; the immediate `rg --version` probe and executable alternation canary fail closed on absence or incompatible behavior.
+- INFO: standard signed Ubuntu package installation with no recommended extras is an appropriate supply-chain boundary for a CI-only tool.
+- INFO: install/probe mutation coverage matches the existing delivery-attestation idiom.
+- INFO: no product, browser, mobile or Phase 1 behavior changed.
+
+### Attempt 11 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""` with the exact two-file diff on standard input and review policy in the appended system prompt.
+- Nested tool/file access: none; main-agent full-file inspection independently confirmed the job scope.
+- Session: `2c99f091-0f05-413b-aa99-1b7d3fdbbdc4`.
+- Binding: canonical subject-manifest digest `ef4002d2d3a4518c38a52ba97a3e6f482441e8a54bdea82eb5dd082c1bc81bac`; tested subject `acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0`; evidence manifest file SHA-256 `e6ce5f0998ccc4ef3e758e6fd92fa3487555bdea6cbe855103c55ccb3769bb01`.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 2, INFO 3.
+- Determination: PASS; no product or delivery blocker/high finding.
 
 ## Attempt 10 verdict
 
@@ -274,7 +303,7 @@ Claude explicitly confirmed schema ordering for new artifacts, authenticated hea
 
 | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | 52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683 | 10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe | PASS |
+| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | ef4002d2d3a4518c38a52ba97a3e6f482441e8a54bdea82eb5dd082c1bc81bac | acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0 | PASS |
 
 ## Final verdict
 

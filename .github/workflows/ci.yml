@@ -72,6 +72,11 @@ jobs:
           java-version: "21"
           cache: maven
           cache-dependency-path: core/pom.xml
+      - name: Install Phase 3 contract toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ripgrep
+          rg --version
       - name: Run default backend verification
         run: mvn -f core/pom.xml test
       - name: Verify migration ownership

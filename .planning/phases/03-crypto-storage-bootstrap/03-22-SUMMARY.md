@@ -10,27 +10,27 @@ The evidence producer consumed only that canonical result set and generated exac
 
 - Subject manifest: `.planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json`
 - Subject inputs: 316
-- Canonical subject-manifest digest: `52e1847cb46d035aa493f3afccd3386bef352112a29856d6b5bdf43f270ac683`
-- Serialized subject file SHA-256: `4ab907f8f6897533e3967a657ebaf0b57e3d68f141a54a56489793fea7cb1c68`
-- Tested subject: `10cf0ddfe6d34edbd7bce33b13b66b3a7e09af88129cdc8706d8f3ef0165f3fe`
+- Canonical subject-manifest digest: `ef4002d2d3a4518c38a52ba97a3e6f482441e8a54bdea82eb5dd082c1bc81bac`
+- Serialized subject file SHA-256: `4a4cc5e45890fe5dccbe0a24b166b5b8f447f0b22f670161aca7eb783129c58c`
+- Tested subject: `acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0`
 - Registry: `4b1f32f9e6a2693a5f442cb0f2617f83992423b4a799b2fa319f3f452546edb7`
-- Root result: `84d6b662a53902b3efbff3ec761dc7b3c4cf71d13a8386b8b3a81ad107db9be1`
+- Root result: `9ddf7fa7de8cb49a6110f10cb309bd1bdbdeb7244074bf38cc240f9cdc5a9e3a`
 - Accepted inventory: `9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009`
-- Complete leak result: `5b4d2e1fcc50f99cd359178a11c06bbb6e8931c1eae2e8eb7c4c51327f0d0084`
-- Evidence manifest SHA-256: `a9ac4a5b5b1df2a931d39d0a4c356e786418151c094182e8b2682c4e2478ee61`
+- Complete leak result: `c526ae8eb860132c4d56bb5a17a7f333e73b18d537d0adc09d6b4d39e2826110`
+- Evidence manifest SHA-256: `e6ce5f0998ccc4ef3e758e6fd92fa3487555bdea6cbe855103c55ccb3769bb01`
 
 ## Exact-four evidence
 
 | Obligation | Evidence digest | File SHA-256 | Result |
 | --- | --- | --- | --- |
-| OBL-CRYPTO-STORAGE-001 | `7cb13cfbd499b5ce7f48dfb73d29a15aef407c3154cdfd001d180a4b838593c5` | `9d3ebdd110e8018b1a989e6388a00f56e6444ef920a4f5b59939a5ae9fe27f94` | PASS |
-| OBL-CRYPTO-STORAGE-002 | `7d650030c05c66d9b275008cf2050472bfc5ff4373f0e958ce69a51640b9bf6d` | `5233adcf0347bc8fca3ac3be5acee17bdb77531a915fb856bb460d75eb6ed98e` | PASS |
-| OBL-CRYPTO-STORAGE-003 | `0feb7892fbea31353da8c0f243effc98858aa386641cdb4c4bc0bcdaea046aaa` | `6499bb83df4ae980fbb477c3eecd0abc05b8178ac380b9588c73e627235fface` | PASS |
-| OBL-CRYPTO-STORAGE-004 | `70bbe6f3b78026c7e329710f9fffe77bb90d073b309251ef3eb68f158f5c6969` | `22ba43d6eabb68b9f4439d597b0761dfba178a15b6aea62d4e88c3c6da7fe387` | PASS |
+| OBL-CRYPTO-STORAGE-001 | `79a104d79e269614ce6bda175b03c0dd7c90bd5f718ed2728598cc9232396432` | `10d7dff640cd7ebe8a155dd15d0136d60e8d39e21b13954cc3b5af8e6c962a9a` | PASS |
+| OBL-CRYPTO-STORAGE-002 | `ffcadc3c3ea7aae14782cecaaddeec7bf3742eeb4e27c1a5d371e9cf3d54ccd6` | `efda99114ff1437bc9cf40636aa5744dca2cf646eefb011a3b4adfb8f58e1982` | PASS |
+| OBL-CRYPTO-STORAGE-003 | `11e27b18ebb036ef257135cd7b731969241071a3c38c72c793d0af5064661f1c` | `73920555bcf357d06f740bb96d4036a08761e14eaa1b7b173b6b38bd93e23d7b` | PASS |
+| OBL-CRYPTO-STORAGE-004 | `676b010aa9fb8d29c30948478b5c4c63cb1ab5114a5736c581f14785de2f289c` | `8bc52c1be68b104ab2dfcab9d59749ef89754dd3d797a29596357b5c54623a2f` | PASS |
 
 ## Final correction cycle
 
-Claude Attempt 6 found two product defects missed by Round 9; both remain corrected and regression-covered. GSD Round 11 then found that CI and the generic delivery/lifecycle trust root were not sealed into the Phase 3 subject and were not fully exercised by the required check. The runner now requires an exact 15-file trusted-input set, target-tree delivery validation rejects every missing/content/mode mutation, and CI executes the delivery/lifecycle suites plus the real pre-push gate. GitHub Actions then exposed the test-only Linux `/tmp` authority mismatch; the fixture now uses a trusted user-owned root without changing production policy. The root and evidence above were regenerated after that correction. Final goal verification is PASS at 4/4 and Claude Attempt 10 confirms BLOCKER/HIGH 0/0; the current GSD round is recorded separately in `03-REVIEW.md`.
+Claude Attempt 6 found two product defects missed by Round 9; both remain corrected and regression-covered. GSD Round 11 then closed the CI/delivery trust root. GitHub Actions exposed a test-only Linux `/tmp` authority mismatch and then an undeclared `rg` executable; the fixture now uses a trusted user-owned root, while the Phase 3 job explicitly installs/probes ripgrep and destructive tests reject removal. No production policy changed. The root and evidence above were regenerated after both corrections. Goal verification is PASS at 4/4, GSD Round 14 and Claude Attempt 11 both confirm BLOCKER/HIGH 0/0.
 
 ## Verification
 
@@ -39,5 +39,5 @@ Claude Attempt 6 found two product defects missed by Round 9; both remain correc
 - Exact-four evidence validator — PASS, 4/4.
 - Phase 3 fixture cleanup — PASS.
 - Independent GSD verification — PASS, 4/4.
-- Independent GSD code review — current-subject result in `03-REVIEW.md`.
-- Claude closure review Attempt 10 — PASS, BLOCKER/HIGH 0/0.
+- Independent GSD code review Round 14 — PASS, BLOCKER/HIGH 0/0.
+- Claude closure review Attempt 11 — PASS, BLOCKER/HIGH 0/0.

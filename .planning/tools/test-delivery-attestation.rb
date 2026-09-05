@@ -118,6 +118,8 @@ def phase03_workflow_errors(text)
     ].each do |path|
       errors << "PHASE03_VALIDATOR_TEST_MISSING path=#{path}" unless normalized.include?("ruby #{path}")
     end
+    errors << "PHASE03_RIPGREP_INSTALL_MISSING" unless normalized.include?("apt-get install --yes --no-install-recommends ripgrep")
+    errors << "PHASE03_RIPGREP_PROBE_MISSING" unless normalized.include?("rg --version")
     lifecycle_tokens = [
       "ruby .planning/tools/validate-phase-lifecycle.rb",
       "--phase 03", "--package crypto-storage-bootstrap", "--stage pre-push-exit",
@@ -151,6 +153,8 @@ def assert_phase03_workflow_contract
     "job-condition" => source.sub("  phase-03-portable:\n", "  phase-03-portable:\n    if: false\n"),
     "delivery-test" => source.sub("ruby .planning/tools/test-delivery-attestation.rb", "ruby omitted-delivery-test.rb"),
     "lifecycle-test" => source.sub("ruby .planning/tools/test-phase-lifecycle.rb", "ruby omitted-lifecycle-test.rb"),
+    "ripgrep-install" => source.sub("apt-get install --yes --no-install-recommends ripgrep", "true omitted-ripgrep-install"),
+    "ripgrep-probe" => source.sub("rg --version", "true omitted-ripgrep-probe"),
     "pre-push-command" => source.sub("ruby .planning/tools/validate-phase-lifecycle.rb", "ruby omitted-lifecycle-validator.rb"),
     "pre-push-stage" => source.sub("--stage pre-push-exit", "--stage entry"),
     "phase01-complement" => source.gsub("!= ''", "== ''"),
