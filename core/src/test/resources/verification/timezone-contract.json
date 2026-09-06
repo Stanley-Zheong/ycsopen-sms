@@ -1,0 +1,15 @@
+{
+  "schema_version": "phase01-timezone-v1",
+  "host_default_zone": "America/New_York",
+  "application_zone": "Asia/Shanghai",
+  "mysql_session_zone": "Asia/Shanghai",
+  "iana_zone": "Asia/Shanghai",
+  "expected_local": "2024-03-01T00:00:00+08:00",
+  "expected_offset": "+08:00",
+  "expected_instant": "2024-02-29T16:00:00Z",
+  "serialized_contract": {
+    "iana_zone": "Asia/Shanghai",
+    "offset": "+08:00",
+    "instant": "2024-02-29T16:00:00Z"
+  }
+}

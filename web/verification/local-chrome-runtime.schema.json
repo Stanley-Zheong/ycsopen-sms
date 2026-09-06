@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ycsopen-sms.local/schemas/local-chrome-runtime.schema.json",
+  "title": "Phase 1 standard-path local Google Chrome runtime evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "status", "diagnostic", "run"],
+  "properties": {
+    "schemaVersion": { "const": "phase01-local-chrome-runtime-v1" },
+    "generatedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
+    "status": { "enum": ["PROBED", "PASS"] },
+    "diagnostic": { "type": ["null", "string"] },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "count", "command", "runtime", "scenario", "artifacts"],
+      "properties": {
+        "id": { "const": "LOGIN-SMOKE-V1-local-google-chrome-1440x900" },
+        "count": { "const": 1 },
+        "command": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["version", "playwright"],
+          "properties": {
+            "version": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["executable", "argv", "shell"],
+              "properties": {
+                "executable": { "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
+                "argv": { "const": ["--version"] },
+                "shell": { "const": false }
+              }
+            },
+            "playwright": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["package", "api", "executable", "project", "shell"],
+              "properties": {
+                "package": { "const": "@playwright/test" },
+                "api": { "const": "chromium.launch" },
+                "executable": { "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
+                "project": { "const": "local-google-chrome" },
+                "shell": { "const": false }
+              }
+            }
+          }
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "canonicalPath", "fileType", "executable", "brand", "fullVersion", "major", "playwrightVersion", "viewport", "launch"],
+          "properties": {
+            "path": { "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
+            "canonicalPath": { "const": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
+            "fileType": { "const": "regular" },
+            "executable": { "const": true },
+            "brand": { "const": "Google Chrome" },
+            "fullVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$" },
+            "major": { "type": "integer", "minimum": 1 },
+            "playwrightVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$" },
+            "viewport": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["width", "height"],
+              "properties": { "width": { "const": 1440 }, "height": { "const": 900 } }
+            },
+            "launch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["attempted", "succeeded", "headless", "closed"],
+              "properties": {
+                "attempted": { "const": true },
+                "succeeded": { "const": true },
+                "headless": { "const": true },
+                "closed": { "const": true }
+              }
+            }
+          }
+        },
+        "scenario": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "required": ["subject", "contract", "server", "route", "selectors", "actions", "response", "uiError"],
+          "properties": {
+            "subject": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["manifestPath", "manifestDigest", "testedSubjectDigest", "health"],
+              "properties": {
+                "manifestPath": { "const": ".planning/phases/01-engineering-verification-foundation/EVIDENCE/tested-inputs.json" },
+                "manifestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                "testedSubjectDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                "health": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["scenario_id", "subject_manifest_digest", "tested_subject_digest", "scenario_contract_digest"],
+                  "properties": {
+                    "scenario_id": { "const": "LOGIN-SMOKE-V1" },
+                    "subject_manifest_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                    "tested_subject_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                    "scenario_contract_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                  }
+                }
+              }
+            },
+            "contract": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "scenarioId", "scenarioDigest", "visualRuleId", "visualRuleDigest"],
+              "properties": {
+                "path": { "const": "web/verification/browser-scenarios.json" },
+                "scenarioId": { "const": "LOGIN-SMOKE-V1" },
+                "scenarioDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                "visualRuleId": { "const": "LOGIN-CARD-IN-VIEWPORT-V2" },
+                "visualRuleDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+              }
+            },
+            "server": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["origin", "healthObservedByRunner"],
+              "properties": {
+                "origin": { "type": "string", "pattern": "^http://127\\.0\\.0\\.1:[0-9]+$" },
+                "healthObservedByRunner": { "const": true }
+              }
+            },
+            "route": { "const": "/login" },
+            "selectors": {
+              "type": "array",
+              "minItems": 7,
+              "maxItems": 7,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["key", "testId", "visible"],
+                "properties": {
+                  "key": { "enum": ["page", "card", "username", "password", "remember", "submit", "error"] },
+                  "testId": { "type": "string", "pattern": "^shared-auth-login-[a-z0-9-]+$" },
+                  "visible": { "const": true }
+                }
+              }
+            },
+            "actions": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "target", "status"],
+                "properties": {
+                  "kind": { "enum": ["submit-empty", "fill", "check", "assert-checked", "click", "await-response", "assert-visible"] },
+                  "target": { "enum": ["username", "password", "remember", "submit", "mapped-responder", "error"] },
+                  "status": { "const": "PASS" }
+                }
+              }
+            },
+            "response": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["browserObserved", "method", "path", "status", "contentType", "marker", "body", "bodySha256"],
+              "properties": {
+                "browserObserved": { "const": true },
+                "method": { "const": "POST" },
+                "path": { "const": "/api/v1/console/auth/login" },
+                "status": { "const": 401 },
+                "contentType": { "const": "application/json" },
+                "marker": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "value"],
+                  "properties": { "name": { "const": "X-YCS-Scenario" }, "value": { "const": "LOGIN-SMOKE-V1" } }
+                },
+                "body": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["code", "message"],
+                  "properties": { "code": { "const": "AUTH_INVALID_CREDENTIALS" }, "message": { "const": "用户名或密码错误" } }
+                },
+                "bodySha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+              }
+            },
+            "uiError": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["testId", "text", "visible"],
+              "properties": {
+                "testId": { "const": "shared-auth-login-error" },
+                "text": { "const": "用户名或密码错误，或账号已被锁定" },
+                "visible": { "const": true }
+              }
+            }
+          }
+        },
+        "artifacts": {
+          "type": ["null", "object"],
+          "additionalProperties": false,
+          "required": ["screenshot", "dom", "transcript", "console"],
+          "properties": {
+            "screenshot": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["locator", "mediaType", "contentBase64", "byteLength", "sha256"],
+              "properties": {
+                "locator": { "const": "embedded:screenshot" },
+                "mediaType": { "const": "image/png" },
+                "contentBase64": { "type": "string", "pattern": "^[A-Za-z0-9+/]+={0,2}$", "maxLength": 22369624 },
+                "byteLength": { "type": "integer", "minimum": 1, "maximum": 16777216 },
+                "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+              }
+            },
+            "dom": { "$ref": "#/$defs/embeddedArtifact" },
+            "transcript": { "$ref": "#/$defs/embeddedArtifact" },
+            "console": { "$ref": "#/$defs/embeddedArtifact" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "embeddedArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locator", "content", "sha256"],
+      "properties": {
+        "locator": { "type": "string", "pattern": "^embedded:[a-z-]+$" },
+        "content": {},
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

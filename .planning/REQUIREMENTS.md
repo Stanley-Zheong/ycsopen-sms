@@ -182,7 +182,7 @@ Atomic sub-obligations may belong to focused peer phases, and the top-level grou
 | REQ-NFR-DATA-PROTECTION | Sensitive identity, contact, credential, and financial data is encrypted, masked, key-managed, and access-audited. | Phase 3 |
 | REQ-NFR-RELIABILITY | Stateless operation, dependency resilience, multi-instance behavior, failover, rollback, and recovery are proven. | Phase 53 |
 | REQ-NFR-EXTENSIBILITY | Connector, routing, billing, and review extension contracts are plugin/configuration based and proven with a conformance implementation. | Phase 55 |
-| REQ-NFR-COMPATIBILITY | Supported runtime, browser, desktop layout, Chinese UI, and timezone semantics have executable checks. | Phase 1 |
+| REQ-NFR-COMPATIBILITY | Phase 1 provides fail-closed runtime verification for the current Google Chrome installed at the standard local path, one 1440x900 desktop layout, simplified-Chinese copy/export, and UTC+8/IANA-timezone contracts; Phase 56 reruns those contracts against all delivered production surfaces and completes product acceptance. No browser is downloaded, no ChromeDriver is used, and Edge, Safari, Firefox, IE, Chromium, and other browsers are unsupported and outside acceptance. | Phase 1 (verification foundation); Phase 56 (product acceptance) |
 | REQ-NFR-OBSERVABILITY | Required business events, traces, metrics, logs, alerts, and source-consistent aggregates are implemented and proven. | Phase 54 |
 | REQ-NFR-RETENTION | Partitioned hot data and encrypted cold archives retain, restore, search, and export regulated evidence. | Phase 47 |
 | REQ-NFR-ERROR-IDEMPOTENCY | All specified failures have consistent behavior and repeated submissions cannot duplicate send or charge. | Phase 23 |

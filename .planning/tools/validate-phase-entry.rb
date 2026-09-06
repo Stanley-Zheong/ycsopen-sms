@@ -131,7 +131,7 @@ if errors.empty?
   end
 
   if errors.empty?
-    puts "phase_entry=PASS phase=#{phase_token} package=#{package} obligations=#{owned_ids.length} plans=#{plan_paths.length} ui_stage=#{options[:ui] ? 'design' : 'not-applicable'} schema_claims=#{File.file?(File.join(phase_dir, 'SCHEMA-CLAIMS.md')) ? 'declared' : 'none'}"
+    puts "phase_entry=PASS phase=#{phase_token} package=#{package} obligations=#{owned_ids.length} plans=#{plan_paths.length} dependencies=#{dependency_map.fetch(phase_number, []).length} dependency_delivery=live-annotated-attestation ui_stage=#{options[:ui] ? 'design' : 'not-applicable'} schema_claims=#{File.file?(File.join(phase_dir, 'SCHEMA-CLAIMS.md')) ? 'declared' : 'none'}"
     exit 0
   end
 end

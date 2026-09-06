@@ -121,9 +121,11 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 
 1. For a production UI phase, run `/usr/bin/env ruby .planning/tools/validate-ui-contract.rb --phase <NN> --package <package-id> --stage production` and require PASS. This reruns design plus React/real-browser/executed-evidence validation. Phase 2 instead reruns its scoped `--stage design` gate because it owns no React implementation.
 2. Confirm the phase directory and implementation diff contain no unrelated work.
-3. Record final commands and evidence in `<NN>-VERIFICATION.md` and `SUMMARY.md`.
+3. Record final commands and evidence in `<NN>-VERIFICATION.md`. Committed evidence binds the canonical target-tree `tested-inputs.json`, `subject_manifest_digest`, and `tested_subject_digest`; it never claims or contains its own final commit identity.
 4. Confirm GSD and Claude have final blocking-free results and no review cycle is left in escalated/unresolved state.
-5. Confirm the scoped TODO query is empty.
-6. Create one atomic phase commit that includes specification, design, decisions, code, tests, and evidence references.
-7. Push the commit to the configured GitHub remote and record the remote branch and commit SHA in `SUMMARY.md`.
-8. Advance `STATE.md` only after the remote commit is visible.
+5. Confirm the scoped TODO query is empty except for the one reserved external-delivery item.
+6. Create one atomic phase commit that includes specification, design, decisions, code, tests, and evidence references. Do not create a second implementation commit to record the first commit's identity.
+7. Before that commit, `SUMMARY.md` records only the configured remote name/URL, full branch ref, deterministic `refs/tags/ycsopen-sms/phase-<NN>/delivery` locator, PR locator, and required check name; final commit identity exists exclusively in the later external tag.
+8. Push the one commit, create and push one annotated delivery tag targeting it, and place phase/package/branch/commit/tree, subject-manifest path/digest, tested-subject digest, evidence-manifest path/digest, PR/check locators, tagger identity, external check actor, and `PASS` in the tag payload.
+9. Run the repository delivery-attestation validator. It resolves the configured remote live, requires branch target equality with the peeled annotated-tag target, fetches that target into an isolated object store, safely derives the registry-owned input union without executing target code, recomputes every target-tree path/mode/SHA-256/role plus subject/evidence/review digests, and independently resolves the PR/check result and actor.
+10. Only that live PASS closes the reserved external-delivery TODO in the effective scoped query and permits `STATE.md` to advance. Local branch, tracking ref, commit, tag, status, or fixture state never proves delivery.

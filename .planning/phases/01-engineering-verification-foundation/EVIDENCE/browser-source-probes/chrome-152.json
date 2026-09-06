@@ -1,0 +1,44 @@
+{
+  "schema_version": "phase01-browser-source-probe-v1",
+  "phase": "01-engineering-verification-foundation",
+  "criterion_id": "ENTRY-02-GATE-D-CHROME-PROBES",
+  "probe_id": "chrome-152",
+  "status": "PASS",
+  "probe_scope": "identity-only; viewport cells are Plan 01-06 execution evidence",
+  "brand": "Google Chrome for Testing",
+  "full_version": "152.0.7977.64",
+  "major": 152,
+  "platform": "mac-arm64",
+  "source": {
+    "metadata_url": "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json",
+    "metadata_sha256": "d4140438a688ff83c3831f501232f7d3615b1fad21a465d0dc6bf0f78c3b7994",
+    "browser_url": "https://storage.googleapis.com/chrome-for-testing-public/152.0.7977.64/mac-arm64/chrome-mac-arm64.zip",
+    "browser_archive_sha256": "10033804338bd0a5aa098149a8dd64f3f2e0e8b201bf3d400d7c17d067ff696f",
+    "driver_url": "https://storage.googleapis.com/chrome-for-testing-public/152.0.7977.64/mac-arm64/chromedriver-mac-arm64.zip",
+    "driver_archive_sha256": "9e8b67036bf3d744feb97d5711a6f6ce40855d9554e93adfa4a869aa69677ef3"
+  },
+  "runner": {
+    "adapter_id": "phase01-chrome-entry-producer-v1",
+    "mode": "local-direct",
+    "implementation": ".planning/tools/produce-phase-01-chrome-entry.rb",
+    "argv_policy": "fixed-code-owned",
+    "shell": false,
+    "profile_relative_path": "profiles/chrome-152"
+  },
+  "runtime": {
+    "browser_command_version": "Google Chrome for Testing 152.0.7977.64",
+    "driver_command_version": "ChromeDriver 152.0.7977.64",
+    "browser_executable_relative_path": "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "browser_executable_sha256": "4ce888aa3648db24dcea8704a07f364b4d394d29176fb85c8f4b3fc8b0c19a10",
+    "driver_executable_relative_path": "chromedriver-mac-arm64/chromedriver",
+    "driver_executable_sha256": "3bc8528287f1f82ff05596e444542524a2cca47fe3cd70e843c896c7afaa259a",
+    "webdriver": {
+      "session_created": true,
+      "session_id_sha256": "460afb8addb9c4a2edf353526553210f89d45b1ef39d14c26a0b268350a84970",
+      "browser_name": "chrome",
+      "browser_version": "152.0.7977.64",
+      "platform_name": "mac",
+      "chromedriver_version": "152.0.7977.64"
+    }
+  }
+}

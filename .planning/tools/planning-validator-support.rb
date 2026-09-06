@@ -3,7 +3,9 @@
 
 require "digest"
 require "json"
+require "open3"
 require "pathname"
+require "rbconfig"
 require "set"
 
 module PlanningValidatorSupport
@@ -154,19 +156,42 @@ module PlanningValidatorSupport
       summary_path = File.join(directory, "SUMMARY.md")
       verification_path = File.join(directory, "#{token}-VERIFICATION.md")
       todo_path = File.join(directory, "TODO.md")
-      summary = read(summary_path, errors, "dependency summary")
       verification = read(verification_path, errors, "dependency verification")
       validate_todo(todo_path, errors, require_empty: true)
-      unless summary.match?(/Remote(?: commit)? SHA:\s*`?[0-9a-f]{40}`?/i)
-        errors << "DEPENDENCY_REMOTE_SHA_MISSING: #{summary_path}"
-      end
-      unless summary.match?(/Remote(?: URL)?:\s*\S+/i)
-        errors << "DEPENDENCY_REMOTE_MISSING: #{summary_path}"
-      end
+      read(summary_path, errors, "dependency summary")
       unless verification.match?(/^## Verdict\s*\n+PASS\s*$/)
         errors << "DEPENDENCY_VERIFICATION_NOT_PASS: #{verification_path}"
       end
+      validate_dependency_delivery_attestation(root, token, directory, summary_path, errors)
     end
+  end
+
+  def validate_dependency_delivery_attestation(root, phase_token, directory, summary_path, errors)
+    validator = File.join(root, ".planning/tools/validate-delivery-attestation.rb")
+    unless File.file?(validator)
+      errors << "DEPENDENCY_DELIVERY_VALIDATOR_MISSING: #{validator}"
+      return
+    end
+    evidence_manifest = File.join(directory, "EVIDENCE/evidence-manifest.json")
+    stdout, stderr, status = Open3.capture3(
+      RbConfig.ruby,
+      validator,
+      "--phase", phase_token,
+      "--summary", repository_relative(root, summary_path),
+      "--evidence-manifest", repository_relative(root, evidence_manifest),
+      "--require-pr-check-pass",
+      chdir: root
+    )
+    return if status.success?
+
+    diagnostics = (stdout + stderr).lines.map(&:strip).reject(&:empty?).first(8).join(" | ")
+    errors << "DEPENDENCY_DELIVERY_ATTESTATION_INVALID: phase=#{phase_token} diagnostics=#{diagnostics}"
+  rescue Errno::ENOENT => error
+    errors << "DEPENDENCY_DELIVERY_ATTESTATION_EXECUTION_FAILED: phase=#{phase_token} error=#{error.class}"
+  end
+
+  def repository_relative(root, path)
+    Pathname(File.expand_path(path)).relative_path_from(Pathname(File.expand_path(root))).to_s
   end
 
   def catalog_records(path, errors)

@@ -1,0 +1,58 @@
+{
+  "schema_version": "phase01-local-chrome-entry-v1",
+  "phase": "01-engineering-verification-foundation",
+  "criterion_id": "ENTRY-LOCAL-CHROME",
+  "status": "PASS",
+  "runner": {
+    "id": "phase01-local-chrome-entry-producer-v1",
+    "implementation": ".planning/tools/produce-phase-01-chrome-entry.rb",
+    "argv_policy": "fixed-code-owned",
+    "shell": false,
+    "network_access": false
+  },
+  "chrome": {
+    "executable_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "canonical_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "file_type": "regular",
+    "executable": true,
+    "mode": "0775",
+    "owner_uid": 501,
+    "current_uid": 501,
+    "version_argv": [
+      "<standard-google-chrome>",
+      "--version"
+    ],
+    "version_output": "Google Chrome 151.0.7922.174",
+    "brand": "Google Chrome",
+    "full_version": "151.0.7922.174",
+    "major": 151
+  },
+  "synthetic_launch": {
+    "status": "PASS",
+    "exit_code": 0,
+    "timed_out": false,
+    "completion_mode": "marker-observed-graceful-stop",
+    "marker": "YCSOPEN_SMS_PHASE01_LOCAL_CHROME_OK",
+    "marker_observed": true,
+    "profile_mode": "0700",
+    "profile_owner_uid": 501,
+    "current_uid": 501,
+    "synthetic_page_mode": "0600",
+    "command_identity": [
+      "<standard-google-chrome>",
+      "--headless=new",
+      "--disable-background-networking",
+      "--disable-component-update",
+      "--disable-default-apps",
+      "--disable-sync",
+      "--metrics-recording-only",
+      "--host-resolver-rules=MAP * ~NOTFOUND",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--user-data-dir=<isolated-0700-profile>",
+      "--dump-dom",
+      "file://<synthetic-local-page>"
+    ],
+    "stdout_sha256": "ae410319182a9daee1c47c0bf769c35e2e4b7f48e4dcba75c61b8f22c6ca532c"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": "phase01-evidence-mutations-v1",
+  "mutations": [
+    { "id": "wrong_stale_subject", "error_id": "EVIDENCE_TESTED_SUBJECT_DIGEST_MISMATCH" },
+    { "id": "missing_input", "error_id": "SUBJECT_INPUT_MISSING" },
+    { "id": "extra_input", "error_id": "SUBJECT_INPUT_EXTRA" },
+    { "id": "content_mismatch", "error_id": "SUBJECT_CONTENT_MISMATCH" },
+    { "id": "mode_mismatch", "error_id": "SUBJECT_MODE_MISMATCH" },
+    { "id": "illegal_exclusion", "error_id": "SUBJECT_ILLEGAL_EXCLUSION" },
+    { "id": "manifest_digest_mismatch", "error_id": "EVIDENCE_SUBJECT_MANIFEST_DIGEST_MISMATCH" },
+    { "id": "admission_replacement", "error_id": "GATE_D_ADMISSION_DIGEST_MISMATCH" },
+    { "id": "gate_d_mode_drift", "error_id": "GATE_D_ADMISSION_MODE_MISMATCH" },
+    { "id": "accepted_digest_mismatch", "error_id": "GATE_D_ACCEPTED_ADMISSION_DIGEST_MISMATCH" },
+    { "id": "probe_artifact_digest_mismatch", "error_id": "GATE_D_PROBE_DIGEST_MISMATCH" },
+    { "id": "malformed_evidence", "error_id": "EVIDENCE_MISSING_FIELD" },
+    { "id": "stale_running", "error_id": "EVIDENCE_STALE_RUNNING" },
+    { "id": "checksum_mismatch", "error_id": "EVIDENCE_ARTIFACT_CHECKSUM_MISMATCH" },
+    { "id": "secret_bearing_output", "error_id": "EVIDENCE_SECRET_DETECTED" },
+    { "id": "pass_with_nonzero", "error_id": "EVIDENCE_PASS_EXIT_MISMATCH" },
+    { "id": "fail_status", "error_id": "EVIDENCE_STATUS_FAIL" },
+    { "id": "blocked_status", "error_id": "EVIDENCE_STATUS_BLOCKED" },
+    { "id": "final_commit_identity", "error_id": "EVIDENCE_FORBIDDEN_FIELD" }
+  ]
+}

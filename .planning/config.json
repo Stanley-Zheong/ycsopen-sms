@@ -1,0 +1,7 @@
+{
+  "workflow": {
+    "_auto_chain_active": false,
+    "parallelization": false,
+    "use_worktrees": false
+  }
+}

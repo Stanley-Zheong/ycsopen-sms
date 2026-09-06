@@ -1,0 +1,50 @@
+{
+  "schema_version": "phase01-browser-source-admission-v1",
+  "phase": "01-engineering-verification-foundation",
+  "criterion_id": "ENTRY-02-GATE-D-CHROME-PROBES",
+  "status": "PASS",
+  "probe_scope": "identity-only; viewport cells are Plan 01-06 execution evidence",
+  "runner": {
+    "adapter_id": "phase01-chrome-entry-producer-v1",
+    "mode": "local-direct",
+    "implementation": ".planning/tools/produce-phase-01-chrome-entry.rb",
+    "argv_policy": "fixed-code-owned",
+    "shell": false
+  },
+  "metadata": {
+    "url": "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json",
+    "sha256": "d4140438a688ff83c3831f501232f7d3615b1fad21a465d0dc6bf0f78c3b7994"
+  },
+  "probes": [
+    {
+      "id": "chrome-151",
+      "major": 151,
+      "path": "EVIDENCE/browser-source-probes/chrome-151.json",
+      "full_version": "151.0.7922.138",
+      "source": {
+        "platform": "mac-arm64",
+        "metadata_url": "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json",
+        "metadata_sha256": "d4140438a688ff83c3831f501232f7d3615b1fad21a465d0dc6bf0f78c3b7994",
+        "browser_url": "https://storage.googleapis.com/chrome-for-testing-public/151.0.7922.138/mac-arm64/chrome-mac-arm64.zip",
+        "browser_archive_sha256": "a75add0d61f398ac7ec51237a10a8369688e3b78e8467612c3cfa5205e29abef",
+        "driver_url": "https://storage.googleapis.com/chrome-for-testing-public/151.0.7922.138/mac-arm64/chromedriver-mac-arm64.zip",
+        "driver_archive_sha256": "7019d73dad20c0b85362930bce64fbb514d33f991020cafd83c0b67b1340b64d"
+      }
+    },
+    {
+      "id": "chrome-152",
+      "major": 152,
+      "path": "EVIDENCE/browser-source-probes/chrome-152.json",
+      "full_version": "152.0.7977.64",
+      "source": {
+        "platform": "mac-arm64",
+        "metadata_url": "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json",
+        "metadata_sha256": "d4140438a688ff83c3831f501232f7d3615b1fad21a465d0dc6bf0f78c3b7994",
+        "browser_url": "https://storage.googleapis.com/chrome-for-testing-public/152.0.7977.64/mac-arm64/chrome-mac-arm64.zip",
+        "browser_archive_sha256": "10033804338bd0a5aa098149a8dd64f3f2e0e8b201bf3d400d7c17d067ff696f",
+        "driver_url": "https://storage.googleapis.com/chrome-for-testing-public/152.0.7977.64/mac-arm64/chromedriver-mac-arm64.zip",
+        "driver_archive_sha256": "9e8b67036bf3d744feb97d5711a6f6ce40855d9554e93adfa4a869aa69677ef3"
+      }
+    }
+  ]
+}

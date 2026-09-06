@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ycsopen-sms.invalid/schema/phase01-verification-aggregate-v1.json",
+  "title": "Phase 1 verification aggregate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "run_id", "phase", "check_ids", "evidence_paths", "evidence_sha256s", "subject_manifest_path",
+    "subject_manifest_digest", "tested_subject_digest", "status", "errors"
+  ],
+  "properties": {
+    "schema_version": { "const": "phase01-verification-aggregate-v1" },
+    "run_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+    "phase": { "const": "01-engineering-verification-foundation" },
+    "check_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "evidence_paths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "evidence_sha256s": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" } },
+    "subject_manifest_path": { "type": "string", "minLength": 1 },
+    "subject_manifest_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "tested_subject_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "status": { "enum": ["PASS", "FAIL", "BLOCKED"] },
+    "errors": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+  }
+}
