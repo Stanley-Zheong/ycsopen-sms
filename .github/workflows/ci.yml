@@ -123,6 +123,10 @@ jobs:
   phase-03-real-integration:
     name: Phase 03 real integration
     runs-on: ubuntu-latest
+    env:
+      PHASE03_SERVICE_PLATFORM: linux/amd64
+      PHASE03_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
+      PHASE03_MINIO_IMAGE: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     steps:
       - uses: actions/checkout@v4
       - name: Verify checked-out event commit
@@ -138,6 +142,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             build-essential cmake default-mysql-client libssl-dev
+      - name: Prepare digest-pinned service images
+        run: |
+          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
+          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MINIO_IMAGE"
       - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
         run: >-
           mvn -f core/pom.xml -Pphase03-integration

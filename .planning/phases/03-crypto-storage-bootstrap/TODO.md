@@ -49,6 +49,7 @@ Every item is open at entry. A checkbox may close only with the cited executable
 - [x] Aggregate-review CR-06: legacy message plaintext/hash mismatch cannot pass BACKFILLED or VERIFIED — Evidence: focused and real destructive migration state tests PASS; Round 4 review traces exact ASCII/SHA-256 predicates.
 - [x] Aggregate-review CR-07: a magic-only or wrong-length YCSE value cannot pass as a current message envelope — Evidence: focused and real destructive migration state tests PASS; Round 4 review traces `EnvelopeCodec` and fixed ciphertext-length validation.
 - [x] Claude-review CR-08: whole-target message state validation does not take an unbounded `FOR UPDATE` lock — Evidence: SQL-shape regression and migration tests 11/11 PASS; Round 4 review confirms the non-locking scan and retained bounded row-lock/CAS fences.
+- [ ] CI replay CR-09: a clean runner prepares the locked MySQL and MinIO platform images before the real fixture starts — Evidence: run `34008602025` failed closed with `SERVICE_IMAGE_UNAVAILABLE`; pending corrected synthetic-merge replay.
 
 - [x] `message_tasks.mobile_encrypted` legacy plaintext is migrated before its target can reach COMPLETE — Evidence: unit migration 11/11 and real migration 2/2 PASS; COMPLETE rejects every non-current or invalidly bound row.
 - [x] System and tenant blacklist blind-index scopes are both queried with whitelist precedence intact — Evidence: `BlindIndexLookupServiceTest` 7/7 PASS and real protected-persistence lookup regression PASS.

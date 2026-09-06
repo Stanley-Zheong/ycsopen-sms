@@ -48,3 +48,14 @@ The reconsideration closed the prior migration objection and returned `BLOCKER 0
 - `git diff --check`: PASS before report synchronization.
 
 The remaining proof boundary is the GitHub synthetic-merge CI run after the corrective commit is pushed.
+
+## CR-09 delivery-environment review
+
+Run `34008602025` proved the direct real-integration job did not prepare its locked Docker images on a clean hosted runner. After the root cause and correction were recorded in the solution, Claude reviewed only the four-file CR-09 delta.
+
+- Session: `d822fa2c-f2d8-44cb-8881-703ca6960bc5`.
+- Verdict: `BLOCKER 0 / HIGH 0`.
+- Confirmed: the step runs before Maven, pulls only MySQL and MinIO, pins `linux/amd64` and immutable digests, fails closed under the Actions shell, preserves fixture validation, and does not restore the evidence runner or add Redis/implicit test downloads.
+- Static boundary: Claude could not inspect whether the two digest strings matched the fixture constants. A repository-executed Ruby contract query confirmed exact equality for both MySQL and MinIO.
+
+CR-09 remains open until a fresh synthetic-merge real-integration job executes all seven named suites with zero failures, errors and skips.
