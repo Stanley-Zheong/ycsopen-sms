@@ -84,15 +84,21 @@ class Phase03Pkcs11IntegrationTest {
             Phase03ServiceHarness.CommandResult proof = Phase03ServiceHarness.runChecked(
                     List.of(javaExecutable.toString(), "-cp", classpath,
                             Phase03Pkcs11IntegrationTest.class.getName(), "real-proof"), environment);
-            String output = proof.stdout().strip();
-            assertThat(output).matches("PHASE03_PKCS11_PASS source_sha256=[a-f0-9]{64} "
-                    + "runtime_sha256=[a-f0-9]{64} mechanism_sha256=[a-f0-9]{64} "
-                    + "attribute_sha256=[a-f0-9]{64} counts=983040,983041,1048576,1048576,1 "
-                    + "concurrency=16");
-            assertThat(output.toLowerCase()).doesNotContain(
-                    "pin", "password", "secret", "alias", "path", "library=", "token=", "provider=");
+            validatedSanitizedProof(proof.stdout());
             assertThat(PHYSICAL_HSM_LIMITATION).contains("no physical-HSM certification");
         }
+    }
+
+    static String validatedSanitizedProof(String output) {
+        assertThat(output).isNotNull();
+        String sanitized = output.strip();
+        assertThat(sanitized).matches("PHASE03_PKCS11_PASS source_sha256=[a-f0-9]{64} "
+                + "runtime_sha256=[a-f0-9]{64} mechanism_sha256=[a-f0-9]{64} "
+                + "attribute_sha256=[a-f0-9]{64} counts=983040,983041,1048576,1048576,1 "
+                + "concurrency=16");
+        assertThat(sanitized.toLowerCase()).doesNotContain(
+                "pin", "password", "secret", "alias", "path", "library=", "token=", "provider=");
+        return sanitized;
     }
 
     public static void main(String[] args) throws Exception {

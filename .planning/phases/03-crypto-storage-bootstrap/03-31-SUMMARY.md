@@ -17,4 +17,4 @@ The correction covers atomic legacy message migration, global/current-tenant bla
 
 ## Remaining TODO
 
-The remaining unchecked rows describe one external delivery boundary: push the latest correction and obtain passing synthetic-merge Backend/portable, real-service and Web jobs. The first replay passed four jobs and exposed a missing clean-runner image-preparation prerequisite; CR-09 records the fixed solution. Phase 03 is not complete until the fresh replay passes, those TODO rows are checked and the physical `- [ ]` query is empty.
+The remaining unchecked rows describe one external delivery boundary: push the latest correction and obtain passing synthetic-merge Backend/portable, real-service and Web jobs. The first three replays successively exposed clean-runner image preparation, classic-Docker MinIO identity and clean artifact-scan bootstrap defects; CR-09 through CR-11 record their solution-first corrections. Phase 03 is not complete until the fresh replay passes, those TODO rows are checked and the physical `- [ ]` query is empty.

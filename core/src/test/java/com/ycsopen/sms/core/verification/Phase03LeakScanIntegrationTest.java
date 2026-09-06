@@ -116,15 +116,33 @@ class Phase03LeakScanIntegrationTest {
             environment.put("PHASE03_MINIO_USER", minio.username());
             environment.put("PHASE03_MINIO_PASSWORD", minio.password());
 
-            Phase03ServiceHarness.runChecked(List.of("/usr/bin/env", "ruby",
-                    repositoryRoot().resolve(".planning/tools/scan-phase-03-artifacts.rb").toString(),
-                    "--phase-dir", ".planning/phases/03-crypto-storage-bootstrap",
-                    "--generated-root", "core/target/phase03",
-                    "--output", ARTIFACT_REPORT), Map.of());
             // Reuse the real integration provisioner; it creates the purpose-separated keys and
             // database metadata consumed below without exposing fixture credentials to this JVM.
-            Phase03ServiceHarness.runChecked(List.of(java.toString(), "-cp", classpath,
-                    Phase03Pkcs11IntegrationTest.class.getName(), "real-proof"), environment);
+            String pkcs11Proof = Phase03Pkcs11IntegrationTest.validatedSanitizedProof(
+                    Phase03ServiceHarness.runChecked(List.of(
+                            java.toString(), "-cp", classpath,
+                            Phase03Pkcs11IntegrationTest.class.getName(), "real-proof"), environment)
+                            .stdout());
+
+            // On a clean runner this is the first real report below the generated root. Give the
+            // fail-closed artifact scanner a current-run input, never a committed placeholder.
+            Path expectedGeneratedRoot = repositoryRoot().toRealPath()
+                    .resolve("core/target/phase03");
+            Path generatedRoot = expectedGeneratedRoot.toRealPath();
+            if (!generatedRoot.equals(expectedGeneratedRoot)) {
+                throw new IllegalStateException("generated report root is not repository owned");
+            }
+            Path scanInput = Files.createTempFile(generatedRoot, "pkcs11-real-proof-", ".txt");
+            try {
+                Files.writeString(scanInput, pkcs11Proof + "\n", StandardCharsets.UTF_8);
+                Phase03ServiceHarness.runChecked(List.of("/usr/bin/env", "ruby",
+                        repositoryRoot().resolve(".planning/tools/scan-phase-03-artifacts.rb").toString(),
+                        "--phase-dir", ".planning/phases/03-crypto-storage-bootstrap",
+                        "--generated-root", "core/target/phase03",
+                        "--output", ARTIFACT_REPORT), Map.of());
+            } finally {
+                Files.deleteIfExists(scanInput);
+            }
             output = Phase03ServiceHarness.runChecked(List.of(java.toString(), "-cp", classpath,
                     Phase03LeakScanIntegrationTest.class.getName(), "real-proof"), environment)
                     .stdout().strip();

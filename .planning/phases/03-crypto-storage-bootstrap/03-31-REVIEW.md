@@ -170,6 +170,22 @@ No issues found.
 Remote synthetic-merge CI remains an external delivery gate in `TODO.md`; its pending execution is
 not a source-code review defect and does not alter the Round 4 BLOCKER/HIGH verdict.
 
+## CR-11 focused follow-up
+
+The third synthetic-merge replay exposed `REPORTS_INPUTS_EMPTY` only after the tracked generated
+files had been removed. A focused independent review checked the solution before and after both
+external-review findings. The final implementation:
+
+- consumes only the same run's closed-format, sanitized PKCS#11 real-proof output;
+- centralizes that format check in the producer test instead of copying its numeric contract;
+- relies on the already successful `startAll()` service-owned directory creation, then requires the
+  generated root's real path to equal the repository path before any write;
+- leaves the Ruby scanner's empty-input, symlink, type, count and size rejection unchanged; and
+- removes the temporary report in `finally`.
+
+The final focused verdict is PASS with `BLOCKER 0 / HIGH 0`. The clean local real-profile replay
+executes the leak suite with zero skips; remote acceptance remains the physical TODO boundary.
+
 ---
 
 _Reviewed: 2026-09-06T03:09:14Z_

@@ -71,3 +71,16 @@ Run `34008949254` proved image preparation works and exposed a classic-Docker po
 - Independent correction review: PASS; service-contract test 15 cases / 70 assertions, zero failures, errors or skips.
 
 CR-10 remains open only for the fresh classic-Docker synthetic-merge replay.
+
+## CR-11 clean artifact-scan bootstrap review
+
+Run `34009512062` passed image preparation and MinIO identity validation, then exposed a clean-output ordering defect: the real leak integration invoked the fail-closed artifact scanner before the current run had produced any report under `core/target/phase03`.
+
+- Initial session `a7cccfd9-a681-4e1d-a1c7-2297c4e27ef1` reported one directory-existence BLOCKER and one duplicated-output-contract HIGH.
+- The valid shared-contract finding was corrected by moving the closed PKCS#11 PASS grammar and sensitive-field rejection into `Phase03Pkcs11IntegrationTest.validatedSanitizedProof`, which both the producer and leak consumer now call.
+- An intermediate explicit `createDirectories` response was rejected by the independent reviewer because it could follow an existing external `core/target` symlink before containment validation. That call was removed. Successful `startAll()` already proves the service-owned generated root exists; the leak test resolves it and requires exact equality with the repository path before writing.
+- Final session `11172308-7970-4d0d-af9f-7cb9406d34a7`: `BLOCKER 0 / HIGH 0`.
+- Final independent focused review: PASS, `BLOCKER 0 / HIGH 0`.
+- Executable proof: artifact-scanner destructive fixtures 24/24 PASS; `mvn -f core/pom.xml -Pphase03-integration -Dtest=Phase03LeakScanIntegrationTest clean test` executes 1 test with zero failures, errors, or skips; the temporary `pkcs11-real-proof-*.txt` input is absent after completion.
+
+CR-11 remains open only for the fresh synthetic-merge replay of all seven named real suites.
