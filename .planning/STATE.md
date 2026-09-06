@@ -1,3 +1,12 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: YCSOpen SMS v1.0
+status: executing
+last_updated: "2026-09-06"
+completion_metric: scoped_todo_empty
+---
+
 # Project State
 
 ## Project reference
@@ -15,7 +24,7 @@
 **Execution authorization**: Granted. The second independent review records `8 PASS / 0 BLOCKER`, and the real bootstrap exits zero for seven owned obligations and 13 plans. The former CfT source-chain verdict and JSON remain superseded history and do not enter current subject/evidence.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
-No schedule, effort, staffing, velocity, completion-date, progress-bar, or percentage status is maintained.
+The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
@@ -57,6 +66,7 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 - Trial quota is disconnected from sending.
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
+- Phase 03 is complete: production composition covers protected persistence, object storage, purpose-separated PKCS#11 keys, rotation/recovery, signed resumable migration and five-surface leak scanning. Its active validation contract matches the current test topology; both correction runs passed all five PR jobs, and no generated `core/target` output is tracked.
 
 ## Authoritative TODO seeds
 
@@ -89,6 +99,6 @@ No schedule, effort, staffing, velocity, completion-date, progress-bar, or perce
 
 ## Session continuity
 
-**Resume from**: `.planning/ROADMAP.md`, Phase 1.
+**Resume from**: Phase 4 entry validation. Reuse the corrected cadence: solution/spec before code, focused checks per change, one affected-suite batch check, and aggregate independent/Claude review at the phase boundary.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.

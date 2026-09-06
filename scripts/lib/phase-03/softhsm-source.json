@@ -1,0 +1,34 @@
+{
+  "schema_version": "ycs-softhsm-source/v1",
+  "product": "SoftHSMv2",
+  "version": "2.7.0",
+  "tag": "2.7.0",
+  "commit": "13e6e86",
+  "archive_url": "https://codeload.github.com/softhsm/SoftHSMv2/tar.gz/refs/tags/2.7.0",
+  "archive_sha256": "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573",
+  "archive_root": "SoftHSMv2-2.7.0",
+  "build_system": "cmake",
+  "build_arguments": [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DBUILD_TESTS=OFF",
+    "-DENABLE_P11_KIT=OFF",
+    "-DENABLE_GOST=OFF",
+    "-DENABLE_FIPS=OFF",
+    "-DENABLE_STATIC=OFF",
+    "-DWITH_OBJECTSTORE_BACKEND_DB=OFF",
+    "-DWITH_MIGRATE=OFF",
+    "-DWITH_CRYPTO_BACKEND=openssl"
+  ],
+  "required_mechanisms": [
+    "CKM_AES_KEY_GEN",
+    "CKM_AES_GCM",
+    "CKM_GENERIC_SECRET_KEY_GEN",
+    "CKM_SHA256_HMAC"
+  ],
+  "required_key_attributes": {
+    "CKA_TOKEN": true,
+    "CKA_PRIVATE": true,
+    "CKA_SENSITIVE": true,
+    "CKA_EXTRACTABLE": false
+  }
+}

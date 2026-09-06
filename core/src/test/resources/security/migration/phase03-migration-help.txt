@@ -1,0 +1,66 @@
+phase03-migration <command> [options]
+
+Commands:
+  preflight  Admit one signed writer/snapshot manifest pair
+  start      Start one bounded target batch
+  resume     Resume one bounded target batch
+  advance    Advance one target through one reviewed checkpoint edge
+  pause      Pause an admitted migration run
+  abort      Abort forward migration without plaintext rollback
+  status     Print sanitized run counters
+  snapshot-create   Create a bounded encrypted MySQL snapshot
+  snapshot-restore  Restore an admitted snapshot into a fresh schema
+  snapshot-delete   Delete an exact retained encrypted snapshot
+
+preflight options (all required):
+  --writer-manifest PATH
+  --writer-signature PATH
+  --snapshot-manifest PATH
+  --snapshot-signature PATH
+  --environment ID
+  --database-instance-fingerprint HEX
+  --schema NAME
+  --flyway-set-digest HEX
+
+start/resume options (all required):
+  --run-id ID
+  --target REVIEWED_TARGET
+  --pair-digest HEX
+  --lease-owner-digest HEX
+  --batch-size 1..1000
+
+advance options (all required):
+  --run-id ID
+  --target REVIEWED_TARGET
+  --pair-digest HEX
+  --lease-owner-digest HEX
+  --next-state BACKFILLED|VERIFIED|CUTOVER|SCRUBBED|COMPLETE
+
+pause/abort options (all required):
+  --run-id ID
+  --pair-digest HEX
+
+status options (all required):
+  --run-id ID
+
+snapshot-create options (all required):
+  --snapshot-id ID
+  --environment ID
+  --database-instance-fingerprint HEX
+  --schema NAME
+  --flyway-set-digest HEX
+  --global-sequence NONNEGATIVE_DECIMAL
+  --signer-key-version VERSION
+
+snapshot-restore options (all required):
+  --snapshot-id ID
+  --pair-digest HEX
+  --target-schema NAME
+
+snapshot-delete options (all required):
+  --snapshot-id ID
+  --snapshot-digest HEX
+
+Exit codes: 0 accepted; 20 invocation/path; 21 canonical/schema;
+            22 signature/trust; 23 subject; 24 writer/replay;
+            25 snapshot; 26 key/provider.

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase03-evidence-manifest-v1",
+  "title": "Phase 03 exact-four evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "phase", "owner", "status", "subject", "inventory",
+    "leak_result", "entries"
+  ],
+  "properties": {
+    "schema_version": { "const": "phase03-evidence-manifest-v1" },
+    "phase": { "const": "03-crypto-storage-bootstrap" },
+    "owner": { "const": "crypto-storage-bootstrap" },
+    "status": { "const": "PASS" },
+    "subject": { "$ref": "#/$defs/subjectReference" },
+    "inventory": { "$ref": "#/$defs/inventoryReference" },
+    "leak_result": { "$ref": "#/$defs/leakReference" },
+    "entries": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        { "$ref": "#/$defs/entry001" },
+        { "$ref": "#/$defs/entry002" },
+        { "$ref": "#/$defs/entry003" },
+        { "$ref": "#/$defs/entry004" }
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:[\\\\/])(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000\\\\]+$"
+    },
+    "resultReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check_id", "path", "sha256", "result_digest"],
+      "properties": {
+        "check_id": { "const": "phase03-protected-inventory" },
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "result_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "subjectReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "tested_subject_digest"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "tested_subject_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "inventoryReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "accepted_digest", "validator_result"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "accepted_digest": { "$ref": "#/$defs/sha256" },
+        "validator_result": { "$ref": "#/$defs/resultReference" }
+      }
+    },
+    "leakReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "result_digest"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "result_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "entryBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["obligation_id", "path", "sha256", "status", "evidence_digest"],
+      "properties": {
+        "obligation_id": { "type": "string" },
+        "path": { "$ref": "#/$defs/relativePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "const": "PASS" },
+        "evidence_digest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "entry001": {
+      "allOf": [
+        { "$ref": "#/$defs/entryBase" },
+        { "properties": { "obligation_id": { "const": "OBL-CRYPTO-STORAGE-001" } } }
+      ]
+    },
+    "entry002": {
+      "allOf": [
+        { "$ref": "#/$defs/entryBase" },
+        { "properties": { "obligation_id": { "const": "OBL-CRYPTO-STORAGE-002" } } }
+      ]
+    },
+    "entry003": {
+      "allOf": [
+        { "$ref": "#/$defs/entryBase" },
+        { "properties": { "obligation_id": { "const": "OBL-CRYPTO-STORAGE-003" } } }
+      ]
+    },
+    "entry004": {
+      "allOf": [
+        { "$ref": "#/$defs/entryBase" },
+        { "properties": { "obligation_id": { "const": "OBL-CRYPTO-STORAGE-004" } } }
+      ]
+    }
+  }
+}

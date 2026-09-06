@@ -1,8 +1,11 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -24,8 +27,12 @@ public class User {
 
     private String email;
 
-    @Column(name = "phone_encrypted")
-    private String phoneEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "phone_encrypted", length = 255)
+    private byte[] phoneEncrypted;
 
     @Column(name = "real_name")
     private String realName;

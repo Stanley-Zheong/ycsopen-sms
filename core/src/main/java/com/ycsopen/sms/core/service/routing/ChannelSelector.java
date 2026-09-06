@@ -62,7 +62,7 @@ public class ChannelSelector {
                 && !rule.getOperator().name().equals(ctx.getOperatorHint())) {
             return false;
         }
-        // phonePrefix 匹配依赖明文号码前缀，路由引擎当前只持有 mobileHash——
+        // phonePrefix 匹配依赖明文号码前缀，路由引擎当前只持有不透明 HMAC 查询值——
         // 因此号段前缀匹配应在号码归属识别阶段（F-5.7）完成并写入 operatorHint/其他字段，
         // 这里不再重复处理明文号码，避免明文号码泄漏到路由层（TODO 标记见 core/docs/ROADMAP.md）。
         return true;

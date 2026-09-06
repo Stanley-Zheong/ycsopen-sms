@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YCS Open SMS Console Prototype</title>
+  <link rel="stylesheet" href="/tokens.css">
+  <style>
+    :root {
+      --brand: var(--color-brand); --brand-dark: var(--color-brand-dark); --accent: var(--color-accent);
+      --page: var(--color-page); --surface: var(--color-surface); --surface-alt: var(--color-surface-alt);
+      --text: var(--color-text); --muted: var(--color-muted); --border: var(--color-border);
+      --success: var(--color-success); --warning: var(--color-warning); --danger: var(--color-danger);
+      --shadow: 0 12px 34px var(--color-shadow);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text); background: var(--page);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 1100px; background: var(--page); }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid var(--color-focus); outline-offset: 2px;
+    }
+    .skip { position: fixed; left: 16px; top: -60px; z-index: 100; background: var(--color-surface); padding: 10px 14px; border-radius: 6px; }
+    .skip:focus { top: 12px; }
+    .app { min-height: 100vh; display: grid; grid-template-rows: 68px 1fr; }
+    .header { background: var(--brand-dark); color: var(--color-surface); display: flex; align-items: center; gap: 18px; padding: 0 24px; position: sticky; top: 0; z-index: 30; }
+    .brand { font-weight: 800; letter-spacing: .5px; white-space: nowrap; }
+    .environment, .role-badge { border-radius: 999px; font-size: 12px; font-weight: 700; padding: 5px 9px; }
+    .environment { background: var(--color-header-muted); color: var(--color-header-label); }
+    .role-badge { background: var(--color-success-bg); color: var(--success); }
+    .header-spacer { flex: 1; }
+    .header-search { width: 270px; color: var(--color-surface); background: var(--color-header-muted); border: 1px solid var(--color-header-border); border-radius: 6px; padding: 9px 12px; }
+    .icon-button { border: 0; border-radius: 7px; background: transparent; color: inherit; padding: 9px; cursor: pointer; }
+    .icon-button:hover { background: rgba(255,255,255,.1); }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--color-brand-dark); display: grid; place-items: center; font-weight: 800; }
+    .body { display: grid; grid-template-columns: 242px 1fr; min-height: calc(100vh - 68px); }
+    .sidebar { background: var(--color-surface); border-right: 1px solid var(--border); padding: 20px 14px; overflow: auto; max-height: calc(100vh - 68px); position: sticky; top: 68px; }
+    .nav-heading { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; margin: 14px 10px 7px; text-transform: uppercase; }
+    .nav-link { display: block; color: var(--muted); text-decoration: none; font-size: 13px; padding: 9px 10px; margin: 2px 0; border-radius: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .nav-link:hover { background: var(--color-nav-hover); color: var(--text); }
+    .nav-link[aria-current="page"] { background: var(--surface-alt); color: var(--brand); font-weight: 700; }
+    .main { padding: 28px 32px 42px; overflow: hidden; }
+    .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 13px; }
+    .contract-badges { display: flex; flex-wrap: wrap; gap: 7px; margin: -8px 0 16px; }
+    .contract-badge { display: inline-flex; border: 1px solid var(--color-contract-border); border-radius: 999px; background: var(--color-contract-bg); color: var(--brand); padding: 5px 9px; font-size: 11px; font-weight: 700; }
+    .page-heading { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 22px; }
+    .page-heading-text { flex: 1; }
+    h1 { font-size: 27px; line-height: 1.2; margin: 0 0 6px; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    .button { border: 1px solid var(--border); background: var(--color-surface); color: var(--text); border-radius: 5px; padding: 9px 14px; cursor: pointer; font-weight: 700; }
+    .button:hover { border-color: var(--color-hover-border); background: var(--color-chart-bg); }
+    .button.primary { background: var(--brand); border-color: var(--brand); color: var(--color-surface); }
+    .button.danger { background: var(--color-danger); border-color: var(--color-danger); color: var(--color-surface); }
+    .button:disabled { color: var(--color-disabled-text); background: var(--color-disabled-bg); border-color: var(--color-disabled-border); cursor: not-allowed; }
+    .toolbar { display: flex; align-items: center; gap: 10px; background: var(--color-surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-bottom: 16px; }
+    .toolbar input, .toolbar select, .field { border: 1px solid var(--border); border-radius: 6px; background: var(--color-surface); color: var(--text); padding: 9px 11px; }
+    .toolbar input { min-width: 260px; }
+    .toolbar-spacer { flex: 1; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+    .card { background: var(--color-surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 2px 7px rgba(18,50,80,.03); }
+    .metric { padding: 18px; }
+    .metric-label { color: var(--muted); font-size: 13px; }
+    .metric-value { font-size: 25px; font-weight: 800; margin: 9px 0 5px; }
+    .metric-trend { color: var(--success); font-size: 12px; }
+    .table-card { overflow: hidden; }
+    .table-head { display: flex; align-items: center; padding: 17px 18px; border-bottom: 1px solid var(--border); }
+    .table-head h2 { font-size: 16px; margin: 0; flex: 1; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; color: var(--muted); background: var(--color-table-header); font-size: 12px; padding: 11px 14px; }
+    td { padding: 13px 14px; border-top: 1px solid var(--color-row-border); font-size: 13px; }
+    tr:hover td { background: var(--color-row-hover); }
+    .status { display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 9px; font-size: 12px; font-weight: 700; }
+    .status.success { background: var(--color-success-bg); color: var(--success); }
+    .status.warning { background: var(--color-warning-bg); color: var(--warning); }
+    .pagination { display: flex; justify-content: flex-end; gap: 8px; align-items: center; padding: 13px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+    .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(18,50,80,.42); display: grid; place-items: center; }
+    .dialog { width: 480px; background: var(--color-surface); border-radius: 12px; box-shadow: var(--shadow); padding: 22px; }
+    .dialog h2 { margin: 0 0 10px; font-size: 20px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .drawer { position: fixed; right: 0; top: 68px; bottom: 0; width: 390px; z-index: 48; background: var(--color-surface); box-shadow: var(--shadow); padding: 20px; }
+    .drawer-head { display: flex; align-items: center; margin-bottom: 14px; }
+    .drawer-head h2 { flex: 1; margin: 0; font-size: 18px; }
+    .notice { padding: 13px 2px; border-bottom: 1px solid var(--border); }
+    .notice strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .notice small { color: var(--muted); }
+    .popover { position: fixed; right: 24px; top: 60px; z-index: 49; width: 210px; background: var(--color-surface); color: var(--text); border: 1px solid var(--border); border-radius: 9px; box-shadow: var(--shadow); padding: 8px; }
+    .popover button { width: 100%; border: 0; background: transparent; text-align: left; padding: 10px; border-radius: 5px; cursor: pointer; }
+    .popover button:hover { background: var(--color-popover-hover); }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 70; background: var(--brand-dark); color: var(--color-surface); border-radius: 8px; padding: 12px 16px; box-shadow: var(--shadow); }
+    .empty { min-height: 510px; display: grid; place-items: center; text-align: center; }
+    .empty-illustration { width: 112px; height: 112px; margin: 0 auto 18px; border-radius: 56px; background: var(--color-empty-bg); color: var(--brand); display: grid; place-items: center; }
+    .empty-illustration svg { width: 52px; height: 52px; }
+    .empty h2 { margin: 0 0 8px; }
+    .empty p { color: var(--muted); margin: 0 0 18px; }
+    .form-card { max-width: 760px; padding: 24px; }
+    .form-card h2 { margin-top: 0; }
+    .form-row { display: grid; gap: 7px; margin: 17px 0; }
+    .form-row label { font-size: 13px; font-weight: 700; }
+    textarea.field { min-height: 110px; resize: vertical; }
+    .field[aria-invalid="true"] { border: 2px solid var(--color-danger); }
+    .error { margin: 0; color: var(--danger); background: var(--color-error-bg); border-radius: 6px; padding: 9px 10px; font-size: 13px; }
+    .state-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .portal-map { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .portal-card { padding: 18px; }
+    .portal-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .portal-card-head h2 { flex: 1; margin: 0; font-size: 16px; }
+    .portal-links { display: flex; flex-wrap: wrap; gap: 7px; }
+    .portal-link { border-radius: 5px; background: var(--color-page); color: var(--muted); padding: 7px 9px; font-size: 12px; }
+    .state-card { padding: 18px; min-height: 150px; }
+    .state-card h3 { margin: 0 0 9px; font-size: 15px; }
+    .state-card p { color: var(--muted); font-size: 13px; }
+    .skeleton { height: 11px; border-radius: 8px; background: linear-gradient(90deg,var(--color-skeleton),var(--color-table-header),var(--color-skeleton)); margin: 10px 0; }
+    .chart { height: 200px; display: flex; gap: 10px; align-items: flex-end; padding: 20px; background: var(--color-chart-bg); border-radius: 8px; }
+    .bar { flex: 1; background: var(--brand); border-radius: 4px 4px 0 0; }
+    .auth-shell { min-height: 100vh; display: grid; grid-template-columns: 1.15fr .85fr; }
+    .auth-brand { padding: 72px; color: var(--color-surface); background: linear-gradient(145deg,var(--color-brand-dark),var(--color-brand)); display: flex; flex-direction: column; justify-content: center; }
+    .auth-brand h1 { font-size: 42px; }
+    .auth-panel { display: grid; place-items: center; padding: 60px; }
+    .auth-card { width: 390px; padding: 28px; }
+    .auth-card .field { width: 100%; }
+    .auth-card .button { width: 100%; margin-top: 10px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 1180px) {
+      .body { grid-template-columns: 210px 1fr; }
+      .main { padding: 24px; }
+      .metrics { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main-content" data-testid="shared-console-shell-accessibility-skip-link">跳转到主要内容</a>
+  <div id="app"></div>
+  <div id="live-region" class="toast" role="status" aria-live="polite" hidden data-testid="shared-console-shell-feedback-status-toast"></div>
+  <script>
+    const ROUTES = [{"obligation":"OBL-DESIGN-SYSTEM-001","requirement":"PROJECT-UI-CONTRACT","behavior":"console-design-system-prototype-foundation-01","playwright":"pw-obl-design-system-001","page":"shared-console-shell","route":"/shared/console/shell","testid":"shared-console-shell-prototype-shell-001","case":"C-OBL-DESIGN-SYSTEM-001"},{"obligation":"OBL-DESIGN-SYSTEM-002","requirement":"PROJECT-UI-CONTRACT","behavior":"console-design-system-prototype-foundation-02","playwright":"pw-obl-design-system-002","page":"shared-console-shell","route":"/shared/console/shell","testid":"shared-console-shell-prototype-shell-002","case":"C-OBL-DESIGN-SYSTEM-002"},{"obligation":"OBL-DESIGN-SYSTEM-003","requirement":"PROJECT-UI-CONTRACT","behavior":"console-design-system-prototype-foundation-03","playwright":"pw-obl-design-system-003","page":"shared-component-states","route":"/shared/component/states","testid":"shared-component-states-prototype-shell-003","case":"C-OBL-DESIGN-SYSTEM-003"},{"obligation":"OBL-DESIGN-SYSTEM-004","requirement":"PROJECT-UI-CONTRACT","behavior":"console-design-system-prototype-foundation-04","playwright":"pw-obl-design-system-004","page":"shared-responsive-baseline","route":"/shared/responsive/baseline","testid":"shared-responsive-baseline-prototype-shell-004","case":"C-OBL-DESIGN-SYSTEM-004"},{"obligation":"OBL-DESIGN-SYSTEM-005","requirement":"PROJECT-UI-CONTRACT","behavior":"console-design-system-prototype-foundation-05","playwright":"pw-obl-design-system-005","page":"/shared/console/design/shell/notification/target","route":"/shared/console/design/shell/notification/target","testid":"shared-console-design-shell-notification-target","case":"C-OBL-DESIGN-SYSTEM-005"},{"obligation":"OBL-IA-ADMIN-LOGIN","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-login","page":"admin-auth-login","route":"/admin/auth/login","testid":"admin-auth-login-prototype-shell-006","case":"C-OBL-IA-ADMIN-LOGIN"},{"obligation":"OBL-IA-ADMIN-DASH-REALTIME","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-dash-realtime","page":"admin-dashboard-realtime","route":"/admin/dashboard/realtime","testid":"admin-dashboard-realtime-prototype-shell-007","case":"C-OBL-IA-ADMIN-DASH-REALTIME"},{"obligation":"OBL-IA-ADMIN-DASH-KPI","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-dash-kpi","page":"admin-dashboard-kpi","route":"/admin/dashboard/kpi","testid":"admin-dashboard-kpi-prototype-shell-008","case":"C-OBL-IA-ADMIN-DASH-KPI"},{"obligation":"OBL-IA-ADMIN-DASH-ALERT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-dash-alert","page":"admin-dashboard-alerts","route":"/admin/dashboard/alerts","testid":"admin-dashboard-alerts-prototype-shell-009","case":"C-OBL-IA-ADMIN-DASH-ALERT"},{"obligation":"OBL-IA-ADMIN-DASH-CONFIG","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-dash-config","page":"admin-dashboard-configuration","route":"/admin/dashboard/configuration","testid":"admin-dashboard-configuration-prototype-shell-010","case":"C-OBL-IA-ADMIN-DASH-CONFIG"},{"obligation":"OBL-IA-ADMIN-USERS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-users","page":"admin-users","route":"/admin/users","testid":"admin-users-prototype-shell-011","case":"C-OBL-IA-ADMIN-USERS"},{"obligation":"OBL-IA-ADMIN-TENANTS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-tenants","page":"admin-tenants","route":"/admin/tenants","testid":"admin-tenants-prototype-shell-012","case":"C-OBL-IA-ADMIN-TENANTS"},{"obligation":"OBL-IA-ADMIN-TENANT-TRIAL-CONTRACT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-tenant-trial-contract","page":"admin-tenant-trial-contracts","route":"/admin/tenant/trial/contracts","testid":"admin-tenant-trial-contracts-prototype-shell-013","case":"C-OBL-IA-ADMIN-TENANT-TRIAL-CONTRACT"},{"obligation":"OBL-IA-ADMIN-TENANT-TERMINATION","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-tenant-termination","page":"admin-tenant-terminations","route":"/admin/tenant/terminations","testid":"admin-tenant-terminations-prototype-shell-014","case":"C-OBL-IA-ADMIN-TENANT-TERMINATION"},{"obligation":"OBL-IA-ADMIN-TENANT-ACCESS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-tenant-access","page":"admin-tenant-access","route":"/admin/tenant/access","testid":"admin-tenant-access-prototype-shell-015","case":"C-OBL-IA-ADMIN-TENANT-ACCESS"},{"obligation":"OBL-IA-ADMIN-TENANT-RECHARGE","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-tenant-recharge","page":"admin-tenant-recharge-review","route":"/admin/tenant/recharge/review","testid":"admin-tenant-recharge-review-prototype-shell-016","case":"C-OBL-IA-ADMIN-TENANT-RECHARGE"},{"obligation":"OBL-IA-ADMIN-ROLES","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-roles","page":"admin-roles","route":"/admin/roles","testid":"admin-roles-prototype-shell-017","case":"C-OBL-IA-ADMIN-ROLES"},{"obligation":"OBL-IA-ADMIN-CHANNEL-CONFIG","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-channel-config","page":"admin-channel-configuration","route":"/admin/channel/configuration","testid":"admin-channel-configuration-prototype-shell-018","case":"C-OBL-IA-ADMIN-CHANNEL-CONFIG"},{"obligation":"OBL-IA-ADMIN-CHANNEL-MONITOR","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-channel-monitor","page":"admin-channel-monitor","route":"/admin/channel/monitor","testid":"admin-channel-monitor-prototype-shell-019","case":"C-OBL-IA-ADMIN-CHANNEL-MONITOR"},{"obligation":"OBL-IA-ADMIN-ROUTING","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-routing","page":"admin-routing-policy","route":"/admin/routing/policy","testid":"admin-routing-policy-prototype-shell-020","case":"C-OBL-IA-ADMIN-ROUTING"},{"obligation":"OBL-IA-ADMIN-PORTABILITY","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-portability","page":"admin-number-portability","route":"/admin/number/portability","testid":"admin-number-portability-prototype-shell-021","case":"C-OBL-IA-ADMIN-PORTABILITY"},{"obligation":"OBL-IA-ADMIN-SEND-MONITOR","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-send-monitor","page":"admin-send-monitor","route":"/admin/send/monitor","testid":"admin-send-monitor-prototype-shell-022","case":"C-OBL-IA-ADMIN-SEND-MONITOR"},{"obligation":"OBL-IA-ADMIN-API-STATUS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-api-status","page":"admin-api-status-monitor","route":"/admin/api/status/monitor","testid":"admin-api-status-monitor-prototype-shell-023","case":"C-OBL-IA-ADMIN-API-STATUS"},{"obligation":"OBL-IA-ADMIN-TASK-MONITOR","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-task-monitor","page":"admin-task-monitor","route":"/admin/task/monitor","testid":"admin-task-monitor-prototype-shell-024","case":"C-OBL-IA-ADMIN-TASK-MONITOR"},{"obligation":"OBL-IA-ADMIN-SIGNATURE-REVIEW","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-signature-review","page":"admin-signature-review","route":"/admin/signature/review","testid":"admin-signature-review-prototype-shell-025","case":"C-OBL-IA-ADMIN-SIGNATURE-REVIEW"},{"obligation":"OBL-IA-ADMIN-TEMPLATE-REVIEW","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-template-review","page":"admin-template-review","route":"/admin/template/review","testid":"admin-template-review-prototype-shell-026","case":"C-OBL-IA-ADMIN-TEMPLATE-REVIEW"},{"obligation":"OBL-IA-ADMIN-EXEMPTIONS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-exemptions","page":"admin-exemption-policy","route":"/admin/exemption/policy","testid":"admin-exemption-policy-prototype-shell-027","case":"C-OBL-IA-ADMIN-EXEMPTIONS"},{"obligation":"OBL-IA-ADMIN-BLACKLIST","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-blacklist","page":"admin-black-white-lists","route":"/admin/black/white/lists","testid":"admin-black-white-lists-prototype-shell-028","case":"C-OBL-IA-ADMIN-BLACKLIST"},{"obligation":"OBL-IA-ADMIN-RISK-PROVIDER","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-risk-provider","page":"admin-risk-provider","route":"/admin/risk/provider","testid":"admin-risk-provider-prototype-shell-029","case":"C-OBL-IA-ADMIN-RISK-PROVIDER"},{"obligation":"OBL-IA-ADMIN-FREQUENCY","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-frequency","page":"admin-frequency-rules","route":"/admin/frequency/rules","testid":"admin-frequency-rules-prototype-shell-030","case":"C-OBL-IA-ADMIN-FREQUENCY"},{"obligation":"OBL-IA-ADMIN-CONTENT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-content","page":"admin-content-safety","route":"/admin/content/safety","testid":"admin-content-safety-prototype-shell-031","case":"C-OBL-IA-ADMIN-CONTENT"},{"obligation":"OBL-IA-ADMIN-NUMBER","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-number","page":"admin-number-attribution","route":"/admin/number/attribution","testid":"admin-number-attribution-prototype-shell-032","case":"C-OBL-IA-ADMIN-NUMBER"},{"obligation":"OBL-IA-ADMIN-COMPLAINTS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-complaints","page":"admin-complaints","route":"/admin/complaints","testid":"admin-complaints-prototype-shell-033","case":"C-OBL-IA-ADMIN-COMPLAINTS"},{"obligation":"OBL-IA-ADMIN-UPLINK","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-uplink","page":"admin-uplinks","route":"/admin/uplinks","testid":"admin-uplinks-prototype-shell-034","case":"C-OBL-IA-ADMIN-UPLINK"},{"obligation":"OBL-IA-ADMIN-UNSUBSCRIBE","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-unsubscribe","page":"admin-unsubscribes","route":"/admin/unsubscribes","testid":"admin-unsubscribes-prototype-shell-035","case":"C-OBL-IA-ADMIN-UNSUBSCRIBE"},{"obligation":"OBL-IA-ADMIN-DETAIL-SUBMIT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-detail-submit","page":"admin-submission-details","route":"/admin/submission/details","testid":"admin-submission-details-prototype-shell-036","case":"C-OBL-IA-ADMIN-DETAIL-SUBMIT"},{"obligation":"OBL-IA-ADMIN-DETAIL-BULK","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-detail-bulk","page":"admin-bulk-details","route":"/admin/bulk/details","testid":"admin-bulk-details-prototype-shell-037","case":"C-OBL-IA-ADMIN-DETAIL-BULK"},{"obligation":"OBL-IA-ADMIN-DETAIL-UPLINK","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-detail-uplink","page":"admin-uplink-details","route":"/admin/uplink/details","testid":"admin-uplink-details-prototype-shell-038","case":"C-OBL-IA-ADMIN-DETAIL-UPLINK"},{"obligation":"OBL-IA-ADMIN-DETAIL-RECEIPT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-detail-receipt","page":"admin-receipt-details","route":"/admin/receipt/details","testid":"admin-receipt-details-prototype-shell-039","case":"C-OBL-IA-ADMIN-DETAIL-RECEIPT"},{"obligation":"OBL-IA-ADMIN-DETAIL-ERROR","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-detail-error","page":"admin-error-details","route":"/admin/error/details","testid":"admin-error-details-prototype-shell-040","case":"C-OBL-IA-ADMIN-DETAIL-ERROR"},{"obligation":"OBL-IA-ADMIN-EXPORT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-export","page":"admin-export-center","route":"/admin/export/center","testid":"admin-export-center-prototype-shell-041","case":"C-OBL-IA-ADMIN-EXPORT"},{"obligation":"OBL-IA-ADMIN-STATS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-stats","page":"admin-statistics","route":"/admin/statistics","testid":"admin-statistics-prototype-shell-042","case":"C-OBL-IA-ADMIN-STATS"},{"obligation":"OBL-IA-ADMIN-REPORTS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-reports","page":"admin-custom-reports","route":"/admin/custom/reports","testid":"admin-custom-reports-prototype-shell-043","case":"C-OBL-IA-ADMIN-REPORTS"},{"obligation":"OBL-IA-ADMIN-RECONCILIATION","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-reconciliation","page":"admin-reconciliation","route":"/admin/reconciliation","testid":"admin-reconciliation-prototype-shell-044","case":"C-OBL-IA-ADMIN-RECONCILIATION"},{"obligation":"OBL-IA-ADMIN-SETTLEMENT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-settlement","page":"admin-settlements","route":"/admin/settlements","testid":"admin-settlements-prototype-shell-045","case":"C-OBL-IA-ADMIN-SETTLEMENT"},{"obligation":"OBL-IA-ADMIN-INVOICE","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-invoice","page":"admin-invoices","route":"/admin/invoices","testid":"admin-invoices-prototype-shell-046","case":"C-OBL-IA-ADMIN-INVOICE"},{"obligation":"OBL-IA-ADMIN-PROFIT","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-profit","page":"admin-financial-analytics","route":"/admin/financial/analytics","testid":"admin-financial-analytics-prototype-shell-047","case":"C-OBL-IA-ADMIN-PROFIT"},{"obligation":"OBL-IA-ADMIN-FEE-WARNING","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-fee-warning","page":"admin-fee-warning","route":"/admin/fee/warning","testid":"admin-fee-warning-prototype-shell-048","case":"C-OBL-IA-ADMIN-FEE-WARNING"},{"obligation":"OBL-IA-ADMIN-ALERT-RULES","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-alert-rules","page":"admin-alert-rules","route":"/admin/alert/rules","testid":"admin-alert-rules-prototype-shell-049","case":"C-OBL-IA-ADMIN-ALERT-RULES"},{"obligation":"OBL-IA-ADMIN-ALERT-HISTORY","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-alert-history","page":"admin-alert-history","route":"/admin/alert/history","testid":"admin-alert-history-prototype-shell-050","case":"C-OBL-IA-ADMIN-ALERT-HISTORY"},{"obligation":"OBL-IA-ADMIN-NOTIFICATION-TARGETS","requirement":"REQ-F-12-2","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-notification-targets","page":"admin-notification-targets","route":"/admin/notification/targets","testid":"admin-notification-targets-prototype-shell-051","case":"C-OBL-IA-ADMIN-NOTIFICATION-TARGETS"},{"obligation":"OBL-IA-ADMIN-SHORTLINKS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-shortlinks","page":"admin-shortlinks","route":"/admin/shortlinks","testid":"admin-shortlinks-prototype-shell-052","case":"C-OBL-IA-ADMIN-SHORTLINKS"},{"obligation":"OBL-IA-ADMIN-STATUS-CODES","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-status-codes","page":"admin-status-codes","route":"/admin/status/codes","testid":"admin-status-codes-prototype-shell-053","case":"C-OBL-IA-ADMIN-STATUS-CODES"},{"obligation":"OBL-IA-ADMIN-PREFIXES","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-prefixes","page":"admin-prefixes","route":"/admin/prefixes","testid":"admin-prefixes-prototype-shell-054","case":"C-OBL-IA-ADMIN-PREFIXES"},{"obligation":"OBL-IA-ADMIN-JOBS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-jobs","page":"admin-send-jobs","route":"/admin/send/jobs","testid":"admin-send-jobs-prototype-shell-055","case":"C-OBL-IA-ADMIN-JOBS"},{"obligation":"OBL-IA-ADMIN-ACCOUNTS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-accounts","page":"admin-system-accounts","route":"/admin/system/accounts","testid":"admin-system-accounts-prototype-shell-056","case":"C-OBL-IA-ADMIN-ACCOUNTS"},{"obligation":"OBL-IA-ADMIN-LOGS","requirement":"PROJECT-ADMIN-IA","behavior":"console-design-system-prototype-foundation-06","playwright":"pw-obl-ia-admin-logs","page":"admin-system-logs","route":"/admin/system/logs","testid":"admin-system-logs-prototype-shell-057","case":"C-OBL-IA-ADMIN-LOGS"},{"obligation":"OBL-IA-TENANT-LOGIN","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-login","page":"tenant-auth-login","route":"/tenant/auth/login","testid":"tenant-auth-login-prototype-shell-058","case":"C-OBL-IA-TENANT-LOGIN"},{"obligation":"OBL-IA-TENANT-REGISTER","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-register","page":"tenant-register","route":"/tenant/register","testid":"tenant-register-prototype-shell-059","case":"C-OBL-IA-TENANT-REGISTER"},{"obligation":"OBL-IA-TENANT-ACCOUNT","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-account","page":"tenant-account-information","route":"/tenant/account/information","testid":"tenant-account-information-prototype-shell-060","case":"C-OBL-IA-TENANT-ACCOUNT"},{"obligation":"OBL-IA-TENANT-QUALIFICATION","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-qualification","page":"tenant-qualification","route":"/tenant/qualification","testid":"tenant-qualification-prototype-shell-061","case":"C-OBL-IA-TENANT-QUALIFICATION"},{"obligation":"OBL-IA-TENANT-ADMINS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-admins","page":"tenant-administrators","route":"/tenant/administrators","testid":"tenant-administrators-prototype-shell-062","case":"C-OBL-IA-TENANT-ADMINS"},{"obligation":"OBL-IA-TENANT-OVERVIEW","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-overview","page":"tenant-overview","route":"/tenant/overview","testid":"tenant-overview-prototype-shell-063","case":"C-OBL-IA-TENANT-OVERVIEW"},{"obligation":"OBL-IA-TENANT-SEND","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-send","page":"tenant-send","route":"/tenant/send","testid":"tenant-send-prototype-shell-064","case":"C-OBL-IA-TENANT-SEND"},{"obligation":"OBL-IA-TENANT-BULK","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-bulk","page":"tenant-bulk-send","route":"/tenant/bulk/send","testid":"tenant-bulk-send-prototype-shell-065","case":"C-OBL-IA-TENANT-BULK"},{"obligation":"OBL-IA-TENANT-SCHEDULE","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-schedule","page":"tenant-scheduled-tasks","route":"/tenant/scheduled/tasks","testid":"tenant-scheduled-tasks-prototype-shell-066","case":"C-OBL-IA-TENANT-SCHEDULE"},{"obligation":"OBL-IA-TENANT-SEND-RECORDS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-send-records","page":"tenant-send-records","route":"/tenant/send/records","testid":"tenant-send-records-prototype-shell-067","case":"C-OBL-IA-TENANT-SEND-RECORDS"},{"obligation":"OBL-IA-TENANT-TEMPLATES","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-templates","page":"tenant-templates","route":"/tenant/templates","testid":"tenant-templates-prototype-shell-068","case":"C-OBL-IA-TENANT-TEMPLATES"},{"obligation":"OBL-IA-TENANT-SIGNATURES","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-signatures","page":"tenant-signatures","route":"/tenant/signatures","testid":"tenant-signatures-prototype-shell-069","case":"C-OBL-IA-TENANT-SIGNATURES"},{"obligation":"OBL-IA-TENANT-BALANCE","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-balance","page":"tenant-balance","route":"/tenant/balance","testid":"tenant-balance-prototype-shell-070","case":"C-OBL-IA-TENANT-BALANCE"},{"obligation":"OBL-IA-TENANT-RECHARGE","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-recharge","page":"tenant-recharge","route":"/tenant/recharge","testid":"tenant-recharge-prototype-shell-071","case":"C-OBL-IA-TENANT-RECHARGE"},{"obligation":"OBL-IA-TENANT-STATEMENTS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-statements","page":"tenant-statements","route":"/tenant/statements","testid":"tenant-statements-prototype-shell-072","case":"C-OBL-IA-TENANT-STATEMENTS"},{"obligation":"OBL-IA-TENANT-INVOICES","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-invoices","page":"tenant-invoices","route":"/tenant/invoices","testid":"tenant-invoices-prototype-shell-073","case":"C-OBL-IA-TENANT-INVOICES"},{"obligation":"OBL-IA-TENANT-BLACKLIST","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-blacklist","page":"tenant-blacklist","route":"/tenant/blacklist","testid":"tenant-blacklist-prototype-shell-074","case":"C-OBL-IA-TENANT-BLACKLIST"},{"obligation":"OBL-IA-TENANT-WEBHOOK","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-webhook","page":"tenant-webhooks","route":"/tenant/webhooks","testid":"tenant-webhooks-prototype-shell-075","case":"C-OBL-IA-TENANT-WEBHOOK"},{"obligation":"OBL-IA-TENANT-API-KEYS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-api-keys","page":"tenant-api-keys","route":"/tenant/api/keys","testid":"tenant-api-keys-prototype-shell-076","case":"C-OBL-IA-TENANT-API-KEYS"},{"obligation":"OBL-IA-TENANT-CMPP","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-cmpp","page":"tenant-cmpp-access","route":"/tenant/cmpp/access","testid":"tenant-cmpp-access-prototype-shell-077","case":"C-OBL-IA-TENANT-CMPP"},{"obligation":"OBL-IA-TENANT-NOTIFICATION-TARGETS","requirement":"REQ-F-8-10,REQ-F-12-2","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-notification-targets","page":"tenant-notification-targets","route":"/tenant/notification/targets","testid":"tenant-notification-targets-prototype-shell-078","case":"C-OBL-IA-TENANT-NOTIFICATION-TARGETS"},{"obligation":"OBL-IA-TENANT-UPLINKS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-uplinks","page":"tenant-uplinks","route":"/tenant/uplinks","testid":"tenant-uplinks-prototype-shell-079","case":"C-OBL-IA-TENANT-UPLINKS"},{"obligation":"OBL-IA-TENANT-UNSUBSCRIBES","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-unsubscribes","page":"tenant-unsubscribes","route":"/tenant/unsubscribes","testid":"tenant-unsubscribes-prototype-shell-080","case":"C-OBL-IA-TENANT-UNSUBSCRIBES"},{"obligation":"OBL-IA-TENANT-SHORTLINKS","requirement":"PROJECT-TENANT-IA","behavior":"console-design-system-prototype-foundation-07","playwright":"pw-obl-ia-tenant-shortlinks","page":"tenant-shortlinks","route":"/tenant/shortlinks","testid":"tenant-shortlinks-prototype-shell-081","case":"C-OBL-IA-TENANT-SHORTLINKS"},{"obligation":"OBL-EDGE-EMPTY-LIST","requirement":"PROJECT-EXCEPTION-FLOW","behavior":"console-design-system-prototype-foundation-08","playwright":"pw-obl-edge-empty-list","page":"/shared/console/design/list/empty","route":"/shared/console/design/list/empty","testid":"shared-console-design-list-empty","case":"C-OBL-EDGE-EMPTY-LIST"},{"obligation":"OBL-EDGE-REVIEW-VALIDATION","requirement":"PROJECT-EXCEPTION-FLOW","behavior":"console-design-system-prototype-foundation-08","playwright":"pw-obl-edge-review-validation","page":"/shared/console/design/form/inline/error","route":"/shared/console/design/form/inline/error","testid":"shared-console-design-form-inline-error","case":"C-OBL-EDGE-REVIEW-VALIDATION"}];
+    const routeByPath = new Map(ROUTES.map((item) => [item.route, item]));
+    const tokenLabels = {
+      auth: "认证", login: "登录", register: "注册", dashboard: "运营概览", realtime: "实时监控",
+      kpi: "关键指标", alerts: "告警", configuration: "配置", users: "用户管理", tenants: "租户管理",
+      tenant: "租户", trial: "试用", contracts: "合同", terminations: "终止管理", access: "访问控制",
+      recharge: "充值", review: "审核", roles: "角色权限", channel: "通道", monitor: "监控",
+      routing: "路由", policy: "策略", number: "号码", portability: "携号转网", send: "发送",
+      api: "API", status: "状态", task: "任务", signature: "签名", template: "模板", exemption: "豁免",
+      black: "黑名单", white: "白名单", lists: "名单", risk: "风控", provider: "供应商",
+      frequency: "频控", content: "内容安全", attribution: "归属地", complaints: "投诉",
+      uplinks: "上行消息", unsubscribes: "退订", submission: "提交", details: "明细",
+      bulk: "批量", receipt: "回执", error: "错误", export: "导出中心", statistics: "统计",
+      custom: "自定义", reports: "报表", reconciliation: "对账", settlements: "结算",
+      invoices: "发票", financial: "财务", analytics: "分析", fee: "费用", warning: "预警",
+      alert: "告警", history: "历史", notification: "通知", targets: "接收目标",
+      shortlinks: "短链接", codes: "状态码", prefixes: "号段", jobs: "任务",
+      system: "系统", accounts: "账号", logs: "日志", account: "账户信息",
+      information: "信息", qualification: "资质", administrators: "管理员", overview: "工作台",
+      scheduled: "定时", records: "记录", templates: "模板", signatures: "签名",
+      balance: "余额", statements: "账单", blacklist: "黑名单", webhooks: "Webhook",
+      keys: "密钥", cmpp: "CMPP", component: "组件", states: "状态目录",
+      shared: "共享", console: "控制台", shell: "外壳", responsive: "响应式",
+      baseline: "基线", design: "设计", form: "表单", inline: "行内", list: "列表", empty: "空状态"
+    };
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char]);
+    const labelFor = (item) => {
+      if (item.obligation === "OBL-EDGE-EMPTY-LIST") return "空列表边界场景";
+      if (item.obligation === "OBL-EDGE-REVIEW-VALIDATION") return "审核表单校验场景";
+      if (item.obligation.startsWith("OBL-DESIGN-SYSTEM")) {
+        return {
+          "OBL-DESIGN-SYSTEM-001": "共享控制台层级与导航",
+          "OBL-DESIGN-SYSTEM-002": "品牌令牌与共享组件",
+          "OBL-DESIGN-SYSTEM-003": "组件状态目录",
+          "OBL-DESIGN-SYSTEM-004": "Chrome 桌面响应式基线",
+          "OBL-DESIGN-SYSTEM-005": "可访问性与全局反馈"
+        }[item.obligation];
+      }
+      return item.page.split("-").filter((part) => !["admin","tenant"].includes(part))
+        .map((part) => tokenLabels[part] || part).join(" · ");
+    };
+    const scopeFor = (item) => item.route.startsWith("/admin") ? "admin" :
+      item.route.startsWith("/tenant") ? "tenant" : "shared";
+    const roleLabels = {
+      "platform-administrator": "平台管理员", operator: "运营", finance: "财务",
+      "organization-administrator": "机构管理员", "business-user": "业务用户", developer: "开发人员",
+      "design-reviewer": "设计审阅者", "chrome-acceptance": "Chrome 验收者",
+      "authorized-reviewer": "授权审阅者", "authorized-operator": "授权运营", unauthenticated: "未登录"
+    };
+    const roleMatrix = new Map();
+    const assignRoles = (roles, routes) => routes.forEach((route) => roleMatrix.set(route, roles));
+    assignRoles("design-reviewer", ["/shared/console/shell", "/shared/component/states"]);
+    assignRoles("chrome-acceptance", ["/shared/responsive/baseline"]);
+    assignRoles("authorized-reviewer", ["/shared/console/design/shell/notification/target", "/shared/console/design/form/inline/error"]);
+    assignRoles("authorized-operator", ["/shared/console/design/list/empty"]);
+    assignRoles("unauthenticated", ["/admin/auth/login", "/tenant/auth/login", "/tenant/register"]);
+    assignRoles("platform-administrator,operator,finance", ["/admin/dashboard/realtime", "/admin/dashboard/kpi", "/admin/dashboard/alerts", "/admin/submission/details", "/admin/bulk/details", "/admin/uplink/details", "/admin/receipt/details", "/admin/error/details", "/admin/export/center"]);
+    assignRoles("platform-administrator", ["/admin/dashboard/configuration", "/admin/users", "/admin/roles", "/admin/system/accounts", "/admin/system/logs"]);
+    assignRoles("operator,finance", ["/admin/tenants", "/admin/tenant/trial/contracts", "/admin/tenant/terminations", "/admin/tenant/access", "/admin/statistics", "/admin/custom/reports"]);
+    assignRoles("finance", ["/admin/tenant/recharge/review", "/admin/reconciliation", "/admin/settlements", "/admin/invoices", "/admin/financial/analytics", "/admin/fee/warning"]);
+    assignRoles("operator", ["/admin/channel/configuration", "/admin/channel/monitor", "/admin/routing/policy", "/admin/number/portability", "/admin/send/monitor", "/admin/api/status/monitor", "/admin/task/monitor", "/admin/signature/review", "/admin/template/review", "/admin/exemption/policy", "/admin/black/white/lists", "/admin/risk/provider", "/admin/frequency/rules", "/admin/content/safety", "/admin/number/attribution", "/admin/complaints", "/admin/uplinks", "/admin/unsubscribes", "/admin/alert/rules", "/admin/alert/history", "/admin/notification/targets", "/admin/shortlinks"]);
+    assignRoles("platform-administrator,operator", ["/admin/status/codes", "/admin/prefixes", "/admin/send/jobs"]);
+    assignRoles("organization-administrator", ["/tenant/account/information", "/tenant/qualification", "/tenant/administrators", "/tenant/balance", "/tenant/recharge", "/tenant/statements", "/tenant/invoices", "/tenant/notification/targets"]);
+    assignRoles("organization-administrator,business-user,developer", ["/tenant/overview"]);
+    assignRoles("organization-administrator,business-user", ["/tenant/send", "/tenant/bulk/send", "/tenant/scheduled/tasks", "/tenant/send/records", "/tenant/templates", "/tenant/signatures", "/tenant/blacklist", "/tenant/uplinks", "/tenant/unsubscribes", "/tenant/shortlinks"]);
+    assignRoles("organization-administrator,developer", ["/tenant/webhooks", "/tenant/api/keys", "/tenant/cmpp/access"]);
+    const rolesFor = (item) => roleMatrix.get(item.route) || "design-reviewer";
+    const portalRoles = (scope) => scope === "admin" ? ["platform-administrator", "operator", "finance"] : scope === "tenant" ? ["organization-administrator", "business-user", "developer"] : ["design-reviewer", "chrome-acceptance", "authorized-reviewer", "authorized-operator"];
+    const selectedRoleByScope = { admin: "platform-administrator", tenant: "organization-administrator", shared: "design-reviewer" };
+    const rolePinnedByScope = { admin: false, tenant: false, shared: false };
+    const activeRoleFor = (item) => {
+      const scope = scopeFor(item);
+      const allowed = rolesFor(item).split(",");
+      if (!rolePinnedByScope[scope] && !allowed.includes(selectedRoleByScope[scope])) selectedRoleByScope[scope] = allowed[0];
+      return selectedRoleByScope[scope];
+    };
+    const contractMarkers = (item) => `<div class="contract-badges" aria-label="页面契约">${ROUTES.filter((entry) => entry.route === item.route).map((entry) => `<span class="contract-badge" data-testid="${entry.testid}" data-route="${entry.route}" data-obligation="${entry.obligation}">${entry.obligation}</span>`).join("")}</div>`;
+    const visibleRoutes = (scope, role) => [...new Map(ROUTES.filter((item) => {
+      if (scope === "admin") return item.route.startsWith("/admin");
+      if (scope === "tenant") return item.route.startsWith("/tenant");
+      return item.route.startsWith("/shared");
+    }).filter((entry) => rolesFor(entry).split(",").includes(role)).map((entry) => [entry.route, entry])).values()];
+    const navMarkup = (item) => {
+      const scope = scopeFor(item);
+      const role = activeRoleFor(item);
+      return visibleRoutes(scope, role).map((entry, index) => {
+        const group = index === 0 ? `<div class="nav-heading">${scope === "admin" ? "平台管理" : scope === "tenant" ? "租户工作台" : "设计契约"}</div>` : "";
+        return group + `<a class="nav-link" href="${entry.route}" data-route-link data-testid="shared-console-shell-navigation-${entry.page}-link" ${entry.route === item.route ? 'aria-current="page"' : ""}>${escapeHtml(labelFor(entry))}</a>`;
+      }).join("");
+    };
+    const sharedHeader = (item) => {
+      const scope = scopeFor(item);
+      const activeRole = activeRoleFor(item);
+      return `
+      <header class="header" data-testid="shared-console-shell-header-region">
+        <div class="brand" data-testid="shared-console-shell-header-product-wordmark">YCS OPEN · SMS</div>
+        <span class="environment" data-testid="shared-console-shell-header-environment-badge">生产环境</span>
+        <label class="role-badge">角色 <select data-testid="shared-console-shell-header-role-switcher" aria-label="切换角色">${portalRoles(scope).map((role) => `<option value="${role}" ${role === activeRole ? "selected" : ""}>${roleLabels[role]}</option>`).join("")}</select></label>
+        <span class="role-badge" data-testid="shared-console-shell-header-current-role-badge">${roleLabels[activeRole]}</span>
+        <div class="header-spacer"></div>
+        <input class="header-search" type="search" aria-label="全局搜索" data-testid="shared-console-shell-header-global-search" value="">
+        <button class="icon-button" type="button" aria-label="打开通知中心" data-testid="shared-console-shell-header-notification-trigger">🔔</button>
+        <button class="icon-button avatar" type="button" aria-label="打开用户菜单" data-testid="shared-console-shell-header-profile-trigger">YC</button>
+      </header>`;
+    };
+    const toolbarMarkup = () => `
+      <div class="toolbar" data-testid="shared-console-shell-toolbar-region">
+        <label>关键词 <input type="search" data-testid="shared-console-shell-toolbar-keyword-search" aria-label="按关键词筛选"></label>
+        <label>状态 <select data-testid="shared-console-shell-toolbar-status-filter" aria-label="按状态筛选"><option>全部</option><option>正常</option><option>待处理</option></select></label>
+        <button class="button" type="button" data-testid="shared-console-shell-toolbar-refresh-action">刷新</button>
+        <div class="toolbar-spacer"></div>
+        <button class="button" type="button" data-testid="shared-console-shell-toolbar-column-settings-action">列设置</button>
+        <button class="button" type="button" data-testid="shared-console-shell-toolbar-export-action">导出</button>
+        <button class="button primary" type="button" data-testid="shared-console-shell-toolbar-primary-action">新建记录</button>
+      </div>`;
+    const metricsMarkup = () => `
+      <section class="metrics" aria-label="关键指标" data-testid="shared-console-shell-metrics-grid">
+        <article class="card metric" data-testid="shared-console-shell-metrics-today-card"><div class="metric-label">今日处理量</div><div class="metric-value">128,630</div><div class="metric-trend">较昨日 +8.4%</div></article>
+        <article class="card metric" data-testid="shared-console-shell-metrics-success-card"><div class="metric-label">成功率</div><div class="metric-value">98.72%</div><div class="metric-trend">目标 ≥ 98%</div></article>
+        <article class="card metric" data-testid="shared-console-shell-metrics-pending-card"><div class="metric-label">待处理</div><div class="metric-value">7</div><div class="metric-trend">高优先级 2 项</div></article>
+        <article class="card metric" data-testid="shared-console-shell-metrics-health-card"><div class="metric-label">服务健康</div><div class="metric-value">正常</div><div class="metric-trend">18 / 20 通道可用</div></article>
+      </section>`;
+    const tableMarkup = (item) => `
+      <section class="card table-card" data-testid="shared-console-shell-records-table-card">
+        <div class="table-head"><h2>${escapeHtml(labelFor(item))}记录</h2><span class="status success" data-testid="shared-console-shell-records-data-freshness">数据已更新</span></div>
+        <table data-testid="shared-console-shell-records-table">
+          <caption class="skip">当前页面业务记录</caption>
+          <thead><tr><th data-testid="shared-console-shell-records-column-id">编号</th><th data-testid="shared-console-shell-records-column-name">名称</th><th data-testid="shared-console-shell-records-column-owner">负责人</th><th data-testid="shared-console-shell-records-column-status">状态</th><th data-testid="shared-console-shell-records-column-updated">更新时间</th><th data-testid="shared-console-shell-records-column-actions">操作</th></tr></thead>
+          <tbody>
+            <tr data-testid="shared-console-shell-records-row-001"><td>YC-260831-01</td><td>${escapeHtml(labelFor(item))} · 华北业务组</td><td>王运营</td><td><span class="status success">正常</span></td><td>刚刚</td><td><button class="button" type="button" data-testid="shared-console-shell-records-row-detail-action">查看详情</button></td></tr>
+            <tr data-testid="shared-console-shell-records-row-002"><td>YC-260831-02</td><td>${escapeHtml(labelFor(item))} · 华东业务组</td><td>李审核</td><td><span class="status warning">待处理</span></td><td>8 分钟前</td><td><button class="button" type="button" data-testid="shared-console-shell-records-row-review-action">立即处理</button></td></tr>
+            <tr data-testid="shared-console-shell-records-row-003"><td>YC-260831-03</td><td>${escapeHtml(labelFor(item))} · 华南业务组</td><td>周财务</td><td><span class="status success">已完成</span></td><td>22 分钟前</td><td><button class="button" type="button" data-testid="shared-console-shell-records-row-more-action">更多</button></td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" data-testid="shared-console-shell-records-pagination"><span>共 128 条</span><button class="button" type="button" disabled data-testid="shared-console-shell-records-previous-page-action">上一页</button><button class="button" type="button" data-testid="shared-console-shell-records-next-page-action">下一页</button></div>
+      </section>`;
+    const stateCatalog = () => {
+      const states = [
+        ["shared-component-states-catalog-loading-state","加载中","骨架屏保留布局，状态通过 aria-live 播报。"],
+        ["shared-component-states-catalog-empty-state","空状态","提供说明、恢复动作与禁用的批量操作。"],
+        ["shared-component-states-catalog-partial-state","部分成功","明确成功与失败数量并允许下载失败明细。"],
+        ["shared-component-states-catalog-success-state","成功","用状态标签与轻量 Toast 双重反馈。"],
+        ["shared-component-states-catalog-warning-state","警告","说明风险、影响范围和可执行建议。"],
+        ["shared-component-states-catalog-error-state","错误","保留用户输入并说明失败原因。"],
+        ["shared-component-states-catalog-retry-state","重试","提供幂等、可重复执行的恢复动作。"],
+        ["shared-component-states-catalog-stale-state","数据过期","标记数据时间并提供刷新动作。"],
+        ["shared-component-states-catalog-permission-denied-state","权限不足","解释所需角色并给出申请权限入口。"],
+        ["shared-component-states-catalog-destructive-confirmation-state","危险确认","二次确认对象、影响范围和审计记录。"],
+        ["shared-component-states-catalog-toast-state","Toast","非阻断操作使用可播报的短时反馈。"],
+        ["shared-component-states-catalog-modal-state","Modal","阻断式任务使用焦点陷阱和 Esc 关闭。"],
+        ["shared-component-states-catalog-drawer-state","Drawer","保留主页面上下文的辅助任务。"],
+        ["shared-component-states-catalog-popover-state","Popover","短动作面板支持键盘触发与焦点返回。"],
+        ["shared-component-states-catalog-tooltip-state","Tooltip","短说明同时支持悬停与键盘焦点。"],
+        ["shared-component-states-catalog-floating-control-state","Floating control","浮动控制不遮挡主任务并提供可访问名称。"]
+      ];
+      return `<section class="state-grid" data-testid="shared-component-states-catalog-grid">${states.map(([id,title,desc]) => `<article class="card state-card" data-testid="${id}"><h3>${title}</h3><p>${desc}</p><div class="skeleton"></div><div class="skeleton" style="width:72%"></div></article>`).join("")}</section>`;
+    };
+    const portalRegistry = () => `<section class="portal-map" data-testid="shared-console-shell-roles-portal-registry">
+      <article class="card portal-card" data-testid="shared-console-shell-roles-admin-hierarchy"><div class="portal-card-head"><h2>Admin 平台控制台</h2><span class="role-badge" data-testid="shared-console-shell-roles-admin-visibility">管理员 / 运营 / 财务</span></div><div class="portal-links"><span class="portal-link">运营概览</span><span class="portal-link">租户管理</span><span class="portal-link">通道与路由</span><span class="portal-link">审核与风控</span><span class="portal-link">统计与财务</span><span class="portal-link">告警中心</span></div></article>
+      <article class="card portal-card" data-testid="shared-console-shell-roles-tenant-hierarchy"><div class="portal-card-head"><h2>Tenant 租户工作台</h2><span class="role-badge" data-testid="shared-console-shell-roles-tenant-visibility">机构管理员 / 业务用户 / 开发人员</span></div><div class="portal-links"><span class="portal-link">工作台</span><span class="portal-link">发送短信</span><span class="portal-link">发送记录</span><span class="portal-link">模板与签名</span><span class="portal-link">费用中心</span><span class="portal-link">开发者配置</span></div></article>
+    </section>`;
+    const sharedContent = (item) => {
+      if (item.obligation === "OBL-DESIGN-SYSTEM-003") return stateCatalog();
+      if (item.obligation === "OBL-DESIGN-SYSTEM-004") return `
+        <section class="card" style="padding:20px" data-testid="shared-responsive-baseline-layout-board">
+          <h2>Chrome 1440 × 900 桌面基线</h2><p class="subtitle">固定头部、可滚动侧栏、弹性内容区；最小支持宽度 1100px。</p>
+          <div class="chart" aria-label="24 小时发送趋势图" data-testid="shared-responsive-baseline-chart-volume">${[42,58,51,72,66,84,77,91,80,96,88,100].map((h) => `<span class="bar" style="height:${h}%"></span>`).join("")}</div>
+          <table data-testid="shared-responsive-baseline-chart-table-alternative"><caption>发送趋势表格替代</caption><thead><tr><th>时间</th><th>发送量</th></tr></thead><tbody><tr><td>08:00</td><td>12,480</td></tr><tr><td>09:00</td><td>15,920</td></tr></tbody></table>
+        </section>`;
+      if (item.obligation === "OBL-DESIGN-SYSTEM-005") return `
+        <section class="state-grid" data-testid="shared-console-shell-accessibility-inventory">
+          <article class="card state-card" data-testid="shared-console-shell-accessibility-keyboard-focus"><h3>键盘与焦点</h3><p>跳转链接、可见焦点、弹窗焦点恢复。</p></article>
+          <article class="card state-card" data-testid="shared-console-shell-accessibility-status-announcement"><h3>状态播报</h3><p>Toast 与表单错误分别使用 status 和 alert。</p></article>
+          <article class="card state-card" data-testid="shared-console-shell-accessibility-chart-alternative"><h3>图表替代</h3><p>所有图表提供同源表格数据。</p></article>
+        </section>`;
+      return `
+        ${portalRegistry()}
+        ${metricsMarkup()}
+        <section class="card" style="padding:20px;margin-bottom:16px" data-testid="shared-console-shell-design-token-board">
+          <h2>品牌与组件令牌</h2>
+          <p class="subtitle">Primary / Navy / Phase accent · 8px spacing grid · 4/6/10px radius；固定 ycsan revision 与 checksum 见下方参考卡。</p>
+          <div style="display:flex;gap:10px;margin-top:16px"><button class="button primary" type="button" data-testid="shared-console-shell-design-token-primary-action">主要操作</button><span class="status success">运行正常</span><button class="button" type="button" data-testid="shared-console-shell-design-token-secondary-action">次要操作</button></div>
+        </section>
+        <section class="card" style="padding:20px;margin-bottom:16px" data-testid="shared-console-shell-design-pencil-source-map"><h2>Pencil 可编辑源映射</h2><p class="subtitle">Shared Components · Admin Operations · Tenant Send · States and Overlays · 83 Obligation Route Map；稳定节点与 HTML route/test-id registry 同源维护。</p></section>
+        <section class="card" style="padding:20px;margin-bottom:16px" data-testid="shared-console-shell-design-ycsan-reference-board"><h2>ycsan 视觉参考封印</h2><p class="subtitle">revision f4f8aae9 · app/globals.css SHA-256 6931f74f… · Chrome 151 · 1440×900；采用 text / primary / primary-deep，teal 为本阶段适配。</p></section>
+        ${tableMarkup(item)}`;
+    };
+    const emptyContent = () => `
+      <section class="card empty" data-testid="shared-console-design-list-empty-panel">
+        <div>
+          <div class="empty-illustration" data-testid="shared-console-design-list-empty-illustration" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none"><path d="M13 18h38v31H13z" stroke="currentColor" stroke-width="4"/><path d="M13 37h12l4 6h6l4-6h12M22 18l5-7h10l5 7" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg>
+          </div>
+          <h2>暂无数据</h2><p>调整筛选条件，或创建第一条业务记录。</p>
+          <div><button class="button" type="button" disabled data-testid="shared-console-design-list-empty-bulk-action">批量操作</button> <button class="button" type="button" disabled data-testid="shared-console-design-list-empty-export-action">导出</button> <button class="button primary" type="button" data-testid="shared-console-design-list-empty-create-action">创建记录</button></div>
+        </div>
+      </section>`;
+    const validationContent = () => `
+      <section class="card form-card" data-testid="shared-console-design-form-review-validation-panel">
+        <h2>审核处理</h2><p class="subtitle">驳回时必须填写明确原因，提交失败不会刷新页面或发送请求。</p>
+        <form data-testid="shared-console-design-form-review-form" novalidate>
+          <div class="form-row"><label for="review-reason">驳回原因 *</label><textarea id="review-reason" class="field" data-testid="shared-console-design-form-review-reason-input" aria-describedby="shared-console-design-form-review-reason-error"></textarea><p id="shared-console-design-form-review-reason-error" class="error" role="alert" data-testid="shared-console-design-form-review-reason-error" hidden></p></div>
+          <div class="dialog-actions"><button class="button" type="button" data-testid="shared-console-design-form-review-cancel-action">取消</button><button class="button danger" type="submit" data-testid="shared-console-design-form-review-submit-action">确认驳回</button></div>
+        </form>
+      </section>`;
+    const authContent = (item) => `
+      <main class="auth-shell" data-route="${item.route}" data-obligation="${item.obligation}" data-allowed-roles="${rolesFor(item)}" data-current-role="unauthenticated" data-render-source="prototype-html">
+        <section class="auth-brand"><div class="brand">YCS OPEN · SMS</div><h1>可靠、透明的短信运营平台</h1><p>通道治理、风控审核、发送运营与财务对账统一在一个工作台。</p></section>
+        <section class="auth-panel"><form class="card auth-card" data-testid="shared-auth-login-form-region"><h2>${escapeHtml(labelFor(item))}</h2><p class="subtitle">使用已授权的控制台账号继续</p>${contractMarkers(item)}<div class="form-row"><label for="account">账号</label><input id="account" class="field" data-testid="shared-auth-login-form-account-field" autocomplete="username"></div><div class="form-row"><label for="password">密码</label><input id="password" class="field" type="password" data-testid="shared-auth-login-form-password-field" autocomplete="current-password"></div><button class="button primary" type="submit" data-testid="shared-auth-login-form-submit-action">进入控制台</button></form></section>
+      </main>`;
+    function render(path = window.location.pathname) {
+      const item = routeByPath.get(path) || ROUTES[0];
+      const auth = /\/auth\/|\/register$/.test(item.route);
+      if (auth) {
+        document.getElementById("app").innerHTML = authContent(item);
+      } else {
+        const edgeEmpty = item.obligation === "OBL-EDGE-EMPTY-LIST";
+        const edgeValidation = item.obligation === "OBL-EDGE-REVIEW-VALIDATION";
+        const shared = scopeFor(item) === "shared";
+        const activeRole = activeRoleFor(item);
+        const authorized = rolesFor(item).split(",").includes(activeRole);
+        const content = !authorized ? `<section class="card state-card" data-testid="shared-console-shell-permission-denied-panel"><h2>当前角色无权访问</h2><p>本页面允许角色：${rolesFor(item).split(",").map((role) => roleLabels[role]).join(" / ")}。</p></section>` : edgeEmpty ? emptyContent() : edgeValidation ? validationContent() : shared ? sharedContent(item) : metricsMarkup() + tableMarkup(item);
+        document.getElementById("app").innerHTML = `
+          <div class="app" data-route="${item.route}" data-page-id="${item.page}" data-obligation="${item.obligation}" data-allowed-roles="${rolesFor(item)}" data-current-role="${activeRole}" data-render-source="prototype-html">
+            ${sharedHeader(item)}
+            <div class="body">
+              <aside class="sidebar" aria-label="主导航" data-testid="shared-console-shell-navigation-primary-region">${navMarkup(item)}</aside>
+              <main class="main" id="main-content" tabindex="-1">
+                <div class="breadcrumb" data-testid="shared-console-shell-page-breadcrumb">控制台 / ${scopeFor(item) === "admin" ? "平台管理" : scopeFor(item) === "tenant" ? "租户工作台" : "设计系统"} / ${escapeHtml(labelFor(item))}</div>
+                <div class="page-heading"><div class="page-heading-text"><h1 data-testid="shared-console-shell-page-title">${escapeHtml(labelFor(item))}</h1><p class="subtitle" data-testid="shared-console-shell-page-purpose">查看、筛选并管理${escapeHtml(labelFor(item))}，所有关键动作均提供状态反馈与审计入口。</p><p class="subtitle" data-testid="shared-console-shell-page-role-visibility">允许角色：${rolesFor(item).split(",").map((role) => roleLabels[role]).join(" / ")}</p></div><button class="button primary" type="button" data-testid="shared-console-shell-page-primary-action" ${authorized ? "" : "disabled"}>新建记录</button></div>
+                ${contractMarkers(item)}
+                ${edgeEmpty || edgeValidation ? "" : toolbarMarkup()}
+                ${content}
+              </main>
+            </div>
+          </div>`;
+      }
+      bindInteractions();
+      document.title = labelFor(item) + " · YCS Open SMS";
+    }
+    function toast(message) {
+      const live = document.getElementById("live-region");
+      live.textContent = message; live.hidden = false;
+      window.clearTimeout(window.__toastTimer);
+      window.__toastTimer = window.setTimeout(() => { live.hidden = true; }, 1600);
+    }
+    function openDrawer() {
+      document.querySelector("[data-testid='shared-console-shell-notification-drawer']")?.remove();
+      const drawer = document.createElement("aside");
+      drawer.className = "drawer"; drawer.dataset.testid = "shared-console-shell-notification-drawer"; drawer.setAttribute("aria-label","通知中心");
+      drawer.innerHTML = `<div class="drawer-head"><h2>通知中心</h2><button class="icon-button" type="button" data-testid="shared-console-shell-notification-drawer-close-action" aria-label="关闭通知中心">✕</button></div><article class="notice"><strong>通道成功率恢复正常</strong><small>刚刚</small></article><article class="notice"><strong>模板审核已完成</strong><small>10 分钟前</small></article>`;
+      document.body.appendChild(drawer);
+      drawer.querySelector("button").focus();
+      drawer.querySelector("button").addEventListener("click", () => { drawer.remove(); document.querySelector("[data-testid='shared-console-shell-header-notification-trigger']")?.focus(); });
+    }
+    function toggleProfile() {
+      const existing = document.querySelector("[data-testid='shared-console-shell-profile-popover']");
+      if (existing) { existing.remove(); return; }
+      const popover = document.createElement("div");
+      popover.className = "popover"; popover.dataset.testid = "shared-console-shell-profile-popover";
+      popover.innerHTML = `<button type="button" data-testid="shared-console-shell-profile-personal-action">个人资料</button><button type="button" data-testid="shared-console-shell-profile-security-action">安全设置</button><button type="button" data-testid="shared-console-shell-profile-logout-action">退出登录</button>`;
+      document.body.appendChild(popover);
+      popover.querySelector("button").focus();
+    }
+    function openDialog(trigger) {
+      const overlay = document.createElement("div");
+      overlay.className = "overlay"; overlay.dataset.testid = "shared-console-shell-record-dialog-overlay";
+      overlay.innerHTML = `<section class="dialog" role="dialog" aria-modal="true" aria-labelledby="shared-console-shell-record-dialog-title" data-testid="shared-console-shell-record-dialog"><h2 id="shared-console-shell-record-dialog-title">记录详情</h2><p>该记录已绑定操作者、状态变更时间和审计链路。</p><div class="dialog-actions"><button class="button" type="button" data-testid="shared-console-shell-record-dialog-close-action">关闭</button><button class="button primary" type="button" data-testid="shared-console-shell-record-dialog-confirm-action">确认</button></div></section>`;
+      document.body.appendChild(overlay);
+      const close = () => { overlay.remove(); trigger?.focus(); };
+      overlay.querySelector("[data-testid='shared-console-shell-record-dialog-close-action']").addEventListener("click", close);
+      overlay.querySelector("[data-testid='shared-console-shell-record-dialog-confirm-action']").addEventListener("click", () => { close(); toast("操作已确认"); });
+      overlay.querySelector("[data-testid='shared-console-shell-record-dialog-close-action']").focus();
+    }
+    function bindInteractions() {
+      document.querySelectorAll("[data-route-link]").forEach((link) => link.addEventListener("click", (event) => {
+        event.preventDefault(); history.pushState({}, "", link.getAttribute("href")); render();
+      }));
+      document.querySelector("[data-testid='shared-console-shell-header-notification-trigger']")?.addEventListener("click", openDrawer);
+      document.querySelector("[data-testid='shared-console-shell-header-profile-trigger']")?.addEventListener("click", toggleProfile);
+      document.querySelector("[data-testid='shared-console-shell-header-role-switcher']")?.addEventListener("change", (event) => {
+        const item = routeByPath.get(window.location.pathname) || ROUTES[0];
+        const scope = scopeFor(item);
+        selectedRoleByScope[scope] = event.target.value;
+        rolePinnedByScope[scope] = true;
+        render();
+      });
+      document.querySelectorAll("[data-testid='shared-console-shell-toolbar-refresh-action'],[data-testid='shared-console-shell-toolbar-export-action'],[data-testid='shared-console-shell-page-primary-action'],[data-testid='shared-console-shell-toolbar-primary-action'],[data-testid='shared-console-design-list-empty-create-action']").forEach((button) => button.addEventListener("click", () => toast("操作已完成")));
+      document.querySelectorAll("[data-testid='shared-console-shell-records-row-detail-action'],[data-testid='shared-console-shell-records-row-review-action']").forEach((button) => button.addEventListener("click", (event) => openDialog(event.currentTarget)));
+      const search = document.querySelector("[data-testid='shared-console-shell-toolbar-keyword-search']");
+      search?.addEventListener("input", () => {
+        document.querySelectorAll("[data-testid^='shared-console-shell-records-row-']").forEach((row) => { row.hidden = !row.textContent.includes(search.value); });
+      });
+      const form = document.querySelector("[data-testid='shared-console-design-form-review-form']");
+      form?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const field = document.querySelector("[data-testid='shared-console-design-form-review-reason-input']");
+        const error = document.querySelector("[data-testid='shared-console-design-form-review-reason-error']");
+        const submit = document.querySelector("[data-testid='shared-console-design-form-review-submit-action']");
+        if (field.value.trim().length < 5) {
+          field.setAttribute("aria-invalid","true");
+          error.textContent = "请输入不少于 5 个字的驳回原因"; error.hidden = false;
+          submit.disabled = true; field.focus(); return;
+        }
+        field.removeAttribute("aria-invalid"); error.hidden = true; toast("审核结果已提交");
+      });
+      document.querySelector("[data-testid='shared-console-design-form-review-reason-input']")?.addEventListener("input", (event) => {
+        const submit = document.querySelector("[data-testid='shared-console-design-form-review-submit-action']");
+        submit.disabled = event.target.value.trim().length < 5;
+      });
+      document.querySelector("[data-testid='shared-auth-login-form-region']")?.addEventListener("submit", (event) => { event.preventDefault(); toast("原型环境不执行真实登录"); });
+    }
+    window.addEventListener("popstate", () => render());
+    render();
+  </script>
+</body>
+</html>

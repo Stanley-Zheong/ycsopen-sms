@@ -1,8 +1,10 @@
 package com.ycsopen.sms.core.common.exception;
 
 import com.ycsopen.sms.core.web.dto.ApiResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.ycsopen.sms.core.common.security.logging.SafeLogValue;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger.Category;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger.Event;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +18,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final SecurityEventLogger security;
+
+    public GlobalExceptionHandler(SecurityEventLogger security) {
+        this.security = security;
+    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
-        log.warn("business rejection: code={} msg={} traceId={}", ex.getErrorCode(), ex.getMessage(), MDC.get("traceId"));
+        security.warn(Event.BUSINESS_REJECTION, Category.BUSINESS,
+                SafeLogValue.correlation(MDC.get("traceId")));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
-        log.error("unexpected error traceId={}", MDC.get("traceId"), ex);
+        security.error(Event.UNEXPECTED_FAILURE, Category.UNEXPECTED,
+                SafeLogValue.correlation(MDC.get("traceId")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("INTERNAL_ERROR", "系统繁忙，请稍后再试"));
     }

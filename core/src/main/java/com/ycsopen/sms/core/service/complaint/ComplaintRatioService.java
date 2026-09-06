@@ -2,12 +2,12 @@ package com.ycsopen.sms.core.service.complaint;
 
 import com.ycsopen.sms.core.domain.entity.Channel;
 import com.ycsopen.sms.core.domain.entity.ComplaintRatioStats;
-import com.ycsopen.sms.core.domain.entity.Tenant;
 import com.ycsopen.sms.core.repository.ChannelRepository;
 import com.ycsopen.sms.core.repository.ComplaintRatioStatsRepository;
 import com.ycsopen.sms.core.repository.ComplaintRepository;
 import com.ycsopen.sms.core.repository.MessageTaskRepository;
 import com.ycsopen.sms.core.repository.TenantRepository;
+import com.ycsopen.sms.core.repository.TenantRepository.IdProjection;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -69,7 +69,7 @@ public class ComplaintRatioService {
         LocalDateTime end = month.plusMonths(1).atDay(1).atStartOfDay();
         String statMonth = month.format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-        for (Tenant tenant : tenantRepository.findAll()) {
+        for (IdProjection tenant : tenantRepository.findAllIds()) {
             long sendCount = messageTaskRepository.countByTenantIdAndCreatedAtBetween(tenant.getId(), start, end);
             long complaintCount = complaintRepository.countByTenantIdAndCreatedAtBetween(tenant.getId(), start, end);
             upsert(statMonth, ComplaintRatioStats.DimensionType.TENANT, tenant.getId(), sendCount, complaintCount);

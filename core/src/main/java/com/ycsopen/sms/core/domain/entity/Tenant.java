@@ -1,8 +1,12 @@
 package com.ycsopen.sms.core.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ycsopen.sms.core.common.security.persistence.TenantRegistrationProtectionAdapter;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,29 +37,67 @@ public class Tenant {
     @Column(name = "unified_social_credit_code", nullable = false, unique = true)
     private String unifiedSocialCreditCode;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "business_license_url")
-    private String businessLicenseUrl;
+    private String businessLicenseObjectId;
 
     @Column(name = "legal_rep_name")
     private String legalRepName;
 
-    @Column(name = "legal_rep_id_no_encrypted")
-    private String legalRepIdNoEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_no_encrypted", length = 255)
+    private byte[] legalRepIdNoEncrypted;
+
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_front_url")
+    private String legalRepIdFrontObjectId;
+
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "legal_rep_id_back_url")
+    private String legalRepIdBackObjectId;
 
     @Column(name = "contact_name")
     private String contactName;
 
-    @Column(name = "contact_id_no_encrypted")
-    private String contactIdNoEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "contact_id_no_encrypted", length = 255)
+    private byte[] contactIdNoEncrypted;
 
-    @Column(name = "contact_phone_encrypted")
-    private String contactPhoneEncrypted;
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
+    @Column(name = "contact_phone_encrypted", length = 255)
+    private byte[] contactPhoneEncrypted;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "shortlink_domain_proof_url")
-    private String shortlinkDomainProofUrl;
+    private String shortlinkDomainProofObjectId;
 
+    @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     @Column(name = "trademark_proof_url")
-    private String trademarkProofUrl;
+    private String trademarkProofObjectId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status")
@@ -90,6 +132,31 @@ public class Tenant {
     public enum VerificationStatus { UNVERIFIED, PENDING, VERIFIED, REJECTED }
     public enum LifecycleStatus { SUBMITTED, TRIAL, TRIAL_FROZEN, SIGNED, FROZEN, TERMINATED }
     public enum BillingMode { PREPAID, POSTPAID }
+
+    /**
+     * Assigns the complete protected registration state through the sole persistence adapter.
+     * The permit cannot be constructed by controllers or ordinary services, and all mutable
+     * inputs are defensively copied before the adapter clears its working buffers.
+     */
+    @JsonIgnore
+    public void assignProtectedRegistration(
+            TenantRegistrationProtectionAdapter.PreparedRegistration prepared,
+            TenantRegistrationProtectionAdapter.AssignmentPermit permit) {
+        if (permit == null || prepared == null
+                || prepared.businessLicenseObjectId() == null
+                || prepared.legalRepIdFrontObjectId() == null
+                || prepared.legalRepIdBackObjectId() == null) {
+            throw new IllegalStateException("protected registration assignment is invalid");
+        }
+        this.legalRepIdNoEncrypted = prepared.copyLegalRepresentativeIdEnvelope();
+        this.contactIdNoEncrypted = prepared.copyContactIdEnvelope();
+        this.contactPhoneEncrypted = prepared.copyContactPhoneEnvelope();
+        this.businessLicenseObjectId = prepared.businessLicenseObjectId();
+        this.legalRepIdFrontObjectId = prepared.legalRepIdFrontObjectId();
+        this.legalRepIdBackObjectId = prepared.legalRepIdBackObjectId();
+        this.shortlinkDomainProofObjectId = prepared.shortlinkDomainProofObjectId();
+        this.trademarkProofObjectId = prepared.trademarkProofObjectId();
+    }
 
     /** F-2.8：试用额度是否已耗尽。 */
     public boolean isTrialQuotaExhausted() {

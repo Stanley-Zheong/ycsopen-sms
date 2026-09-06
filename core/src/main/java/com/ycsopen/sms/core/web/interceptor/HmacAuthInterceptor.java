@@ -1,8 +1,9 @@
 package com.ycsopen.sms.core.web.interceptor;
 
 import com.ycsopen.sms.core.common.security.HmacSignatureVerifier;
-import com.ycsopen.sms.core.domain.entity.TenantApiKey;
+import com.ycsopen.sms.core.domain.entity.TenantApiKey.Status;
 import com.ycsopen.sms.core.repository.TenantApiKeyRepository;
+import com.ycsopen.sms.core.repository.TenantApiKeyRepository.AuthenticationProjection;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -41,8 +42,8 @@ public class HmacAuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        TenantApiKey apiKey = tenantApiKeyRepository.findByAppKey(appKey).orElse(null);
-        if (apiKey == null || apiKey.getStatus() != TenantApiKey.Status.ACTIVE) {
+        AuthenticationProjection apiKey = tenantApiKeyRepository.findAuthenticationByAppKey(appKey).orElse(null);
+        if (apiKey == null || apiKey.getStatus() != Status.ACTIVE) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "无效的 App Key");
             return false;
         }

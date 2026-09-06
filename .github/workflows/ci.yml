@@ -10,15 +10,66 @@ permissions:
   contents: read
 
 concurrency:
-  group: phase-01-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  core:
+  phase-01-portable:
+    name: Phase 01 portable registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PHASE01_SERVICE_PLATFORM: linux/amd64
+      PHASE01_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
+      PHASE01_REDIS_IMAGE: redis@sha256:596405c58f60e287ce0d71459202aaff26d90d08590106264a5f4cc2c73308d2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: core/pom.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Prepare digest-pinned service images
+        if: ${{ hashFiles('core/src/main/java/com/ycsopen/sms/core/common/security/FieldEncryptor.java', 'core/src/main/java/com/ycsopen/sms/core/common/security/HashUtil.java', 'core/src/test/java/com/ycsopen/sms/core/common/security/FieldEncryptorTest.java') != '' }}
+        run: |
+          /usr/bin/env ruby scripts/lib/phase-01/service_checks.rb prepare-images \
+            --platform "$PHASE01_SERVICE_PLATFORM" \
+            --mysql-image "$PHASE01_MYSQL_IMAGE" \
+            --redis-image "$PHASE01_REDIS_IMAGE"
+      - name: Execute shared portable verification registry
+        if: ${{ hashFiles('core/src/main/java/com/ycsopen/sms/core/common/security/FieldEncryptor.java', 'core/src/main/java/com/ycsopen/sms/core/common/security/HashUtil.java', 'core/src/test/java/com/ycsopen/sms/core/common/security/FieldEncryptorTest.java') != '' }}
+        run: >-
+          ./scripts/verify-phase-01 --ci
+          --evidence-dir
+          .planning/phases/01-engineering-verification-foundation/EVIDENCE
+      - name: Record Phase 1 lifecycle supersession
+        if: ${{ hashFiles('core/src/main/java/com/ycsopen/sms/core/common/security/FieldEncryptor.java', 'core/src/main/java/com/ycsopen/sms/core/common/security/HashUtil.java', 'core/src/test/java/com/ycsopen/sms/core/common/security/FieldEncryptorTest.java') == '' }}
+        run: echo 'phase01_portable_registry=SUPERSEDED_BY_PHASE03'
+      - name: Upload redacted failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-01-redacted-diagnostics-${{ github.run_id }}
+          path: .planning/phases/01-engineering-verification-foundation/EVIDENCE/runs/
+          if-no-files-found: warn
+          retention-days: 3
+
+  backend:
     name: Core / Java 21
     runs-on: ubuntu-latest
     steps:
+      # On pull_request, the default checkout target is GitHub's synthetic merge commit.
       - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -28,11 +79,129 @@ jobs:
       - name: Run backend tests
         run: mvn -f core/pom.xml test
 
+  phase-03-portable-contracts:
+    name: Phase 03 portable contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: core/pom.xml
+      - name: Install Phase 03 contract toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ripgrep
+          rg --version
+      - name: Verify Flyway migration ownership
+        run: |
+          python3 skills/flyway-migration/tests/test_next_flyway_version.py
+          python3 skills/flyway-migration/scripts/next_flyway_version.py \
+            --owner crypto-storage-bootstrap --check V1202
+      - name: Run destructive planning and protected-inventory fixtures
+        run: |
+          ruby .planning/tools/test-planning-validators.rb
+          ruby .planning/tools/test-phase-03-protected-inventory.rb
+          ruby scripts/lib/phase-03/test_service_checks.rb
+      - name: Audit production source reachability
+        run: ruby scripts/lib/phase-03/run_checks.rb --internal-source-audit
+      - name: Verify production artifact excludes test bridges
+        run: |
+          mvn -f core/pom.xml -DskipTests package
+          if jar tf core/target/ycsopen-sms-core.jar | grep -E \
+            'ProductionMigrationCommandServicesTestBridge|DockerMySqlSnapshotProcess'; then
+            echo 'phase03_production_artifact=FAIL'
+            exit 1
+          fi
+          echo 'phase03_production_artifact=PASS'
+
+  phase-03-real-integration:
+    name: Phase 03 real integration
+    runs-on: ubuntu-latest
+    env:
+      PHASE03_SERVICE_PLATFORM: linux/amd64
+      PHASE03_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
+      PHASE03_MINIO_IMAGE: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: core/pom.xml
+      - name: Install real-integration system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential cmake default-mysql-client libssl-dev
+      - name: Prepare digest-pinned service images
+        run: |
+          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
+          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MINIO_IMAGE"
+      - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
+        run: >-
+          mvn -f core/pom.xml -Dphase03.integration.enabled=true
+          -Dtest=Phase03FixturePreflightTest,Phase03ProtectedPersistenceIntegrationTest,Phase03Pkcs11IntegrationTest,Phase03MigrationIntegrationTest,Phase03ObjectStorageIntegrationTest,Phase03LeakScanIntegrationTest,Phase03RotationRecoveryIntegrationTest
+          test
+      - name: Prove every named real-integration suite executed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          suites = (
+              "Phase03FixturePreflightTest",
+              "Phase03ProtectedPersistenceIntegrationTest",
+              "Phase03Pkcs11IntegrationTest",
+              "Phase03MigrationIntegrationTest",
+              "Phase03ObjectStorageIntegrationTest",
+              "Phase03LeakScanIntegrationTest",
+              "Phase03RotationRecoveryIntegrationTest",
+          )
+          report_root = Path("core/target/surefire-reports")
+          failures = []
+          for suite in suites:
+              report = report_root / f"TEST-com.ycsopen.sms.core.verification.{suite}.xml"
+              if not report.is_file():
+                  failures.append(f"{suite}: report missing")
+                  continue
+              root = ET.parse(report).getroot()
+              counts = {name: int(root.attrib.get(name, "0"))
+                        for name in ("tests", "skipped", "failures", "errors")}
+              if counts["tests"] < 1 or any(counts[name] != 0
+                                             for name in ("skipped", "failures", "errors")):
+                  failures.append(f"{suite}: {counts}")
+          if failures:
+              raise SystemExit("Phase 03 integration proof failed:\n" + "\n".join(failures))
+          print(f"Executed {len(suites)} Phase 03 real-integration suites with zero skips.")
+          PY
+      - name: Clean owned integration services
+        if: always()
+        run: ruby scripts/lib/phase-03/service_checks.rb assert-clean --all
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-03-surefire-${{ github.run_id }}
+          path: core/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
   web:
     name: Web / Node 20
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

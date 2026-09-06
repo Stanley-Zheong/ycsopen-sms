@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.tenant;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.common.security.persistence.TenantRegistrationProtectionAdapter;
 import com.ycsopen.sms.core.domain.entity.Tenant;
 import com.ycsopen.sms.core.domain.entity.TenantAccount;
 import com.ycsopen.sms.core.repository.TenantAccountRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * F-2.1 机构资质认证 / F-2.2 机构准入审核 / F-2.8 试用管理，
@@ -22,15 +24,20 @@ public class TenantService {
 
     private final TenantRepository tenantRepository;
     private final TenantAccountRepository tenantAccountRepository;
+    private final TenantRegistrationProtectionAdapter registrationProtectionAdapter;
 
-    public TenantService(TenantRepository tenantRepository, TenantAccountRepository tenantAccountRepository) {
+    public TenantService(TenantRepository tenantRepository,
+                         TenantAccountRepository tenantAccountRepository,
+                         TenantRegistrationProtectionAdapter registrationProtectionAdapter) {
         this.tenantRepository = tenantRepository;
         this.tenantAccountRepository = tenantAccountRepository;
+        this.registrationProtectionAdapter = registrationProtectionAdapter;
     }
 
-    /** F-2.1：机构提交注册资料，进入 SUBMITTED 状态，等待运营审核。 */
+    /** F-2.1：保护全部注册资料并原子认领暂存对象，进入 SUBMITTED 状态。 */
     @Transactional
-    public Tenant submitRegistration(TenantRegistrationRequest req) {
+    public Tenant submitRegistration(TenantRegistrationRequest req, String uploadToken) {
+        registrationProtectionAdapter.validateRequest(req, uploadToken);
         tenantRepository.findByUnifiedSocialCreditCode(req.unifiedSocialCreditCode()).ifPresent(t -> {
             throw new BusinessException("DUPLICATE_TENANT", "统一社会信用代码已注册，不可重复提交");
         });
@@ -40,14 +47,17 @@ public class TenantService {
         tenant.setShortName(req.shortName());
         tenant.setFullName(req.fullName());
         tenant.setUnifiedSocialCreditCode(req.unifiedSocialCreditCode());
-        tenant.setBusinessLicenseUrl(req.businessLicenseUrl());
         tenant.setLegalRepName(req.legalRepName());
         tenant.setContactName(req.contactName());
-        tenant.setShortlinkDomainProofUrl(req.shortlinkDomainProofUrl());
-        tenant.setTrademarkProofUrl(req.trademarkProofUrl());
         tenant.setVerificationStatus(Tenant.VerificationStatus.PENDING);
         tenant.setLifecycleStatus(Tenant.LifecycleStatus.SUBMITTED);
-        return tenantRepository.save(tenant);
+
+        // The first flush allocates the immutable tenant ID used by all three AAD contexts. It is
+        // still inside this transaction, so any protection, object claim, or final-save failure
+        // rolls the tenant insert and every CLAIMED transition back together.
+        Tenant persisted = tenantRepository.saveAndFlush(tenant);
+        registrationProtectionAdapter.protectRegistration(persisted, req, uploadToken);
+        return tenantRepository.saveAndFlush(persisted);
     }
 
     /**
@@ -109,6 +119,6 @@ public class TenantService {
     }
 
     private String generateTenantNo() {
-        return "T" + System.currentTimeMillis();
+        return "T" + UUID.randomUUID().toString().replace("-", "").substring(0, 31);
     }
 }

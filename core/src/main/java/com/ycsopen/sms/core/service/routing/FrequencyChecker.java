@@ -16,6 +16,8 @@ import java.util.List;
 @Component
 public class FrequencyChecker {
 
+    public static final String MOBILE_IDENTITY_NOT_READY = "FREQUENCY_MOBILE_IDENTITY_NOT_READY";
+
     private final FrequencyRuleRepository frequencyRuleRepository;
     private final StringRedisTemplate redisTemplate;
 
@@ -26,6 +28,9 @@ public class FrequencyChecker {
 
     public Result check(RoutingContext ctx) {
         List<FrequencyRule> rules = frequencyRuleRepository.findAllByStatus(FrequencyRule.Status.ACTIVE);
+        if (rules.stream().anyMatch(rule -> rule.getLimitType() == FrequencyRule.LimitType.MOBILE)) {
+            return Result.blocked(MOBILE_IDENTITY_NOT_READY);
+        }
         for (FrequencyRule rule : rules) {
             String dimensionValue = dimensionValue(rule, ctx);
             if (dimensionValue == null) continue;
@@ -48,7 +53,7 @@ public class FrequencyChecker {
 
     private String dimensionValue(FrequencyRule rule, RoutingContext ctx) {
         return switch (rule.getLimitType()) {
-            case MOBILE -> ctx.getMobileHash();
+            case MOBILE -> throw new IllegalStateException(MOBILE_IDENTITY_NOT_READY);
             case TENANT_LEVEL -> ctx.getTenantId() == null ? null : String.valueOf(ctx.getTenantId());
             case IP -> ctx.getClientIp();
             case CONTENT_SIMILARITY -> null; // TODO: 需要内容指纹算法，先跳过（不影响其余三类规则生效）
