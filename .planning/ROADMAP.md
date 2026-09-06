@@ -28,10 +28,10 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 
 ## Phases
 
-- [ ] **Phase 1: Engineering verification and drift-control foundation** — Truthful backend/frontend/integration/browser commands.
+- [x] **Phase 1: Engineering verification and drift-control foundation** — Truthful backend/frontend/integration/browser commands.
 - [ ] **Phase 2: Console design system and prototype foundation** — Complete Admin/Tenant page registry and role matrix.
 - [x] **Phase 3: Cryptographic storage and migration bootstrap** — Envelope encryption and KMS/HSM adapter.
-- [ ] **Phase 4: Platform system-message and notification bootstrap** — Controlled platform templates.
+- [x] **Phase 4: Platform system-message and notification bootstrap** — Controlled platform templates.
 - [ ] **Phase 5: Console identity and platform RBAC** — Password hashing inside identity.
 - [ ] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
 - [ ] **Phase 7: Platform system configuration** — Typed, versioned, auditable production settings.
