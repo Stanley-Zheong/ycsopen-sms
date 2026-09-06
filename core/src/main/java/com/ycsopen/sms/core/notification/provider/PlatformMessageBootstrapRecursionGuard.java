@@ -2,6 +2,8 @@ package com.ycsopen.sms.core.notification.provider;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 /** In-process fence preventing the same bootstrap request from re-entering dispatch. */
 public class PlatformMessageBootstrapRecursionGuard {
@@ -21,4 +23,15 @@ public class PlatformMessageBootstrapRecursionGuard {
     public boolean isActive(String requestId) {
         return activeRequests.contains(requestId);
     }
+
+    public static RetryClass classifyRetry(Throwable failure) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (current instanceof TimeoutException || current instanceof IOException) {
+                return RetryClass.TRANSIENT;
+            }
+        }
+        return RetryClass.NONE;
+    }
+
+    public enum RetryClass { TRANSIENT, NONE }
 }

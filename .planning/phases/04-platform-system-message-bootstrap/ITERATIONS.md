@@ -11,4 +11,5 @@
 - Added the platform notification SPI, controlled template enum, typed delivery outcome, bootstrap service, and recursion guard.
 - Added focused unit coverage for provider delegation and duplicate-request fencing.
 - Verification: `mvn -f core/pom.xml -Dtest='*PlatformMessage*Test' test` — PASS (2 tests).
-- Remaining work stays open: concrete provider sandbox adapter, audit/redaction, retry classification, and full obligation evidence.
+- At this checkpoint the concrete provider is represented by the SPI boundary; external provider wiring remains a later channel phase.
+- Follow-up batch completed the audit record, redaction, retry classification, focused negative-path test, verification report, and summary. Phase TODO is now empty.
