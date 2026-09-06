@@ -4,6 +4,8 @@ spring:
     username: ${DB_USERNAME:ycsopen}
     password: ${DB_PASSWORD:ycsopen}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    locations: classpath:db/migration,classpath:db/devmigration
 logging:
   level:
     com.ycsopen.sms.core: DEBUG

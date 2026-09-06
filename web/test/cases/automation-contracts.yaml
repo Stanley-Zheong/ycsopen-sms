@@ -1,0 +1,171 @@
+version: 1
+baseline: origin/main@2a8acfe
+environment: Node.js 20+; Playwright Chromium; local Vite webServer; all API traffic mocked per browser context
+contracts:
+  - case_id: WEB-AUTH-001
+    claim: ADMIN login routes to the platform dashboard.
+    fixture: POST /api/v1/console/auth/login returns an ADMIN session; dashboard GETs return empty arrays.
+    actions: Fill username and password on /login and click 登录.
+    oracle: Login request body matches input; URL is /admin/dashboard; 关键指标概览 and platform navigation are visible.
+    negative_oracle: Tenant navigation is absent.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network routes; parallel-safe; no shared storage.
+    known_issues: Authentication is mocked and does not prove backend JWT validation.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-002
+    claim: TENANT_ADMIN login routes to the tenant overview.
+    fixture: POST /api/v1/console/auth/login returns TENANT_ADMIN with tenantId 7.
+    actions: Fill credentials on /login and click 登录.
+    oracle: URL is /tenant/overview; 账户总览 and tenant navigation are visible.
+    negative_oracle: Platform navigation is absent.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network routes; parallel-safe; no shared storage.
+    known_issues: Authentication is mocked and does not prove backend JWT validation.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-003
+    claim: A rejected login remains unauthenticated and shows the stable error message.
+    fixture: POST /api/v1/console/auth/login returns HTTP 401.
+    actions: Submit invalid credentials on /login.
+    oracle: URL remains /login and 用户名或密码错误，或账号已被锁定 is visible.
+    negative_oracle: Platform and tenant navigation are absent.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network route; parallel-safe.
+    known_issues: Lockout counter behavior is outside the current Web implementation.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-004
+    claim: An anonymous user cannot open a platform route.
+    fixture: Fresh browser context without session.
+    actions: Open /admin/dashboard.
+    oracle: URL resolves to /login.
+    negative_oracle: 关键指标概览 is absent.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context; parallel-safe.
+    known_issues: Session persistence is not implemented.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-005
+    claim: An authenticated tenant role cannot open a platform route.
+    fixture: Login response establishes TENANT_USER in the in-memory Zustand store.
+    actions: Login, then navigate within the same SPA to /admin/dashboard with History API and popstate.
+    oracle: The role session exists before navigation; URL resolves to /login.
+    negative_oracle: Platform navigation and 关键指标概览 are absent.
+    cleanup: Close the isolated browser context.
+    isolation: One page in one per-test context; no reload between login and guard assertion; parallel-safe.
+    known_issues: Auth state is memory-only, so full reload cannot prove cross-role behavior.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-006
+    claim: An authenticated platform role cannot open a tenant route.
+    fixture: Login response establishes ADMIN in the in-memory Zustand store; dashboard GETs return empty arrays.
+    actions: Login, then navigate within the same SPA to /tenant/overview with History API and popstate.
+    oracle: The role session exists before navigation; URL resolves to /login.
+    negative_oracle: Tenant navigation and 账户总览 are absent.
+    cleanup: Close the isolated browser context.
+    isolation: One page in one per-test context; no reload between login and guard assertion; parallel-safe.
+    known_issues: Auth state is memory-only, so full reload cannot prove cross-role behavior.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-AUTH-007
+    claim: An anonymous user cannot open a tenant route.
+    fixture: Fresh browser context without session.
+    actions: Open /tenant/overview.
+    oracle: URL resolves to /login.
+    negative_oracle: 账户总览 is absent.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context; parallel-safe.
+    known_issues: Session persistence is not implemented.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-DASH-001
+    claim: Complaint ratio panels render backend-provided values and visible threshold status for channel and tenant dimensions.
+    fixture: Channel rows are 1000/3/0.003/true and 2000/2/0.001/false; tenant row is 500/1/0.002/false.
+    actions: Login as ADMIN and observe both dashboard tables.
+    oracle: Names, counts, 3.00‰/1.00‰/2.00‰, statuses, one-item badge, and visible row highlight match the fixture.
+    negative_oracle: Normal rows do not show 超阈值.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and dimension-specific GET routes; parallel-safe.
+    known_issues: PRD v1.3.0 is draft and the 0.3% business threshold source awaits review; UI trusts backend overThreshold and ordering.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-DASH-002
+    claim: Failed complaint-ratio requests produce a stable non-crashing error state.
+    fixture: Both complaint-ratio GET routes return HTTP 500.
+    actions: Login as ADMIN and wait for both queries.
+    oracle: Two 加载失败，请稍后重试 messages are visible.
+    negative_oracle: No complaint-ratio data rows are visible.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network routes; parallel-safe.
+    known_issues: None.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-TENANT-001
+    claim: Approving a pending tenant sends default trial parameters and refreshes the row to VERIFIED/TRIAL.
+    fixture: First tenants GET returns tenant 7 as PENDING/SUBMITTED; mutation returns VERIFIED/TRIAL; next GET returns the final state.
+    actions: Login as OPERATOR, open 机构管理, click 审核通过并开通试用.
+    oracle: POST path is tenant 7 with approvedBy=operator-demo, trialQuota=500, trialDays=14; refreshed row shows VERIFIED and TRIAL.
+    negative_oracle: The approval button disappears after readback.
+    cleanup: Close the isolated browser context; mock state is context-owned.
+    isolation: Per-test mutable in-memory response counter; parallel-safe.
+    known_issues: Backend persistence is not exercised.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-CHANNEL-001
+    claim: Pausing a normal channel sends the entered reason and refreshes the row to PAUSED.
+    fixture: First channels GET returns channel 11 as NORMAL; pause returns PAUSED; next GET returns PAUSED.
+    actions: Login as OPERATOR, open 通道管理, click 暂停, enter 投诉率超阈值 in the prompt.
+    oracle: POST /channels/11/pause has reason and operatedBy=operator-demo; refreshed row shows PAUSED and 恢复.
+    negative_oracle: 暂停 action is absent after readback.
+    cleanup: Close the isolated browser context; mock state is context-owned.
+    isolation: Per-test mutable in-memory response counter and dialog handler; parallel-safe.
+    known_issues: Routing failover behavior is backend scope and is not proved here.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-CHANNEL-002
+    claim: Resuming a paused channel refreshes the row to NORMAL.
+    fixture: First channels GET returns channel 11 as PAUSED; resume returns NORMAL; next GET returns NORMAL.
+    actions: Login as OPERATOR, open 通道管理, click 恢复.
+    oracle: POST targets /channels/11/resume; refreshed row shows NORMAL and 暂停.
+    negative_oracle: 恢复 action is absent after readback.
+    cleanup: Close the isolated browser context; mock state is context-owned.
+    isolation: Per-test mutable in-memory response counter; parallel-safe.
+    known_issues: Small-traffic recovery validation recommended by PRD is backend/operations scope.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-SEND-001
+    claim: A successful manual-send response is rendered with its message ID.
+    fixture: TENANT_USER login and POST /api/v1/sms/send returns messageId msg-001.
+    actions: Open 发送管理, fill 13800138000 and template 1001, click 发送.
+    oracle: Request body has phoneNumber, templateId, and empty templateParams; 提交成功，消息ID：msg-001 is visible.
+    negative_oracle: No failure message is visible.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network routes; parallel-safe.
+    known_issues: Real console JWT-to-HMAC sending is not integrated; this proves UI response handling only.
+    generation_ready: true
+    not_ready_reason: null
+
+  - case_id: WEB-SEND-002
+    claim: A rejected manual-send response renders the backend message.
+    fixture: TENANT_USER login and POST /api/v1/sms/send returns HTTP 400 with message 余额不足.
+    actions: Open 发送管理, fill phone and template, click 发送.
+    oracle: 提交失败：余额不足 is visible.
+    negative_oracle: No success message ID is visible.
+    cleanup: Close the isolated browser context.
+    isolation: Per-test context and network routes; parallel-safe.
+    known_issues: Real console JWT-to-HMAC sending is not integrated; this proves UI response handling only.
+    generation_ready: true
+    not_ready_reason: null
