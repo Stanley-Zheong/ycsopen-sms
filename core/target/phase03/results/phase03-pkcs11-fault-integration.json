@@ -1,0 +1,48 @@
+{
+  "adapter_identities": [
+    {
+      "id": "java21-sunpkcs11",
+      "mode": "REAL"
+    },
+    {
+      "id": "softhsm-2.7.0",
+      "mode": "REAL"
+    }
+  ],
+  "case_ids": [
+    "CASE-CRYPTO-STORAGE-003"
+  ],
+  "check_id": "phase03-pkcs11-fault-integration",
+  "exit_code": 0,
+  "facts": {
+    "aggregate_status": "PASS",
+    "lane_result_digests": {
+      "default-maven": "f28f02366aae4a940e92d981cbd85f88decaf6ff37db4ed1521cb6afefa7af81",
+      "durable-artifact-leak-scan": "9988f8d719cb2e69e839cd5c0cbcec6b31b583f9c89891ace24f6f6e8ee684f7",
+      "fixture-cleanup": "6e8c2b0829674a957c8c8d0c4d97b507e91bf9015d859f4b119855d83683b7e5",
+      "production-reachability": "98b29a896549259e9c9fe17c2061910a5122dd2ef447d380c198673e4822e993",
+      "real-service-integration": "0cbd6c42601620728fedeaca56acceaf99b3d081f22b7eb619fb334dea821257",
+      "service-contract-fixtures": "f549e5813d29fef05a883858c377027a0956cab11e308833234e50180e472c3e",
+      "source-contract-audit": "56eca7a6f8dba29ffc15c96c8ae2cbb0927982c414e0853659f4098c00e6b33b"
+    },
+    "registry_digest": "4b1f32f9e6a2693a5f442cb0f2617f83992423b4a799b2fa319f3f452546edb7",
+    "required_lane_ids": [
+      "default-maven",
+      "service-contract-fixtures",
+      "source-contract-audit",
+      "production-reachability",
+      "real-service-integration",
+      "durable-artifact-leak-scan",
+      "fixture-cleanup"
+    ]
+  },
+  "layer": "fault",
+  "obligation_ids": [
+    "OBL-CRYPTO-STORAGE-003"
+  ],
+  "phase": "03-crypto-storage-bootstrap",
+  "result_digest": "d11c992d1005ddc85a54092633dcd2d37d665b440a98386434f005babb0eff0f",
+  "schema_version": "phase03-child-result-v1",
+  "status": "PASS",
+  "subject_digest": "fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a"
+}

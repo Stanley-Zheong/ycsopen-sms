@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "ruby",
+    ".planning/tools/test-phase-03-protected-inventory.rb"
+  ],
+  "check_id": "protected-inventory-fixtures",
+  "completed_at": "2026-09-06T00:04:55.333057Z",
+  "diagnostic_sha256": "53a681e4b8b73a6ccde50fe0e9e1569ba6604cc6e4c6e1b89eb968ddcff62e56",
+  "error_id": null,
+  "exit_code": 0,
+  "layer": "validator",
+  "mode": "DETERMINISTIC",
+  "result_digest": "113e1e09929d67715bf19859828edadbd17795863c0029452236f1e2818f5a8c",
+  "schema_version": "phase03-root-lane-result-v1",
+  "started_at": "2026-09-06T00:04:53.207262Z",
+  "status": "PASS"
+}

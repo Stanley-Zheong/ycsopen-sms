@@ -6,8 +6,8 @@
     {
       "check_id": "phase03-migration-integration",
       "path": "core/target/phase03/results/phase03-migration-integration.json",
-      "result_digest": "2e58f8c52ef69a3085bff7b75653d46d345ae415962b28575a170a52b238bd44",
-      "sha256": "d376e68952a67630ef8610aa8081131c71fc6a6331a3958338b0844ea37e0bb6"
+      "result_digest": "aa50530833601438147f00896c5f8ab600f2dde6a4eb375c1d67ea343e5814bf",
+      "sha256": "5108bc74b5d4ce9efa80bee7f48da10ab69dc6ea809ee0a0f8ac5ef0885a50b5"
     }
   ],
   "evidence_path": "EVIDENCE/OBL-CRYPTO-STORAGE-004.json",
@@ -19,14 +19,14 @@
     "validator_result": {
       "check_id": "phase03-protected-inventory",
       "path": "core/target/phase03/results/protected-inventory-result.json",
-      "result_digest": "342dc3cd63b0821ff6154ea637de1194f325fbc84c90d7a1c56f675f544c3641",
-      "sha256": "2c1dff00ddd02ed5553e9451b731cab58b736d6cf5bd5a0e5f8c45bc77f86fb2"
+      "result_digest": "5ddab2ee6227252282903eaf54cbe336b13ebcaece0b9f429eaaa9ea2c417f1a",
+      "sha256": "7165bb619f43bb81edff942c57fd95704481bcc73f37191be8fae082488c4763"
     }
   },
   "leak_result": {
     "path": "core/target/phase03/results/complete-leak-result.json",
-    "result_digest": "c526ae8eb860132c4d56bb5a17a7f333e73b18d537d0adc09d6b4d39e2826110",
-    "sha256": "96dd430a04afdf2717867974e907d60a5368aaff2538b36e8c6bc1e59fb6217e"
+    "result_digest": "320287b41fcd914d4446fe9c81037e65e319b30ef3578c2bfaae4121802cbb81",
+    "sha256": "f526877f1f2924ca9f2b096a1edfaae8321f9286e96370147ded4a2972ebac1e"
   },
   "obligation_id": "OBL-CRYPTO-STORAGE-004",
   "owner": "crypto-storage-bootstrap",
@@ -38,7 +38,7 @@
   "status": "PASS",
   "subject": {
     "path": ".planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json",
-    "sha256": "4a4cc5e45890fe5dccbe0a24b166b5b8f447f0b22f670161aca7eb783129c58c",
-    "tested_subject_digest": "acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0"
+    "sha256": "04c123056eb6ecf97340dbebf4c52719b00c620b36d5eab63350a35b6cd86759",
+    "tested_subject_digest": "fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a"
   }
 }

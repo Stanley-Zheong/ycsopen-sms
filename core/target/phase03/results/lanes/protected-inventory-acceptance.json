@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "ruby",
+    ".planning/tools/validate-phase-03-protected-inventory.rb",
+    "--manifest",
+    "core/src/main/resources/security/protected-data-inventory.json",
+    "--schema",
+    "core/src/main/resources/db/migration/V1__init_schema.sql",
+    "--source-root",
+    "core/src/main/java",
+    "--mysql-evidence",
+    "core/target/phase03/migration-inventory.json",
+    "--acceptance"
+  ],
+  "check_id": "protected-inventory-acceptance",
+  "completed_at": "2026-09-06T00:10:36.609740Z",
+  "diagnostic_sha256": "a18a564856c230798e85bfd5a9c2e862eba2aa809ad42370cdbf8bb0691801ca",
+  "error_id": null,
+  "exit_code": 0,
+  "layer": "database",
+  "mode": "REAL",
+  "result_digest": "2058fe774c287c2862c5f6cce76701272d3924a2443b212928157de5d5da7b54",
+  "schema_version": "phase03-root-lane-result-v1",
+  "started_at": "2026-09-06T00:10:36.512293Z",
+  "status": "PASS"
+}

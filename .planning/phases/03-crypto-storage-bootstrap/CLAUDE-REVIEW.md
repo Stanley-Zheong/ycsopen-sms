@@ -1,17 +1,48 @@
 ---
 phase: 03-crypto-storage-bootstrap
 reviewer: claude-code-cli
-session: 2c99f091-0f05-413b-aa99-1b7d3fdbbdc4
+session: ac52aa94-c613-4702-83a2-ed207bb75a41
 mode: tool-less-incremental-patch-review
-attempt: 11
+attempt: 12
 status: pass
 blocker: 0
 high: 0
-warning: 2
+warning: 3
 info: 3
 ---
 
 # Phase 03 Claude review history
+
+## Attempt 12 verdict
+
+`PASS` — BLOCKER 0, HIGH 0, WARNING 3, INFO 3. Claude reviewed the exact staged delivery delta that binds the required GitHub job to the pull-request head, destructively tests that checkout contract, and commits the 21 sanitized result documents required by clean-checkout evidence validation.
+
+### Attempt 12 explicit confirmations
+
+- The checkout expression selects `github.event.pull_request.head.sha` for pull requests and `github.sha` otherwise, so the evidence producer and the checked-out subject use the same branch-head trust root.
+- Direct use of the pull-request head SHA is within the standard `pull_request` trust boundary: the job receives no repository secrets, does not use `pull_request_target`, and grants only read access.
+- The added destructive mutation makes removal of the head checkout contract fail the delivery suite.
+- The committed result set is complete for the canonical aggregate: aggregate, leak result, 14 lane results, four child integration results and protected inventory total exactly 21 files.
+- The result documents contain sanitized statuses, timestamps, commands, counts and digests only; they contain no password, PIN, raw URL, token or plaintext protected payload.
+- No product, browser, mobile or Phase 1 behavior changes in this delta.
+
+### Attempt 12 nonblocking findings and disposition
+
+- WARNING: committed evidence lives below the conventional ignored `core/target` build tree and could otherwise be removed by `mvn clean`. Resolved before delivery by a narrow `.gitignore` exception for exactly the 21 sanitized Phase 03 result paths; generated classes and the duplicate `tested-inputs.json` remain ignored.
+- WARNING: the checkout mutation is a textual workflow contract rather than a full GitHub Actions semantic interpreter. This is accepted as a static-test boundary; the required live GitHub check is the authoritative semantic replay.
+- WARNING: only the Phase 03 job receives the PR-head checkout correction. This is intentional Phase 03 ownership; no other phase/job is claimed by this closure.
+- INFO: immutable commit-SHA checkout avoids the synthetic merge-ref/input-digest mismatch exposed by the prior CI run.
+- INFO: result filenames and aggregate references form a complete, self-consistent delivery input set.
+- INFO: the change remains limited to Phase 03 delivery/evidence plumbing.
+
+### Attempt 12 review record
+
+- Invocation: `claude -p --output-format json --disable-slash-commands --tools ""` with the exact staged workflow/test/result-artifact delta on standard input and the review policy in the appended system prompt.
+- Nested tool/file access: none; this was a tool-less static incremental review.
+- Session: `ac52aa94-c613-4702-83a2-ed207bb75a41`.
+- Binding: canonical subject-manifest digest `8d5db434594e9710ddaee7b9174fdd4e7303abdebb37432b69a159f918058dc2`; tested subject `fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a`; evidence manifest file SHA-256 `d997cc30660ec0da233500fd8b6dd5edf6b2c3fbe55804c4aa3d2ddd9ca03906`.
+- Returned counts: BLOCKER 0, HIGH 0, WARNING 3, INFO 3.
+- Determination: PASS; no product or delivery blocker/high finding.
 
 ## Attempt 11 verdict
 
@@ -303,7 +334,7 @@ Claude explicitly confirmed schema ordering for new artifacts, authenticated hea
 
 | Attempt | BLOCKER | HIGH | Escalated | Subject manifest path | Subject manifest digest | Tested subject digest | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | ef4002d2d3a4518c38a52ba97a3e6f482441e8a54bdea82eb5dd082c1bc81bac | acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0 | PASS |
+| 1 | 0 | 0 | no | .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/tested-inputs.json | 8d5db434594e9710ddaee7b9174fdd4e7303abdebb37432b69a159f918058dc2 | fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a | PASS |
 
 ## Final verdict
 

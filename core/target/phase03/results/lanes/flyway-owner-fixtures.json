@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "python3",
+    "skills/flyway-migration/tests/test_next_flyway_version.py"
+  ],
+  "check_id": "flyway-owner-fixtures",
+  "completed_at": "2026-09-06T00:04:42.634637Z",
+  "diagnostic_sha256": "a3101c8eb38d1146c4a0d5b753265c7306bfd728211cf21a9c215141d24b81b5",
+  "error_id": null,
+  "exit_code": 0,
+  "layer": "validator",
+  "mode": "DETERMINISTIC",
+  "result_digest": "5e56e797f47860433a81f3448409c13aff9f68945783861c6eacbf45dbd00489",
+  "schema_version": "phase03-root-lane-result-v1",
+  "started_at": "2026-09-06T00:04:42.279309Z",
+  "status": "PASS"
+}

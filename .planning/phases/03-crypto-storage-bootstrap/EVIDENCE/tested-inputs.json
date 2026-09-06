@@ -4,7 +4,7 @@
       "mode": "100644",
       "path": ".github/workflows/ci.yml",
       "role": "config",
-      "sha256": "8366fd945e38bdfe3ed7de73589b2db3df73e344c381921c57cca2a9e29d14b6"
+      "sha256": "0a3fd90eac86f1538af8d804b76f181108452233cc169930a4b7f3d8d7f7b80e"
     },
     {
       "mode": "100644",
@@ -322,7 +322,7 @@
       "mode": "100755",
       "path": ".planning/tools/test-delivery-attestation.rb",
       "role": "test",
-      "sha256": "41b1bb820e8101441df8183d622b7468a40c22ce5ab2f41568efadd2366f39d2"
+      "sha256": "63a56ec421b5e0eb1aafe11a237bd6ad0de512bf32fd7a67793bb98e3c78fccf"
     },
     {
       "mode": "100644",

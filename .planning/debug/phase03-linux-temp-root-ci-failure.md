@@ -1,6 +1,6 @@
 # Phase 03 Linux temporary-root CI failure
 
-Status: second remote replay correction in progress
+Status: third remote replay correction in progress
 
 ## Symptom
 
@@ -26,6 +26,15 @@ GitHub Actions run `33998572392` proved that the test-directory correction worke
 
 The planning-validator fixture intentionally invokes the real ripgrep engine to distinguish regex alternation (`alpha|beta`) from a literal escaped pipe (`alpha\|beta`). Replacing it with a Ruby regex or silently skipping it would weaken the executable plan contract. The Phase 3 CI job therefore installs the single missing `ripgrep` package explicitly before running the contract suite. No browser, product runtime or service image is added.
 
+## Remote replay 3
+
+GitHub Actions run `33999592727` passed default Maven and every destructive contract suite, including the ripgrep checks. It failed only when validating committed evidence:
+
+- GitHub's pull-request checkout used the synthetic merge ref, while the Phase 3 subject and future delivery tag bind the feature-branch head. Two base-side file differences therefore failed subject hash comparison.
+- The evidence manifest references the sanitized canonical root result tree below `core/target/phase03/results`, but that small JSON tree was excluded by the broad build-output ignore rule and absent from the clean runner.
+
+The Phase 3 job now checks out `github.event.pull_request.head.sha` for pull requests and `github.sha` for other events, matching the future annotated-tag target. The sanitized root-result tree is committed as delivery evidence; Maven `test` and `package` do not clean it. The subject builder already excludes `core/target`, so these results cannot create a recursive subject binding.
+
 ## Root cause and resolution
 
 The test fixture accidentally inherited a platform-specific, world-writable ancestor that production correctly distrusts. The minimal correction is to place the fixture under a trusted user-owned directory. This preserves the shipped trust boundary and makes the test represent an admissible production configuration on both macOS and Linux. The next remote step exposed a separate CI image dependency: the real planning-contract canary requires `rg`, so the workflow now declares that tool instead of relying on an image-global implicit installation.
@@ -34,3 +43,5 @@ Files changed by this correction:
 
 - `core/src/test/java/com/ycsopen/sms/core/common/security/migration/ProductionMigrationCommandServicesFactoryTest.java`
 - `.github/workflows/ci.yml`
+- `.planning/tools/test-delivery-attestation.rb`
+- `core/target/phase03/results/**/*.json` (sanitized canonical result evidence)

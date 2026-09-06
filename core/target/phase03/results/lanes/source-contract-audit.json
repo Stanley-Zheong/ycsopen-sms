@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "ruby",
+    "scripts/lib/phase-03/run_checks.rb",
+    "--internal-source-audit"
+  ],
+  "check_id": "source-contract-audit",
+  "completed_at": "2026-09-06T00:04:56.580711Z",
+  "diagnostic_sha256": "3b57897f3e420deb4efd70bd3f6cf918d2f67a21ae23ddcc6bbb7ada0298cabe",
+  "error_id": null,
+  "exit_code": 0,
+  "layer": "static",
+  "mode": "DETERMINISTIC",
+  "result_digest": "56eca7a6f8dba29ffc15c96c8ae2cbb0927982c414e0853659f4098c00e6b33b",
+  "schema_version": "phase03-root-lane-result-v1",
+  "started_at": "2026-09-06T00:04:56.526009Z",
+  "status": "PASS"
+}

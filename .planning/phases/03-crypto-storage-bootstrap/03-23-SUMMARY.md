@@ -10,13 +10,13 @@ The catalog and TEST-MATRIX contain exactly four Phase 03 obligation rows. Their
 
 | Obligation | Evidence digest |
 | --- | --- |
-| `OBL-CRYPTO-STORAGE-001` | `79a104d79e269614ce6bda175b03c0dd7c90bd5f718ed2728598cc9232396432` |
-| `OBL-CRYPTO-STORAGE-002` | `ffcadc3c3ea7aae14782cecaaddeec7bf3742eeb4e27c1a5d371e9cf3d54ccd6` |
-| `OBL-CRYPTO-STORAGE-003` | `11e27b18ebb036ef257135cd7b731969241071a3c38c72c793d0af5064661f1c` |
-| `OBL-CRYPTO-STORAGE-004` | `676b010aa9fb8d29c30948478b5c4c63cb1ab5114a5736c581f14785de2f289c` |
+| `OBL-CRYPTO-STORAGE-001` | `d8150937efce8af258eb5eeb6486fb742539fe6add9a23511ee4da5a52b3e5fe` |
+| `OBL-CRYPTO-STORAGE-002` | `f4046d271b81db2cba930aafd4aa3543cd4669ce703546433a9059790d144ee9` |
+| `OBL-CRYPTO-STORAGE-003` | `806dd787a932cb92bb34c45b58c27153e51aac76f40175a81921c1659fd72307` |
+| `OBL-CRYPTO-STORAGE-004` | `5508e09046b333b26684c05e36a436785ca3fdaf5953932ddfdafc26239c4b89` |
 
-The evidence manifest binds tested subject `acdbdba8db25d3936cb9eb99310c1ee2e14f77f430574109d6c239a6906823c0`, accepted inventory digest `9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009`, and complete leak result `c526ae8eb860132c4d56bb5a17a7f333e73b18d537d0adc09d6b4d39e2826110`.
+The evidence manifest binds tested subject `fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a`, accepted inventory digest `9d31954a3a4c01709b4db6be783d74ef0aed10c0ecbd2578b6719b37dc7c3009`, inventory result digest `5ddab2ee6227252282903eaf54cbe336b13ebcaece0b9f429eaaa9ea2c417f1a`, and complete leak result `320287b41fcd914d4446fe9c81037e65e319b30ef3578c2bfaae4121802cbb81`.
 
 ## Handoff
 
-The current-subject root and evidence set above reflects the corrected fixed scope, the 15-file delivery trust boundary, the Linux-portable migration-factory test root and an explicit ripgrep CI dependency. GSD Round 14, Claude Attempt 11 and goal verification 4/4 bind this exact subject. The reserved remote-check/tag row closes only from live delivery evidence.
+The current-subject root and evidence set above reflects the corrected fixed scope, the 15-file delivery trust boundary, the Linux-portable migration-factory test root, the explicit ripgrep dependency, immutable PR-head checkout and 21-file sanitized result closure. GSD Round 15, Claude Attempt 12 and goal verification 4/4 bind this exact subject. The reserved remote-check/tag row closes only from live delivery evidence.

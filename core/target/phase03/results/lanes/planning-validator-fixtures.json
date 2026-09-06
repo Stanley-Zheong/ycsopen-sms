@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "/usr/bin/env",
+    "ruby",
+    ".planning/tools/test-planning-validators.rb"
+  ],
+  "check_id": "planning-validator-fixtures",
+  "completed_at": "2026-09-06T00:04:46.599585Z",
+  "diagnostic_sha256": "a11682a4fd7db8882b6c33734e1da99695bb826ea06a574a704d07e8a6486230",
+  "error_id": null,
+  "exit_code": 0,
+  "layer": "validator",
+  "mode": "DETERMINISTIC",
+  "result_digest": "158690304231cbd9675409db0c79e47c02d319814ff3a35a52372f281938424e",
+  "schema_version": "phase03-root-lane-result-v1",
+  "started_at": "2026-09-06T00:04:42.670656Z",
+  "status": "PASS"
+}

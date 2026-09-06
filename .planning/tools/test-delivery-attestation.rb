@@ -112,6 +112,8 @@ def phase03_workflow_errors(text)
     errors << "PHASE03_DISPLAY_NAME_INVALID" unless phase03.match?(/^    name:\s*Phase 03 portable registry\s*$/)
     errors << "PHASE03_JOB_CONDITIONAL" if phase03.match?(/^    if:/)
     normalized = phase03.gsub(/\\\s*\n/, " ").gsub(/\s+/, " ")
+    errors << "PHASE03_HEAD_CHECKOUT_MISSING" unless normalized.include?("github.event.pull_request.head.sha") &&
+      normalized.include?("github.sha")
     %w[
       .planning/tools/test-delivery-attestation.rb
       .planning/tools/test-phase-lifecycle.rb
@@ -151,6 +153,7 @@ def assert_phase03_workflow_contract
   mutations = {
     "display-name" => source.sub("name: Phase 03 portable registry", "name: Phase 03 drifted registry"),
     "job-condition" => source.sub("  phase-03-portable:\n", "  phase-03-portable:\n    if: false\n"),
+    "head-checkout" => source.sub("github.event.pull_request.head.sha", "github.sha"),
     "delivery-test" => source.sub("ruby .planning/tools/test-delivery-attestation.rb", "ruby omitted-delivery-test.rb"),
     "lifecycle-test" => source.sub("ruby .planning/tools/test-phase-lifecycle.rb", "ruby omitted-lifecycle-test.rb"),
     "ripgrep-install" => source.sub("apt-get install --yes --no-install-recommends ripgrep", "true omitted-ripgrep-install"),

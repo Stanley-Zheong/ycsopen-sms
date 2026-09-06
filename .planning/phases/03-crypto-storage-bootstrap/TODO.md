@@ -26,15 +26,15 @@ Every item is open at entry. A checkbox may close only with the cited executable
 ## Verification and review
 
 - [x] Default Maven suite passes — Evidence: fixed-phase mandatory lane included in canonical `verify-phase-03` run.
-- [x] Complete fixed Phase 03 runner passes every deterministic and real-service lane — Evidence: explicit-toolchain subject root is 14/14 PASS at aggregate `9ddf7fa7...`.
-- [x] Inventory, leak, schema, exact-four evidence and cleanup validators pass — Evidence: manifest `e6ce5f09...` validates 4/4; canonical cleanup and leak lanes PASS.
-- [x] GSD goal verification has no unresolved blocking finding — Evidence: `03-VERIFICATION.md` is PASS at 4/4 against tested subject `acdbdba8...`.
-- [x] GSD code review has no unresolved blocking or high finding — Evidence: `03-REVIEW.md` Round 14 is PASS with BLOCKER/HIGH 0/0 against the current subject.
-- [x] Claude convergence review has no unresolved blocking or high finding — Evidence: `CLAUDE-REVIEW.md` Attempt 11 is PASS with BLOCKER/HIGH 0/0 for the two-file CI delta.
+- [x] Complete fixed Phase 03 runner passes every deterministic and real-service lane — Evidence: current-subject `core/target/phase03/results/aggregate.json` records 14/14 PASS with result digest `6fa4a45c604071b3f5e8118c7334071c281275c02c54dbc729a66e8a6a8fd1b1`.
+- [x] Inventory, leak, schema, exact-four evidence and cleanup validators pass — Evidence: current `EVIDENCE/evidence-manifest.json`, 59 evidence fixtures, exact-four 4/4 and committed 21-file sanitized result closure all PASS.
+- [x] GSD goal verification has no unresolved blocking finding — Evidence: `03-VERIFICATION.md` verifies 4/4 must-haves against tested subject `fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a`.
+- [x] GSD code review has no unresolved blocking or high finding — Evidence: `03-REVIEW.md` Round 15 PASS with BLOCKER 0 / HIGH 0.
+- [x] Claude convergence review has no unresolved blocking or high finding — Evidence: `CLAUDE-REVIEW.md` Attempt 12 PASS with BLOCKER 0 / HIGH 0, session `ac52aa94-c613-4702-83a2-ed207bb75a41`.
 
 ## Delivery
 
-- [x] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: phase summaries and all three review records bind subject `acdbdba8...` and evidence `e6ce5f09...`.
-- [x] Scoped TODO query is empty after reserving the self-referential external-delivery item — Evidence: only the annotated-tag/check attestation row remains physically open; the effective post-push query may close it only from live remote evidence.
+- [x] Final verification and summary bind the canonical tested subject and evidence manifest — Evidence: `03-VERIFICATION.md` and `SUMMARY.md` bind subject manifest `8d5db434594e9710ddaee7b9174fdd4e7303abdebb37432b69a159f918058dc2`, tested subject `fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a` and evidence manifest `d997cc30660ec0da233500fd8b6dd5edf6b2c3fbe55804c4aa3d2ddd9ca03906`.
+- [x] Scoped TODO query is empty after reserving the self-referential external-delivery item — Evidence: pre-push lifecycle validation accepts exactly the annotated-tag/required-check row as reserved; no implementation, verification or review item remains open.
 - [x] One atomic phase commit is visible on the configured GitHub branch and pull request — Evidence: phase commit `9e6240a` is visible on `refs/heads/phase/03-crypto-storage-bootstrap` and PR 15; the Linux CI portability correction is an additive follow-up commit on the same phase branch.
 - [ ] Annotated delivery tag, required remote check and live delivery attestation pass — Evidence: pending.

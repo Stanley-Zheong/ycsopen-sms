@@ -1,0 +1,46 @@
+{
+  "check_id": "phase03-complete-leak-scan",
+  "exit_code": 0,
+  "phase": "03-crypto-storage-bootstrap",
+  "result_digest": "320287b41fcd914d4446fe9c81037e65e319b30ef3578c2bfaae4121802cbb81",
+  "schema_version": "phase03-leak-result-v1",
+  "status": "PASS",
+  "subject_digest": "fa490969381b4caf835af3cabe733a3962b4fe6857a97df322d65a94c3605d4a",
+  "targets": [
+    {
+      "id": "database-cells",
+      "prohibited_matches": 0,
+      "reader_identity": "phase03-leak-scanner",
+      "scanned_items": 1,
+      "sensitivity_status": "DETECTED_SEEDED_MUTATION"
+    },
+    {
+      "id": "evidence",
+      "prohibited_matches": 0,
+      "reader_identity": "phase03-artifact-scanner",
+      "scanned_items": 7,
+      "sensitivity_status": "DETECTED_SEEDED_MUTATION"
+    },
+    {
+      "id": "logs",
+      "prohibited_matches": 0,
+      "reader_identity": "phase03-leak-scanner",
+      "scanned_items": 1,
+      "sensitivity_status": "DETECTED_SEEDED_MUTATION"
+    },
+    {
+      "id": "object-bytes",
+      "prohibited_matches": 0,
+      "reader_identity": "phase03-leak-scanner",
+      "scanned_items": 2,
+      "sensitivity_status": "DETECTED_SEEDED_MUTATION"
+    },
+    {
+      "id": "reports",
+      "prohibited_matches": 0,
+      "reader_identity": "phase03-artifact-scanner",
+      "scanned_items": 24,
+      "sensitivity_status": "DETECTED_SEEDED_MUTATION"
+    }
+  ]
+}
