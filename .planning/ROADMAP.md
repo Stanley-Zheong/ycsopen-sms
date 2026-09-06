@@ -6,13 +6,13 @@ This roadmap is dependency-ordered and evidence-driven. It contains no delivery 
 
 Each phase owns one focused module as a vertical slice. The 108 top-level requirement groups are integration groupings; `.planning/PRD-OBLIGATIONS.md` is the 522-item atomic completion catalog.
 
-## Mandatory artifact and entry contract
+## Lean phase contract
 
-Every phase uses `.planning/phases/<NN>-<package-id>/` and contains `<NN>-SPEC.md`, `<NN>-CONTEXT.md`, at least one `<NN>-*-PLAN.md`, plus `INTENT.md`, `DESIGN.md`, `ITERATIONS.md`, `DECISIONS.md`, `TODO.md`, `TEST-MATRIX.md`, `ENTRY-REVIEW.md`, `CLAUDE-REVIEW.md`, and `EVIDENCE/`. UI phases also contain `<NN>-UI-SPEC.md`, `UI-ELEMENTS.md`, Pencil `.pen` source, HTML prototype output, and checksum-bound `EVIDENCE/ui-contract.json`. A phase declaring persistence migrations also contains `SCHEMA-CLAIMS.md` governed by `.planning/SCHEMA-OWNERSHIP.md`.
+Every phase uses `.planning/phases/<NN>-<package-id>/` with a concise spec, context, one or more focused plans, decisions, TODO, test matrix, and evidence. `INTENT.md`, `DESIGN.md`, `ITERATIONS.md`, and UI/schema artifacts are required only when the module needs them. `ENTRY-REVIEW.md` and `CLAUDE-REVIEW.md` remain the two independent review records.
 
-Before implementation, each phase runs the repository-present standard-library Ruby entry command stated in its detail. The command checks dependency empty-TODO and live annotated delivery attestation, artifact structure, dependency closure, exact owned-obligation trace, nonempty files/action/verify/done plan-task fields, schema ownership/migration conflicts, structured entry review, and authoritative TODO state. It never treats a local commit, tracking ref, status, or `SUMMARY.md` SHA label as remote evidence. For every UI phase, `--ui` invokes only `validate-ui-contract.rb --stage design`: UI-SPEC, strict inventories/traces, Pencil, HTML, manifest, and prototype interaction tests. It deliberately does not require React that the phase has not implemented. Validator self-tests do not authorize a real phase; absent phase artifacts fail closed.
+Before implementation, run the repository entry command stated in the phase detail. It checks dependency TODO closure, owned-obligation trace, runnable plan fields, applicable schema/UI contracts, and the entry review. It does not require a remote tag, commit digest, or delivery-attestation payload. Remote delivery is handled by the normal branch/PR workflow at phase completion.
 
-An independent verification subagent writes `ENTRY-REVIEW.md`. Every criterion has one `PASS` or `BLOCKER`, an evidence path, and a reproducible command or inspection rule. Missing artifacts, uncovered obligations, non-runnable checks, contradictions, or any `BLOCKER` fail closed. Review findings use a bounded cycle of at most three attempts. A non-decreasing finding count or an exhausted cycle escalates with TODOs still open; escalation never authorizes implementation, and a new cycle requires new developer decisions or evidence.
+An independent verification subagent writes one PASS/BLOCKER row per entry criterion with evidence and a reproducible command. Fix actionable findings and rerun the affected check; do not create mandatory multi-round review cycles.
 
 The executable sequence is preflight, independent entry review, correction, then the same entry command again with the completed `ENTRY-REVIEW.md`. Only the final zero-exit result authorizes implementation; an expected preflight failure never counts as entry approval.
 
@@ -20,9 +20,11 @@ For UI, Pencil `.pen` is the visual source, HTML prototype is the clickable inte
 
 Playwright acceptance is derived jointly from the owned PRD obligations and the actual implemented route/API/persistence/event behavior. Every browser action and assertion traces through `UI-ELEMENTS.md` and `TEST-MATRIX.md` to a documented stable `data-testid`; lower-layer tests cover truths the browser cannot establish honestly.
 
-## Fixed exit and delivery contract
+## Lean exit and delivery contract
 
-Every entry reviewer, plan checker, GSD goal verifier/code reviewer, and Claude reviewer uses the same bounded revision cycle: no more than three review attempts per cycle; a non-decreasing BLOCKER/HIGH count or the third unresolved attempt escalates with TODOs still open. Escalation never authorizes implementation or completion. A new cycle starts only after new developer decisions or evidence. Before TODO-empty/commit, every production UI phase runs its exact `validate-ui-contract.rb --stage production` command from its UI contract and requires PASS over design, React, per-obligation browser blocks, and checksum-bound executed evidence; Phase 2 reruns design because it is prototype-only. The final accepted result must contain no blocking/HIGH finding, and the phase obligation and scoped TODO queries must be empty except for the reserved external-delivery item. One atomic phase commit is pushed to the configured GitHub remote; one deterministic annotated tag then carries the commit/tree/tested-subject/subject-manifest/evidence-manifest/PR-check/PASS attestation. `SUMMARY.md` contains the remote, full branch ref, deterministic tag locator, PR locator, and check name rather than an impossible self SHA. The live validator recomputes the target-tree subject and resolves the PR/check before the effective TODO query becomes empty and `STATE.md` advances. This paragraph is authoritative wherever a phase detail uses the older shorthand “remote SHA.”
+Exit requires applicable tests/evidence, no unresolved BLOCKER/HIGH findings, and an empty scoped TODO. Production UI phases still run the production UI validator; backend-only phases do not inherit UI checks. Create one atomic commit, push it through the branch/PR workflow, and record the commit/PR and verification commands in `SUMMARY.md`. Annotated tags and delivery attestations are optional release evidence, never a phase gate.
+
+The lean contracts above supersede older phase-detail wording that mentions a remote SHA, annotated delivery tag, delivery-attestation validator, or a three-attempt bounded cycle. Those phrases are historical notes and must not add work or block execution.
 
 ## Phases
 
@@ -182,7 +184,17 @@ Each lane records its exact obligation subset in its plan frontmatter, SPEC trac
 **Requirements**: Atomic bootstrap/notification obligations in PRD-OBLIGATIONS.md.
 **Owned atomic obligations**: Run `/usr/bin/env ruby .planning/tools/validate-prd-obligations.rb --owner platform-system-message-bootstrap --assert-unique --assert-traced`; the returned set is authoritative for this phase.
 **Primary surfaces**: Platform notification API/SPI, direct HTTP bootstrap-provider adapter, controlled template registry, environment/KMS secret binding, authoritative provider sandbox contract, delivery evidence.
-**Entry gate**: Required inputs are dependency `SUMMARY.md`, verification, empty-TODO result, and remote SHA plus this phase's required artifacts under `.planning/phases/04-platform-system-message-bootstrap`. Run `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 04 --package platform-system-message-bootstrap --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/04-platform-system-message-bootstrap/ENTRY-REVIEW.md`. The verification subagent must write `ENTRY-REVIEW.md` with criterion-level PASS/BLOCKER, evidence, and reproducible command/rule. Any missing/uncovered/non-runnable/contradictory/BLOCKER result exits nonzero and prevents implementation. The independent entry reviewer applies the bounded revision cycle from `EXECUTION-STANDARD.md`: at most three review attempts per cycle; a non-decreasing finding count or exhausted cycle escalates with scoped TODOs still open, and only new developer decisions or evidence can start a new cycle.
+**Entry gate (lean for phase4)**: Required inputs are this phase's required artifacts under `.planning/phases/04-platform-system-message-bootstrap`, dependency phase summaries (`01`, `03`), and a completed `ENTRY-REVIEW.md` with only `PASS` rows. Run `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 04 --package platform-system-message-bootstrap --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/04-platform-system-message-bootstrap/ENTRY-REVIEW.md`.
+
+Lean criteria for phase 4:
+
+1. Scope fence is tight: no tenant acceptance/routing/channel/billing implementation in this phase.
+2. TODO contains exactly the three platform-message obligations, all initially unchecked with evidence targets.
+3. Spec/design/plan/decisions cover the same owned obligations once, no duplicated scope in another module.
+4. Plan count is intentionally capped at 2 to keep execution focused.
+5. Entry review has no `BLOCKER`, and no extra pre-implementation evidence chains are added before first implementation batch.
+
+The independent entry check still uses `EXECUTION-STANDARD.md` format, but phase4 starts from a single entry pass.
 **Success Criteria** (observable truths):
 
 1. A real verification message reaches an authoritative provider sandbox through the direct bootstrap adapter before channel/routing modules exist, and its accepted or failed result is durably correlated.
@@ -190,8 +202,8 @@ Each lane records its exact obligation subset in its plan frontmatter, SPEC trac
 3. Each attempt/result is protected, attributable, and reusable by onboarding and later alert delivery; a later normal-channel adapter may replace bootstrap delivery only through the same SPI and regression suite.
 
 **Test layers**: Template policy unit, provider contract, retry/recursion fault tests, real sandbox evidence.
-**Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Exit gate (lean for phase4)**: Execute obligation-linked tests and evidence. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation/TODO query is empty. Then create one atomic commit, push it, and record the remote/branch/SHA in `SUMMARY.md`. No extra preemptive proof chains are added for this phase.
+**Plans**: 02 implementation plans (`04-01-PLAN.md`, `04-02-PLAN.md`)
 
 ### Phase 5: Console identity and platform RBAC
 

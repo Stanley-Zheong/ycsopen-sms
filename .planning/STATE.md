@@ -19,9 +19,9 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-**Current phase**: Phase 1 — Engineering verification and drift-control foundation
-**Current plan**: `01-12` pre-push closure is complete. The final 194-input subject, local 19/19 matrix, portable 20/20 matrix, current local-Chrome runtime, exact-seven evidence, GSD goal verification, GSD code review, Claude review, and pre-push lifecycle all pass with no BLOCKER/HIGH. The only remaining effective TODO is the reserved remote commit/PR/check/tag attestation.
-**Execution authorization**: Granted. The second independent review records `8 PASS / 0 BLOCKER`, and the real bootstrap exits zero for seven owned obligations and 13 plans. The former CfT source-chain verdict and JSON remain superseded history and do not enter current subject/evidence.
+**Current phase**: Phase 4 — Platform system-message and notification bootstrap (entry-docs stage)
+**Current plan**: `04-01-PLAN.md` and `04-02-PLAN.md` drafted; over-designing gates reduced for this phase.
+**Execution authorization**: Not yet granted. Phase 4 is ready for implementation but entry is still blocked by unresolved delivery-attestation state in dependencies 01 and 03.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 The verified scoped TODO query is the sole completion metric.
