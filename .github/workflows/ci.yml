@@ -148,7 +148,7 @@ jobs:
           docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MINIO_IMAGE"
       - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
         run: >-
-          mvn -f core/pom.xml -Pphase03-integration
+          mvn -f core/pom.xml -Dphase03.integration.enabled=true
           -Dtest=Phase03FixturePreflightTest,Phase03ProtectedPersistenceIntegrationTest,Phase03Pkcs11IntegrationTest,Phase03MigrationIntegrationTest,Phase03ObjectStorageIntegrationTest,Phase03LeakScanIntegrationTest,Phase03RotationRecoveryIntegrationTest
           test
       - name: Prove every named real-integration suite executed
