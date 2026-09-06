@@ -21,15 +21,15 @@ completion_metric: scoped_todo_empty
 
 **Current phase**: Phase 4 — Platform system-message and notification bootstrap (entry-docs stage)
 **Current plan**: `04-01-PLAN.md` and `04-02-PLAN.md` drafted; over-designing gates reduced for this phase.
-**Execution authorization**: Not yet granted. Phase 4 is ready for implementation but entry is still blocked by unresolved delivery-attestation state in dependencies 01 and 03.
+**Execution authorization**: Granted. Phase 4 entry validation passes; implementation may begin. Its scoped TODOs remain open until code and focused evidence are complete.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Create and push the single atomic Phase 1 implementation commit on `refs/heads/phase/01-engineering-verification`.
-2. Open the issue-#13 PR at the committed locator and require `Phase 01 portable registry` to pass.
+1. Execute `04-01-PLAN.md` and close the bootstrap SPI/provider behavior TODOs with focused tests.
+2. Execute `04-02-PLAN.md`, complete review, and close the remaining Phase 4 TODOs before the atomic commit.
 3. Publish `refs/tags/ycsopen-sms/phase-01/delivery` as an annotated tag targeting that exact commit.
 4. Run live target-tree, subject, evidence, review, PR/check, and effective-TODO attestation. `SUMMARY.md` records locators rather than its own final SHA.
 
@@ -84,7 +84,7 @@ The verified scoped TODO query is the sole completion metric.
 ## Blockers
 
 - Phase 1 entry is no longer blocked. Remaining plans must keep the local-Chrome entry, six-consumer regression suite, and 13-plan bootstrap green.
-- No current entry, reseal, GSD-review, or Claude-review BLOCKER/HIGH is known. Phase 1 exit still requires verified TODO closure, one atomic commit/push, the PR check, deterministic annotated tag, and live remote/target-tree attestation. Historical reports cannot authorize completion.
+- No current Phase 4 entry BLOCKER/HIGH is known. The only open work is the Phase 4 implementation and its scoped verification TODOs.
 - Atomic obligation, phase-entry, UI, and schema-registry validator self-tests pass; Phase 1 remains responsible for integrating those commands into repository verification and recording real evidence before any business phase can enter execution.
 - The real Phase 2 directory does not exist; its Ruby entry command currently returns `phase_entry=BLOCKED`, so no UI design or implementation entry is authorized.
 
