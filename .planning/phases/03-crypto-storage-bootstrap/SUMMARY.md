@@ -73,6 +73,6 @@ Completion is determined only by the effective Phase 3 TODO query. No schedule, 
 - GitHub Actions run `34010664879`: Phase 01 supersession, Backend, Phase 03 portable contracts, Phase 03 real integration and Web all PASS.
 - The real job executed seven named suites / eight tests with zero failures, errors or skips; owned service cleanup and Surefire upload also PASS.
 - Plan 31 independent GSD and Claude reviews both finish with `BLOCKER 0 / HIGH 0`.
-- Closure review reopened CR-12 because active `03-VALIDATION.md` still contradicts final executable state; Phase 03 remains open until that row is verified and the TODO query is physically empty again.
+- CR-12 reconciled active `03-VALIDATION.md` with the current executable topology. Contract head `2a320e4f374dd1bf741dcc7724130b40f130f8dd`, merge `fcd93e3c926d67bfb2627f65981e7fc96649d638` and run `34012096119` passed all five jobs; the Phase 3 TODO is physically empty.
 
 The earlier annotated tag is retained as historical evidence and is not moved. PR merge remains outside the Phase 3 completion contract.

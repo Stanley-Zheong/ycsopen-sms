@@ -1,8 +1,8 @@
 ---
 phase: 03
 slug: crypto-storage-bootstrap
-status: verifying
-nyquist_compliant: false
+status: complete
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-08-31
 updated: 2026-09-06
@@ -136,6 +136,6 @@ No Phase 3 behavior is accepted as manual-only. Production hardware certificatio
 - [x] All four obligation traces and sealed evidence targets pass integrity/traceability validators; Plan 31 corrections have separate current-head proof.
 - [x] Independent goal/code review and Claude review contain no unresolved BLOCKER/HIGH finding for the implementation head.
 - [x] Independent and Claude CR-12 reviews of this corrected contract contain no unresolved BLOCKER/HIGH finding — independent final review `0/0/0/0`; Claude session `d8e35bd0-f73a-437f-87c8-35fc857d88cf` `0/0/0/0`.
-- [ ] The pushed contract-correction head passes the complete pull-request CI boundary.
+- [x] The pushed contract-correction head passes the complete pull-request CI boundary — head `2a320e4f374dd1bf741dcc7724130b40f130f8dd`, synthetic merge `fcd93e3c926d67bfb2627f65981e7fc96649d638`, run `34012096119`, five jobs PASS.
 
-**Approval:** pending CR-12 review and contract-head CI; `nyquist_compliant` remains false and the Phase 03 TODO stays open until those external facts exist.
+**Approval:** complete — the active contract, external reviews and contract-head CI are all satisfied; CR-12 closes in the separate status-only record commit.

@@ -194,7 +194,7 @@ Closure review found that the active validation strategy remained at planning-ti
 - The solution now requires current successors in the active map. `ProtectedFieldCodecTest` executes 9/9 PASS, both retired files are asserted absent, and every other positive Java test token maps to a current test source.
 - Final pre-CI independent review confirms `status: verifying`, Nyquist false, exactly one remaining contract-head CI sign-off after review recording, distinct sealed/current evidence, exact seven-suite topology, fail-closed prerequisite policy and consistent Phase 3 open state.
 
-Final CR-12 pre-CI verdict: PASS, `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`. The validation contract and Phase TODO remain open until the pushed correction head passes PR CI.
+Final CR-12 review verdict: PASS, `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`. Contract head `2a320e4f374dd1bf741dcc7724130b40f130f8dd` then passed all five jobs in run `34012096119`; the validation contract and Phase TODO are closed.
 
 ---
 

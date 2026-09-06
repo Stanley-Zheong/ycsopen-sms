@@ -28,7 +28,7 @@ Every entry reviewer, plan checker, GSD goal verifier/code reviewer, and Claude 
 
 - [ ] **Phase 1: Engineering verification and drift-control foundation** — Truthful backend/frontend/integration/browser commands.
 - [ ] **Phase 2: Console design system and prototype foundation** — Complete Admin/Tenant page registry and role matrix.
-- [ ] **Phase 3: Cryptographic storage and migration bootstrap** — Envelope encryption and KMS/HSM adapter; CR-12 validation-contract reconciliation is open.
+- [x] **Phase 3: Cryptographic storage and migration bootstrap** — Envelope encryption and KMS/HSM adapter.
 - [ ] **Phase 4: Platform system-message and notification bootstrap** — Controlled platform templates.
 - [ ] **Phase 5: Console identity and platform RBAC** — Password hashing inside identity.
 - [ ] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
@@ -170,7 +170,7 @@ Each lane records its exact obligation subset in its plan frontmatter, SPEC trac
 
 **Test layers**: Crypto vectors, persistence integration, rotation/failure recovery, leak scans.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: 30 implementation plans are complete. Plan 31 is verifying CR-12 after closure review found the active validation contract still carried draft/pending state. Run `34010664879` remains valid code-head evidence, but the scoped TODO query is not empty.
+**Plans**: 30 implementation plans plus Plan 31 remediation are complete. The scoped TODO query is empty; code run `34010664879` and validation-contract run `34012096119` each passed all five PR jobs.
 
 ### Phase 4: Platform system-message and notification bootstrap
 

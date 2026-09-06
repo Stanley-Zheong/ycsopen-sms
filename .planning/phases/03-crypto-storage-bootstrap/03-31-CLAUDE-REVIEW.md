@@ -2,7 +2,7 @@
 
 ## Verdict
 
-`PASS, CONTRACT-HEAD CI PENDING` — product-code and corrected active-validation-contract reviews both have `BLOCKER 0 / HIGH 0`; CR-12 remains open only for the pushed correction head's PR CI.
+`PASS` — product-code and corrected active-validation-contract reviews both have `BLOCKER 0 / HIGH 0`; the pushed contract head subsequently passed all five PR CI jobs.
 
 ## Review boundary
 
@@ -101,4 +101,4 @@ The corrected pre-CI contract then received two fresh bounded reviews:
 - Claude session `d8e35bd0-f73a-437f-87c8-35fc857d88cf`: `PASS`, `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`.
 - The reviewers confirmed `verifying`/Nyquist false, exactly one remaining external CI sign-off after review recording, distinct sealed/current evidence labels, the seven-suite override citations, the retained Plan 24 successor test and a non-self-referential two-commit closure.
 
-CR-12 now advances only to its contract-head CI gate; Phase 03 remains open.
+Contract head `2a320e4f374dd1bf741dcc7724130b40f130f8dd` and synthetic merge `fcd93e3c926d67bfb2627f65981e7fc96649d638` passed run `34012096119` across Backend, Phase 1 portable, Phase 3 portable, Phase 3 real integration and Web. CR-12 is closed.

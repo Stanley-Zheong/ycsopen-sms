@@ -2,7 +2,7 @@
 
 ## Outcome
 
-The PR 15 code remediation is independently reviewed and verified on the pull request's synthetic merge. Closure review then found CR-12: the active validation contract still carried planning-time draft/pending state. Phase closure is reopened until that contract is reconciled, independently reviewed, committed, and verified on the latest pull-request head.
+The PR 15 remediation and CR-12 active validation-contract correction are complete, independently reviewed and verified on pull-request synthetic merges. The final contract contains current executable tests, explicit sealed/current evidence provenance, resolved Wave 0/sign-off state and no obsolete positive test reference.
 
 The correction covers atomic legacy message migration, global/current-tenant blacklist lookup, snapshot rotation continuity, routing-before-encryption, registration-session publication races and expiry, fail-closed MOBILE frequency handling, synthetic-merge CI, generated-result cleanup, independent Web CI and truthful PKCS#11 deployment documentation.
 
@@ -21,8 +21,9 @@ The correction covers atomic legacy message migration, global/current-tenant bla
 - Corrective code head: `a7039ed245bb33167a9e72e39fefcc8c0daea89e`.
 - Tested synthetic merge: `f841497bf3635316c2cd58c86f9c296e5756ab5f`.
 - GitHub Actions run: `34010664879`; Backend, Phase 01 supersession, Phase 03 portable contracts, Phase 03 real integration and Web all passed.
-- The earlier physical-empty result was invalidated by CR-12 and remains historical evidence for the code head only.
+- Validation-contract head: `2a320e4f374dd1bf741dcc7724130b40f130f8dd`; tested synthetic merge `fcd93e3c926d67bfb2627f65981e7fc96649d638`; run `34012096119` passed the same five jobs.
+- Physical Phase 03 TODO query returns no unchecked row after CR-12 closure.
 
 ## Remaining TODO
 
-- [ ] CR-12 — reconcile and verify the active `03-VALIDATION.md`, then pass latest-head PR CI.
+None.

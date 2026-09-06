@@ -19,20 +19,20 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-Phase: 03 (crypto-storage-bootstrap) — CLOSURE CORRECTION
-Plan: 03-31 CR-12 active validation-contract reconciliation
-**Current phase**: Phase 3 — Cryptographic storage and migration bootstrap
-**Completed code boundary**: PR 15 corrective head `a7039ed245bb33167a9e72e39fefcc8c0daea89e` and synthetic merge `f841497bf3635316c2cd58c86f9c296e5756ab5f` passed run `34010664879` across all five jobs.
-**Execution authorization**: Phase 4 entry is paused because closure review reopened one Phase 3 documentation/verification TODO.
-**Sole completion metric**: The verified scoped TODO query. The Phase 3 TODO contains CR-12, and later phases also remain.
+Phase: 04 (platform-system-message-bootstrap) — ENTRY NEXT
+Plan: Phase 04 entry validation and focused planning
+**Current phase**: Phase 4 — Platform system-message and notification bootstrap
+**Completed dependency**: Phase 3 scoped TODO is empty. Code head `a7039ed245bb33167a9e72e39fefcc8c0daea89e` passed run `34010664879`; active-validation head `2a320e4f374dd1bf741dcc7724130b40f130f8dd` and synthetic merge `fcd93e3c926d67bfb2627f65981e7fc96649d638` passed run `34012096119` across all five jobs.
+**Execution authorization**: Phase 4 implementation is not yet authorized; its entry checks and independent review are next.
+**Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty because later phases remain.
 
 The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Reconcile active `03-VALIDATION.md` against final executable evidence and remove the obsolete monolithic fault-suite reference.
-2. Obtain a blocking-free independent consistency review and pass planning validators.
-3. Commit and push the closure correction, then require latest-head PR CI PASS and a physically empty Phase 3 TODO before Phase 4 entry.
+1. Revalidate Phase 4 inputs against the completed Phase 3 summary, empty TODO and remote CI evidence.
+2. Create or refresh Phase 4 SPEC, intent, decisions, design boundary, test matrix and executable TODO set.
+3. Obtain an independent entry-standard review before authorizing Phase 4 implementation.
 
 ## Accumulated decisions
 
@@ -72,7 +72,7 @@ The verified scoped TODO query is the sole completion metric.
 - Trial quota is disconnected from sending.
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
-- Phase 03 product implementation covers protected persistence, object storage, purpose-separated PKCS#11 keys, rotation/recovery, signed resumable migration and five-surface leak scanning. The clean synthetic-merge run executed all named real suites with zero skips, and no generated `core/target` output is tracked. Closure remains open only for CR-12 validation-contract consistency and its latest-head CI proof.
+- Phase 03 is complete: production composition covers protected persistence, object storage, purpose-separated PKCS#11 keys, rotation/recovery, signed resumable migration and five-surface leak scanning. Its active validation contract matches the current test topology; both correction runs passed all five PR jobs, and no generated `core/target` output is tracked.
 
 ## Authoritative TODO seeds
 
@@ -89,7 +89,7 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Blockers
 
-- Phase 03 has one closure blocker: CR-12 active validation-contract consistency. Its prior code-head synthetic-merge verification is green; latest-head verification follows the documentation correction.
+- No Phase 03 blocker remains; its scoped TODO is physically empty and both code and validation-contract PR runs are green.
 - Phase 4 implementation remains gated by its own entry evidence and independent review.
 
 ## Coverage state
@@ -103,6 +103,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Phase 3 CR-12 independent validation-contract review, then contract-head commit/push/CI and the final physical TODO-empty record. Phase 4 entry starts only afterward.
+**Resume from**: Phase 4 entry validation. Reuse the corrected cadence: solution/spec before code, focused checks per change, one affected-suite batch check, and aggregate independent/Claude review at the phase boundary.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
-**When updating state**: Replace explicit TODOs with executable evidence only. Preserve the scoped TODO query as the sole completion metric and do not advance to Phase 4 while CR-12 is open.
+**When updating state**: Replace explicit TODOs with executable evidence only and preserve the scoped TODO query as the sole completion metric.
