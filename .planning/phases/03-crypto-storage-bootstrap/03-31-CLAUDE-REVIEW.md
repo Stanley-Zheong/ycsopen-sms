@@ -58,4 +58,16 @@ Run `34008602025` proved the direct real-integration job did not prepare its loc
 - Confirmed: the step runs before Maven, pulls only MySQL and MinIO, pins `linux/amd64` and immutable digests, fails closed under the Actions shell, preserves fixture validation, and does not restore the evidence runner or add Redis/implicit test downloads.
 - Static boundary: Claude could not inspect whether the two digest strings matched the fixture constants. A repository-executed Ruby contract query confirmed exact equality for both MySQL and MinIO.
 
-CR-09 remains open until a fresh synthetic-merge real-integration job executes all seven named suites with zero failures, errors and skips.
+CR-09's image-preparation step passed in run `34008949254`; the overall real-integration boundary remained open because that run then exposed CR-10.
+
+## CR-10 OCI identity review
+
+Run `34008949254` proved image preparation works and exposed a classic-Docker portability defect: MinIO's pinned manifest-list digest and platform config/image digest were treated as the same value. The solution was updated before implementation to retain exact identity while supporting both Docker stores.
+
+- Initial session: `033a9112-3f2b-487e-940c-717546042f5f`, `BLOCKER 0 / HIGH 0` on the two-representation allowlist and pre-start binding.
+- An independent reviewer then found one valid HIGH: containerd output mislabeled the manifest digest as `config_digest`, and container mismatch lacked a regression.
+- The correction makes `image_digest`, `config_digest`, and `image_id` unambiguous and adds an executable `MINIO_CONTAINER_IDENTITY_MISMATCH` case.
+- Final session: `7144bb8c-594f-4e69-ad48-607313f64140`, `BLOCKER 0 / HIGH 0`.
+- Independent correction review: PASS; service-contract test 15 cases / 70 assertions, zero failures, errors or skips.
+
+CR-10 remains open only for the fresh classic-Docker synthetic-merge replay.

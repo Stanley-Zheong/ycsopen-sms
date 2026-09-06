@@ -170,25 +170,67 @@ class Phase03ServiceChecksTest < Minitest::Test
   end
 
   def test_minio_image_identity_requires_exact_digest_platform_and_release
-    identity = {
+    arm64_identity = {
       "repo_digests" => [ServiceChecks::MINIO_IMAGE],
-      "image_id" => ServiceChecks::MINIO_IMAGE_ID,
+      "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/arm64"),
       "platform" => "linux/arm64",
       "version" => ServiceChecks::MINIO_VERSION
     }
-    assert ServiceChecks.validate_minio_identity!(identity)
+    amd64_identity = arm64_identity.merge(
+      "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/amd64"),
+      "platform" => "linux/amd64"
+    )
+    containerd_identity = arm64_identity.merge("image_id" => ServiceChecks::MINIO_MANIFEST_DIGEST)
+    assert ServiceChecks.validate_minio_identity!(arm64_identity)
+    assert ServiceChecks.validate_minio_identity!(amd64_identity)
+    assert ServiceChecks.validate_minio_identity!(containerd_identity)
+    refute_equal ServiceChecks::MINIO_MANIFEST_DIGEST, amd64_identity.fetch("image_id")
+
+    containerd_fields = ServiceChecks.minio_digest_fields(containerd_identity)
+    assert_equal ServiceChecks::MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+                 containerd_fields.fetch("image_digest")
+    assert_equal ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/arm64").delete_prefix("sha256:"),
+                 containerd_fields.fetch("config_digest")
+    assert_equal ServiceChecks::MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+                 containerd_fields.fetch("image_id")
 
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(identity.merge("repo_digests" => ["minio/minio@sha256:#{'0' * 64}"]))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("repo_digests" => ["minio/minio@sha256:#{'0' * 64}"]))
     end
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(identity.merge("image_id" => "sha256:#{'0' * 64}"))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("image_id" => "sha256:#{'0' * 64}"))
     end
     assert_check("MINIO_IMAGE_PLATFORM_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(identity.merge("platform" => "linux/riscv64"))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("platform" => "linux/riscv64"))
     end
     assert_check("MINIO_VERSION_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(identity.merge("version" => "latest"))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("version" => "latest"))
+    end
+  end
+
+  def test_running_minio_container_must_match_validated_pre_start_image_id
+    run_id = "minio-012345abcdef"
+    expected_identity = {
+      "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/amd64")
+    }
+    docker_command = lambda do |argv, **_options|
+      if argv.include?("{{json .Mounts}}")
+        ["[]\n", "", 0]
+      else
+        observed = [JSON.generate(ServiceChecks::MINIO_IMAGE), run_id, "sha256:#{'0' * 64}"].join("|")
+        ["#{observed}\n", "", 0]
+      end
+    end
+
+    singleton = Phase01::ServiceChecks.singleton_class
+    original_command = Phase01::ServiceChecks.method(:command)
+    singleton.send(:define_method, :command, docker_command)
+    begin
+      assert_check("MINIO_CONTAINER_IDENTITY_MISMATCH") do
+        ServiceChecks.verify_minio_container!("phase03-minio-#{run_id}", run_id, expected_identity)
+      end
+    ensure
+      singleton.send(:define_method, :command, original_command)
     end
   end
 end

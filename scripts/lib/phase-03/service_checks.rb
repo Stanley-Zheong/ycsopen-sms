@@ -87,7 +87,11 @@ module Phase03
     SOFTHSM_MANIFEST = File.join(__dir__, "softhsm-source.json")
     MYSQL_IMAGE = Phase01::ServiceChecks::MYSQL_IMAGE
     MINIO_IMAGE = "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
-    MINIO_IMAGE_ID = "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    MINIO_MANIFEST_DIGEST = "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    MINIO_IMAGE_CONFIG_DIGESTS = {
+      "linux/amd64" => "sha256:69b2ec208575b69597784255eec6fa6a2985ee9e1a47f4411a51f7f5fdd193a9",
+      "linux/arm64" => "sha256:8f08aee614800a237906bd48114d733e5ac5bfac4ccdf731f141b0e880d7a253"
+    }.freeze
     MINIO_VERSION = "RELEASE.2025-09-07T16-13-09Z"
     OWNER_LABEL = "com.ycsopen.phase03.owner=crypto-storage-bootstrap"
     RUN_LABEL = "com.ycsopen.phase03.run"
@@ -269,11 +273,15 @@ module Phase03
 
     def validate_minio_identity!(identity)
       unless identity.is_a?(Hash) && identity["repo_digests"].is_a?(Array) &&
-             identity["repo_digests"].include?(MINIO_IMAGE) && identity["image_id"] == MINIO_IMAGE_ID
-        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image is not the locked digest")
+             identity["repo_digests"].include?(MINIO_IMAGE)
+        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO manifest is not the locked digest")
       end
-      unless %w[linux/amd64 linux/arm64].include?(identity["platform"])
+      expected_config_digest = MINIO_IMAGE_CONFIG_DIGESTS[identity["platform"]]
+      unless expected_config_digest
         raise CheckError.new("MINIO_IMAGE_PLATFORM_MISMATCH", "MinIO image platform is unsupported")
+      end
+      unless [MINIO_MANIFEST_DIGEST, expected_config_digest].include?(identity["image_id"])
+        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image ID is not a locked representation")
       end
       unless identity["version"] == MINIO_VERSION
         raise CheckError.new("MINIO_VERSION_MISMATCH", "MinIO release label is not the locked release")
@@ -295,6 +303,14 @@ module Phase03
       identity
     rescue JSON::ParserError
       raise CheckError.new("MINIO_IMAGE_IDENTITY_MALFORMED", "MinIO image identity was malformed")
+    end
+
+    def minio_digest_fields(identity)
+      {
+        "image_digest" => MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+        "config_digest" => MINIO_IMAGE_CONFIG_DIGESTS.fetch(identity.fetch("platform")).delete_prefix("sha256:"),
+        "image_id" => identity.fetch("image_id").delete_prefix("sha256:")
+      }
     end
 
     def start_service!(service, run_id:, credentials: {})
@@ -342,18 +358,18 @@ module Phase03
       ensure
         env_file.close!
       end
-      verify_minio_container!(container, run_id)
+      verify_minio_container!(container, run_id, identity)
       wait_for_minio!(container)
       functional_minio_probe!(container)
       port = Phase01::ServiceChecks.published_port!(container, 9000)
       identity.merge(
         "schema_version" => "phase03-service-v1", "status" => "READY", "service" => "minio",
         "run_id" => run_id, "container_name" => container, "host" => "127.0.0.1", "port" => port,
-        "image_reference" => MINIO_IMAGE, "image_digest" => MINIO_IMAGE_ID.delete_prefix("sha256:")
-      )
+        "image_reference" => MINIO_IMAGE
+      ).merge(minio_digest_fields(identity))
     end
 
-    def verify_minio_container!(container, run_id)
+    def verify_minio_container!(container, run_id, expected_identity)
       mounts, = Phase01::ServiceChecks.command([
         Phase01::ServiceChecks.docker_binary, "container", "inspect", container, "--format", "{{json .Mounts}}"
       ])
@@ -365,7 +381,8 @@ module Phase03
         "{{json .Config.Image}}|{{index .Config.Labels \"#{RUN_LABEL}\"}}|{{.Image}}"
       ])
       reference_json, observed_run, image_id = identity.strip.split("|", 3)
-      unless JSON.parse(reference_json) == MINIO_IMAGE && observed_run == run_id && image_id == MINIO_IMAGE_ID
+      unless JSON.parse(reference_json) == MINIO_IMAGE && observed_run == run_id &&
+             image_id == expected_identity.fetch("image_id")
         raise CheckError.new("MINIO_CONTAINER_IDENTITY_MISMATCH", "running MinIO container identity differs from the locked image")
       end
       true
