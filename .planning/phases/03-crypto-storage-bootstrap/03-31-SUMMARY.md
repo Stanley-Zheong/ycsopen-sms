@@ -2,19 +2,27 @@
 
 ## Outcome
 
-The PR 15 remediation implementation is locally complete and independently reviewed. It closes the ten original review findings plus eight review corrections without adding a new product subsystem.
+The PR 15 code remediation is independently reviewed and verified on the pull request's synthetic merge. Closure review then found CR-12: the active validation contract still carried planning-time draft/pending state. Phase closure is reopened until that contract is reconciled, independently reviewed, committed, and verified on the latest pull-request head.
 
 The correction covers atomic legacy message migration, global/current-tenant blacklist lookup, snapshot rotation continuity, routing-before-encryption, registration-session publication races and expiry, fail-closed MOBILE frequency handling, synthetic-merge CI, generated-result cleanup, independent Web CI and truthful PKCS#11 deployment documentation.
 
 ## Verification
 
-- Default Maven: 392 tests, 0 failures, 0 errors; 17 real-service tests are intentionally profile-gated.
-- Named real Phase 03 boundary: seven suites executed with zero failures, errors or skips.
-- Web: dependency install, unit tests and production build passed before the final backend-only corrections; the independent Web CI job will replay all three commands on the synthetic merge.
+- Default Maven: local 385 and synthetic-merge CI 387 tests, 0 failures, 0 errors; 17 real-service tests are intentionally profile-gated.
+- Named real Phase 03 boundary: seven suites / eight tests executed with zero failures, errors or skips.
+- Web: dependency install, unit tests and production build passed on the synthetic merge.
 - Independent GSD Round 4: PASS, `BLOCKER 0 / HIGH 0`.
 - Claude final adjudication: PASS, `BLOCKER 0 / HIGH 0`.
 - Repository hygiene: no tracked `core/target/**`; documentation has no obsolete `FIELD_ENCRYPTION_KEY` instruction.
 
+## Delivery evidence
+
+- Pull request: `https://github.com/Stanley-Zheong/ycsopen-sms/pull/15`.
+- Corrective code head: `a7039ed245bb33167a9e72e39fefcc8c0daea89e`.
+- Tested synthetic merge: `f841497bf3635316c2cd58c86f9c296e5756ab5f`.
+- GitHub Actions run: `34010664879`; Backend, Phase 01 supersession, Phase 03 portable contracts, Phase 03 real integration and Web all passed.
+- The earlier physical-empty result was invalidated by CR-12 and remains historical evidence for the code head only.
+
 ## Remaining TODO
 
-The remaining unchecked rows describe one external delivery boundary: push the latest correction and obtain passing synthetic-merge Backend/portable, real-service and Web jobs. The first three replays successively exposed clean-runner image preparation, classic-Docker MinIO identity and clean artifact-scan bootstrap defects; CR-09 through CR-11 record their solution-first corrections. Phase 03 is not complete until the fresh replay passes, those TODO rows are checked and the physical `- [ ]` query is empty.
+- [ ] CR-12 — reconcile and verify the active `03-VALIDATION.md`, then pass latest-head PR CI.

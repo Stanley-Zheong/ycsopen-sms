@@ -65,3 +65,14 @@ Live delivery validation after the required PR check and annotated tag exist:
 - JDBC retry closures must remain free of externally visible non-transactional side effects. Current callers meet that contract.
 
 Completion is determined only by the effective Phase 3 TODO query. No schedule, estimate, percentage or impossible same-commit identity is asserted here.
+
+## Plan 31 corrective delivery
+
+- Corrective implementation head: `a7039ed245bb33167a9e72e39fefcc8c0daea89e` on `refs/heads/phase/03-crypto-storage-bootstrap`.
+- Tested pull-request merge: `f841497bf3635316c2cd58c86f9c296e5756ab5f` for PR 15.
+- GitHub Actions run `34010664879`: Phase 01 supersession, Backend, Phase 03 portable contracts, Phase 03 real integration and Web all PASS.
+- The real job executed seven named suites / eight tests with zero failures, errors or skips; owned service cleanup and Surefire upload also PASS.
+- Plan 31 independent GSD and Claude reviews both finish with `BLOCKER 0 / HIGH 0`.
+- Closure review reopened CR-12 because active `03-VALIDATION.md` still contradicts final executable state; Phase 03 remains open until that row is verified and the TODO query is physically empty again.
+
+The earlier annotated tag is retained as historical evidence and is not moved. PR merge remains outside the Phase 3 completion contract.

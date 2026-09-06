@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: YCSOpen SMS v1.0
 status: executing
-last_updated: "2026-09-01"
+last_updated: "2026-09-06"
 completion_metric: scoped_todo_empty
 ---
 
@@ -19,21 +19,20 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-Phase: 03 (crypto-storage-bootstrap) — EXECUTING
-Plan: dependency-ordered Phase 03 implementation
-**Current phase**: Phase 3 — Crypto storage bootstrap
-**Current plan**: Plans `03-14` and `03-18` now have committed implementation and summary evidence. Real seven-target migration/encrypted snapshot recovery and typed safe logging pass; Phase 03 obligation TODO rows remain open pending leak scanning, rotation/composed-fault closure and evidence composition.
-**Execution authorization**: Granted. The independent entry review, mandatory evidence-bound validator, destructive validator self-test and Claude Attempt 5 all pass; Claude counts are BLOCKER 0 / HIGH 0 / WARNING 0.
-**Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
+Phase: 03 (crypto-storage-bootstrap) — CLOSURE CORRECTION
+Plan: 03-31 CR-12 active validation-contract reconciliation
+**Current phase**: Phase 3 — Cryptographic storage and migration bootstrap
+**Completed code boundary**: PR 15 corrective head `a7039ed245bb33167a9e72e39fefcc8c0daea89e` and synthetic merge `f841497bf3635316c2cd58c86f9c296e5756ab5f` passed run `34010664879` across all five jobs.
+**Execution authorization**: Phase 4 entry is paused because closure review reopened one Phase 3 documentation/verification TODO.
+**Sole completion metric**: The verified scoped TODO query. The Phase 3 TODO contains CR-12, and later phases also remain.
 
 The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Execute Phase 03 plans in declared dependency-wave order.
-2. Keep all Phase 03 TODO rows open until implementation evidence proves each obligation.
-3. Run code review, independent goal verification, Claude completion review and the scoped TODO query.
-4. Commit, push and record the Phase 03 delivery attestation only after the scoped TODO is empty.
+1. Reconcile active `03-VALIDATION.md` against final executable evidence and remove the obsolete monolithic fault-suite reference.
+2. Obtain a blocking-free independent consistency review and pass planning validators.
+3. Commit and push the closure correction, then require latest-head PR CI PASS and a physically empty Phase 3 TODO before Phase 4 entry.
 
 ## Accumulated decisions
 
@@ -73,15 +72,7 @@ The verified scoped TODO query is the sole completion metric.
 - Trial quota is disconnected from sending.
 - Most pages and protocol modules are placeholders or skeletons.
 - Existing analytics and complaint-ratio code are not completion evidence until real source data, formulas, permissions, and end-to-end actions are verified.
-- Plan 03 now provides a passing opt-in real fixture lane: JDBC against the admitted MySQL digest, signed MinIO object lifecycle with anonymous rejection, and Java SunPKCS11 AES-GCM/HMAC against a source-verified SoftHSM 2.7.0 token. This is prerequisite evidence only and closes no obligation TODO.
-- Plan 04 now provides the strict immutable YCSE/v1 binary and canonical AAD contract with passing byte, mutation, capacity and bounded-reader tests. Production key-provider, persistence, storage and migration evidence remain open.
-- Plan 05 now provides opaque key, versioned blind-index and purpose-separated capability/upload digest ports with passing deterministic vectors. The deterministic adapter is test-only evidence and production PKCS11, persistence and lifecycle evidence remain open.
-- Plan 06 now provides the production Java 21 SunPKCS11 provider/session and opaque-key adapter, with durable independent pre-nonce reservation, purpose-separated aliases/domains, the 1,048,576 hard ceiling and sanitized failures proven by unit mapping/order tests. Real SoftHSM/MySQL adapter evidence remains owned by Plan 07, and every Phase 03 obligation TODO remains open.
-- Plan 07 now enforces reference-only production startup and proves the same production SunPKCS11 adapter against a source/hash-locked SoftHSM 2.7.0 fixture plus real MySQL reservation state, including AES-GCM/AAD, purpose-separated HMAC, restart, failure burn, concurrency and the exact ceiling. This is SoftHSM protocol conformance rather than physical-HSM certification, and every Phase 03 obligation TODO remains open.
-- Plan 08 now maps the six current non-message protected `VARBINARY(255)` fields as hidden opaque byte arrays, hides the three current Tenant evidence references as object IDs, and proves deterministic ORM hydration/writeback plus JSON/string/accessor exclusion. Real Connector/J writer evidence and all Phase 03 obligation TODOs remain open.
-- Plan 09 provides the sole tenant/message-bound YCSE prepare/save owner, hidden binary MessageTask mapping, non-queryable legacy locator and same-transaction per-version ACTIVE/RETIRING blind-index metadata persistence with deterministic rollback evidence. Plan 26 adopts it in the live message service, and Plan 10 now adds checkpoint-aware lookup plus real Connector/J/PKCS11 raw-row, AAD, outage and rollback proof. Every Phase 03 obligation TODO remains open.
-- Plan 15 now provides the purpose-bounded ciphertext-only S3 port and a passing real digest-locked MinIO adapter lifecycle with anonymous denial. Protected-object service, metadata/capability persistence, tenant composition, leak evidence and every Phase 03 obligation TODO remain open.
-- Plan 12 provides the typed reviewed manifest, strict legacy classifier and fail-closed preflight contract. Plan 27 provides the production signed writer/snapshot pair verifier, closed schemas, trust rotation and atomic pair CAS. Plan 13 adds the bounded transactional migration command/runner, Plan 29 adopts the last current tenant-registration writer, Plan 20 adds explicit lifecycle/rewrap, and Plan 30 passes the real object-registration service composition. Real migration recovery, rotation/fault composition, leak/evidence sealing and every Phase 03 obligation TODO remain open.
+- Phase 03 product implementation covers protected persistence, object storage, purpose-separated PKCS#11 keys, rotation/recovery, signed resumable migration and five-surface leak scanning. The clean synthetic-merge run executed all named real suites with zero skips, and no generated `core/target` output is tracked. Closure remains open only for CR-12 validation-contract consistency and its latest-head CI proof.
 
 ## Authoritative TODO seeds
 
@@ -98,9 +89,8 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Blockers
 
-- No Phase 03 execution-entry blocker remains; independent entry review and Claude Attempt 5 are authorized.
-- Real MySQL/MinIO/SoftHSM fixture execution is available after Plan 03-03; production crypto/storage/migration/leak implementation and canonical obligation evidence remain open.
-- Phase 03 completion remains blocked until its scoped TODO is empty, independent verification passes, and commit/push delivery attestation is recorded.
+- Phase 03 has one closure blocker: CR-12 active validation-contract consistency. Its prior code-head synthetic-merge verification is green; latest-head verification follows the documentation correction.
+- Phase 4 implementation remains gated by its own entry evidence and independent review.
 
 ## Coverage state
 
@@ -113,6 +103,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Plan 19, then Plans 21, 22 and 23 in declared dependency order. Apply focused checks per change, affected-suite checks per implementation batch, and reserve full/independent/Claude review for the Phase boundary; execute each plan-owned real-service lane once when it becomes the active dependency.
+**Resume from**: Phase 3 CR-12 independent validation-contract review, then contract-head commit/push/CI and the final physical TODO-empty record. Phase 4 entry starts only afterward.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
-**When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Preserve the scoped TODO query as the sole completion metric.
+**When updating state**: Replace explicit TODOs with executable evidence only. Preserve the scoped TODO query as the sole completion metric and do not advance to Phase 4 while CR-12 is open.

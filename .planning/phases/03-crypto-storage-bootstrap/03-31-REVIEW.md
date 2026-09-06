@@ -186,6 +186,16 @@ external-review findings. The final implementation:
 The final focused verdict is PASS with `BLOCKER 0 / HIGH 0`. The clean local real-profile replay
 executes the leak suite with zero skips; remote acceptance remains the physical TODO boundary.
 
+## CR-12 active validation-contract follow-up
+
+Closure review found that the active validation strategy remained at planning-time draft/pending state. The correction was specified before editing and reviewed in three focused passes:
+
+- Initial review found one HIGH: the Plan 24 row still invoked the intentionally retired `FieldEncryptorTest`.
+- The solution now requires current successors in the active map. `ProtectedFieldCodecTest` executes 9/9 PASS, both retired files are asserted absent, and every other positive Java test token maps to a current test source.
+- Final pre-CI independent review confirms `status: verifying`, Nyquist false, exactly one remaining contract-head CI sign-off after review recording, distinct sealed/current evidence, exact seven-suite topology, fail-closed prerequisite policy and consistent Phase 3 open state.
+
+Final CR-12 pre-CI verdict: PASS, `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`. The validation contract and Phase TODO remain open until the pushed correction head passes PR CI.
+
 ---
 
 _Reviewed: 2026-09-06T03:09:14Z_

@@ -2,7 +2,7 @@
 
 ## Verdict
 
-`PASS` — final bounded review has `BLOCKER 0 / HIGH 0` after repository evidence and the independent GSD reviewer adjudicated every observation.
+`PASS, CONTRACT-HEAD CI PENDING` — product-code and corrected active-validation-contract reviews both have `BLOCKER 0 / HIGH 0`; CR-12 remains open only for the pushed correction head's PR CI.
 
 ## Review boundary
 
@@ -84,3 +84,21 @@ Run `34009512062` passed image preparation and MinIO identity validation, then e
 - Executable proof: artifact-scanner destructive fixtures 24/24 PASS; `mvn -f core/pom.xml -Pphase03-integration -Dtest=Phase03LeakScanIntegrationTest clean test` executes 1 test with zero failures, errors, or skips; the temporary `pkcs11-real-proof-*.txt` input is absent after completion.
 
 CR-11 remains open only for the fresh synthetic-merge replay of all seven named real suites.
+
+## CR-12 active validation-contract review
+
+Closure review found that `03-VALIDATION.md` still described its planning-time state rather than the final executable topology. The solution was recorded before the document changed. The first bounded Claude review then correctly rejected an intermediate version that marked itself complete before its own review and CI existed.
+
+- Session: `12a76fa1-2c9a-4a91-92da-f55313fdd8b7`.
+- Initial verdict: `BLOCKER 2 / HIGH 2 / MEDIUM 2 / LOW 2`.
+- Accepted findings: premature `complete`/Nyquist/approval state; a checked self-referential review/CI sign-off; undifferentiated historical sealed/current CI evidence; and an unexplained `DR-P03-012` reference.
+- Corrective contract: keep validation `verifying` and Nyquist false until the exact correction commit has blocking-free independent/Claude review and PR CI; distinguish Plans 02/22/23 sealed evidence from current Plan 31 direct evidence; cite the actual verification/decision records; retain the fail-closed prerequisite rule.
+- Separately, the independent reviewer found one stale positive reference to the intentionally deleted `FieldEncryptorTest`. The active map now runs retained `ProtectedFieldCodecTest` and asserts both retired files remain absent.
+
+The corrected pre-CI contract then received two fresh bounded reviews:
+
+- Independent final review: `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`.
+- Claude session `d8e35bd0-f73a-437f-87c8-35fc857d88cf`: `PASS`, `BLOCKER 0 / HIGH 0 / MEDIUM 0 / LOW 0`.
+- The reviewers confirmed `verifying`/Nyquist false, exactly one remaining external CI sign-off after review recording, distinct sealed/current evidence labels, the seven-suite override citations, the retained Plan 24 successor test and a non-self-referential two-commit closure.
+
+CR-12 now advances only to its contract-head CI gate; Phase 03 remains open.
