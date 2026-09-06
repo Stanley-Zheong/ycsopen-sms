@@ -19,20 +19,19 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-Phase: 04 (platform-system-message-bootstrap) — ENTRY NEXT
-Plan: Phase 04 entry validation and focused planning
-**Current phase**: Phase 4 — Platform system-message and notification bootstrap
-**Completed dependency**: Phase 3 scoped TODO is empty. Code head `a7039ed245bb33167a9e72e39fefcc8c0daea89e` passed run `34010664879`; active-validation head `2a320e4f374dd1bf741dcc7724130b40f130f8dd` and synthetic merge `fcd93e3c926d67bfb2627f65981e7fc96649d638` passed run `34012096119` across all five jobs.
-**Execution authorization**: Phase 4 implementation is not yet authorized; its entry checks and independent review are next.
-**Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty because later phases remain.
+**Current phase**: Phase 1 — Engineering verification and drift-control foundation
+**Current plan**: `01-12` pre-push closure is complete. The final 194-input subject, local 19/19 matrix, portable 20/20 matrix, current local-Chrome runtime, exact-seven evidence, GSD goal verification, GSD code review, Claude review, and pre-push lifecycle all pass with no BLOCKER/HIGH. The only remaining effective TODO is the reserved remote commit/PR/check/tag attestation.
+**Execution authorization**: Granted. The second independent review records `8 PASS / 0 BLOCKER`, and the real bootstrap exits zero for seven owned obligations and 13 plans. The former CfT source-chain verdict and JSON remain superseded history and do not enter current subject/evidence.
+**Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Revalidate Phase 4 inputs against the completed Phase 3 summary, empty TODO and remote CI evidence.
-2. Create or refresh Phase 4 SPEC, intent, decisions, design boundary, test matrix and executable TODO set.
-3. Obtain an independent entry-standard review before authorizing Phase 4 implementation.
+1. Create and push the single atomic Phase 1 implementation commit on `refs/heads/phase/01-engineering-verification`.
+2. Open the issue-#13 PR at the committed locator and require `Phase 01 portable registry` to pass.
+3. Publish `refs/tags/ycsopen-sms/phase-01/delivery` as an annotated tag targeting that exact commit.
+4. Run live target-tree, subject, evidence, review, PR/check, and effective-TODO attestation. `SUMMARY.md` records locators rather than its own final SHA.
 
 ## Accumulated decisions
 
@@ -53,11 +52,6 @@ The verified scoped TODO query is the sole completion metric.
 - Real HTTP upstream, real CMPP upstream, and final cross-protocol composition have stable atomic obligation IDs.
 - Every entry, plan, GSD, UI, code, and Claude review uses a bounded revision cycle. Escalation never grants completion; affected TODOs remain open until a later cycle reaches a blocking-free result.
 - Each completed phase is one atomic commit plus one external annotated delivery tag. Dependency entry resolves the configured remote branch/tag target, target-tree subject/evidence/review digests, and PR/check PASS; committed `SUMMARY.md` records locators rather than a self SHA.
-- Phase 03 obligation PASS evidence must bind the exact-four catalog/TEST-MATRIX trace to canonical live input hashes, the accepted inventory digest, complete leak coverage, and fixed real/deterministic child-result identities and digests; OBL-001 independently rejects unresolved inventory and missing no-index targets.
-- Phase 03 real fixture evidence requires digest-locked MySQL and MinIO operations plus an executable source-verified SoftHSM token; source-manifest validation or a mock substitute cannot satisfy the runtime prerequisite.
-- Current message submission generates its immutable identity before one protected prepare operation, routes only ordered opaque query values, and saves task/envelope/per-version indexes only through `MessageTaskProtectionAdapter`.
-- `HashUtil` is deleted after a repository-wide zero-reference audit; checkpoint-gated legacy lookup is confined to an opaque in-memory capability and package-scoped `LegacyMobileHashReader`.
-- The current 11-byte message mobile with fixed `field-kek.v1` reference produces a 136-byte physical YCSE value; 156 bytes is the separately verified complete-envelope capacity bound.
 
 ## Known implementation reality
 
@@ -89,8 +83,10 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Blockers
 
-- No Phase 03 blocker remains; its scoped TODO is physically empty and both code and validation-contract PR runs are green.
-- Phase 4 implementation remains gated by its own entry evidence and independent review.
+- Phase 1 entry is no longer blocked. Remaining plans must keep the local-Chrome entry, six-consumer regression suite, and 13-plan bootstrap green.
+- No current entry, reseal, GSD-review, or Claude-review BLOCKER/HIGH is known. Phase 1 exit still requires verified TODO closure, one atomic commit/push, the PR check, deterministic annotated tag, and live remote/target-tree attestation. Historical reports cannot authorize completion.
+- Atomic obligation, phase-entry, UI, and schema-registry validator self-tests pass; Phase 1 remains responsible for integrating those commands into repository verification and recording real evidence before any business phase can enter execution.
+- The real Phase 2 directory does not exist; its Ruby entry command currently returns `phase_entry=BLOCKED`, so no UI design or implementation entry is authorized.
 
 ## Coverage state
 
@@ -105,4 +101,4 @@ The verified scoped TODO query is the sole completion metric.
 
 **Resume from**: Phase 4 entry validation. Reuse the corrected cadence: solution/spec before code, focused checks per change, one affected-suite batch check, and aggregate independent/Claude review at the phase boundary.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
-**When updating state**: Replace explicit TODOs with executable evidence only and preserve the scoped TODO query as the sole completion metric.
+**When updating state**: Replace explicit TODOs with executable evidence only; the reserved delivery row closes only through the external attestation. Never add schedule or percentage status.
