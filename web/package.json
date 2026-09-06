@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "lint": "eslint src test scripts playwright.config.ts vite.config.ts --ext .ts,.tsx,.mjs --max-warnings 0",
     "test:browser:structural": "node scripts/test-browser-scenario-server.mjs --run-playwright",
@@ -25,7 +26,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/react": "^18.3.9",

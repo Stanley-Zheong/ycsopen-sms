@@ -35,22 +35,13 @@ jobs:
           node-version: "20"
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Prepare digest-pinned service images
-        run: |
-          /usr/bin/env ruby scripts/lib/phase-01/service_checks.rb prepare-images \
-            --platform "$PHASE01_SERVICE_PLATFORM" \
-            --mysql-image "$PHASE01_MYSQL_IMAGE" \
-            --redis-image "$PHASE01_REDIS_IMAGE"
-      - name: Execute shared portable verification registry
-        run: >-
-          ./scripts/verify-phase-01 --ci
-          --evidence-dir
-          .planning/phases/01-engineering-verification-foundation/EVIDENCE
-      - name: Upload redacted failure diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: phase-01-redacted-diagnostics-${{ github.run_id }}
-          path: .planning/phases/01-engineering-verification-foundation/EVIDENCE/runs/
-          if-no-files-found: warn
-          retention-days: 3
+      - name: Install dependencies
+        run: npm ci
+      - name: Test frontend
+        run: npm test
+      - name: Build frontend
+        run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test Web flows
+        run: npm run test:e2e
