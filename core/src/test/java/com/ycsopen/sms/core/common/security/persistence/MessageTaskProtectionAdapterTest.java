@@ -111,31 +111,41 @@ public class MessageTaskProtectionAdapterTest {
         RecordingBlindIndexPort blindIndexPort = new RecordingBlindIndexPort();
         MessageTaskProtectionAdapter adapter = adapter(keyPort, blindIndexPort);
 
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageRouting routing = adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE);
 
-        assertThat(keyPort.context).isEqualTo(new ProtectionContext(
-                ProtectionContext.Purpose.DATABASE_FIELD,
-                "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
-                "tenant:17", "message_id=" + MESSAGE_ID));
+        assertThat(keyPort.context).isNull();
+        assertThat(keyPort.wrapCount).isZero();
         assertThat(blindIndexPort.contexts).containsExactly(
                 new BlindIndexPort.Context(
                         "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
                 new BlindIndexPort.Context(
                         "MESSAGE_TASK", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
                 new BlindIndexPort.Context(
+                        "BLACKLIST_ENTRY", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "global"),
+                new BlindIndexPort.Context(
                         "BLACKLIST_ENTRY", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:17"),
                 new BlindIndexPort.Context(
                         "MOBILE_PORTABILITY", "mobile", BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
+        assertThat(routing.queryIndexes().values()).containsExactly(RETIRING_INDEX, ACTIVE_INDEX);
+        assertThat(routing.legacyLookupToken().toString())
+                .isEqualTo("LegacyMobileLookupToken[digest=[redacted], indexes=[redacted]]")
+                .doesNotContain(MOBILE, rawMobileSha256());
+        assertThat(routing.toString()).contains("[redacted]").doesNotContain(MOBILE,
+                RETIRING_INDEX.canonicalValue(), ACTIVE_INDEX.canonicalValue());
+
+        PreparedMessageMobile prepared = adapter.protectForPersistence(routing, MOBILE);
+
+        assertThat(keyPort.wrapCount).isOne();
+        assertThat(keyPort.context).isEqualTo(new ProtectionContext(
+                ProtectionContext.Purpose.DATABASE_FIELD,
+                "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
+                "tenant:17", "message_id=" + MESSAGE_ID));
         assertThat(prepared.copyEnvelope()).hasSize(156);
         ProtectedFieldCodec verifier = new ProtectedFieldCodec(
                 new EnvelopeCodec(), keyPort, new FixedSecureRandom(), KEY_REFERENCE);
         assertThat(verifier.unprotect(prepared.copyEnvelope(), keyPort.context,
                 EnvelopeCodec.Target.DATABASE_FIELD))
                 .containsExactly(MOBILE.getBytes(StandardCharsets.US_ASCII));
-        assertThat(prepared.queryIndexes().values()).containsExactly(RETIRING_INDEX, ACTIVE_INDEX);
-        assertThat(prepared.legacyLookupToken().toString())
-                .isEqualTo("LegacyMobileLookupToken[digest=[redacted], indexes=[redacted]]")
-                .doesNotContain(MOBILE, rawMobileSha256());
         assertThat(prepared.toString()).contains("[redacted]").doesNotContain(MOBILE,
                 RETIRING_INDEX.canonicalValue(), ACTIVE_INDEX.canonicalValue());
 
@@ -178,21 +188,23 @@ public class MessageTaskProtectionAdapterTest {
         RecordingBlindIndexPort blindIndexPort = new RecordingBlindIndexPort();
         MessageTaskProtectionAdapter adapter = adapter(keyPort, blindIndexPort);
 
-        assertThatThrownBy(() -> adapter.prepare(0L, MESSAGE_ID, MOBILE))
+        assertThatThrownBy(() -> adapter.prepareForRouting(0L, MESSAGE_ID, MOBILE))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> adapter.prepare(17L, "not-generated", MOBILE))
+        assertThatThrownBy(() -> adapter.prepareForRouting(17L, "not-generated", MOBILE))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> adapter.prepare(17L, MESSAGE_ID, "1380013800"))
+        assertThatThrownBy(() -> adapter.prepareForRouting(17L, MESSAGE_ID, "1380013800"))
                 .isInstanceOf(IllegalArgumentException.class);
 
         keyPort.unavailable = true;
-        assertThatThrownBy(() -> adapter.prepare(17L, MESSAGE_ID, MOBILE))
+        PreparedMessageRouting routing = adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE);
+        assertThat(keyPort.context).isNull();
+        assertThatThrownBy(() -> adapter.protectForPersistence(routing, MOBILE))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
         keyPort.unavailable = false;
         blindIndexPort.unavailable = true;
-        assertThatThrownBy(() -> adapter.prepare(17L, MESSAGE_ID, MOBILE))
+        assertThatThrownBy(() -> adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
@@ -203,7 +215,7 @@ public class MessageTaskProtectionAdapterTest {
     void rejectsPreparedIdentityMismatchAndLegacyStringAssignmentsWithoutWriting() {
         MessageTaskProtectionAdapter adapter = adapter(
                 new RecordingKeyPort(), new RecordingBlindIndexPort());
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageMobile prepared = protectedMobile(adapter, 17L, MESSAGE_ID, MOBILE);
 
         assertThatThrownBy(() -> adapter.save(task(18L, MESSAGE_ID), prepared))
                 .isInstanceOf(IllegalStateException.class)
@@ -218,10 +230,25 @@ public class MessageTaskProtectionAdapterTest {
     }
 
     @Test
+    void persistenceProtectionRejectsMobileThatDoesNotMatchOpaqueRoutingCapabilityBeforeWrap() {
+        RecordingKeyPort keyPort = new RecordingKeyPort();
+        MessageTaskProtectionAdapter adapter = adapter(keyPort, new RecordingBlindIndexPort());
+        PreparedMessageRouting routing = adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE);
+
+        assertThatThrownBy(() -> adapter.protectForPersistence(routing, "13900139000"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE)
+                .hasNoCause();
+
+        assertThat(keyPort.wrapCount).isZero();
+        assertNoProtectedRows();
+    }
+
+    @Test
     void metadataFailureRollsBackBothTheTaskAndEveryEarlierIndexInsert() {
         MessageTaskProtectionAdapter adapter = adapter(
                 new RecordingKeyPort(), new RecordingBlindIndexPort());
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageMobile prepared = protectedMobile(adapter, 17L, MESSAGE_ID, MOBILE);
         jdbc.update("DELETE FROM ycs_crypto_key_references WHERE key_version = 2");
 
         assertThatThrownBy(() -> adapter.save(task(17L, MESSAGE_ID), prepared))
@@ -240,7 +267,8 @@ public class MessageTaskProtectionAdapterTest {
         insertFieldKey(1, KEY_REFERENCE, "ACTIVE");
         RecordingBlindIndexPort v1Only = new RecordingBlindIndexPort(List.of(RETIRING_INDEX));
         MessageTaskProtectionAdapter adapter = adapter(new RecordingKeyPort(), v1Only);
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageRouting routing = adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageMobile prepared = adapter.protectForPersistence(routing, MOBILE);
         KeyReferenceRepository keys = jdbcKeys();
 
         new KeyLifecycleService(keys, new EnvelopeReferenceInventory(Set.of(), List.of()))
@@ -258,7 +286,8 @@ public class MessageTaskProtectionAdapterTest {
         insertFieldKey(2, "field-kek-v2", "PREPARED");
         MessageTaskProtectionAdapter adapter = adapter(
                 new RecordingKeyPort(), new RecordingBlindIndexPort());
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageRouting routing = adapter.prepareForRouting(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageMobile prepared = adapter.protectForPersistence(routing, MOBILE);
         KeyReferenceRepository keys = jdbcKeys();
 
         new KeyLifecycleService(keys, new EnvelopeReferenceInventory(Set.of(), List.of()))
@@ -280,7 +309,7 @@ public class MessageTaskProtectionAdapterTest {
         insertFieldKey(2, "field-kek-v2", "PREPARED");
         MessageTaskProtectionAdapter adapter = adapter(
                 new RecordingKeyPort(), new RecordingBlindIndexPort(List.of(RETIRING_INDEX)));
-        PreparedMessageMobile prepared = adapter.prepare(17L, MESSAGE_ID, MOBILE);
+        PreparedMessageMobile prepared = protectedMobile(adapter, 17L, MESSAGE_ID, MOBILE);
         KeyReferenceRepository keys = jdbcKeys();
         EnvelopeReferenceInventory.Source messageEnvelopes = messageEnvelopeInventory();
         EnvelopeReferenceInventory inventory = new EnvelopeReferenceInventory(
@@ -389,6 +418,14 @@ public class MessageTaskProtectionAdapterTest {
                 new BlindIndexMetadataRepository(jdbc), new FixedSecureRandom(), transactionManager);
     }
 
+    private static PreparedMessageMobile protectedMobile(MessageTaskProtectionAdapter adapter,
+                                                          long tenantId,
+                                                          String messageId,
+                                                          String mobile) {
+        PreparedMessageRouting routing = adapter.prepareForRouting(tenantId, messageId, mobile);
+        return adapter.protectForPersistence(routing, mobile);
+    }
+
     private void assertNoProtectedRows() {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM message_tasks", Long.class)).isZero();
         assertThat(jdbc.queryForObject(
@@ -472,6 +509,7 @@ public class MessageTaskProtectionAdapterTest {
         private byte[] dataEncryptionKey;
         private ProtectionContext context;
         private boolean unavailable;
+        private int wrapCount;
 
         @Override
         public WrappedDataKey wrap(byte[] dataEncryptionKey,
@@ -480,6 +518,7 @@ public class MessageTaskProtectionAdapterTest {
             if (unavailable) {
                 throw new IllegalStateException("provider detail must not escape");
             }
+            wrapCount++;
             this.dataEncryptionKey = dataEncryptionKey.clone();
             context = semanticContext;
             return new WrappedDataKey(KEY_REFERENCE, new byte[12], new byte[48]);

@@ -5,6 +5,7 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
+import com.ycsopen.sms.core.common.security.persistence.PreparedMessageRouting;
 import com.ycsopen.sms.core.common.security.persistence.LegacyMobileLookupToken;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
@@ -16,10 +17,13 @@ import com.ycsopen.sms.core.service.billing.BillingService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
+import com.ycsopen.sms.core.service.routing.FrequencyChecker;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -63,6 +67,7 @@ class MessageSubmitServiceTest {
     @Mock BillingService billingService;
     @Mock MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     @Mock MessageTaskRepository legacyMessageTaskRepository;
+    @Mock PreparedMessageRouting preparedRouting;
     @Mock PreparedMessageMobile preparedMobile;
     @Mock LegacyMobileLookupToken legacyLookupToken;
 
@@ -76,11 +81,13 @@ class MessageSubmitServiceTest {
     }
 
     @Test
-    void preparesBeforeRoutingAndSavesOnlyThroughProtectedAdapter() throws Exception {
+    void preparesOpaqueRoutingThenProtectsOnceAfterAcceptanceAndSavesThroughAdapter() throws Exception {
         stubPreparedQueryIndexes();
-        when(messageTaskProtectionAdapter.prepare(eq(TENANT_ID), anyString(), eq(MOBILE)))
-                .thenReturn(preparedMobile);
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
+                .thenReturn(preparedRouting);
         when(routingEngine.route(any())).thenReturn(RoutingDecision.allow(42L, "【安全签名】你的验证码是 2468"));
+        when(messageTaskProtectionAdapter.protectForPersistence(same(preparedRouting), eq(MOBILE)))
+                .thenReturn(preparedMobile);
         when(messageTaskProtectionAdapter.save(any(), same(preparedMobile))).thenAnswer(invocation -> {
             MessageTask task = invocation.getArgument(0);
             task.setId(91L);
@@ -93,8 +100,11 @@ class MessageSubmitServiceTest {
         ArgumentCaptor<RoutingContext> routing = ArgumentCaptor.forClass(RoutingContext.class);
         ArgumentCaptor<MessageTask> task = ArgumentCaptor.forClass(MessageTask.class);
         InOrder order = inOrder(messageTaskProtectionAdapter, routingEngine, billingService);
-        order.verify(messageTaskProtectionAdapter).prepare(eq(TENANT_ID), messageId.capture(), eq(MOBILE));
+        order.verify(messageTaskProtectionAdapter).prepareForRouting(
+                eq(TENANT_ID), messageId.capture(), eq(MOBILE));
         order.verify(routingEngine).route(routing.capture());
+        order.verify(messageTaskProtectionAdapter).protectForPersistence(
+                same(preparedRouting), eq(MOBILE));
         order.verify(messageTaskProtectionAdapter).save(task.capture(), same(preparedMobile));
         order.verify(billingService).reserve(TENANT_ID, 91L, new BigDecimal("0.05"));
 
@@ -114,25 +124,36 @@ class MessageSubmitServiceTest {
         verifyNoInteractions(legacyMessageTaskRepository);
     }
 
-    @Test
-    void routingRejectionDoesNotPersistTaskOrReserveBilling() {
+    @ParameterizedTest
+    @EnumSource(value = RoutingDecision.RejectStage.class,
+            names = {"BLACKLIST", "CONTENT_REVIEW", "FREQUENCY_LIMIT"})
+    void routingRejectionDoesNotProtectPersistOrReserveBilling(
+            RoutingDecision.RejectStage rejectStage) {
         stubPreparedQueryIndexes();
-        when(messageTaskProtectionAdapter.prepare(eq(TENANT_ID), anyString(), eq(MOBILE)))
-                .thenReturn(preparedMobile);
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
+                .thenReturn(preparedRouting);
+        String reason = rejectStage == RoutingDecision.RejectStage.FREQUENCY_LIMIT
+                ? FrequencyChecker.MOBILE_IDENTITY_NOT_READY : "blocked";
         when(routingEngine.route(any())).thenReturn(RoutingDecision.reject(
-                RoutingDecision.RejectStage.BLACKLIST, "blocked"));
+                rejectStage, reason));
 
-        assertThatThrownBy(() -> service.submit(TENANT_ID, request(), "127.0.0.1"))
+        var failure = assertThatThrownBy(
+                () -> service.submit(TENANT_ID, request(), "127.0.0.1"))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("blocked");
+                .hasMessageContaining(reason);
+        if (rejectStage == RoutingDecision.RejectStage.FREQUENCY_LIMIT) {
+            failure.extracting(throwable -> ((BusinessException) throwable).getErrorCode())
+                    .isEqualTo(FrequencyChecker.MOBILE_IDENTITY_NOT_READY);
+        }
 
+        verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
         verifyNoInteractions(billingService, legacyMessageTaskRepository);
     }
 
     @Test
     void protectionDependencyFailureStopsBeforeRoutingAndEveryWrite() {
-        when(messageTaskProtectionAdapter.prepare(eq(TENANT_ID), anyString(), eq(MOBILE)))
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
                 .thenThrow(new IllegalStateException(MessageTaskProtectionAdapter.SANITIZED_FAILURE));
 
         assertThatThrownBy(() -> service.submit(TENANT_ID, request(), "127.0.0.1"))
@@ -140,16 +161,17 @@ class MessageSubmitServiceTest {
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
         verifyNoInteractions(routingEngine, billingService, legacyMessageTaskRepository);
+        verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
     }
 
     @Test
     void protectedSaveFailureDoesNotContinueToBillingOrLegacyRepository() {
         stubPreparedQueryIndexes();
-        when(messageTaskProtectionAdapter.prepare(eq(TENANT_ID), anyString(), eq(MOBILE)))
-                .thenReturn(preparedMobile);
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
+                .thenReturn(preparedRouting);
         when(routingEngine.route(any())).thenReturn(RoutingDecision.allow(42L, "safe content"));
-        when(messageTaskProtectionAdapter.save(any(), same(preparedMobile)))
+        when(messageTaskProtectionAdapter.protectForPersistence(same(preparedRouting), eq(MOBILE)))
                 .thenThrow(new IllegalStateException(MessageTaskProtectionAdapter.SANITIZED_FAILURE));
 
         assertThatThrownBy(() -> service.submit(TENANT_ID, request(), "127.0.0.1"))
@@ -157,6 +179,7 @@ class MessageSubmitServiceTest {
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
         verifyNoInteractions(billingService, legacyMessageTaskRepository);
+        verify(messageTaskProtectionAdapter, never()).save(any(), any());
     }
 
     private void approvedTemplateAndSignature() {
@@ -180,8 +203,8 @@ class MessageSubmitServiceTest {
     }
 
     private void stubPreparedQueryIndexes() {
-        when(preparedMobile.queryIndexes()).thenReturn(QUERY_INDEXES);
-        when(preparedMobile.legacyLookupToken()).thenReturn(legacyLookupToken);
+        when(preparedRouting.queryIndexes()).thenReturn(QUERY_INDEXES);
+        when(preparedRouting.legacyLookupToken()).thenReturn(legacyLookupToken);
     }
 
     private static byte[] repeatedBytes(int value) {

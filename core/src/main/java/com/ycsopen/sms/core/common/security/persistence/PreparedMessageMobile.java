@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Immutable result of preparing one message mobile for persistence and opaque routing.
+ * Immutable result of protecting one routing-approved message mobile for persistence.
  * Ciphertext and index values are never rendered and every binary accessor returns a copy.
  */
 public final class PreparedMessageMobile {
@@ -21,18 +21,11 @@ public final class PreparedMessageMobile {
     private final byte[] envelope;
     private final String legacyLocator;
     private final BlindIndexPort.OrderedIndexes writeIndexes;
-    private final BlindIndexPort.OrderedIndexes queryIndexes;
-    private final LegacyMobileLookupToken legacyLookupToken;
 
-    PreparedMessageMobile(long tenantId,
-                          String messageId,
+    PreparedMessageMobile(PreparedMessageRouting routing,
                           byte[] envelope,
-                          String legacyLocator,
-                          BlindIndexPort.OrderedIndexes writeIndexes,
-                          BlindIndexPort.OrderedIndexes queryIndexes,
-                          LegacyMobileLookupToken legacyLookupToken) {
-        if (tenantId <= 0 || messageId == null || messageId.isEmpty()
-                || envelope == null || legacyLocator == null
+                          String legacyLocator) {
+        if (routing == null || envelope == null || legacyLocator == null
                 || !MessageTaskRowBinding.isCurrentLocator(legacyLocator)) {
             throw new IllegalArgumentException("invalid prepared message mobile");
         }
@@ -45,15 +38,9 @@ public final class PreparedMessageMobile {
         } finally {
             Arrays.fill(ciphertext, (byte) 0);
         }
-        this.writeIndexes = copyIndexes(writeIndexes);
-        this.queryIndexes = copyIndexes(queryIndexes);
-        this.legacyLookupToken = Objects.requireNonNull(
-                legacyLookupToken, "legacyLookupToken").defensiveCopy();
-        if (!this.queryIndexes.values().containsAll(this.writeIndexes.values())) {
-            throw new IllegalArgumentException("write indexes are not query compatible");
-        }
-        this.tenantId = tenantId;
-        this.messageId = messageId;
+        this.writeIndexes = copyIndexes(routing.writeIndexes());
+        this.tenantId = routing.tenantId();
+        this.messageId = routing.messageId();
         this.envelope = envelope.clone();
         this.legacyLocator = legacyLocator;
     }
@@ -64,14 +51,6 @@ public final class PreparedMessageMobile {
 
     public String legacyLocator() {
         return legacyLocator;
-    }
-
-    public BlindIndexPort.OrderedIndexes queryIndexes() {
-        return queryIndexes;
-    }
-
-    public LegacyMobileLookupToken legacyLookupToken() {
-        return legacyLookupToken.defensiveCopy();
     }
 
     long tenantId() {
@@ -106,6 +85,6 @@ public final class PreparedMessageMobile {
     @Override
     public String toString() {
         return "PreparedMessageMobile[tenant=[redacted], message=[redacted], envelope=[redacted], "
-                + "locator=[redacted], writeIndexes=[redacted], queryIndexes=[redacted]]";
+                + "locator=[redacted], writeIndexes=[redacted]]";
     }
 }

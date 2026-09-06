@@ -78,22 +78,17 @@ public class MessageTaskProtectionAdapter {
                 Objects.requireNonNull(transactionManager, "transactionManager"));
     }
 
-    /** Performs all key-dependent work before routing or database mutation. */
-    public PreparedMessageMobile prepare(Long tenantId,
-                                         String messageId,
-                                         String normalizedMobile) {
+    /** Computes only opaque query/write material before routing. No field wrap occurs here. */
+    public PreparedMessageRouting prepareForRouting(Long tenantId,
+                                                    String messageId,
+                                                    String normalizedMobile) {
         long checkedTenantId = requireTenantId(tenantId);
         String checkedMessageId = requireMessageId(messageId);
         String checkedMobile = requireMobile(normalizedMobile);
         byte[] plaintext = mobileAscii(checkedMobile);
-        byte[] envelope = null;
         byte[] historicalDigest = null;
         try {
             String tenantScope = "tenant:" + checkedTenantId;
-            ProtectionContext fieldContext = new ProtectionContext(
-                    ProtectionContext.Purpose.DATABASE_FIELD,
-                    LOGICAL_OWNER, LOGICAL_TABLE, CONTENT_ROLE,
-                    tenantScope, "message_id=" + checkedMessageId);
             BlindIndexPort.Context indexContext = new BlindIndexPort.Context(
                     TARGET_TYPE, INDEX_FIELD, BlindIndexPort.Purpose.MOBILE_ROUTING, tenantScope);
 
@@ -101,7 +96,11 @@ public class MessageTaskProtectionAdapter {
                     blindIndexPort.writeIndexes(checkedMobile, indexContext);
             BlindIndexPort.OrderedIndexes queryIndexes =
                     blindIndexPort.queryIndexes(checkedMobile, indexContext);
-            BlindIndexPort.OrderedIndexes blacklistIndexes = blindIndexPort.queryIndexes(
+            BlindIndexPort.OrderedIndexes globalBlacklistIndexes = blindIndexPort.queryIndexes(
+                    checkedMobile, new BlindIndexPort.Context(
+                            BLACKLIST_TARGET_TYPE, INDEX_FIELD,
+                            BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
+            BlindIndexPort.OrderedIndexes tenantBlacklistIndexes = blindIndexPort.queryIndexes(
                     checkedMobile, new BlindIndexPort.Context(
                             BLACKLIST_TARGET_TYPE, INDEX_FIELD,
                             BlindIndexPort.Purpose.MOBILE_ROUTING, tenantScope));
@@ -111,23 +110,56 @@ public class MessageTaskProtectionAdapter {
                             BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
             historicalDigest = sha256(plaintext);
             LegacyMobileLookupToken legacyLookupToken = new LegacyMobileLookupToken(
-                    historicalDigest, blacklistIndexes, portabilityIndexes);
+                    checkedTenantId, historicalDigest, globalBlacklistIndexes,
+                    tenantBlacklistIndexes, portabilityIndexes);
+            return new PreparedMessageRouting(
+                    checkedTenantId, checkedMessageId, writeIndexes, queryIndexes,
+                    legacyLookupToken);
+        } catch (RuntimeException failure) {
+            throw sanitized();
+        } finally {
+            Arrays.fill(plaintext, (byte) 0);
+            clear(historicalDigest);
+        }
+    }
+
+    /** Creates the single persistence envelope only after routing has accepted the request. */
+    public PreparedMessageMobile protectForPersistence(PreparedMessageRouting routing,
+                                                        String normalizedMobile) {
+        String checkedMobile = requireMobile(normalizedMobile);
+        byte[] plaintext = mobileAscii(checkedMobile);
+        byte[] envelope = null;
+        byte[] suppliedDigest = null;
+        byte[] expectedDigest = null;
+        try {
+            if (routing == null) {
+                throw sanitized();
+            }
+            suppliedDigest = sha256(plaintext);
+            expectedDigest = routing.internalLookupToken().copyDigestForLegacyRead();
+            if (!MessageDigest.isEqual(suppliedDigest, expectedDigest)) {
+                throw sanitized();
+            }
+            String tenantScope = "tenant:" + routing.tenantId();
+            ProtectionContext fieldContext = new ProtectionContext(
+                    ProtectionContext.Purpose.DATABASE_FIELD,
+                    LOGICAL_OWNER, LOGICAL_TABLE, CONTENT_ROLE,
+                    tenantScope, "message_id=" + routing.messageId());
             envelope = protectedFieldCodec.protect(
                     plaintext, fieldContext, EnvelopeCodec.Target.DATABASE_FIELD);
             if (envelope.length > MAXIMUM_MOBILE_ENVELOPE_BYTES) {
-                throw new IllegalStateException(SANITIZED_FAILURE);
+                throw sanitized();
             }
 
             String locator = MessageTaskRowBinding.issueCurrentLocator(secureRandom);
-            return new PreparedMessageMobile(
-                    checkedTenantId, checkedMessageId, envelope, locator,
-                    writeIndexes, queryIndexes, legacyLookupToken);
+            return new PreparedMessageMobile(routing, envelope, locator);
         } catch (RuntimeException failure) {
             throw sanitized();
         } finally {
             Arrays.fill(plaintext, (byte) 0);
             clear(envelope);
-            clear(historicalDigest);
+            clear(suppliedDigest);
+            clear(expectedDigest);
         }
     }
 

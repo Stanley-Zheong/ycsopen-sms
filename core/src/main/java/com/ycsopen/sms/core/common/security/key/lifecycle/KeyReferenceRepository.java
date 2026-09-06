@@ -57,7 +57,7 @@ public interface KeyReferenceRepository {
                     || !REFERENCE.matcher(providerKeyReference).matches()
                     || wrapOperationCount < 0 || wrapOperationCount > 1_048_576L
                     || optimisticVersion < 0
-                    || rotationRequired != (purpose == Purpose.FIELD_ENCRYPTION_KEK
+                    || rotationRequired != (purpose.usesEncryptionLifecycle()
                     && wrapOperationCount >= 983_040L)) {
                 throw new IllegalArgumentException("invalid key reference metadata");
             }

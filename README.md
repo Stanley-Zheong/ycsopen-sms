@@ -82,11 +82,16 @@ cd ycsopen-sms/core
 
 ./tools/init-db.sh
 export JWT_SECRET="$(openssl rand -base64 48 | tr -d '\n')"
-export FIELD_ENCRYPTION_KEY="$(openssl rand -base64 32 | tr -d '\n')"
 
 mvn test
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+字段加密和私有对象存储默认关闭，因此上述开发启动不需要字段密钥。这个模式只适合查看和开发
+不涉及受保护数据的功能；短信提交中的受保护手机号处理，以及机构注册材料上传/读取会失败关闭。
+启用受保护流程不能使用单个环境变量密钥，必须按
+[`使用手册的生产加密存储配置`](docs/使用手册.md#启用生产加密存储)准备 PKCS#11、五种用途密钥、
+数据库引用、加密快照目录和私有对象存储。
 
 `init-db.sh` 使用本机 MySQL root 免密或 socket 登录方式，创建 `ycsopen_sms` 数据库及
 `ycsopen/ycsopen` 开发账号。root 需要密码或 MySQL 位于其他主机时，请使用手册中的手工 SQL。
@@ -136,7 +141,7 @@ npm run build
 # 前端产物：web/dist/
 ```
 
-部署时使用外部 MySQL/Redis/KMS、显式设置所有密钥，将后端 JAR 作为受限系统服务运行，
+部署时使用外部 MySQL/Redis、PKCS#11 密钥设备和私有对象存储，将后端 JAR 作为受限系统服务运行，
 并由 Nginx 托管 `web/dist/`、把 `/api/` 同源代理到后端。可直接复制的配置示例见
 [`docs/使用手册.md`](docs/使用手册.md#部署后端-jar)。
 

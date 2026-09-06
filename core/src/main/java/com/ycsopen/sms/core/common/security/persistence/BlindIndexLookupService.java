@@ -53,11 +53,17 @@ public class BlindIndexLookupService {
             throw failure();
         }
         try {
+            if (token.tenantId() != tenantId) {
+                throw failure();
+            }
             TargetPolicy policy = targetPolicy(BLACKLIST_TARGET);
-            BlindIndexPort.OrderedIndexes indexes = token.blacklistIndexes();
-            assertExactQueryableKeySet(indexes);
+            BlindIndexPort.OrderedIndexes globalIndexes = token.globalBlacklistIndexes();
+            BlindIndexPort.OrderedIndexes tenantIndexes = token.tenantBlacklistIndexes();
+            assertExactQueryableKeySet(globalIndexes);
+            assertExactQueryableKeySet(tenantIndexes);
 
-            List<BlacklistMatch> candidates = new ArrayList<>(metadataMatches(indexes));
+            List<BlacklistMatch> candidates = new ArrayList<>(
+                    metadataMatches(List.of(globalIndexes, tenantIndexes)));
             if (!policy.complete() && policy.legacyFallbackAllowed()) {
                 candidates.addAll(legacyReader.readBlacklist(token, tenantId, status));
             }
@@ -134,18 +140,19 @@ public class BlindIndexLookupService {
         }
     }
 
-    private List<BlacklistMatch> metadataMatches(BlindIndexPort.OrderedIndexes indexes) {
+    private List<BlacklistMatch> metadataMatches(List<BlindIndexPort.OrderedIndexes> indexSets) {
         StringBuilder requested = new StringBuilder();
         List<Object> parameters = new ArrayList<>();
-        for (int index = 0; index < indexes.values().size(); index++) {
-            if (index > 0) {
-                requested.append(" UNION ALL ");
+        for (BlindIndexPort.OrderedIndexes indexes : indexSets) {
+            for (VersionedBlindIndex value : indexes.values()) {
+                if (!parameters.isEmpty()) {
+                    requested.append(" UNION ALL ");
+                }
+                requested.append("SELECT CAST(? AS DECIMAL(20, 0)) AS key_version, "
+                        + "CAST(? AS CHAR(53)) AS index_value");
+                parameters.add(value.keyVersion());
+                parameters.add(value.canonicalValue());
             }
-            requested.append("SELECT CAST(? AS DECIMAL(20, 0)) AS key_version, "
-                    + "CAST(? AS CHAR(53)) AS index_value");
-            VersionedBlindIndex value = indexes.values().get(index);
-            parameters.add(value.keyVersion());
-            parameters.add(value.canonicalValue());
         }
         parameters.add(BLACKLIST_TARGET);
         parameters.add(FIELD_ID);

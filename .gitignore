@@ -1,33 +1,5 @@
 # --- core (Maven / Java) ---
-core/target/*
-# Phase 03 commits only sanitized immutable delivery evidence required by clean-checkout validation.
-!core/target/phase03/
-core/target/phase03/*
-!core/target/phase03/results/
-core/target/phase03/results/*
-!core/target/phase03/results/aggregate.json
-!core/target/phase03/results/complete-leak-result.json
-!core/target/phase03/results/lanes/
-core/target/phase03/results/lanes/*
-!core/target/phase03/results/lanes/artifact-scanner-fixtures.json
-!core/target/phase03/results/lanes/crypto-evidence-fixtures.json
-!core/target/phase03/results/lanes/default-maven.json
-!core/target/phase03/results/lanes/durable-artifact-leak-scan.json
-!core/target/phase03/results/lanes/fixture-cleanup.json
-!core/target/phase03/results/lanes/flyway-owner-fixtures.json
-!core/target/phase03/results/lanes/flyway-owner-selection.json
-!core/target/phase03/results/lanes/planning-validator-fixtures.json
-!core/target/phase03/results/lanes/production-reachability.json
-!core/target/phase03/results/lanes/protected-inventory-acceptance.json
-!core/target/phase03/results/lanes/protected-inventory-fixtures.json
-!core/target/phase03/results/lanes/real-service-integration.json
-!core/target/phase03/results/lanes/service-contract-fixtures.json
-!core/target/phase03/results/lanes/source-contract-audit.json
-!core/target/phase03/results/phase03-migration-integration.json
-!core/target/phase03/results/phase03-object-storage-integration.json
-!core/target/phase03/results/phase03-pkcs11-fault-integration.json
-!core/target/phase03/results/phase03-protected-persistence-integration.json
-!core/target/phase03/results/protected-inventory-result.json
+core/target/
 *.class
 *.jar
 !core/lib/**/*.jar

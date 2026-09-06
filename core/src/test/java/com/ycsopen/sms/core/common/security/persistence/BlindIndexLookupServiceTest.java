@@ -41,6 +41,12 @@ class BlindIndexLookupServiceTest {
             new VersionedBlindIndex(2, sequence(0x22));
     private static final BlindIndexPort.OrderedIndexes INDEXES =
             new BlindIndexPort.OrderedIndexes(List.of(RETIRING, ACTIVE));
+    private static final VersionedBlindIndex GLOBAL_RETIRING =
+            new VersionedBlindIndex(1, sequence(0x31));
+    private static final VersionedBlindIndex GLOBAL_ACTIVE =
+            new VersionedBlindIndex(2, sequence(0x42));
+    private static final BlindIndexPort.OrderedIndexes GLOBAL_INDEXES =
+            new BlindIndexPort.OrderedIndexes(List.of(GLOBAL_RETIRING, GLOBAL_ACTIVE));
 
     @Autowired
     JdbcTemplate jdbc;
@@ -89,8 +95,8 @@ class BlindIndexLookupServiceTest {
     @Test
     void unionsActiveAndRetiringMetadataDeduplicatesBindingsAndAppliesWhitelistPrecedence() {
         insertBlacklist(931001L, null, "locator-system", "BLACK");
-        insertMetadata(931001L, RETIRING, "RETIRING", rowDigest(931001L));
-        insertMetadata(931001L, ACTIVE, "ACTIVE", rowDigest(931001L));
+        insertMetadata(931001L, GLOBAL_RETIRING, "RETIRING", rowDigest(931001L));
+        insertMetadata(931001L, GLOBAL_ACTIVE, "ACTIVE", rowDigest(931001L));
 
         BlacklistEntryRepository legacy = mock(BlacklistEntryRepository.class);
         when(legacy.findSystemLegacyCompatibilityMatches(rawDigestHex(), BlacklistEntry.Status.ACTIVE))
@@ -149,6 +155,30 @@ class BlindIndexLookupServiceTest {
     }
 
     @Test
+    void unionsGlobalAndCurrentTenantMetadataWithTenantWhitelistPrecedence() {
+        jdbc.update("UPDATE ycs_crypto_migration_targets "
+                + "SET target_state='COMPLETE', legacy_fallback_allowed=FALSE");
+        insertBlacklist(931008L, null, "locator-global", "BLACK");
+        insertMetadata(931008L, GLOBAL_RETIRING, "RETIRING", rowDigest(931008L));
+        insertMetadata(931008L, GLOBAL_ACTIVE, "ACTIVE", rowDigest(931008L));
+        insertBlacklist(931009L, TENANT_ID, "locator-whitelist", "WHITE");
+        insertMetadata(931009L, RETIRING, "RETIRING", rowDigest(931009L));
+        insertMetadata(931009L, ACTIVE, "ACTIVE", rowDigest(931009L));
+        BlindIndexLookupService service = service(mock(BlacklistEntryRepository.class));
+
+        BlindIndexLookupService.BlacklistLookupResult whitelisted = service.lookupBlacklist(
+                TENANT_ID, token(), BlacklistEntry.Status.ACTIVE);
+        assertThat(whitelisted.tenantWhitelist()).isTrue();
+        assertThat(whitelisted.blocked()).isFalse();
+
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes WHERE legacy_row_id=931009");
+        jdbc.update("DELETE FROM blacklist_entries WHERE id=931009");
+        assertThat(service.lookupBlacklist(TENANT_ID, token(), BlacklistEntry.Status.ACTIVE)
+                .blockReason()).isEqualTo(
+                BlindIndexLookupService.BlacklistLookupResult.BlockReason.SYSTEM_BLACKLIST);
+    }
+
+    @Test
     void failsClosedForMissingKeyStateOrphanAndConflictingDuplicateBinding() {
         BlacklistEntryRepository legacy = mock(BlacklistEntryRepository.class);
         BlindIndexLookupService service = service(legacy);
@@ -195,7 +225,8 @@ class BlindIndexLookupServiceTest {
     @Test
     void opaqueTokenIsDefensiveRedactedAndHasNoPublicRawAccessorOrSerializationContract() {
         byte[] digest = rawDigest();
-        LegacyMobileLookupToken token = new LegacyMobileLookupToken(digest, INDEXES, INDEXES);
+        LegacyMobileLookupToken token = new LegacyMobileLookupToken(
+                TENANT_ID, digest, GLOBAL_INDEXES, INDEXES, INDEXES);
         digest[0] ^= 0x7f;
         byte[] packageCopy = token.copyDigestForLegacyRead();
         assertThat(packageCopy).containsExactly(rawDigest());
@@ -208,6 +239,23 @@ class BlindIndexLookupServiceTest {
                         && !method.getName().equals("toString"))
                 .map(Method::getReturnType))
                 .doesNotContain(byte[].class, String.class, BlindIndexPort.OrderedIndexes.class);
+    }
+
+    @Test
+    void queriesOnlyGlobalAndCurrentTenantScopesAndRejectsTenantBindingMismatch() {
+        jdbc.update("UPDATE ycs_crypto_migration_targets "
+                + "SET target_state='COMPLETE', legacy_fallback_allowed=FALSE");
+        VersionedBlindIndex otherRetiring = new VersionedBlindIndex(1, sequence(0x55));
+        VersionedBlindIndex otherActive = new VersionedBlindIndex(2, sequence(0x66));
+        insertBlacklist(931007L, 18L, "locator-other-tenant", "BLACK");
+        insertMetadata(931007L, otherRetiring, "RETIRING", rowDigest(931007L));
+        insertMetadata(931007L, otherActive, "ACTIVE", rowDigest(931007L));
+        BlindIndexLookupService service = service(mock(BlacklistEntryRepository.class));
+
+        assertThat(service.lookupBlacklist(
+                TENANT_ID, token(), BlacklistEntry.Status.ACTIVE).blocked()).isFalse();
+        assertSanitized(() -> service.lookupBlacklist(
+                18L, token(), BlacklistEntry.Status.ACTIVE));
     }
 
     private BlindIndexLookupService service(BlacklistEntryRepository legacy) {
@@ -282,7 +330,8 @@ class BlindIndexLookupServiceTest {
     }
 
     private static LegacyMobileLookupToken token() {
-        return new LegacyMobileLookupToken(rawDigest(), INDEXES, INDEXES);
+        return new LegacyMobileLookupToken(
+                TENANT_ID, rawDigest(), GLOBAL_INDEXES, INDEXES, INDEXES);
     }
 
     private static byte[] rawDigest() {

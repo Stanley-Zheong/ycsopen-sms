@@ -7,6 +7,7 @@ import com.ycsopen.sms.core.common.security.migration.MigrationPreflight.Checkpo
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.BlindIndexEntry;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.Checkpoint;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.LegacyRow;
+import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.MessageTaskSource;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.RunState;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.StoredValueKind;
 import com.ycsopen.sms.core.common.security.migration.ProtectedDataTarget.Kind;
@@ -40,6 +41,7 @@ public final class ProtectedDataMigrationRunner {
     public static final String SANITIZED_FAILURE = "protected-data migration rejected";
 
     private static final String INDEX_FIELD = "mobile";
+    private static final String MESSAGE_TARGET = "message_tasks.mobile_hash";
     private static final Pattern RUN_ID = Pattern.compile(
             "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}");
     private static final Map<String, String> TARGET_TYPES = Map.of(
@@ -231,6 +233,9 @@ public final class ProtectedDataMigrationRunner {
         byte[] beforeFingerprint = null;
         byte[] afterFingerprint = null;
         try {
+            if (MESSAGE_TARGET.equals(target.id())) {
+                return migrateMessageRow(transaction, runId, targetType, row, stored);
+            }
             if (target.kind() == Kind.LEGACY_DIGEST
                     && row.storedValueKind() == StoredValueKind.CURRENT_MESSAGE_LOCATOR) {
                 if (!"message_tasks.mobile_hash".equals(target.id())
@@ -319,6 +324,75 @@ public final class ProtectedDataMigrationRunner {
         }
     }
 
+    private RowResult migrateMessageRow(
+            MigrationStateRepository.Transaction transaction,
+            String runId,
+            String targetType,
+            LegacyRow row,
+            byte[] storedHash) {
+        byte[] mobile = null;
+        byte[] envelope = null;
+        byte[] recovered = null;
+        byte[] expectedHash = null;
+        byte[] beforeFingerprint = null;
+        byte[] afterFingerprint = null;
+        try {
+            if (row.storedValueKind() == StoredValueKind.CURRENT_MESSAGE_LOCATOR) {
+                if (!transaction.currentMessageBindingMatches(row, INDEX_FIELD)) {
+                    throw failure(FailureCode.INTEGRITY_OR_BINDING_INVALID);
+                }
+                transaction.recordOutcome(
+                        runId, targetType, MigrationStateRepository.Outcome.SKIPPED,
+                        rowLocatorDigest(targetType, row.bindingRowId()), 0);
+                return RowResult.currentProtectedResult();
+            }
+            MessageTaskSource source = row.messageTaskSource();
+            if (source == null || classifier.classify(
+                    manifest.requireTarget(MESSAGE_TARGET), storedHash)
+                    != Classification.APPROVED_LEGACY) {
+                throw failure(FailureCode.LEGACY_CLASSIFICATION_REJECTED);
+            }
+            mobile = source.mobileEncrypted();
+            requireAsciiMobile(mobile);
+            expectedHash = sha256(mobile);
+            byte[] actualHash = decodeLowercaseSha256(storedHash);
+            try {
+                if (!MessageDigest.isEqual(expectedHash, actualHash)) {
+                    throw failure(FailureCode.INTEGRITY_OR_BINDING_INVALID);
+                }
+            } finally {
+                clear(actualHash);
+            }
+
+            List<BlindIndexEntry> legacyIndexes = blindIndexPort.indexes(
+                    storedHash, targetType, INDEX_FIELD, row.tenantScope());
+            ProtectionContext context = messageContext(row, source);
+            beforeFingerprint = fingerprint(mobile);
+            envelope = fieldCodec.protect(mobile, context, EnvelopeCodec.Target.DATABASE_FIELD);
+            recovered = fieldCodec.unprotect(
+                    envelope, context, EnvelopeCodec.Target.DATABASE_FIELD);
+            afterFingerprint = fingerprint(recovered);
+            if (!MessageDigest.isEqual(beforeFingerprint, afterFingerprint)) {
+                throw failure(FailureCode.INTEGRITY_OR_BINDING_INVALID);
+            }
+            if (!transaction.publishProtectedMessage(
+                    row, envelope, legacyIndexes, legacyIndexes)) {
+                throw failure(FailureCode.CONCURRENT_ROW_CHANGE);
+            }
+            transaction.recordOutcome(
+                    runId, targetType, MigrationStateRepository.Outcome.SUCCEEDED,
+                    rowLocatorDigest(targetType, row.bindingRowId()), 1);
+            return RowResult.migratedResult();
+        } finally {
+            clear(mobile);
+            clear(envelope);
+            clear(recovered);
+            clear(expectedHash);
+            clear(beforeFingerprint);
+            clear(afterFingerprint);
+        }
+    }
+
     private byte[] fingerprint(byte[] value) {
         byte[] input = value.clone();
         try {
@@ -376,6 +450,43 @@ public final class ProtectedDataMigrationRunner {
                 target.column(),
                 row.tenantScope(),
                 target.identityColumn() + "=" + row.resourceIdentity());
+    }
+
+    private static ProtectionContext messageContext(LegacyRow row, MessageTaskSource source) {
+        return new ProtectionContext(
+                ProtectionContext.Purpose.DATABASE_FIELD,
+                "crypto-storage-bootstrap",
+                "message_tasks",
+                "mobile_encrypted",
+                row.tenantScope(),
+                "message_id=" + source.messageId());
+    }
+
+    private static void requireAsciiMobile(byte[] value) {
+        if (value == null || value.length != 11) {
+            throw failure(FailureCode.LEGACY_CLASSIFICATION_REJECTED);
+        }
+        for (byte character : value) {
+            if (character < '0' || character > '9') {
+                throw failure(FailureCode.LEGACY_CLASSIFICATION_REJECTED);
+            }
+        }
+    }
+
+    private static byte[] decodeLowercaseSha256(byte[] value) {
+        String encoded = value == null ? "" : new String(value, StandardCharsets.US_ASCII);
+        if (!MigrationStateRepository.SHA256.matcher(encoded).matches()) {
+            throw failure(FailureCode.LEGACY_CLASSIFICATION_REJECTED);
+        }
+        return java.util.HexFormat.of().parseHex(encoded);
+    }
+
+    private static byte[] sha256(byte[] value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("Java 21 must provide SHA-256", exception);
+        }
     }
 
     private static void requireNextState(CheckpointState current, CheckpointState next) {

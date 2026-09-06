@@ -18,6 +18,7 @@ import com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupService;
 import com.ycsopen.sms.core.common.security.persistence.BlindIndexMetadataRepository;
 import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
+import com.ycsopen.sms.core.common.security.persistence.PreparedMessageRouting;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
@@ -130,6 +131,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
         String repositoryFailureMessageId = messageId("ROLLBACK");
         String providerFailureMessageId = messageId("OUTAGE00");
         long blacklistRowId = -1;
+        long whitelistRowId = -1;
         String portabilityLocator = null;
         try {
             MessageTaskProtectionAdapter writer = context.getBean(MessageTaskProtectionAdapter.class);
@@ -138,7 +140,12 @@ class Phase03ProtectedPersistenceIntegrationTest {
 
             String mobile = generatedMobile();
             String rawMobileSha = sha256(mobile);
-            PreparedMessageMobile prepared = writer.prepare(TENANT_ID, successfulMessageId, mobile);
+            long wrapCountBeforeRouting = fieldWrapCount(rawJdbc);
+            PreparedMessageRouting successfulRouting = writer.prepareForRouting(
+                    TENANT_ID, successfulMessageId, mobile);
+            assertThat(fieldWrapCount(rawJdbc)).isEqualTo(wrapCountBeforeRouting);
+            PreparedMessageMobile prepared = writer.protectForPersistence(successfulRouting, mobile);
+            assertThat(fieldWrapCount(rawJdbc)).isEqualTo(wrapCountBeforeRouting + 1);
             MessageTask saved = writer.save(message(successfulMessageId), prepared);
             assertThat(saved.getId()).isPositive();
             passed();
@@ -147,8 +154,11 @@ class Phase03ProtectedPersistenceIntegrationTest {
             assertPhysicalMessage(raw, mobile, rawMobileSha);
             assertContextBinding(keyProtectionPort, raw.envelope(), mobile, successfulMessageId);
 
-            PreparedMessageMobile repositoryFailure = writer.prepare(
-                    TENANT_ID, repositoryFailureMessageId, generatedMobile());
+            String repositoryFailureMobile = generatedMobile();
+            PreparedMessageRouting repositoryFailureRouting = writer.prepareForRouting(
+                    TENANT_ID, repositoryFailureMessageId, repositoryFailureMobile);
+            PreparedMessageMobile repositoryFailure = writer.protectForPersistence(
+                    repositoryFailureRouting, repositoryFailureMobile);
             rawJdbc.update("UPDATE ycs_crypto_key_references SET key_state='RETIRED' "
                     + "WHERE purpose='MOBILE_BLIND_INDEX' AND key_version=1");
             assertThatThrownBy(() -> writer.save(message(repositoryFailureMessageId), repositoryFailure))
@@ -172,19 +182,40 @@ class Phase03ProtectedPersistenceIntegrationTest {
             try (DualRuntime dual = openDualRuntime(handoff, rawDataSource, mapper)) {
                 dualAdapter = dual.adapter();
                 pkcs11Identity = dual.session().tokenIdentityHash();
-                PreparedMessageMobile lookupPrepared = prepareLookupCapability(
+                PreparedMessageRouting lookupPrepared = prepareLookupCapability(
                         dualAdapter, rawDataSource, mobile, messageId("LOOKUP00"));
 
-                blacklistRowId = seedBlacklist(rawJdbc, raw.envelope(), rawMobileSha);
-                BlindIndexPort.OrderedIndexes blacklistIndexes = dualAdapter.queryIndexes(
+                rawJdbc.update("INSERT INTO blacklist_entries "
+                                + "(tenant_id,mobile_encrypted,mobile_hash,list_type,source,status) "
+                                + "VALUES (NULL,?,?,'BLACK','MANUAL','ACTIVE')",
+                        raw.envelope(), rawMobileSha);
+                blacklistRowId = rawJdbc.queryForObject("SELECT id FROM blacklist_entries "
+                        + "WHERE tenant_id IS NULL AND mobile_hash=? AND list_type='BLACK'", Long.class,
+                        rawMobileSha);
+                BlindIndexPort.OrderedIndexes globalBlacklistIndexes = dualAdapter.queryIndexes(
+                        mobile, new BlindIndexPort.Context("BLACKLIST_ENTRY", "mobile",
+                                BlindIndexPort.Purpose.MOBILE_ROUTING, "global"));
+                seedMetadata(rawJdbc, "BLACKLIST_ENTRY", blacklistRowId, globalBlacklistIndexes);
+
+                whitelistRowId = seedBlacklist(rawJdbc, raw.envelope(), rawMobileSha, "WHITE");
+                BlindIndexPort.OrderedIndexes tenantBlacklistIndexes = dualAdapter.queryIndexes(
                         mobile, new BlindIndexPort.Context("BLACKLIST_ENTRY", "mobile",
                                 BlindIndexPort.Purpose.MOBILE_ROUTING, "tenant:" + TENANT_ID));
-                seedMetadata(rawJdbc, "BLACKLIST_ENTRY", blacklistRowId, blacklistIndexes);
+                seedMetadata(rawJdbc, "BLACKLIST_ENTRY", whitelistRowId, tenantBlacklistIndexes);
                 BlindIndexLookupService lookup = new BlindIndexLookupService(
                         rawJdbc, context.getBean(BlacklistEntryRepository.class));
-                assertThat(lookup.lookupBlacklist(TENANT_ID,
-                        lookupPrepared.legacyLookupToken(), BlacklistEntry.Status.ACTIVE).blocked()).isTrue();
-                passed();
+                BlindIndexLookupService.BlacklistLookupResult whitelist = lookup.lookupBlacklist(
+                        TENANT_ID, lookupPrepared.legacyLookupToken(), BlacklistEntry.Status.ACTIVE);
+                assertThat(whitelist.tenantWhitelist()).isTrue();
+                assertThat(whitelist.blocked()).isFalse();
+                rawJdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                        + "WHERE target_type='BLACKLIST_ENTRY' AND legacy_row_id=?", whitelistRowId);
+                rawJdbc.update("DELETE FROM blacklist_entries WHERE id=?", whitelistRowId);
+                BlindIndexLookupService.BlacklistLookupResult systemBlock = lookup.lookupBlacklist(
+                        TENANT_ID, lookupPrepared.legacyLookupToken(), BlacklistEntry.Status.ACTIVE);
+                assertThat(systemBlock.blockReason()).isEqualTo(
+                        BlindIndexLookupService.BlacklistLookupResult.BlockReason.SYSTEM_BLACKLIST);
+                passed(4);
 
                 String scrubbedBlacklistLocator = randomLocator();
                 rawJdbc.update("UPDATE blacklist_entries SET mobile_hash=? WHERE id=?",
@@ -235,7 +266,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
                     + "WHERE target_type='MOBILE_PORTABILITY' AND legacy_row_id=7301001");
 
             context.close();
-            assertThatThrownBy(() -> writer.prepare(
+            assertThatThrownBy(() -> writer.prepareForRouting(
                     TENANT_ID, providerFailureMessageId, generatedMobile()))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE)
@@ -256,7 +287,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
                 context.close();
             }
             cleanupRows(rawJdbc, successfulMessageId, repositoryFailureMessageId,
-                    providerFailureMessageId, blacklistRowId, portabilityLocator);
+                    providerFailureMessageId, blacklistRowId, whitelistRowId, portabilityLocator);
         }
     }
 
@@ -429,26 +460,44 @@ class Phase03ProtectedPersistenceIntegrationTest {
                 "tenant:" + tenantId, "message_id=" + messageId);
     }
 
-    private static PreparedMessageMobile prepareLookupCapability(SunPkcs11KeyAdapter adapter,
-                                                                 DataSource dataSource,
-                                                                 String mobile,
-                                                                 String messageId) {
+    private static PreparedMessageRouting prepareLookupCapability(SunPkcs11KeyAdapter adapter,
+                                                                  DataSource dataSource,
+                                                                  String mobile,
+                                                                  String messageId) {
         MessageTaskProtectionAdapter preparer = new MessageTaskProtectionAdapter(
                 new ProtectedFieldCodec(new EnvelopeCodec(), adapter, new SecureRandom(), FIELD_REFERENCE),
                 adapter, mock(MessageTaskRepository.class),
                 new BlindIndexMetadataRepository(new JdbcTemplate(dataSource)),
                 new SecureRandom(), new DataSourceTransactionManager(dataSource));
-        return preparer.prepare(TENANT_ID, messageId, mobile);
+        return preparer.prepareForRouting(TENANT_ID, messageId, mobile);
+    }
+
+    private static long fieldWrapCount(JdbcTemplate jdbc) {
+        Long count = jdbc.queryForObject("SELECT wrap_operation_count "
+                        + "FROM ycs_crypto_key_references "
+                        + "WHERE purpose='FIELD_ENCRYPTION_KEK' AND key_state='ACTIVE'",
+                Long.class);
+        if (count == null) {
+            throw new AssertionError("active field wrapping key is missing");
+        }
+        return count;
     }
 
     private static long seedBlacklist(JdbcTemplate jdbc, byte[] envelope, String rawMobileSha) {
+        return seedBlacklist(jdbc, envelope, rawMobileSha, "BLACK");
+    }
+
+    private static long seedBlacklist(JdbcTemplate jdbc,
+                                      byte[] envelope,
+                                      String rawMobileSha,
+                                      String listType) {
         jdbc.update("INSERT INTO blacklist_entries "
                         + "(tenant_id,mobile_encrypted,mobile_hash,list_type,source,status) "
-                        + "VALUES (?,?,?,'BLACK','MANUAL','ACTIVE')",
-                TENANT_ID, envelope, rawMobileSha);
+                        + "VALUES (?,?,?,?,'MANUAL','ACTIVE')",
+                TENANT_ID, envelope, rawMobileSha, listType);
         return jdbc.queryForObject("SELECT id FROM blacklist_entries "
-                + "WHERE tenant_id=? AND mobile_hash=? AND list_type='BLACK'", Long.class,
-                TENANT_ID, rawMobileSha);
+                + "WHERE tenant_id=? AND mobile_hash=? AND list_type=?", Long.class,
+                TENANT_ID, rawMobileSha, listType);
     }
 
     private static void seedPortability(JdbcTemplate jdbc, byte[] envelope, String rawMobileSha) {
@@ -605,11 +654,15 @@ class Phase03ProtectedPersistenceIntegrationTest {
                                     String repositoryFailureMessageId,
                                     String providerFailureMessageId,
                                     long blacklistRowId,
+                                    long whitelistRowId,
                                     String portabilityLocator) {
         jdbc.update("DELETE FROM ycs_crypto_blind_indexes WHERE target_type IN "
                 + "('MESSAGE_TASK','BLACKLIST_ENTRY','MOBILE_PORTABILITY')");
         if (blacklistRowId > 0) {
             jdbc.update("DELETE FROM blacklist_entries WHERE id=?", blacklistRowId);
+        }
+        if (whitelistRowId > 0) {
+            jdbc.update("DELETE FROM blacklist_entries WHERE id=?", whitelistRowId);
         }
         if (portabilityLocator != null) {
             jdbc.update("DELETE FROM mobile_portability WHERE mobile_hash=?", portabilityLocator);

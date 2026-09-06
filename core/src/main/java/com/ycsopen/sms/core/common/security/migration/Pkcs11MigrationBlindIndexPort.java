@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Production migration bridge from legacy lowercase SHA-256 cells to versioned PKCS11 HMAC
- * metadata. It never requires or reconstructs the original mobile number.
+ * Production migration bridge from a verified lowercase SHA-256 cell to versioned PKCS11 HMAC
+ * metadata. It never invokes the online writer's plaintext-mobile validator.
  */
 public final class Pkcs11MigrationBlindIndexPort
         implements ProtectedDataMigrationRunner.LegacyBlindIndexPort {
@@ -40,29 +40,7 @@ public final class Pkcs11MigrationBlindIndexPort
         try {
             BlindIndexPort.Context context = new BlindIndexPort.Context(
                     targetType, fieldId, BlindIndexPort.Purpose.MOBILE_ROUTING, tenantScope);
-            BlindIndexPort.OrderedIndexes calculated =
-                    adapter.queryIndexesFromHistoricalDigest(digest, context);
-            List<KeyState> states = jdbc.query("""
-                    SELECT key_version, key_state
-                    FROM ycs_crypto_key_references
-                    WHERE purpose = 'MOBILE_BLIND_INDEX'
-                      AND key_state IN ('ACTIVE', 'RETIRING')
-                    ORDER BY key_version
-                    """, (resultSet, rowNumber) -> new KeyState(
-                    resultSet.getLong(1), resultSet.getString(2)));
-            if (states.size() != calculated.values().size()) {
-                throw failure();
-            }
-            for (int index = 0; index < states.size(); index++) {
-                if (states.get(index).keyVersion()
-                        != calculated.values().get(index).keyVersion()) {
-                    throw failure();
-                }
-            }
-            return java.util.stream.IntStream.range(0, states.size())
-                    .mapToObj(index -> entry(
-                            calculated.values().get(index), states.get(index)))
-                    .toList();
+            return entries(adapter.queryIndexesFromHistoricalDigest(digest, context));
         } catch (RuntimeException exception) {
             if (exception instanceof IllegalStateException
                     && SANITIZED_FAILURE.equals(exception.getMessage())) {
@@ -72,6 +50,29 @@ public final class Pkcs11MigrationBlindIndexPort
         } finally {
             Arrays.fill(digest, (byte) 0);
         }
+    }
+
+    private List<BlindIndexEntry> entries(BlindIndexPort.OrderedIndexes calculated) {
+        List<KeyState> states = jdbc.query("""
+                SELECT key_version, key_state
+                FROM ycs_crypto_key_references
+                WHERE purpose = 'MOBILE_BLIND_INDEX'
+                  AND key_state IN ('ACTIVE', 'RETIRING')
+                ORDER BY key_version
+                """, (resultSet, rowNumber) -> new KeyState(
+                resultSet.getLong(1), resultSet.getString(2)));
+        if (states.size() != calculated.values().size()) {
+            throw failure();
+        }
+        for (int index = 0; index < states.size(); index++) {
+            if (states.get(index).keyVersion()
+                    != calculated.values().get(index).keyVersion()) {
+                throw failure();
+            }
+        }
+        return java.util.stream.IntStream.range(0, states.size())
+                .mapToObj(index -> entry(calculated.values().get(index), states.get(index)))
+                .toList();
     }
 
     private static BlindIndexEntry entry(VersionedBlindIndex value, KeyState state) {

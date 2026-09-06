@@ -64,6 +64,21 @@ public interface MigrationStateRepository {
         boolean blindIndexesMatch(
                 String targetType, LegacyRow row, String fieldId, List<BlindIndexEntry> indexes);
 
+        /**
+         * Atomically replaces one legacy message mobile and its legacy index metadata.
+         *
+         * <p>The implementation re-locks and compares the complete source row. Existing metadata
+         * is accepted only when it exactly matches the pre-transition legacy indexes, which makes
+         * the formerly half-migrated state replayable without accepting unrelated rows.</p>
+         */
+        default boolean publishProtectedMessage(
+                LegacyRow row,
+                byte[] envelope,
+                List<BlindIndexEntry> legacyIndexes,
+                List<BlindIndexEntry> currentIndexes) {
+            return false;
+        }
+
         /** Validates a Phase-03 current message row without treating its locator as mobile data. */
         default boolean currentMessageBindingMatches(LegacyRow row, String fieldId) {
             return false;
@@ -161,7 +176,8 @@ public interface MigrationStateRepository {
             String tenantScope,
             byte[] storedValue,
             byte[] originalCellDigest,
-            StoredValueKind storedValueKind) {
+            StoredValueKind storedValueKind,
+            MessageTaskSource messageTaskSource) {
 
         public LegacyRow(
                 long bindingRowId,
@@ -171,7 +187,19 @@ public interface MigrationStateRepository {
                 byte[] storedValue,
                 byte[] originalCellDigest) {
             this(bindingRowId, checkpointCursor, resourceIdentity, tenantScope,
-                    storedValue, originalCellDigest, StoredValueKind.LEGACY_CANDIDATE);
+                    storedValue, originalCellDigest, StoredValueKind.LEGACY_CANDIDATE, null);
+        }
+
+        public LegacyRow(
+                long bindingRowId,
+                Long checkpointCursor,
+                String resourceIdentity,
+                String tenantScope,
+                byte[] storedValue,
+                byte[] originalCellDigest,
+                StoredValueKind storedValueKind) {
+            this(bindingRowId, checkpointCursor, resourceIdentity, tenantScope,
+                    storedValue, originalCellDigest, storedValueKind, null);
         }
 
         public LegacyRow {
@@ -181,6 +209,10 @@ public interface MigrationStateRepository {
                     || !("global".equals(tenantScope) || tenantScope.startsWith("tenant:"))
                     || storedValueKind == null) {
                 throw new IllegalArgumentException("legacy row identity is invalid");
+            }
+            if (messageTaskSource != null && !resourceIdentity.equals(
+                    Long.toString(bindingRowId))) {
+                throw new IllegalArgumentException("message-task row identity is invalid");
             }
             storedValue = storedValue == null ? null : storedValue.clone();
             originalCellDigest = copyDigest(originalCellDigest, "originalCellDigest", false);
@@ -200,6 +232,34 @@ public interface MigrationStateRepository {
         public String toString() {
             return "LegacyRow[bindingRowId=" + bindingRowId
                     + ", tenantScope=[redacted], value=[redacted]]";
+        }
+    }
+
+    /** Complete source cells needed to authenticate one legacy message-row transition. */
+    record MessageTaskSource(String messageId, byte[] mobileEncrypted) {
+        public MessageTaskSource {
+            if (!validHistoricalMessageId(messageId)
+                    || mobileEncrypted == null) {
+                throw new IllegalArgumentException("legacy message source is invalid");
+            }
+            mobileEncrypted = mobileEncrypted.clone();
+        }
+
+        @Override
+        public byte[] mobileEncrypted() {
+            return mobileEncrypted.clone();
+        }
+
+        @Override
+        public String toString() {
+            return "MessageTaskSource[messageId=[redacted], mobileEncrypted=[redacted]]";
+        }
+
+        private static boolean validHistoricalMessageId(String value) {
+            return value != null && !value.isEmpty()
+                    && value.codePointCount(0, value.length()) <= 64
+                    && StandardCharsets.UTF_8.newEncoder().canEncode(value)
+                    && value.chars().noneMatch(character -> Character.isISOControl(character));
         }
     }
 
@@ -249,6 +309,13 @@ public interface MigrationStateRepository {
     /** Production JDBC implementation over the V1200 state tables and seven reviewed targets. */
     final class Jdbc implements MigrationStateRepository {
         private static final int MAXIMUM_TRANSIENT_ATTEMPTS = 3;
+        static final String MESSAGE_STATE_SCAN_SQL = """
+                SELECT id, CAST(id AS CHAR),
+                       CONCAT('tenant:', CAST(tenant_id AS CHAR)),
+                       mobile_hash, message_id, mobile_encrypted
+                  FROM message_tasks
+                 ORDER BY id
+                """;
         private static final Map<String, TargetSql> TARGETS = Map.of(
                 "mobile_portability.mobile_hash", new TargetSql(
                         "MOBILE_PORTABILITY", "mobile_portability", "mobile_hash", "mobile_hash", null, true),
@@ -463,6 +530,9 @@ public interface MigrationStateRepository {
                     throw new IllegalArgumentException("migration batch is outside its bound");
                 }
                 TargetSql sql = descriptor(target);
+                if ("MESSAGE_TASK".equals(sql.targetType())) {
+                    return readMessageBatch(afterRowId, batchSize);
+                }
                 String tenant = sql.tenant() == null
                         ? "'global'"
                         : "CONCAT('tenant:', COALESCE(CAST(" + sql.tenant() + " AS CHAR), 'global'))";
@@ -511,6 +581,31 @@ public interface MigrationStateRepository {
                 }, afterRowId, batchSize);
             }
 
+            private List<LegacyRow> readMessageBatch(long afterRowId, int batchSize) {
+                return jdbc.query("""
+                        SELECT id, CAST(id AS CHAR),
+                               CONCAT('tenant:', CAST(tenant_id AS CHAR)),
+                               mobile_hash, message_id, mobile_encrypted
+                          FROM message_tasks
+                         WHERE id > ?
+                         ORDER BY id
+                         LIMIT ?
+                         FOR UPDATE
+                        """, (resultSet, rowNumber) -> {
+                    byte[] mobileHash = resultSet.getBytes(4);
+                    String locator = new String(mobileHash, StandardCharsets.US_ASCII);
+                    StoredValueKind kind = MessageTaskRowBinding.isCurrentLocator(locator)
+                            ? StoredValueKind.CURRENT_MESSAGE_LOCATOR
+                            : StoredValueKind.LEGACY_CANDIDATE;
+                    long id = resultSet.getLong(1);
+                    return new LegacyRow(
+                            id, id, resultSet.getString(2),
+                            normalizeTenant(resultSet.getString(3)), mobileHash,
+                            cellDigest(mobileHash), kind,
+                            new MessageTaskSource(resultSet.getString(5), resultSet.getBytes(6)));
+                }, afterRowId, batchSize);
+            }
+
             @Override
             public boolean updateProtectedValue(
                     ProtectedDataTarget target, LegacyRow row, byte[] envelope) {
@@ -544,14 +639,15 @@ public interface MigrationStateRepository {
                         ? blacklistRowBinding(row.bindingRowId(), row.originalCellDigest()) : null;
                 for (BlindIndexEntry index : requested) {
                     List<StoredBlindIndex> existing = jdbc.query("""
-                            SELECT key_purpose, index_value, index_status,
+                            SELECT key_purpose, key_version, index_value, index_status,
                                    original_row_digest, row_binding_digest
                               FROM ycs_crypto_blind_indexes
                              WHERE target_type = ? AND legacy_row_id = ?
                                AND field_id = ? AND key_version = ?
-                             FOR UPDATE
+                            FOR UPDATE
                             """, (resultSet, ignored) -> new StoredBlindIndex(
-                            resultSet.getString("key_purpose"), resultSet.getString("index_value"),
+                            resultSet.getString("key_purpose"), resultSet.getLong("key_version"),
+                            resultSet.getString("index_value"),
                             resultSet.getString("index_status"),
                             resultSet.getBytes("original_row_digest"),
                             resultSet.getBytes("row_binding_digest")),
@@ -614,6 +710,145 @@ public interface MigrationStateRepository {
                 return stored.equals(expected);
             }
 
+            @Override
+            public boolean publishProtectedMessage(
+                    LegacyRow row,
+                    byte[] envelope,
+                    List<BlindIndexEntry> legacyIndexes,
+                    List<BlindIndexEntry> currentIndexes) {
+                Objects.requireNonNull(row, "row");
+                MessageTaskSource source = Objects.requireNonNull(
+                        row.messageTaskSource(), "messageTaskSource");
+                if (row.storedValueKind() != StoredValueKind.LEGACY_CANDIDATE
+                        || envelope == null) {
+                    throw new IllegalArgumentException("legacy message publication is invalid");
+                }
+                List<BlindIndexEntry> expectedLegacy = canonicalIndexes(legacyIndexes);
+                List<BlindIndexEntry> expectedCurrent = canonicalIndexes(currentIndexes);
+                if (!expectedLegacy.stream().map(BlindIndexEntry::keyVersion).toList()
+                        .equals(expectedCurrent.stream().map(BlindIndexEntry::keyVersion).toList())
+                        || !expectedLegacy.stream().map(BlindIndexEntry::status).toList()
+                        .equals(expectedCurrent.stream().map(BlindIndexEntry::status).toList())) {
+                    throw rejected();
+                }
+
+                fieldFence.lockAndValidate(envelope, EnvelopeCodec.Target.DATABASE_FIELD);
+                if (!mobileFence.lockAndValidate(expectedCurrent.stream()
+                        .map(index -> new MobileBlindIndexPublicationFence.ExpectedKey(
+                                index.keyVersion(), KeyState.valueOf(index.status())))
+                        .toList())) {
+                    throw rejected();
+                }
+                afterMobilePurposeLock.run();
+
+                List<LockedMessageRow> locked = jdbc.query("""
+                        SELECT tenant_id, message_id, mobile_hash, mobile_encrypted
+                          FROM message_tasks
+                         WHERE id = ?
+                         FOR UPDATE
+                        """, (resultSet, ignored) -> new LockedMessageRow(
+                        resultSet.getLong(1), resultSet.getString(2),
+                        resultSet.getString(3), resultSet.getBytes(4)), row.bindingRowId());
+                if (locked.size() != 1 || !sameLegacyMessage(row, source, locked.getFirst())) {
+                    return false;
+                }
+
+                List<StoredBlindIndex> existing = storedMessageIndexes(row.bindingRowId());
+                if (!existing.isEmpty()
+                        && !sameLegacyMessageIndexes(existing, expectedLegacy, row.originalCellDigest())) {
+                    return false;
+                }
+
+                String locator = MessageTaskRowBinding.issueCurrentLocator(locatorRandom);
+                int updated = jdbc.update("""
+                        UPDATE message_tasks
+                           SET mobile_encrypted = ?, mobile_hash = ?
+                         WHERE id = ? AND tenant_id = ? AND message_id = ?
+                           AND mobile_hash = ? AND mobile_encrypted = ?
+                        """, envelope.clone(), locator, row.bindingRowId(), locked.getFirst().tenantId(),
+                        source.messageId(), new String(row.storedValue(), StandardCharsets.US_ASCII),
+                        source.mobileEncrypted());
+                if (updated != 1) {
+                    return false;
+                }
+
+                if (!existing.isEmpty() && jdbc.update("""
+                        DELETE FROM ycs_crypto_blind_indexes
+                         WHERE target_type = 'MESSAGE_TASK'
+                           AND legacy_row_id = ? AND field_id = 'mobile'
+                        """, row.bindingRowId()) != existing.size()) {
+                    return false;
+                }
+                byte[] binding = MessageTaskRowBinding.originalRowDigest(
+                        locked.getFirst().tenantId(), row.bindingRowId(), source.messageId(),
+                        locator, envelope);
+                try {
+                    for (BlindIndexEntry index : expectedCurrent) {
+                        int inserted = jdbc.update("""
+                                INSERT INTO ycs_crypto_blind_indexes
+                                    (target_type, legacy_row_id, field_id, key_purpose, key_version,
+                                     index_value, index_status, original_row_digest,
+                                     row_binding_digest)
+                                VALUES ('MESSAGE_TASK', ?, 'mobile', 'MOBILE_BLIND_INDEX',
+                                        ?, ?, ?, ?, NULL)
+                                """, row.bindingRowId(), index.keyVersion(),
+                                index.canonicalValue(), index.status(), binding);
+                        if (inserted != 1) {
+                            throw rejected();
+                        }
+                    }
+                } finally {
+                    java.util.Arrays.fill(binding, (byte) 0);
+                }
+                return true;
+            }
+
+            private List<StoredBlindIndex> storedMessageIndexes(long rowId) {
+                return jdbc.query("""
+                        SELECT key_purpose, key_version, index_value, index_status,
+                               original_row_digest, row_binding_digest
+                          FROM ycs_crypto_blind_indexes
+                         WHERE target_type = 'MESSAGE_TASK'
+                           AND legacy_row_id = ? AND field_id = 'mobile'
+                         ORDER BY key_version
+                         FOR UPDATE
+                        """, (resultSet, ignored) -> new StoredBlindIndex(
+                        resultSet.getString(1), resultSet.getLong(2), resultSet.getString(3),
+                        resultSet.getString(4), resultSet.getBytes(5), resultSet.getBytes(6)), rowId);
+            }
+
+            private static boolean sameLegacyMessage(
+                    LegacyRow expected, MessageTaskSource source, LockedMessageRow actual) {
+                byte[] expectedHash = expected.storedValue();
+                byte[] expectedMobile = source.mobileEncrypted();
+                try {
+                    return expected.tenantScope().equals("tenant:" + actual.tenantId())
+                            && source.messageId().equals(actual.messageId())
+                            && MessageDigest.isEqual(expectedHash,
+                            actual.mobileHash().getBytes(StandardCharsets.US_ASCII))
+                            && MessageDigest.isEqual(expectedMobile, actual.mobileEncrypted());
+                } finally {
+                    java.util.Arrays.fill(expectedHash, (byte) 0);
+                    java.util.Arrays.fill(expectedMobile, (byte) 0);
+                }
+            }
+
+            private static boolean sameLegacyMessageIndexes(
+                    List<StoredBlindIndex> stored,
+                    List<BlindIndexEntry> expected,
+                    byte[] legacyDigest) {
+                if (stored.size() != expected.size()) {
+                    return false;
+                }
+                for (int index = 0; index < stored.size(); index++) {
+                    if (stored.get(index).keyVersion() != expected.get(index).keyVersion()
+                            || !same(stored.get(index), expected.get(index), legacyDigest, null)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             private byte[] blacklistRowBinding(long rowId, byte[] originalRowDigest) {
                 List<Map<String, Object>> rows = jdbc.queryForList("""
                         SELECT tenant_id, mobile_encrypted, mobile_hash, list_type, status
@@ -657,28 +892,40 @@ public interface MigrationStateRepository {
                     return false;
                 }
                 CurrentMessageRow message = messages.getFirst();
+                byte[] envelope = message.envelope();
+                if (envelope == null) {
+                    return false;
+                }
                 byte[] expectedDigest = null;
+                byte[] ciphertext = null;
                 try {
                     byte[] storedLocatorBytes = row.storedValue();
                     try {
                         String storedLocator = new String(
                                 storedLocatorBytes, java.nio.charset.StandardCharsets.US_ASCII);
                         if (!MessageTaskRowBinding.isCurrentLocator(message.locator())
-                                || !message.locator().equals(storedLocator)
-                                || message.envelope() == null || message.envelope().length < 4
-                                || message.envelope()[0] != 'Y' || message.envelope()[1] != 'C'
-                                || message.envelope()[2] != 'S' || message.envelope()[3] != 'E') {
+                                || !message.locator().equals(storedLocator)) {
                             return false;
                         }
                     } finally {
                         java.util.Arrays.fill(storedLocatorBytes, (byte) 0);
                     }
+                    try {
+                        ciphertext = new EnvelopeCodec().decode(
+                                envelope, EnvelopeCodec.Target.DATABASE_FIELD).ciphertext();
+                    } catch (RuntimeException invalidEnvelope) {
+                        return false;
+                    }
+                    if (ciphertext.length != 11 + EnvelopeCodec.DATA_TAG_BYTES) {
+                        return false;
+                    }
                     expectedDigest = MessageTaskRowBinding.originalRowDigest(
                             message.tenantId(), row.bindingRowId(), message.messageId(),
-                            message.locator(), message.envelope());
+                            message.locator(), envelope);
                     List<CurrentBinding> stored = jdbc.query(
                             "SELECT idx.key_version, idx.index_status, idx.key_purpose, "
-                                    + "idx.index_value, idx.original_row_digest "
+                                    + "idx.index_value, idx.original_row_digest, "
+                                    + "idx.row_binding_digest "
                                     + "FROM ycs_crypto_blind_indexes idx "
                                     + "WHERE idx.target_type = 'MESSAGE_TASK' "
                                     + "AND idx.legacy_row_id = ? AND idx.field_id = ? "
@@ -686,7 +933,7 @@ public interface MigrationStateRepository {
                             (resultSet, rowNumber) -> new CurrentBinding(
                                     resultSet.getLong(1), resultSet.getString(2),
                                     resultSet.getString(3), resultSet.getString(4),
-                                    resultSet.getBytes(5)),
+                                    resultSet.getBytes(5), resultSet.getBytes(6)),
                             row.bindingRowId(), fieldId);
                     List<CurrentKeyState> required = jdbc.query(
                             "SELECT key_version, key_state FROM ycs_crypto_key_references "
@@ -706,13 +953,17 @@ public interface MigrationStateRepository {
                                 || !BlindIndexEntry.VALUE.matcher(binding.value()).matches()
                                 || binding.originalDigest() == null
                                 || binding.originalDigest().length != 32
+                                || binding.rowBindingDigest() != null
                                 || !MessageDigest.isEqual(expectedDigest, binding.originalDigest())) {
                             return false;
                         }
                     }
                     return true;
                 } finally {
-                    java.util.Arrays.fill(message.envelope(), (byte) 0);
+                    java.util.Arrays.fill(envelope, (byte) 0);
+                    if (ciphertext != null) {
+                        java.util.Arrays.fill(ciphertext, (byte) 0);
+                    }
                     if (expectedDigest != null) {
                         java.util.Arrays.fill(expectedDigest, (byte) 0);
                     }
@@ -723,16 +974,20 @@ public interface MigrationStateRepository {
             public long remainingLegacyRows(ProtectedDataTarget target) {
                 TargetSql sql = descriptor(target);
                 Long count;
+                if ("MESSAGE_TASK".equals(sql.targetType())) {
+                    return scanMessageRows().stream()
+                            .filter(row -> row.storedValueKind()
+                                    != StoredValueKind.CURRENT_MESSAGE_LOCATOR
+                                    || !currentMessageBindingMatches(row, "mobile"))
+                            .count();
+                }
                 if (target.kind() == ProtectedDataTarget.Kind.LEGACY_DIGEST) {
                     String scrubbedBinding = sql.randomBinding()
                             ? "LOWER(LPAD(HEX(idx.legacy_row_id), 16, '0')) = LEFT(legacy."
                                     + sql.column() + ", 16)"
                             : "idx.legacy_row_id = legacy." + sql.identity();
-                    String legacyOnly = "MESSAGE_TASK".equals(sql.targetType())
-                            ? "legacy." + sql.column() + " REGEXP '^[0-9a-f]{64}$' AND "
-                            : "";
                     count = jdbc.queryForObject("SELECT COUNT(*) FROM " + sql.table() + " legacy "
-                                    + "WHERE " + legacyOnly
+                                    + "WHERE "
                                     + "NOT EXISTS (SELECT 1 FROM ycs_crypto_blind_indexes idx "
                                     + "WHERE idx.target_type = ? AND " + scrubbedBinding + " "
                                     + "AND idx.original_row_digest <> UNHEX(SHA2(legacy."
@@ -754,6 +1009,9 @@ public interface MigrationStateRepository {
                     return remainingLegacyRows(target) == 0;
                 }
                 TargetSql sql = descriptor(target);
+                if ("MESSAGE_TASK".equals(sql.targetType())) {
+                    return messageStateShapesValid();
+                }
                 String legacyOnly = "MESSAGE_TASK".equals(sql.targetType())
                         ? "legacy." + sql.column() + " REGEXP '^[0-9a-f]{64}$' AND "
                         : "";
@@ -783,23 +1041,107 @@ public interface MigrationStateRepository {
                 if (!Long.valueOf(0).equals(missing) || !Long.valueOf(0).equals(orphans)) {
                     return false;
                 }
-                if (!"MESSAGE_TASK".equals(sql.targetType())) {
-                    return true;
+                return true;
+            }
+
+            private boolean messageStateShapesValid() {
+                List<CurrentKeyState> required = currentMessageKeyStates();
+                if (required.isEmpty()) {
+                    return false;
                 }
-                List<LegacyRow> currentRows = jdbc.query(
-                        "SELECT id, CAST(id AS CHAR), "
-                                + "CONCAT('tenant:', CAST(tenant_id AS CHAR)), mobile_hash "
-                                + "FROM message_tasks WHERE mobile_hash "
-                                + "REGEXP '^p3c1_[A-Za-z0-9_-]{43}$' ORDER BY id",
-                        (resultSet, rowNumber) -> {
-                            byte[] value = resultSet.getBytes(4);
-                            long id = resultSet.getLong(1);
-                            return new LegacyRow(
-                                    id, id, resultSet.getString(2), resultSet.getString(3),
-                                    value, cellDigest(value), StoredValueKind.CURRENT_MESSAGE_LOCATOR);
-                        });
-                return currentRows.stream().allMatch(row ->
-                        currentMessageBindingMatches(row, "mobile"));
+                for (LegacyRow row : scanMessageRows()) {
+                    if (row.storedValueKind() == StoredValueKind.CURRENT_MESSAGE_LOCATOR) {
+                        if (!currentMessageBindingMatches(row, "mobile")) {
+                            return false;
+                        }
+                    } else if (!legacyMessageBindingMatches(row, required)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            private boolean legacyMessageBindingMatches(
+                    LegacyRow row, List<CurrentKeyState> required) {
+                MessageTaskSource source = row.messageTaskSource();
+                if (source == null) {
+                    return false;
+                }
+                byte[] encodedHash = row.storedValue();
+                byte[] plaintext = source.mobileEncrypted();
+                byte[] expectedHash = null;
+                byte[] decodedHash = null;
+                try {
+                    String hash = new String(encodedHash, StandardCharsets.US_ASCII);
+                    if (!SHA256.matcher(hash).matches() || plaintext.length != 11) {
+                        return false;
+                    }
+                    for (byte digit : plaintext) {
+                        if (digit < '0' || digit > '9') {
+                            return false;
+                        }
+                    }
+                    decodedHash = HexFormat.of().parseHex(hash);
+                    expectedHash = cellDigest(plaintext);
+                    if (!MessageDigest.isEqual(expectedHash, decodedHash)) {
+                        return false;
+                    }
+                } finally {
+                    java.util.Arrays.fill(encodedHash, (byte) 0);
+                    java.util.Arrays.fill(plaintext, (byte) 0);
+                    if (expectedHash != null) {
+                        java.util.Arrays.fill(expectedHash, (byte) 0);
+                    }
+                    if (decodedHash != null) {
+                        java.util.Arrays.fill(decodedHash, (byte) 0);
+                    }
+                }
+                List<StoredBlindIndex> stored = storedMessageIndexes(row.bindingRowId());
+                if (stored.size() != required.size()) {
+                    return false;
+                }
+                for (int index = 0; index < stored.size(); index++) {
+                    StoredBlindIndex binding = stored.get(index);
+                    CurrentKeyState key = required.get(index);
+                    if (binding.keyVersion() != key.version()
+                            || !binding.status().equals(key.state())
+                            || !"MOBILE_BLIND_INDEX".equals(binding.keyPurpose())
+                            || !BlindIndexEntry.VALUE.matcher(binding.indexValue()).matches()
+                            || binding.rowBindingDigest() != null
+                            || !MessageDigest.isEqual(
+                            binding.originalRowDigest(), row.originalCellDigest())) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            private List<CurrentKeyState> currentMessageKeyStates() {
+                return jdbc.query("""
+                        SELECT key_version, key_state
+                          FROM ycs_crypto_key_references
+                         WHERE purpose = 'MOBILE_BLIND_INDEX'
+                           AND key_state IN ('ACTIVE','RETIRING')
+                         ORDER BY key_version
+                        """, (resultSet, ignored) -> new CurrentKeyState(
+                        resultSet.getLong(1), resultSet.getString(2)));
+            }
+
+            private List<LegacyRow> scanMessageRows() {
+                return jdbc.query(MESSAGE_STATE_SCAN_SQL, (resultSet, ignored) -> {
+                    byte[] mobileHash = resultSet.getBytes(4);
+                    String locator = new String(mobileHash, StandardCharsets.US_ASCII);
+                    long id = resultSet.getLong(1);
+                    return new LegacyRow(
+                            id, id, resultSet.getString(2),
+                            normalizeTenant(resultSet.getString(3)), mobileHash,
+                            cellDigest(mobileHash),
+                            MessageTaskRowBinding.isCurrentLocator(locator)
+                                    ? StoredValueKind.CURRENT_MESSAGE_LOCATOR
+                                    : StoredValueKind.LEGACY_CANDIDATE,
+                            new MessageTaskSource(
+                                    resultSet.getString(5), resultSet.getBytes(6)));
+                });
             }
 
             @Override
@@ -1015,6 +1357,7 @@ public interface MigrationStateRepository {
 
         private record StoredBlindIndex(
                 String keyPurpose,
+                long keyVersion,
                 String indexValue,
                 String status,
                 byte[] originalRowDigest,
@@ -1023,6 +1366,10 @@ public interface MigrationStateRepository {
 
         private record CurrentMessageRow(
                 long tenantId, String messageId, String locator, byte[] envelope) {
+        }
+
+        private record LockedMessageRow(
+                long tenantId, String messageId, String mobileHash, byte[] mobileEncrypted) {
         }
 
         private static boolean retryableLockFailure(RuntimeException failure) {
@@ -1044,7 +1391,8 @@ public interface MigrationStateRepository {
                 String status,
                 String purpose,
                 String value,
-                byte[] originalDigest) {
+                byte[] originalDigest,
+                byte[] rowBindingDigest) {
         }
 
         private record CurrentKeyState(long version, String state) {

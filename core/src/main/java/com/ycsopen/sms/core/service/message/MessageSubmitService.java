@@ -3,6 +3,7 @@ package com.ycsopen.sms.core.service.message;
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapter;
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
+import com.ycsopen.sms.core.common.security.persistence.PreparedMessageRouting;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
@@ -12,6 +13,7 @@ import com.ycsopen.sms.core.service.billing.BillingService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
+import com.ycsopen.sms.core.service.routing.FrequencyChecker;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
@@ -76,13 +78,13 @@ public class MessageSubmitService {
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
                 + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        PreparedMessageMobile preparedMobile = messageTaskProtectionAdapter.prepare(
+        PreparedMessageRouting preparedRouting = messageTaskProtectionAdapter.prepareForRouting(
                 tenantId, messageId, request.phoneNumber());
 
         RoutingContext ctx = RoutingContext.builder()
                 .tenantId(tenantId)
-                .mobileQueryIndexes(preparedMobile.queryIndexes())
-                .legacyMobileLookupToken(preparedMobile.legacyLookupToken())
+                .mobileQueryIndexes(preparedRouting.queryIndexes())
+                .legacyMobileLookupToken(preparedRouting.legacyLookupToken())
                 .clientIp(clientIp)
                 .content(finalContent)
                 .templateId(template.getId())
@@ -91,9 +93,17 @@ public class MessageSubmitService {
 
         RoutingDecision decision = routingEngine.route(ctx);
         if (!decision.isAllowed()) {
+            if (decision.getRejectStage() == RoutingDecision.RejectStage.FREQUENCY_LIMIT
+                    && FrequencyChecker.MOBILE_IDENTITY_NOT_READY.equals(decision.getRejectReason())) {
+                throw new BusinessException(FrequencyChecker.MOBILE_IDENTITY_NOT_READY,
+                        FrequencyChecker.MOBILE_IDENTITY_NOT_READY);
+            }
             throw new BusinessException("ROUTING_REJECTED",
                     "提交被拒绝[%s]：%s".formatted(decision.getRejectStage(), decision.getRejectReason()));
         }
+
+        PreparedMessageMobile preparedMobile = messageTaskProtectionAdapter.protectForPersistence(
+                preparedRouting, request.phoneNumber());
 
         MessageTask task = new MessageTask();
         task.setMessageId(messageId);

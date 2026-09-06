@@ -15,9 +15,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Exact SQL owner for safe protected-object metadata, operation state, and capability digests.
@@ -326,6 +328,8 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
     }
 
     private static final class JdbcStore implements Store {
+        private static final Pattern SHA256 = Pattern.compile("[0-9a-f]{64}");
+
         private final JdbcTemplate jdbc;
         private final TransactionTemplate transaction;
         private final FieldReferencePublicationFence fieldFence;
@@ -376,7 +380,10 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
         @Override
         public Optional<ProtectedObjectMetadata> completeCreate(CreateOperation operation,
                                                                  StoredObjectMetadata stored) {
-            return transaction.execute(status -> {
+            PublicationOutcome outcome = transaction.execute(status -> {
+                if (!lockAndRequirePublishableSession(operation)) {
+                    return PublicationOutcome.rejected();
+                }
                 Optional<ProtectedObjectMetadata> replaced = Optional.empty();
                 if (operation.replacesObjectId() != null) {
                     replaced = find(operation.replacesObjectId());
@@ -401,12 +408,13 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                            AND object_purpose = ?
                            AND object_state = 'ORPHANED'
                            AND opaque_store_locator = ?
-                           AND envelope_digest = UNHEX(?)
+                           AND envelope_digest = ?
                            AND envelope_size = ?
                            AND media_type = ?
                         """, operation.protectedObjectId(), operation.registrationSessionId(),
                         operation.tenantDraftId(), databasePurpose(operation.purpose()),
-                        stored.storageKey(), stored.sha256(), stored.size(), stored.mediaType());
+                        stored.storageKey(), decodeSha256(stored.sha256()),
+                        stored.size(), stored.mediaType());
                 requireOne(published);
                 int updated = jdbc.update("""
                         UPDATE ycs_crypto_object_operations
@@ -415,8 +423,73 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                          WHERE operation_id = ? AND operation_state = 'OBJECT_STORED'
                         """, operation.protectedObjectId(), operation.operationId());
                 requireOne(updated);
-                return replaced;
+                return PublicationOutcome.published(replaced);
             });
+            if (outcome == null || !outcome.published()) {
+                throw new IllegalStateException("protected object metadata operation failed");
+            }
+            return outcome.replaced();
+        }
+
+        /**
+         * Serializes final object publication with registration-session close and claim.
+         *
+         * <p>The object store write happens outside the database transaction. Re-checking the
+         * session under the same row lock used by terminal transitions prevents an upload that
+         * was admitted while OPEN from publishing after that session has become terminal. The
+         * expiry decision uses the database clock; an expired OPEN row is committed as EXPIRED
+         * before the caller receives the generic publication rejection.</p>
+         */
+        private boolean lockAndRequirePublishableSession(CreateOperation operation) {
+            List<PublicationGate> gates = jdbc.query("""
+                    SELECT tenant_draft_id, session_state,
+                           expires_at > CURRENT_TIMESTAMP(6) AS unexpired
+                      FROM ycs_crypto_registration_sessions
+                     WHERE registration_session_id = ?
+                     FOR UPDATE
+                    """, (rs, row) -> new PublicationGate(
+                            operation.tenantDraftId().equals(rs.getString("tenant_draft_id")),
+                            rs.getString("session_state"), rs.getBoolean("unexpired")),
+                    operation.registrationSessionId());
+            if (gates.size() != 1) {
+                return false;
+            }
+            PublicationGate gate = gates.getFirst();
+            if (!gate.bindingMatches() || !"OPEN".equals(gate.sessionState())) {
+                return false;
+            }
+            if (gate.unexpired()) {
+                return true;
+            }
+            int expired = jdbc.update("""
+                    UPDATE ycs_crypto_registration_sessions
+                       SET session_state = 'EXPIRED', optimistic_version = optimistic_version + 1
+                     WHERE registration_session_id = ? AND session_state = 'OPEN'
+                    """, operation.registrationSessionId());
+            requireOne(expired);
+            jdbc.update("""
+                    UPDATE ycs_crypto_protected_objects
+                       SET object_state = 'EXPIRED', optimistic_version = optimistic_version + 1
+                     WHERE registration_session_id = ? AND object_state = 'STAGED'
+                    """, operation.registrationSessionId());
+            return false;
+        }
+
+        private record PublicationGate(
+                boolean bindingMatches, String sessionState, boolean unexpired) {
+        }
+
+        private record PublicationOutcome(
+                boolean published, Optional<ProtectedObjectMetadata> replaced) {
+
+            private static PublicationOutcome rejected() {
+                return new PublicationOutcome(false, Optional.empty());
+            }
+
+            private static PublicationOutcome published(
+                    Optional<ProtectedObjectMetadata> replaced) {
+                return new PublicationOutcome(true, Objects.requireNonNull(replaced, "replaced"));
+            }
         }
 
         @Override
@@ -439,10 +512,11 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
                         (protected_object_id, registration_session_id, tenant_draft_id,
                          object_purpose, object_state, opaque_store_locator,
                          envelope_digest, envelope_size, media_type, replaces_object_id, expires_at)
-                    VALUES (?, ?, ?, ?, ?, ?, UNHEX(?), ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, operation.protectedObjectId(), operation.registrationSessionId(),
                     operation.tenantDraftId(), databasePurpose(operation.purpose()), state,
-                    stored.storageKey(), stored.sha256(), stored.size(), stored.mediaType(),
+                    stored.storageKey(), decodeSha256(stored.sha256()),
+                    stored.size(), stored.mediaType(),
                     operation.replacesObjectId(), Timestamp.from(operation.expiresAt()));
             requireOne(inserted);
         }
@@ -630,6 +704,13 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
             if (affected != 1) {
                 throw new IllegalStateException("protected object metadata operation failed");
             }
+        }
+
+        private static byte[] decodeSha256(String value) {
+            if (value == null || !SHA256.matcher(value).matches()) {
+                throw new IllegalStateException("protected object metadata operation failed");
+            }
+            return HexFormat.of().parseHex(value);
         }
 
         private static String databasePurpose(PrivateObjectStorePort.ObjectPurpose purpose) {

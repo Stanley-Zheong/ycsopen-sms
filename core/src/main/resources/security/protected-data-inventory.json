@@ -168,10 +168,10 @@
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] }
       ],
       "writers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepareForRouting", ".mobileQueryIndexes(preparedRouting.queryIndexes())", "messageTaskProtectionAdapter.protectForPersistence", "messageTaskProtectionAdapter.save"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
       ],
-      "reason": "The live submission service prepares once before routing, routes only ordered opaque query values, and persists the YCSE envelope, non-queryable locator, and per-version indexes only through the adapter transaction."
+      "reason": "The live submission service prepares only opaque routing values before routing, then creates one YCSE envelope and non-queryable locator after acceptance and persists them with per-version indexes through the adapter transaction."
     },
     {
       "id": "bulk_sending_items.mobile_encrypted", "table": "bulk_sending_items", "column": "mobile_encrypted",
@@ -334,13 +334,13 @@
     {
       "id": "message-submit-persistence", "role": "WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_ENVELOPE_AND_VERSIONED_INDEX_WRITE", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepare", ".mobileQueryIndexes(preparedMobile.queryIndexes())", "messageTaskProtectionAdapter.save"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepareForRouting", ".mobileQueryIndexes(preparedRouting.queryIndexes())", "messageTaskProtectionAdapter.protectForPersistence", "messageTaskProtectionAdapter.save"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java", "tokens": ["BlindIndexPort.OrderedIndexes mobileQueryIndexes", "never raw SHA-256"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "@Column(name = \"mobile_hash\", nullable = false, length = 64)", "private byte[] mobileEncrypted"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/repository/MessageTaskRepository.java", "tokens": ["JpaRepository<MessageTask, Long>"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
       ],
-      "reason": "The live caller generates the immutable identity, prepares once before routing, exposes only ordered opaque query values, and saves the envelope plus separate write-compatible index rows through the protected adapter."
+      "reason": "The live caller generates the immutable identity, prepares only opaque values before routing, creates one envelope after acceptance, and saves it plus separate write-compatible index rows through the protected adapter."
     },
     {
       "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_FIELD_AND_OBJECT_CLAIM", "obligation_blocking": false,

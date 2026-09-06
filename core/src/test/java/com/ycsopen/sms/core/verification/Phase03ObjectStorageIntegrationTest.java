@@ -34,6 +34,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -84,6 +85,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -197,6 +200,7 @@ class Phase03ObjectStorageIntegrationTest {
                         initialCapability, anonymous, s3);
                 proveConcurrentCapabilityConsumption(fixture, registration.businessLicense());
                 proveDeleteClaimRace(fixture);
+                provePublicationTerminalRaces(fixture);
                 proveClaimDenialsRollbackAndCommit(fixture, registration);
                 proveCloseAndExpiry(fixture);
                 provePostReservationFailure(fixture);
@@ -532,6 +536,184 @@ class Phase03ObjectStorageIntegrationTest {
                 race.session().registrationUploadToken());
         fixture.objectService().reconcile(100);
         passed(4);
+    }
+
+    /**
+     * Exercises the publication fence on real InnoDB connections in every terminal ordering.
+     * The winning operation pauses after acquiring the registration-session row lock; the losing
+     * operation is then allowed to reach that same lock before the winner commits.
+     */
+    private static void provePublicationTerminalRaces(Fixture fixture) throws Exception {
+        for (String terminalState : List.of("CLOSED", "CLAIMED")) {
+            provePublicationTerminalRace(fixture, terminalState, true);
+            provePublicationTerminalRace(fixture, terminalState, false);
+        }
+    }
+
+    private static void provePublicationTerminalRace(Fixture fixture,
+                                                       String terminalState,
+                                                       boolean publicationFirst)
+            throws Exception {
+        RegistrationObjects registration = uploadCompleteRegistration(fixture);
+        PendingPublication pending = insertPendingReplacement(fixture, registration);
+        SessionLockJdbcTemplate publicationJdbc = new SessionLockJdbcTemplate(
+                mysqlDataSource(), publicationFirst);
+        DataSourceTransactionManager publicationTransactions =
+                new DataSourceTransactionManager(publicationJdbc.getDataSource());
+        ProtectedObjectMetadataRepository publicationRepository =
+                new ProtectedObjectMetadataRepository(publicationJdbc, publicationTransactions);
+
+        SessionLockJdbcTemplate terminalJdbc = new SessionLockJdbcTemplate(
+                mysqlDataSource(), !publicationFirst);
+        DataSourceTransactionManager terminalTransactions =
+                new DataSourceTransactionManager(terminalJdbc.getDataSource());
+        TenantRegistrationObjectSessionService.JdbcSessionStore closingStore =
+                new TenantRegistrationObjectSessionService.JdbcSessionStore(
+                        terminalJdbc, terminalTransactions);
+        TenantRegistrationProtectionAdapter claimingAdapter = claimAdapter(
+                fixture, terminalJdbc, terminalTransactions);
+
+        CountDownLatch workersReady = new CountDownLatch(2);
+        CountDownLatch publish = new CountDownLatch(1);
+        CountDownLatch terminate = new CountDownLatch(1);
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<Boolean> publication = executor.submit(() -> {
+                workersReady.countDown();
+                publish.await();
+                try {
+                    publicationRepository.completeCreate(pending.operation(), pending.stored());
+                    return true;
+                } catch (IllegalStateException terminalWon) {
+                    return false;
+                }
+            });
+            Future<?> terminal = executor.submit(() -> {
+                workersReady.countDown();
+                terminate.await();
+                if ("CLOSED".equals(terminalState)) {
+                    closingStore.transition(
+                            registration.session().registrationObjectSessionId(),
+                            TenantRegistrationObjectSessionService.SessionState.CLOSED,
+                            fixture.clock().instant(), ignored -> true);
+                } else {
+                    new TransactionTemplate(terminalTransactions).executeWithoutResult(status -> {
+                        Tenant tenant = insertTenant(terminalJdbc,
+                                "object-race-" + (publicationFirst ? "publish" : "terminal"));
+                        TenantRegistrationRequest request = registration.requestWithBusiness(
+                                publicationFirst
+                                        ? pending.operation().protectedObjectId()
+                                        : registration.businessLicense());
+                        claimingAdapter.protectRegistration(tenant, request,
+                                registration.session().registrationUploadToken());
+                    });
+                }
+                return null;
+            });
+
+            await(workersReady, "object race workers");
+            if (publicationFirst) {
+                publish.countDown();
+                publicationJdbc.awaitLocked();
+                terminate.countDown();
+                terminalJdbc.awaitAttempted();
+                publicationJdbc.release();
+            } else {
+                terminate.countDown();
+                terminalJdbc.awaitLocked();
+                publish.countDown();
+                publicationJdbc.awaitAttempted();
+                terminalJdbc.release();
+            }
+
+            assertThat(publication.get()).isEqualTo(publicationFirst);
+            terminal.get();
+        } finally {
+            publicationJdbc.release();
+            terminalJdbc.release();
+        }
+
+        String sessionId = registration.session().registrationObjectSessionId();
+        assertThat(sessionState(fixture.jdbc(), sessionId)).isEqualTo(terminalState);
+        assertThat(fixture.jdbc().queryForObject(
+                "SELECT COUNT(*) FROM ycs_crypto_protected_objects "
+                        + "WHERE registration_session_id=? AND object_state='STAGED'",
+                Long.class, sessionId)).isZero();
+        assertThat(fixture.jdbc().queryForObject(
+                "SELECT object_state FROM ycs_crypto_protected_objects "
+                        + "WHERE protected_object_id=?",
+                String.class, pending.operation().protectedObjectId()))
+                .isEqualTo(publicationFirst
+                        ? ("CLOSED".equals(terminalState) ? "EXPIRED" : "CLAIMED")
+                        : "ORPHANED");
+        assertThat(fixture.jdbc().queryForObject(
+                "SELECT operation_state FROM ycs_crypto_object_operations WHERE operation_id=?",
+                String.class, pending.operation().operationId()))
+                .isEqualTo(publicationFirst ? "COMPLETED" : "OBJECT_STORED");
+        passed(4);
+    }
+
+    private static PendingPublication insertPendingReplacement(
+            Fixture fixture, RegistrationObjects registration) {
+        String sessionId = registration.session().registrationObjectSessionId();
+        String tenantDraftId = fixture.jdbc().queryForObject(
+                "SELECT tenant_draft_id FROM ycs_crypto_registration_sessions "
+                        + "WHERE registration_session_id=?",
+                String.class, sessionId);
+        Instant expiresAt = fixture.jdbc().queryForObject(
+                "SELECT expires_at FROM ycs_crypto_registration_sessions "
+                        + "WHERE registration_session_id=?",
+                Timestamp.class, sessionId).toInstant();
+        String operationId = UUID.randomUUID().toString();
+        String objectId = "pobj_v1_" + randomHex(16);
+        String locator = "obj_v1_" + randomHex(32);
+        String sha256 = randomHex(32);
+        fixture.jdbc().update("""
+                INSERT INTO ycs_crypto_protected_objects
+                    (protected_object_id, registration_session_id, tenant_draft_id,
+                     object_purpose, object_state, opaque_store_locator, envelope_digest,
+                     envelope_size, media_type, replaces_object_id, expires_at)
+                VALUES (?, ?, ?, 'BUSINESS_LICENSE', 'ORPHANED', ?, UNHEX(?), 128,
+                        'application/pdf', ?, ?)
+                """, objectId, sessionId, tenantDraftId, locator, sha256,
+                registration.businessLicense(), Timestamp.from(expiresAt));
+        fixture.jdbc().update("""
+                INSERT INTO ycs_crypto_object_operations
+                    (operation_id, registration_session_id, object_purpose,
+                     protected_object_id, operation_state, attempt_number,
+                     field_key_purpose, field_key_version)
+                VALUES (?, ?, 'BUSINESS_LICENSE', ?, 'OBJECT_STORED', 3,
+                        'FIELD_ENCRYPTION_KEK', 1)
+                """, operationId, sessionId, objectId);
+        var operation = new ProtectedObjectMetadataRepository.CreateOperation(
+                operationId, objectId, sessionId, tenantDraftId,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, 3, expiresAt,
+                registration.businessLicense());
+        var stored = new StoredObjectMetadata(locator,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, 128, sha256,
+                "application/pdf");
+        return new PendingPublication(operation, stored);
+    }
+
+    private static TenantRegistrationProtectionAdapter claimAdapter(
+            Fixture fixture,
+            JdbcTemplate jdbc,
+            DataSourceTransactionManager transactions) {
+        TenantRegistrationObjectSessionService sessions =
+                new TenantRegistrationObjectSessionService(
+                        fixture.keyAdapter(), fixture.objectService(), jdbc, transactions,
+                        fixture.clock(), new SecureRandom());
+        StaticListableBeanFactory beanFactory = new StaticListableBeanFactory();
+        beanFactory.addBean("objectRaceRegistrationSessionService", sessions);
+        return new TenantRegistrationProtectionAdapter(
+                fixture.keyAdapter(), jdbc,
+                beanFactory.getBeanProvider(TenantRegistrationObjectSessionService.class),
+                new ActiveFieldKeyReference(new KeyReferenceRepository.Jdbc(
+                        jdbc, new TransactionTemplate(transactions))),
+                new JdbcFieldReferencePublicationFence(jdbc));
+    }
+
+    private static void await(CountDownLatch latch, String boundary) throws InterruptedException {
+        assertThat(latch.await(30, TimeUnit.SECONDS)).as(boundary).isTrue();
     }
 
     private static String proveDatabaseSafeShapes(Fixture fixture,
@@ -1321,6 +1503,11 @@ class Phase03ObjectStorageIntegrationTest {
                              String bucket) {
     }
 
+    private record PendingPublication(
+            ProtectedObjectMetadataRepository.CreateOperation operation,
+            StoredObjectMetadata stored) {
+    }
+
     private record RegistrationObjects(
             TenantRegistrationObjectSessionService.CreatedSession session,
             Map<TenantRegistrationObjectSessionService.UploadPurpose, String> objects) {
@@ -1338,11 +1525,66 @@ class Phase03ObjectStorageIntegrationTest {
             return requestWithFront(front());
         }
 
+        TenantRegistrationRequest requestWithBusiness(String businessObject) {
+            return new TenantRegistrationRequest("phase03", "Phase03 Registration Proof",
+                    creditCode("registration"), session.registrationObjectSessionId(),
+                    businessObject, "Representative", "11010519491231002X", front(),
+                    back(), "Contact", "11010519491231002X", "13800138000", shortlink(), trademark());
+        }
+
         TenantRegistrationRequest requestWithFront(String frontObject) {
             return new TenantRegistrationRequest("phase03", "Phase03 Registration Proof",
                     creditCode("registration"), session.registrationObjectSessionId(),
                     businessLicense(), "Representative", "11010519491231002X", frontObject,
                     back(), "Contact", "11010519491231002X", "13800138000", shortlink(), trademark());
+        }
+    }
+
+    /** Pauses a real JDBC transaction only after it owns the registration-session row lock. */
+    private static final class SessionLockJdbcTemplate extends JdbcTemplate {
+        private final boolean pauseAfterLock;
+        private final AtomicBoolean observed = new AtomicBoolean();
+        private final CountDownLatch attempted = new CountDownLatch(1);
+        private final CountDownLatch locked = new CountDownLatch(1);
+        private final CountDownLatch proceed = new CountDownLatch(1);
+
+        private SessionLockJdbcTemplate(DataSource dataSource, boolean pauseAfterLock) {
+            super(dataSource);
+            this.pauseAfterLock = pauseAfterLock;
+        }
+
+        @Override
+        public <T> List<T> query(String sql, RowMapper<T> rowMapper, Object... args) {
+            boolean sessionLock = sql.contains("ycs_crypto_registration_sessions")
+                    && sql.contains("FOR UPDATE") && observed.compareAndSet(false, true);
+            if (sessionLock) {
+                attempted.countDown();
+            }
+            List<T> rows = super.query(sql, rowMapper, args);
+            if (sessionLock && pauseAfterLock) {
+                locked.countDown();
+                try {
+                    if (!proceed.await(30, TimeUnit.SECONDS)) {
+                        throw new AssertionError("session row-lock race release unavailable");
+                    }
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(interrupted);
+                }
+            }
+            return rows;
+        }
+
+        void awaitAttempted() throws InterruptedException {
+            await(attempted, "session row-lock attempt");
+        }
+
+        void awaitLocked() throws InterruptedException {
+            await(locked, "session row lock");
+        }
+
+        void release() {
+            proceed.countDown();
         }
     }
 

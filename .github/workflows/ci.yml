@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: phase-01-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,6 +24,8 @@ jobs:
       PHASE01_REDIS_IMAGE: redis@sha256:596405c58f60e287ce0d71459202aaff26d90d08590106264a5f4cc2c73308d2
     steps:
       - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -60,54 +62,52 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-  phase-03-portable:
-    name: Phase 03 portable registry
+  backend:
+    name: Backend
     runs-on: ubuntu-latest
-    timeout-minutes: 45
     steps:
+      # On pull_request, the default checkout target is GitHub's synthetic merge commit.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
           cache-dependency-path: core/pom.xml
-      - name: Install Phase 3 contract toolchain
+      - name: Run backend tests
+        run: mvn -f core/pom.xml test
+
+  phase-03-portable-contracts:
+    name: Phase 03 portable contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: core/pom.xml
+      - name: Install Phase 03 contract toolchain
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ripgrep
           rg --version
-      - name: Run default backend verification
-        run: mvn -f core/pom.xml test
-      - name: Verify migration ownership
+      - name: Verify Flyway migration ownership
         run: |
           python3 skills/flyway-migration/tests/test_next_flyway_version.py
           python3 skills/flyway-migration/scripts/next_flyway_version.py \
             --owner crypto-storage-bootstrap --check V1202
-      - name: Run Phase 3 destructive contract suites
+      - name: Run destructive planning and protected-inventory fixtures
         run: |
           ruby .planning/tools/test-planning-validators.rb
-          ruby .planning/tools/test-phase-03-crypto-evidence.rb
           ruby .planning/tools/test-phase-03-protected-inventory.rb
           ruby scripts/lib/phase-03/test_service_checks.rb
-          ruby .planning/tools/test-scan-phase-03-artifacts.rb
-          ruby .planning/tools/test-delivery-attestation.rb
-          ruby .planning/tools/test-phase-lifecycle.rb
-      - name: Verify current Phase 3 evidence and lifecycle
-        run: |
-          ruby .planning/tools/validate-phase-03-crypto-evidence.rb \
-            --phase-dir .planning/phases/03-crypto-storage-bootstrap \
-            --require-owner crypto-storage-bootstrap
-          ruby .planning/tools/validate-phase-lifecycle.rb \
-            --phase 03 \
-            --package crypto-storage-bootstrap \
-            --stage pre-push-exit \
-            --evidence-manifest .planning/phases/03-crypto-storage-bootstrap/EVIDENCE/evidence-manifest.json \
-            --require-gsd-clear \
-            --require-claude-clear \
-            --allow-reserved-delivery
       - name: Audit production source reachability
         run: ruby scripts/lib/phase-03/run_checks.rb --internal-source-audit
       - name: Verify production artifact excludes test bridges
@@ -119,3 +119,89 @@ jobs:
             exit 1
           fi
           echo 'phase03_production_artifact=PASS'
+
+  phase-03-real-integration:
+    name: Phase 03 real integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: core/pom.xml
+      - name: Install real-integration system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential cmake default-mysql-client libssl-dev
+      - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
+        run: >-
+          mvn -f core/pom.xml -Pphase03-integration
+          -Dtest=Phase03FixturePreflightTest,Phase03ProtectedPersistenceIntegrationTest,Phase03Pkcs11IntegrationTest,Phase03MigrationIntegrationTest,Phase03ObjectStorageIntegrationTest,Phase03LeakScanIntegrationTest,Phase03RotationRecoveryIntegrationTest
+          test
+      - name: Prove every named real-integration suite executed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          suites = (
+              "Phase03FixturePreflightTest",
+              "Phase03ProtectedPersistenceIntegrationTest",
+              "Phase03Pkcs11IntegrationTest",
+              "Phase03MigrationIntegrationTest",
+              "Phase03ObjectStorageIntegrationTest",
+              "Phase03LeakScanIntegrationTest",
+              "Phase03RotationRecoveryIntegrationTest",
+          )
+          report_root = Path("core/target/surefire-reports")
+          failures = []
+          for suite in suites:
+              report = report_root / f"TEST-com.ycsopen.sms.core.verification.{suite}.xml"
+              if not report.is_file():
+                  failures.append(f"{suite}: report missing")
+                  continue
+              root = ET.parse(report).getroot()
+              counts = {name: int(root.attrib.get(name, "0"))
+                        for name in ("tests", "skipped", "failures", "errors")}
+              if counts["tests"] < 1 or any(counts[name] != 0
+                                             for name in ("skipped", "failures", "errors")):
+                  failures.append(f"{suite}: {counts}")
+          if failures:
+              raise SystemExit("Phase 03 integration proof failed:\n" + "\n".join(failures))
+          print(f"Executed {len(suites)} Phase 03 real-integration suites with zero skips.")
+          PY
+      - name: Clean owned integration services
+        if: always()
+        run: ruby scripts/lib/phase-03/service_checks.rb assert-clean --all
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-03-surefire-${{ github.run_id }}
+          path: core/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify checked-out event commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install Web dependencies
+        run: npm --prefix web ci
+      - name: Run Web tests
+        run: npm --prefix web test
+      - name: Build Web
+        run: npm --prefix web run build

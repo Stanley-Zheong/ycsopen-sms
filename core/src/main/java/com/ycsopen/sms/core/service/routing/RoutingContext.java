@@ -22,7 +22,10 @@ public class RoutingContext {
     private final Long templateId;
     private final Long signatureId;
 
-    /** Current-version opaque HMAC value for non-legacy routing dimensions. */
+    /**
+     * Current-version opaque HMAC value for third-party risk-list lookup only.
+     * It is rotation-dependent and must never be used as a Redis frequency identity.
+     */
     public String getOpaqueMobileQueryValue() {
         if (mobileQueryIndexes == null || mobileQueryIndexes.values().isEmpty()) {
             throw new IllegalStateException("opaque mobile query value is required");

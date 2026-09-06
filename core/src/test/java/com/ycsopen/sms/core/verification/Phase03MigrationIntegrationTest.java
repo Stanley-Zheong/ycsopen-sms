@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.verification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ycsopen.sms.core.common.security.envelope.CipherEnvelope;
 import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
@@ -38,6 +39,7 @@ import com.ycsopen.sms.core.common.security.migration.snapshot.MySqlSnapshotProc
 import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotChunkStore;
 import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotManifest;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
+import com.ycsopen.sms.core.common.security.persistence.MessageTaskRowBinding;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -668,8 +670,8 @@ class Phase03MigrationIntegrationTest {
                 jdbc, dataSource, transactions, adapter, envelopeCodec,
                 fixture, oldSigner, activeSigner);
 
-        List<IndexedFixture> indexed = seedIndexedTargets(jdbc);
-        assertIndexedTargetMigrations(jdbc, accepted, adapter, indexed);
+        List<IndexedFixture> indexed = seedIndexedTargets(jdbc, adapter);
+        assertIndexedTargetMigrations(jdbc, accepted, adapter, envelopeCodec, indexed);
         assertNoIndexTargetMigration(
                 jdbc, accepted, adapter, envelopeCodec,
                 "bulk_sending_items.mobile_encrypted", "BULK_SENDING_ITEM_MOBILE",
@@ -1037,7 +1039,8 @@ class Phase03MigrationIntegrationTest {
                 preflight, runtime.repository(), runtime.runner());
     }
 
-    private static List<IndexedFixture> seedIndexedTargets(JdbcTemplate jdbc) {
+    private static List<IndexedFixture> seedIndexedTargets(
+            JdbcTemplate jdbc, SunPkcs11KeyAdapter adapter) {
         IndexedFixture portability = new IndexedFixture(
                 "mobile_portability.mobile_hash", "MOBILE_PORTABILITY",
                 "mobile_portability", "mobile_hash", "13700000001", "global", null, 1);
@@ -1049,7 +1052,7 @@ class Phase03MigrationIntegrationTest {
                 "third_party_risk_check_logs", "mobile_hash", "13700000003", "global", 9_300_002L, 1);
         IndexedFixture message = new IndexedFixture(
                 "message_tasks.mobile_hash", "MESSAGE_TASK",
-                "message_tasks", "mobile_hash", "13700000004", "tenant:101", 9_300_003L, 1);
+                "message_tasks", "mobile_hash", "01234567890", "tenant:101", 9_300_003L, 1);
         IndexedFixture unsubscribe = new IndexedFixture(
                 "unsubscribe_records.mobile_hash", "UNSUBSCRIBE_RECORD",
                 "unsubscribe_records", "mobile_hash", "13700000005", "tenant:101", 9_300_004L, 1);
@@ -1076,7 +1079,20 @@ class Phase03MigrationIntegrationTest {
         jdbc.update("INSERT INTO message_tasks "
                         + "(id,message_id,tenant_id,mobile_encrypted,mobile_hash,content) "
                         + "VALUES (9300003,'plan14-message',101,?,?,'migration proof')",
-                "legacy-mobile".getBytes(StandardCharsets.US_ASCII), message.rawDigest());
+                message.mobile().getBytes(StandardCharsets.US_ASCII), message.rawDigest());
+        var legacyMessageIndexes = adapter.queryIndexesFromHistoricalDigest(
+                HexFormat.of().parseHex(message.rawDigest()),
+                new com.ycsopen.sms.core.common.security.key.BlindIndexPort.Context(
+                        message.targetType(), "mobile",
+                        com.ycsopen.sms.core.common.security.key.BlindIndexPort.Purpose.MOBILE_ROUTING,
+                        message.tenantScope()));
+        jdbc.update("INSERT INTO ycs_crypto_blind_indexes "
+                        + "(target_type,legacy_row_id,field_id,key_purpose,key_version,index_value,"
+                        + "index_status,original_row_digest) "
+                        + "VALUES ('MESSAGE_TASK',9300003,'mobile','MOBILE_BLIND_INDEX',1,?,"
+                        + "'ACTIVE',?)",
+                legacyMessageIndexes.values().getFirst().canonicalValue(),
+                sha256Bytes(message.rawDigest().getBytes(StandardCharsets.US_ASCII)));
         jdbc.update("INSERT INTO unsubscribe_records "
                         + "(id,mobile_encrypted,mobile_hash,tenant_id) VALUES (9300004,?,?,101)",
                 "legacy-mobile".getBytes(StandardCharsets.US_ASCII), unsubscribe.rawDigest());
@@ -1087,8 +1103,10 @@ class Phase03MigrationIntegrationTest {
             JdbcTemplate jdbc,
             AcceptedCommand accepted,
             SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
             List<IndexedFixture> targets) {
         for (IndexedFixture target : targets) {
+            boolean messageTarget = "MESSAGE_TASK".equals(target.targetType());
             assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
             String runId = UUID.randomUUID().toString();
             Phase03MigrationCommandFixture.CommandResult result =
@@ -1111,12 +1129,24 @@ class Phase03MigrationIntegrationTest {
                             + "AND field_id = 'mobile' ORDER BY legacy_row_id,key_version",
                     target.targetType());
             assertThat(metadata).hasSize(target.expectedRows());
-            com.ycsopen.sms.core.common.security.key.BlindIndexPort.OrderedIndexes online =
-                    adapter.queryIndexes(
-                            target.mobile(), new com.ycsopen.sms.core.common.security.key.BlindIndexPort.Context(
-                                    target.targetType(), "mobile",
-                                    com.ycsopen.sms.core.common.security.key.BlindIndexPort.Purpose.MOBILE_ROUTING,
-                                    target.tenantScope()));
+            var indexContext = new com.ycsopen.sms.core.common.security.key.BlindIndexPort.Context(
+                    target.targetType(), "mobile",
+                    com.ycsopen.sms.core.common.security.key.BlindIndexPort.Purpose.MOBILE_ROUTING,
+                    target.tenantScope());
+            com.ycsopen.sms.core.common.security.key.BlindIndexPort.OrderedIndexes online;
+            if (messageTarget) {
+                assertThatThrownBy(() -> adapter.writeIndexes(target.mobile(), indexContext))
+                        .isInstanceOf(IllegalStateException.class);
+                byte[] verifiedDigest = HexFormat.of().parseHex(target.rawDigest());
+                try {
+                    online = adapter.queryIndexesFromHistoricalDigest(
+                            verifiedDigest, indexContext);
+                } finally {
+                    Arrays.fill(verifiedDigest, (byte) 0);
+                }
+            } else {
+                online = adapter.queryIndexes(target.mobile(), indexContext);
+            }
             assertThat(metadata.stream().map(row -> row.get("index_value")).toList())
                     .contains(online.values().getFirst().canonicalValue());
             assertThat(((Number) metadata.getFirst().get("key_version")).longValue()).isOne();
@@ -1130,19 +1160,53 @@ class Phase03MigrationIntegrationTest {
                 assertThat(metadata.stream().map(row -> row.get("index_value")).toList())
                         .contains(tenantOnline.values().getFirst().canonicalValue());
             }
-            assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
+            if (messageTarget) {
+                assertMalformedMessageShapesBlockAdvance(
+                        jdbc, accepted, envelopeCodec, runId, target.rowId());
+            }
+            assertThat(legacyMatches(jdbc, target))
+                    .isEqualTo(messageTarget ? 0 : target.expectedRows());
 
-            advanceOne(accepted, runId, target.targetId(), "BACKFILLED");
-            advanceOne(accepted, runId, target.targetId(), "VERIFIED");
+            if (messageTarget) {
+                assertLegacyMessageShapesAtBackfillAndVerify(
+                        jdbc, accepted, runId, target);
+            } else {
+                advanceOne(accepted, runId, target.targetId(), "BACKFILLED");
+                advanceOne(accepted, runId, target.targetId(), "VERIFIED");
+            }
             advanceOne(accepted, runId, target.targetId(), "CUTOVER");
-            assertThat(legacyMatches(jdbc, target)).isEqualTo(target.expectedRows());
+            assertThat(legacyMatches(jdbc, target))
+                    .isEqualTo(messageTarget ? 0 : target.expectedRows());
             assertThat(jdbc.queryForObject(
                     "SELECT legacy_fallback_allowed FROM ycs_crypto_migration_targets "
                             + "WHERE target_type = ?", Boolean.class, target.targetType())).isTrue();
 
+            if (messageTarget) {
+                String locator = jdbc.queryForObject(
+                        "SELECT mobile_hash FROM message_tasks WHERE id = ?",
+                        String.class, target.rowId());
+                jdbc.update("UPDATE message_tasks SET mobile_hash = ? WHERE id = ?",
+                        "unknown-locator", target.rowId());
+                assertMessageAdvanceRejected(jdbc, accepted, runId, "SCRUBBED");
+                jdbc.update("UPDATE message_tasks SET mobile_hash = ? WHERE id = ?",
+                        locator, target.rowId());
+            }
             advanceOne(accepted, runId, target.targetId(), "SCRUBBED");
             assertThat(legacyMatches(jdbc, target)).isZero();
-            assertScrubBinding(jdbc, target, metadata);
+            if (messageTarget) {
+                assertProtectedMessage(
+                        jdbc, adapter, envelopeCodec, target, metadata.getFirst());
+            } else {
+                assertScrubBinding(jdbc, target, metadata);
+            }
+            if (messageTarget) {
+                List<Map<String, Object>> bindings = messageBindings(jdbc, target.rowId());
+                jdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                        + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?",
+                        target.rowId());
+                assertMessageAdvanceRejected(jdbc, accepted, runId, "COMPLETE");
+                restoreMessageBindings(jdbc, target.rowId(), bindings);
+            }
             advanceOne(accepted, runId, target.targetId(), "COMPLETE");
             assertThat(jdbc.queryForObject(
                     "SELECT CONCAT(target_state, ':', legacy_fallback_allowed) "
@@ -1156,6 +1220,263 @@ class Phase03MigrationIntegrationTest {
                         + "WHERE target_disposition <> 'PROTECTED_NO_INDEX' "
                         + "AND target_state = 'COMPLETE' AND legacy_fallback_allowed = FALSE",
                 Long.class)).isEqualTo(5L);
+    }
+
+    private static void assertMalformedMessageShapesBlockAdvance(
+            JdbcTemplate jdbc,
+            AcceptedCommand accepted,
+            EnvelopeCodec envelopeCodec,
+            String runId,
+            long rowId) {
+        Map<String, Object> current = jdbc.queryForMap(
+                "SELECT tenant_id,message_id,mobile_hash,mobile_encrypted "
+                        + "FROM message_tasks WHERE id = ?", rowId);
+        long tenantId = ((Number) current.get("tenant_id")).longValue();
+        String messageId = current.get("message_id").toString();
+        String locator = current.get("mobile_hash").toString();
+        byte[] envelope = (byte[]) current.get("mobile_encrypted");
+        List<Map<String, Object>> bindings = messageBindings(jdbc, rowId);
+
+        byte[] magicOnly = "YCSE".getBytes(StandardCharsets.US_ASCII);
+        installCurrentMessageEnvelopeShape(
+                jdbc, rowId, tenantId, messageId, locator, magicOnly);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+        restoreCurrentMessageShape(jdbc, rowId, locator, envelope, bindings);
+
+        byte[] wrongLengthEnvelope = encodedDatabaseEnvelope(envelopeCodec, 10);
+        installCurrentMessageEnvelopeShape(
+                jdbc, rowId, tenantId, messageId, locator, wrongLengthEnvelope);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+        restoreCurrentMessageShape(jdbc, rowId, locator, envelope, bindings);
+
+        jdbc.update("UPDATE message_tasks SET mobile_hash = ? WHERE id = ?",
+                "unknown-locator", rowId);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+        jdbc.update("UPDATE message_tasks SET mobile_hash = ? WHERE id = ?", locator, rowId);
+
+        jdbc.update("UPDATE message_tasks SET mobile_encrypted = ? WHERE id = ?",
+                "not-ycse".getBytes(StandardCharsets.US_ASCII), rowId);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+        jdbc.update("UPDATE message_tasks SET mobile_encrypted = ? WHERE id = ?", envelope, rowId);
+
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?", rowId);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+        restoreMessageBindings(jdbc, rowId, bindings);
+        Arrays.fill(magicOnly, (byte) 0);
+        Arrays.fill(wrongLengthEnvelope, (byte) 0);
+        Arrays.fill(envelope, (byte) 0);
+    }
+
+    private static void installCurrentMessageEnvelopeShape(
+            JdbcTemplate jdbc,
+            long rowId,
+            long tenantId,
+            String messageId,
+            String locator,
+            byte[] envelope) {
+        byte[] binding = MessageTaskRowBinding.originalRowDigest(
+                tenantId, rowId, messageId, locator, envelope);
+        try {
+            assertThat(jdbc.update(
+                    "UPDATE message_tasks SET mobile_hash = ?, mobile_encrypted = ? WHERE id = ?",
+                    locator, envelope, rowId)).isOne();
+            assertThat(jdbc.update("UPDATE ycs_crypto_blind_indexes "
+                    + "SET original_row_digest = ?, row_binding_digest = NULL "
+                    + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?",
+                    binding, rowId)).isPositive();
+        } finally {
+            Arrays.fill(binding, (byte) 0);
+        }
+    }
+
+    private static void restoreCurrentMessageShape(
+            JdbcTemplate jdbc,
+            long rowId,
+            String locator,
+            byte[] envelope,
+            List<Map<String, Object>> bindings) {
+        assertThat(jdbc.update(
+                "UPDATE message_tasks SET mobile_hash = ?, mobile_encrypted = ? WHERE id = ?",
+                locator, envelope, rowId)).isOne();
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?", rowId);
+        restoreMessageBindings(jdbc, rowId, bindings);
+    }
+
+    private static byte[] encodedDatabaseEnvelope(
+            EnvelopeCodec envelopeCodec, int plaintextBytes) {
+        byte[] wrapNonce = new byte[EnvelopeCodec.NONCE_BYTES];
+        byte[] wrappedDek = new byte[EnvelopeCodec.WRAPPED_DEK_BYTES];
+        byte[] dataNonce = new byte[EnvelopeCodec.NONCE_BYTES];
+        byte[] ciphertext = new byte[plaintextBytes + EnvelopeCodec.DATA_TAG_BYTES];
+        try {
+            return envelopeCodec.encode(new CipherEnvelope(
+                    "pkcs11", "field-kek.v1", wrapNonce, wrappedDek, dataNonce, ciphertext),
+                    EnvelopeCodec.Target.DATABASE_FIELD);
+        } finally {
+            Arrays.fill(wrapNonce, (byte) 0);
+            Arrays.fill(wrappedDek, (byte) 0);
+            Arrays.fill(dataNonce, (byte) 0);
+            Arrays.fill(ciphertext, (byte) 0);
+        }
+    }
+
+    private static void assertLegacyMessageShapesAtBackfillAndVerify(
+            JdbcTemplate jdbc,
+            AcceptedCommand accepted,
+            String runId,
+            IndexedFixture target) {
+        long rowId = target.rowId();
+        Map<String, Object> current = jdbc.queryForMap(
+                "SELECT mobile_hash,mobile_encrypted FROM message_tasks WHERE id = ?", rowId);
+        String locator = current.get("mobile_hash").toString();
+        byte[] envelope = (byte[]) current.get("mobile_encrypted");
+        List<Map<String, Object>> currentBindings = messageBindings(jdbc, rowId);
+
+        installLegacyMessageShape(
+                jdbc, rowId, "invalid".getBytes(StandardCharsets.US_ASCII),
+                target.rawDigest(), currentBindings);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+
+        installLegacyMessageShape(
+                jdbc, rowId, "11234567890".getBytes(StandardCharsets.US_ASCII),
+                target.rawDigest(), currentBindings);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "BACKFILLED");
+
+        installLegacyMessageShape(
+                jdbc, rowId, target.mobile().getBytes(StandardCharsets.US_ASCII),
+                target.rawDigest(), currentBindings);
+        advanceOne(accepted, runId, target.targetId(), "BACKFILLED");
+
+        installLegacyMessageShape(
+                jdbc, rowId, "11234567890".getBytes(StandardCharsets.US_ASCII),
+                target.rawDigest(), currentBindings);
+        assertMessageAdvanceRejected(jdbc, accepted, runId, "VERIFIED");
+        installLegacyMessageShape(
+                jdbc, rowId, target.mobile().getBytes(StandardCharsets.US_ASCII),
+                target.rawDigest(), currentBindings);
+        advanceOne(accepted, runId, target.targetId(), "VERIFIED");
+
+        jdbc.update("UPDATE message_tasks SET mobile_hash = ?, mobile_encrypted = ? WHERE id = ?",
+                locator, envelope, rowId);
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?", rowId);
+        restoreMessageBindings(jdbc, rowId, currentBindings);
+        Arrays.fill(envelope, (byte) 0);
+    }
+
+    private static void installLegacyMessageShape(
+            JdbcTemplate jdbc,
+            long rowId,
+            byte[] plaintext,
+            String hash,
+            List<Map<String, Object>> indexTemplate) {
+        jdbc.update("UPDATE message_tasks SET mobile_hash = ?, mobile_encrypted = ? WHERE id = ?",
+                hash, plaintext, rowId);
+        jdbc.update("DELETE FROM ycs_crypto_blind_indexes "
+                + "WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?", rowId);
+        byte[] legacyBinding = sha256Bytes(hash.getBytes(StandardCharsets.US_ASCII));
+        try {
+            for (Map<String, Object> index : indexTemplate) {
+                jdbc.update("""
+                        INSERT INTO ycs_crypto_blind_indexes
+                            (target_type,legacy_row_id,field_id,key_purpose,key_version,
+                             index_value,index_status,original_row_digest,row_binding_digest)
+                        VALUES ('MESSAGE_TASK',?,'mobile',?,?,?,?,?,NULL)
+                        """, rowId, index.get("key_purpose"), index.get("key_version"),
+                        index.get("index_value"), index.get("index_status"), legacyBinding);
+            }
+        } finally {
+            Arrays.fill(plaintext, (byte) 0);
+            Arrays.fill(legacyBinding, (byte) 0);
+        }
+    }
+
+    private static void assertMessageAdvanceRejected(
+            JdbcTemplate jdbc,
+            AcceptedCommand accepted,
+            String runId,
+            String nextState) {
+        StateCounts before = stateCounts(jdbc);
+        Phase03MigrationCommandFixture.CommandResult result =
+                Phase03MigrationCommandFixture.invoke(
+                        accepted.services(), Phase03MigrationCommandFixture.advanceArguments(
+                                runId, "message_tasks.mobile_hash", accepted.pairDigest(),
+                                "a".repeat(64), nextState));
+        assertThat(result.exit()).isEqualTo(26);
+        assertThat(result.stdout()).isEmpty();
+        assertThat(result.stderr()).isEqualTo("phase03-migration:error:key_or_provider\n");
+        assertThat(stateCounts(jdbc)).isEqualTo(before);
+    }
+
+    private static List<Map<String, Object>> messageBindings(JdbcTemplate jdbc, long rowId) {
+        return jdbc.queryForList("""
+                SELECT key_purpose,key_version,index_value,index_status,
+                       original_row_digest,row_binding_digest
+                  FROM ycs_crypto_blind_indexes
+                 WHERE target_type = 'MESSAGE_TASK' AND legacy_row_id = ?
+                 ORDER BY key_version
+                """, rowId);
+    }
+
+    private static void restoreMessageBindings(
+            JdbcTemplate jdbc, long rowId, List<Map<String, Object>> bindings) {
+        for (Map<String, Object> binding : bindings) {
+            jdbc.update("""
+                    INSERT INTO ycs_crypto_blind_indexes
+                        (target_type,legacy_row_id,field_id,key_purpose,key_version,
+                         index_value,index_status,original_row_digest,row_binding_digest)
+                    VALUES ('MESSAGE_TASK',?,'mobile',?,?,?,?,?,?)
+                    """, rowId, binding.get("key_purpose"), binding.get("key_version"),
+                    binding.get("index_value"), binding.get("index_status"),
+                    binding.get("original_row_digest"), binding.get("row_binding_digest"));
+        }
+    }
+
+    private static void assertProtectedMessage(
+            JdbcTemplate jdbc,
+            SunPkcs11KeyAdapter adapter,
+            EnvelopeCodec envelopeCodec,
+            IndexedFixture target,
+            Map<String, Object> metadata) {
+        Map<String, Object> row = jdbc.queryForMap(
+                "SELECT tenant_id,message_id,mobile_hash,mobile_encrypted "
+                        + "FROM message_tasks WHERE id = ?", target.rowId());
+        long tenantId = ((Number) row.get("tenant_id")).longValue();
+        String messageId = row.get("message_id").toString();
+        String locator = row.get("mobile_hash").toString();
+        byte[] envelope = (byte[]) row.get("mobile_encrypted");
+        assertThat(locator).matches("^p3c1_[A-Za-z0-9_-]{43}$");
+        assertThat(envelope).startsWith((byte) 'Y', (byte) 'C', (byte) 'S', (byte) 'E');
+
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(
+                envelopeCodec, adapter, new SecureRandom(), "field-kek.v1");
+        byte[] plaintext = codec.unprotect(envelope, new ProtectionContext(
+                        ProtectionContext.Purpose.DATABASE_FIELD,
+                        "crypto-storage-bootstrap", "message_tasks", "mobile_encrypted",
+                        target.tenantScope(), "message_id=" + messageId),
+                EnvelopeCodec.Target.DATABASE_FIELD);
+        try {
+            assertThat(new String(plaintext, StandardCharsets.US_ASCII))
+                    .isEqualTo(target.mobile());
+        } finally {
+            Arrays.fill(plaintext, (byte) 0);
+        }
+        byte[] expectedBinding = MessageTaskRowBinding.originalRowDigest(
+                tenantId, target.rowId(), messageId, locator, envelope);
+        try {
+            assertThat(metadata.get("original_digest"))
+                    .isEqualTo(HexFormat.of().formatHex(expectedBinding));
+        } finally {
+            Arrays.fill(expectedBinding, (byte) 0);
+            Arrays.fill(envelope, (byte) 0);
+        }
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM message_tasks
+                 WHERE mobile_hash REGEXP '^[0-9a-f]{64}$'
+                    OR LEFT(mobile_encrypted, 4) <> X'59435345'
+                """, Long.class)).isZero();
     }
 
     private static long legacyMatches(JdbcTemplate jdbc, IndexedFixture target) {

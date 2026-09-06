@@ -195,9 +195,10 @@ class CurrentProtectedReaderFenceTest {
                 .isEqualTo("ADOPTED_PROTECTED_ADAPTER_ATOMIC_ENVELOPE_AND_VERSIONED_INDEX_WRITE");
         assertThat(messageSubmit.path("obligation_blocking").asBoolean()).isFalse();
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java"))
-                .contains("messageTaskProtectionAdapter.prepare",
-                        ".mobileQueryIndexes(preparedMobile.queryIndexes())",
-                        ".legacyMobileLookupToken(preparedMobile.legacyLookupToken())",
+                .contains("messageTaskProtectionAdapter.prepareForRouting",
+                        ".mobileQueryIndexes(preparedRouting.queryIndexes())",
+                        ".legacyMobileLookupToken(preparedRouting.legacyLookupToken())",
+                        "messageTaskProtectionAdapter.protectForPersistence",
                         "messageTaskProtectionAdapter.save")
                 .doesNotContain("messageTaskRepository", "setMobileEncrypted", "setMobileHash");
         assertThat(readSource("core/src/main/java/com/ycsopen/sms/core/service/routing/RoutingContext.java"))

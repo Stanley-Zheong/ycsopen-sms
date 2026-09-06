@@ -26,6 +26,27 @@ class SnapshotEnvelopeInventoryTest {
     Path directory;
 
     @Test
+    void persistedSnapshotRotationThresholdCanBeReloadedAcrossRestart() {
+        JdbcTemplate jdbc = jdbc();
+        jdbc.update("INSERT INTO ycs_crypto_key_references "
+                        + "(purpose,key_version,provider_id,provider_key_reference,key_state,"
+                        + "wrap_operation_count,rotation_required,optimistic_version) "
+                        + "VALUES ('SNAPSHOT_RECOVERY',1,'pkcs11','snapshot-recovery.v1',"
+                        + "'ROTATION_REQUIRED',983040,TRUE,4)");
+
+        KeyReferenceRepository.KeyReference firstLoad = new KeyReferenceRepository.Jdbc(
+                jdbc, transaction(jdbc)).uniqueActive(
+                KeyReferenceRepository.Purpose.SNAPSHOT_RECOVERY).orElseThrow();
+        KeyReferenceRepository.KeyReference restartedLoad = new KeyReferenceRepository.Jdbc(
+                jdbc, transaction(jdbc)).uniqueActive(
+                KeyReferenceRepository.Purpose.SNAPSHOT_RECOVERY).orElseThrow();
+
+        assertThat(firstLoad.rotationRequired()).isTrue();
+        assertThat(firstLoad.wrapOperationCount()).isEqualTo(983_040L);
+        assertThat(restartedLoad).isEqualTo(firstLoad);
+    }
+
+    @Test
     void retainedCanonicalSnapshotBlocksRetirementUntilDeleted() throws Exception {
         JdbcTemplate jdbc = jdbc();
         insertKey(jdbc, 1, KeyState.DECRYPT_ONLY);

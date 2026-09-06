@@ -235,6 +235,24 @@ class SunPkcs11KeyAdapterTest {
     }
 
     @Test
+    void snapshotReservationAtRotationThresholdAllowsTheNextChunkAndSignalsRotation()
+            throws Exception {
+        Map<Pkcs11KeyDescriptor.Purpose, AtomicLong> counts = new EnumMap<>(
+                Pkcs11KeyDescriptor.Purpose.class);
+        AtomicLong snapshot = new AtomicLong(KekWrapUsageRepository.ROTATION_REQUIRED_AT);
+        counts.put(Pkcs11KeyDescriptor.Purpose.FIELD_ENCRYPTION_KEK, new AtomicLong());
+        counts.put(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, snapshot);
+        SunPkcs11KeyAdapter adapter = adapter(counts, new ArrayList<>(),
+                new TestCryptoOperations(new ArrayList<>()));
+
+        adapter.wrap(sequence(32, 9), snapshotHeader(32),
+                snapshotContext("snapshot-next-chunk"));
+
+        assertThat(snapshot).hasValue(KekWrapUsageRepository.ROTATION_REQUIRED_AT + 1);
+        assertThat(adapter.health().status()).isEqualTo(KeyHealth.Status.ROTATION_REQUIRED);
+    }
+
+    @Test
     void startupRejectsMoreThanOneActiveOrRotationSnapshotOwner() {
         List<Pkcs11KeyDescriptor> ambiguous = new ArrayList<>(descriptors());
         ambiguous.add(descriptor(Pkcs11KeyDescriptor.Purpose.SNAPSHOT_RECOVERY, 2,
