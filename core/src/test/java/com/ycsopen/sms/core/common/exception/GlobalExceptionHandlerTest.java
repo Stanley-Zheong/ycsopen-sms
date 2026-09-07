@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -67,6 +69,18 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.code").value(400));
     }
 
+    @Test
+    void explicitClientStatusRemainsBadRequestInsteadOfBecoming500() throws Exception {
+        var mvc = MockMvcBuilders.standaloneSetup(new FailureController())
+                .setControllerAdvice(new GlobalExceptionHandler(mock(SecurityEventLogger.class)))
+                .build();
+
+        mvc.perform(get("/phase6/bad-request"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.message").value("请求参数不合法"));
+    }
+
     @RestController
     static class FailureController {
         @GetMapping("/phase5/failure")
@@ -77,6 +91,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/phase5/forbidden")
         void forbidden() {
             throw new AccessDeniedException("must-not-become-500");
+        }
+
+        @GetMapping("/phase6/bad-request")
+        void badRequest() {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "internal detail");
         }
 
         @PostMapping("/phase5/validate")

@@ -13,6 +13,8 @@ import UserManagementPage from '@/pages/admin/identity/UserManagementPage';
 import RoleManagementPage from '@/pages/admin/identity/RoleManagementPage';
 import AccountOverviewPage from '@/pages/admin/identity/AccountOverviewPage';
 import LoginHistoryPage from '@/pages/admin/identity/LoginHistoryPage';
+import OperationAuditPage from '@/pages/admin/security/OperationAuditPage';
+import SecurityEventsPage from '@/pages/admin/security/SecurityEventsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
       { path: '/admin/system/users', element: <UserManagementPage /> },
       { path: '/admin/system/roles', element: <RoleManagementPage /> },
       { path: '/admin/system/login-history', element: <LoginHistoryPage /> },
+      { path: '/admin/system/logs', element: <OperationAuditPage /> },
+      { path: '/admin/system/security-events', element: <SecurityEventsPage /> },
       { path: '/admin/account-overview', element: <AccountOverviewPage /> },
     ],
   },

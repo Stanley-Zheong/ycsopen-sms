@@ -83,6 +83,7 @@ export interface LoginHistoryPage {
 export const IDENTITY_PERMISSIONS = {
   identityMenu: 'identity:menu',
   usersRead: 'identity:accounts:read',
+  accountsAll: 'identity:accounts:all',
   rolesRead: 'identity:roles:read',
   historyRead: 'identity:history:read',
   historyAll: 'identity:history:all',

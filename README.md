@@ -16,11 +16,9 @@
 如需用于任何第三方商业交付，必须先取得项目版权方的书面商业授权。完整条款见
 [`LICENSE.md`](LICENSE.md)。
 
-> **实现程度请先读这句话**：本仓库是一次"完整实现"尝试的**第一阶段成果**，不是全功能
-> 生产系统。核心的路由引擎（黑名单/内容审核/频控/通道选择）、预付费计费、机构注册/试用、
-> HTTP 发送 API、以及本次新增的"通道/机构月度投诉占比看板"是**真实实现并有测试覆盖**的
-> （见下方"验证状态"）；CMPP 协议、大部分详单查询、计费账务的后半段、告警引擎等模块
-> **仅有数据库表结构和骨架，业务逻辑未写**。完整的、诚实的进度清单见
+> **实现程度请先读这句话**：本仓库按 GSD Phase 持续实施，当前不是全功能生产系统。
+> 已完成项必须同时有代码、测试和 Phase 验证证据；未进入或未闭环的模块不能按数据库表或页面
+> 占位算完成。CMPP 协议、大部分详单查询、计费账务后半段、告警通知等仍在后续范围。完整边界见
 > [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md) 与 [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)。
 
 ## 需求依据
@@ -93,8 +91,12 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 [`使用手册的生产加密存储配置`](docs/使用手册.md#启用生产加密存储)准备 PKCS#11、五种用途密钥、
 数据库引用、加密快照目录和私有对象存储。
 
-`init-db.sh` 使用本机 MySQL root 免密或 socket 登录方式，创建 `ycsopen_sms` 数据库及
-`ycsopen/ycsopen` 开发账号。root 需要密码或 MySQL 位于其他主机时，请使用手册中的手工 SQL。
+`init-db.sh` 使用本机 MySQL root 免密或 socket 登录方式，创建 `ycsopen_sms` 数据库、
+`ycsopen/ycsopen` 应用账号和 `ycsopen_migrator/ycsopen_migrator` Flyway 账号。应用账号没有
+DDL 权限；Flyway 迁移后按表授予运行权限，审计表仅授予 `SELECT/INSERT`。root 需要密码或
+MySQL 位于其他主机时，请使用手册中的手工 SQL。
+MySQL 开启 binary log 时，执行 V1500 前必须由 DBA 启用 `log_bin_trust_function_creators`；
+脚本和 Flyway callback 会预检该条件，完整命令见使用手册。
 
 后端启动后验证：
 
@@ -109,6 +111,7 @@ Flyway 在首次以 `dev` profile 启动时会自动创建 Web 控制台管理�
 | 用途 | 用户名 | 密码 | 说明 |
 |---|---|---|---|
 | MySQL 应用账号 | `ycsopen` | `ycsopen` | 仅限本地开发，来自 `application-dev.yml` |
+| MySQL 迁移账号 | `ycsopen_migrator` | `ycsopen_migrator` | 仅限本地开发，只由 Flyway 使用 |
 | Web 控制台管理员 | `admin` | `Admin@123456` | 仅 `dev` profile 自动创建，角色为 `ADMIN` |
 
 以上默认密码严禁直接用于对外环境。非 `dev` profile 不会自动创建默认账号。
@@ -153,15 +156,16 @@ npm run build
 
 > 当前控制台 JWT 过滤器与开放 API HMAC 验签仍有明确未完成项。不要把当前代码直接暴露到生产网络。
 
-## 验证状态（截至 2026-08-29，本仓库首次提交）
+## 验证状态
 
 | 检查 | 结果 |
 |---|---|
-| `cd core && mvn compile` | ✅ 通过 |
-| `cd core && mvn test` | ✅ 18/18 测试通过 |
-| `cd web && npx tsc -b` | ✅ 通过 |
-| `cd web && npm run build` | ✅ 通过（生产构建产物 ~104KB gzip） |
-| `cd web && npx vitest run` | ✅ 4/4 测试通过 |
+| `mvn -f core/pom.xml test` | ✅ Phase 06 工作树完整套件通过，精确数量见 Phase 06 verification |
+| `npm --prefix web test -- --run` | ✅ 32/32 通过 |
+| `npm --prefix web run lint` | ✅ 通过 |
+| `npm --prefix web run build` | ✅ 通过 |
+| 本机 Google Chrome Phase 06 Playwright | ✅ 7/7 通过 |
+| Phase 05 + Phase 06 真实 MySQL | ✅ 独立迁移/运行账号、审计保护及登录事件链路通过 |
 
 以上是实际执行过的命令结果，不是"应该能跑"的推测。
 

@@ -33,7 +33,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 3: Cryptographic storage and migration bootstrap** — Envelope encryption and KMS/HSM adapter.
 - [x] **Phase 4: Platform system-message and notification bootstrap** — Controlled platform templates.
 - [x] **Phase 5: Console identity and platform RBAC** — Password hashing inside identity.
-- [ ] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
+- [x] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
 - [ ] **Phase 7: Platform system configuration** — Typed, versioned, auditable production settings.
 - [ ] **Phase 8: Tenant qualification and status** — All qualification fields/files.
 - [ ] **Phase 9: Tenant subaccounts and access credentials** — Tenant roles/subaccounts and isolation.

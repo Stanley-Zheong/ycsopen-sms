@@ -60,6 +60,18 @@ public class PlatformAccountPhoneStore {
     }
 
     public String masked(long userId) {
+        String phone = revealForPrivilegedAccess(userId);
+        if (phone == null) {
+            return null;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(7);
+    }
+
+    /**
+     * Narrow plaintext seam for the Phase 06 purpose/RBAC/audit service only.
+     * Callers must never serialize this value outside an explicit no-store reveal response.
+     */
+    String revealForPrivilegedAccess(long userId) {
         byte[] envelope = null;
         byte[] plaintext = null;
         try {
@@ -73,7 +85,7 @@ public class PlatformAccountPhoneStore {
             if (!phone.matches("1[3-9]\\d{9}")) {
                 throw unavailable();
             }
-            return phone.substring(0, 3) + "****" + phone.substring(7);
+            return phone;
         } catch (RuntimeException failure) {
             throw unavailable();
         } finally {

@@ -1,11 +1,13 @@
 package com.ycsopen.sms.core.verification;
 
+import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.common.security.JwtTokenProvider;
 import com.ycsopen.sms.core.domain.entity.User;
 import com.ycsopen.sms.core.repository.UserRepository;
 import com.ycsopen.sms.core.service.account.AuthService;
 import com.ycsopen.sms.core.service.account.IdentitySessionService;
 import com.ycsopen.sms.core.service.account.LoginAnomalyService;
+import com.ycsopen.sms.core.service.audit.SecurityEventService;
 import com.ycsopen.sms.core.web.dto.LoginRequest;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
@@ -34,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,6 +77,7 @@ class Phase05IdentityMySqlIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        jdbc.update("DELETE FROM security_events");
         jdbc.update("DELETE FROM identity_notification_outbox");
         jdbc.update("DELETE FROM login_history");
         jdbc.update("DELETE FROM user_sessions");
@@ -115,6 +119,11 @@ class Phase05IdentityMySqlIntegrationTest {
                 WHERE target_user_id = ? AND event_type = 'UNUSUAL_LOGIN'
                   AND source_ref = 'phase05-session' AND status = 'PENDING'
                 """, Integer.class, user.getId())).isOne();
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM security_events
+                WHERE actor_user_id = ? AND event_type = 'UNUSUAL_LOGIN'
+                  AND result_code = 'DETECTED'
+                """, Integer.class, user.getId())).isOne();
         assertThat(sessions.isActive("phase05-session", user.getId())).isTrue();
         sessions.revoke("phase05-session", user.getId());
         assertThat(sessions.isActive("phase05-session", user.getId())).isFalse();
@@ -122,8 +131,40 @@ class Phase05IdentityMySqlIntegrationTest {
                 SELECT COUNT(*) FROM user_sessions
                 WHERE id = 'phase05-session' AND user_id = ? AND revoked_at IS NOT NULL
                 """, Integer.class, user.getId())).isOne();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1402");
+        assertThat(Integer.parseInt(flyway.info().current().getVersion().getVersion()))
+                .isGreaterThanOrEqualTo(1402);
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    void fifthRejectedLoginCommitsLockHistoryAndOneSecurityEvent() {
+        User user = new User();
+        user.setUsername("locked-after-five");
+        user.setPasswordHash(passwords.encode("Correct123"));
+        user.setUserType(User.UserType.ADMIN);
+        user.setStatus(User.UserStatus.ACTIVE);
+        user.setFailedLoginCount(0);
+        user = users.saveAndFlush(user);
+
+        for (int attempt = 0; attempt < 5; attempt++) {
+            assertThatThrownBy(() -> auth.login(
+                    new LoginRequest("locked-after-five", "Wrong123"),
+                    "198.51.100.25", "Chrome/152"))
+                    .isInstanceOf(BusinessException.class);
+        }
+
+        User persisted = users.findById(user.getId()).orElseThrow();
+        assertThat(persisted.getStatus()).isEqualTo(User.UserStatus.LOCKED);
+        assertThat(persisted.getFailedLoginCount()).isEqualTo(5);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM login_history
+                WHERE user_id = ? AND outcome = 'INVALID_CREDENTIALS'
+                """, Integer.class, user.getId())).isEqualTo(5);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM security_events
+                WHERE actor_user_id = ? AND event_type = 'REPEATED_LOGIN_FAILURE'
+                  AND result_code = 'DETECTED'
+                """, Integer.class, user.getId())).isOne();
     }
 
     @SpringBootConfiguration
@@ -131,6 +172,7 @@ class Phase05IdentityMySqlIntegrationTest {
     @EnableJpaRepositories(basePackageClasses = UserRepository.class)
     @EntityScan(basePackageClasses = User.class)
     @Import({AuthService.class, IdentitySessionService.class, LoginAnomalyService.class,
+            SecurityEventService.class,
             Dependencies.class})
     static class IdentityVerificationApplication { }
 

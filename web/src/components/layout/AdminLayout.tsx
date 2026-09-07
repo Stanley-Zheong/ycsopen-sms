@@ -4,6 +4,7 @@ import type { PlatformUserType } from '@/api/identity';
 import { logout as revokeSession } from '@/api/auth';
 import { IDENTITY_PERMISSIONS } from '@/api/identity';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
+import { AUDIT_PERMISSIONS } from '@/api/audit';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
 const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; roles?: PlatformUserType[] }> = [
@@ -22,6 +23,8 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/system/users', label: '系统账号', permissions: [IDENTITY_PERMISSIONS.identityMenu, IDENTITY_PERMISSIONS.usersRead] },
   { to: '/admin/system/roles', label: '系统角色', permissions: [IDENTITY_PERMISSIONS.identityMenu, IDENTITY_PERMISSIONS.rolesRead] },
   { to: '/admin/system/login-history', label: '登录历史', permissions: [IDENTITY_PERMISSIONS.identityMenu, IDENTITY_PERMISSIONS.historyRead] },
+  { to: '/admin/system/logs', label: '操作日志', permissions: [AUDIT_PERMISSIONS.operationsRead] },
+  { to: '/admin/system/security-events', label: '安全事件', permissions: [AUDIT_PERMISSIONS.securityEventsRead] },
   { to: '/admin/account-overview', label: '账号概览' },
 ];
 

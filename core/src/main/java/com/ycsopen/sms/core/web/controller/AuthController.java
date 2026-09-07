@@ -1,5 +1,6 @@
 package com.ycsopen.sms.core.web.controller;
 
+import com.ycsopen.sms.core.common.web.TrustedProxyClientIpResolver;
 import com.ycsopen.sms.core.service.account.AuthService;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import com.ycsopen.sms.core.web.dto.LoginRequest;
@@ -17,16 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final TrustedProxyClientIpResolver clientIps;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, TrustedProxyClientIpResolver clientIps) {
         this.authService = authService;
+        this.clientIps = clientIps;
     }
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         return ApiResponse.ok(authService.login(
                 request,
-                httpRequest.getRemoteAddr(),
+                clientIps.resolve(httpRequest),
                 httpRequest.getHeader("User-Agent")));
     }
 }

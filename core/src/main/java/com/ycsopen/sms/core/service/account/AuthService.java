@@ -9,6 +9,7 @@ import com.ycsopen.sms.core.web.dto.LoginResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.MDC;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -79,7 +80,12 @@ public class AuthService {
                 user.setStatus(User.UserStatus.LOCKED);
             }
             userRepository.save(user);
-            sessions.record(user.getId(), user.getUsername(), clientIp, "INVALID_CREDENTIALS", userAgent);
+            long historyId = sessions.recordWithId(
+                    user.getId(), user.getUsername(), clientIp, "INVALID_CREDENTIALS", userAgent);
+            if (failures == MAX_FAILED_ATTEMPTS) {
+                anomalies.repeatedFailure(user.getId(), user.getTenantId(), historyId,
+                        clientIp, MDC.get("traceId"));
+            }
             throw new BusinessException("INVALID_CREDENTIALS", "用户名或密码错误");
         }
 
@@ -93,7 +99,8 @@ public class AuthService {
                 user.getId(), user.getUserType().name(), user.getTenantId());
         sessions.open(user, token, clientIp, userAgent, unusual);
         if (unusual) {
-            anomalies.enqueue(user.getId(), token.sessionId());
+            anomalies.enqueue(user.getId(), user.getTenantId(), token.sessionId(),
+                    clientIp, MDC.get("traceId"));
         }
         return new LoginResponse(token.token(), user.getUserType().name(), user.getTenantId());
     }

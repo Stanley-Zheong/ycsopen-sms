@@ -74,3 +74,30 @@ tr.over-threshold td:first-child { font-weight: 600; }
   box-shadow: 0 8px 24px var(--color-shadow);
 }
 .internal-error-notice button { color: var(--color-danger); background: transparent; border-color: transparent; }
+
+.page-description { margin-top: -8px; color: var(--color-muted); }
+.audit-filter-grid { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 16px; align-items: end; }
+.audit-filter-actions { display: flex; gap: 8px; }
+.button-secondary { color: var(--color-brand-deep); background: var(--color-surface); border-color: var(--color-brand); }
+.button-secondary:hover { color: #fff; }
+.pagination-row { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
+.status-text { font-weight: 600; }
+.status-success, .status-detected { color: var(--color-success); }
+.status-failure, .status-client-failure, .status-server-failure, .status-denied, .status-blocked { color: var(--color-danger); }
+.audit-detail-list { display: grid; gap: 12px; margin: 0 0 24px; }
+.audit-detail-list div { display: grid; grid-template-columns: 112px 1fr; gap: 16px; }
+.audit-detail-list dt { color: var(--color-muted); }
+.audit-detail-list dd { margin: 0; overflow-wrap: anywhere; }
+
+[role="dialog"].card:has([data-testid="admin-privileged-data-system-logs-detail-drawer"]) {
+  inset: 0 0 0 auto;
+  width: min(560px, calc(100vw - 48px));
+  max-height: 100vh;
+  border-radius: 0;
+  transform: none;
+}
+
+.sensitive-value-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.sensitive-value-cell button { min-height: 32px; padding: 4px 8px; }
+.sensitive-value-warning { padding: 12px; color: var(--color-warning); background: var(--color-warning-bg); border-radius: var(--radius-control); }
+.sensitive-value-result { padding: 16px; color: var(--color-text); background: var(--color-success-bg); border-radius: var(--radius-control); font-size: 18px; font-weight: 600; letter-spacing: .08em; }

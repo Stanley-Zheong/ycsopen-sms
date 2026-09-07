@@ -19,19 +19,19 @@ completion_metric: scoped_todo_empty
 
 ## Current position
 
-**Current phase**: Phase 6 — Privileged data access, operation audit, and security detection (phase bootstrap)
-**Current plan**: Not yet created. Phase 6 planning starts from its authoritative owned obligations after the Phase 5 atomic commit.
-**Execution authorization**: Not yet granted. Phase 6 requires its concise artifacts, independent entry review, and successful entry command before implementation.
+**Current phase**: Phase 7 — Platform system configuration (phase bootstrap)
+**Current plan**: Not yet created. Phase 7 planning starts from its authoritative owned obligations after the Phase 6 atomic commit.
+**Execution authorization**: Not yet granted. Phase 7 requires its concise artifacts, independent entry review, and successful entry command before implementation.
 **Sole completion metric**: The verified scoped TODO query. The project TODO set is not empty.
 
 The verified scoped TODO query is the sole completion metric.
 
 ## Next executable transition
 
-1. Commit and push the verified Phase 5 identity/RBAC slice.
-2. Bootstrap the focused Phase 6 artifact set from the authoritative obligation query.
-3. Run independent Phase 6 entry review and the declared entry validator.
-4. Execute only the Phase 6 privileged-data/audit/security-detection TODO set until it is empty.
+1. Commit and push the verified Phase 6 audit/security slice.
+2. Bootstrap the focused Phase 7 artifact set from the authoritative obligation query.
+3. Run independent Phase 7 entry review and the declared entry validator.
+4. Execute only the Phase 7 platform-configuration TODO set until it is empty.
 
 ## Accumulated decisions
 
@@ -55,23 +55,23 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Known implementation reality
 
-- Phases 1-5 have committed or commit-ready implementation, verification, review, and empty scoped TODO records.
+- Phases 1-6 have committed or commit-ready implementation, verification, review, and empty scoped TODO records.
 - Phase 5 supplies live database-revalidated JWT/RBAC, protected platform-account data, role migration, session/history/outbox persistence, and the first production identity console surfaces.
-- Phase 5 verification is current: Maven 457 tests with zero failures/errors and 18 environment-gated skips; its MySQL integration separately passes 1/1; frontend 27/27, lint/build, and installed-Chrome 19/19 pass.
+- Phase 6 verification is current: Maven 483 tests with zero failures/errors and 20 environment-gated skips; Phase 05/06 MySQL passes 3/3; frontend 32/32, lint/build, and installed-Chrome 7/7 pass.
 - Phase 3 remains the shared protected-storage foundation; Phase 4 remains the shared platform-notification bootstrap.
-- Phase 6 and later focused business/protocol/assurance slices are not complete merely because older scaffold classes or routes exist.
+- Phase 7 and later focused business/protocol/assurance slices are not complete merely because older scaffold classes or routes exist.
 - Browser acceptance targets only the installed Google Chrome. No multi-browser support is planned.
 
 ## Authoritative TODO status
 
-- Phase 1-5 scoped TODO queries are empty.
-- Phase 6 has no artifact directory yet; its first work item is artifact bootstrap from the authoritative obligation query.
-- Future product-owner decisions already named in the roadmap remain attached to their owning phases and do not expand Phase 6.
+- Phase 1-6 scoped TODO queries are empty.
+- Phase 7 has no artifact directory yet; its first work item is artifact bootstrap from the authoritative obligation query.
+- Future product-owner decisions already named in the roadmap remain attached to their owning phases and do not expand Phase 7.
 
 ## Blockers
 
-- No external blocker prevents Phase 6 planning.
-- Phase 6 implementation remains unauthorized until its concise artifact set, independent entry review, and entry validator pass.
+- No external blocker prevents Phase 7 planning.
+- Phase 7 implementation remains unauthorized until its concise artifact set, independent entry review, and entry validator pass.
 
 ## Coverage state
 
@@ -84,6 +84,6 @@ The verified scoped TODO query is the sole completion metric.
 
 ## Session continuity
 
-**Resume from**: Finish the Phase 5 atomic commit/push, then bootstrap and enter Phase 6.
+**Resume from**: Finish the Phase 6 atomic commit/push, then bootstrap and enter Phase 7.
 **Do not infer**: A passing build, existing class/schema/route, placeholder, checked deliverable, or review-count limit is not completion.
 **When updating state**: Replace explicit TODOs with executable evidence only. Never add schedule or percentage status, and do not add release-tag or attestation ceremony as a phase gate.

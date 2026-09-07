@@ -22,6 +22,10 @@ server:
   port: 8080
 
 ycsopen:
+  database:
+    runtime-grants:
+      enabled: false
+      host: ${DB_USER_HOST:%}
   object-store:
     enabled: ${YCSOPEN_OBJECT_STORE_ENABLED:false}
     bucket: ${YCSOPEN_OBJECT_STORE_BUCKET:}

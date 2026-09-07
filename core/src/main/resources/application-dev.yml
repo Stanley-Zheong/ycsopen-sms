@@ -6,6 +6,12 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
     locations: classpath:db/migration,classpath:db/devmigration
+    user: ${DB_MIGRATION_USERNAME:ycsopen_migrator}
+    password: ${DB_MIGRATION_PASSWORD:ycsopen_migrator}
+ycsopen:
+  database:
+    runtime-grants:
+      enabled: true
 logging:
   level:
     com.ycsopen.sms.core: DEBUG

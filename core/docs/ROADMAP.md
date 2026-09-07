@@ -23,9 +23,13 @@
 | 投诉占比统计 + 仪表盘接口 | **F-11.9（本次新增需求）** | `service/complaint/ComplaintRatioService.java` + `web/controller/DashboardController.java` | `ComplaintRatioServiceTest`（3 个场景，全绿） |
 | 通道暂停/恢复 | F-4.7 | `web/controller/ChannelController.java` | 无单测（TODO） |
 | 控制台登录 | F-1.4（bcrypt，非 MD5） | `service/account/AuthService.java` | 无单测（TODO） |
+| 控制台身份、会话和平台 RBAC | F-1.1~F-1.4 | `service/account/*`、`web/controller/Platform*Controller.java` | Phase 05 单元、授权与真实 MySQL 测试 |
+| 操作审计、敏感查看与安全事件 | F-14.1/F-14.2、6.2.1 | `service/audit/*`、`service/account/PrivilegedDataService.java`、`web/controller/*Audit*` | Phase 06 单元、权限、真实 MySQL 与 Chrome 测试 |
 
-全部以上代码在 2026-08-29 于 Java 21 + Maven 3.9 环境下 `mvn compile` 与 `mvn test`
-均通过（18/18 测试通过），不是未经验证的草稿。
+2026-08-29 的初始基线在 Java 21 + Maven 3.9 下通过 18/18 测试。加入 Phase 05/06 后的当前证据为：
+`mvn -f core/pom.xml test` 通过 483 项测试（0 failure、0 error、20 项环境条件跳过），且
+`Phase05IdentityMySqlIntegrationTest,Phase06AuditMySqlIntegrationTest` 在真实 MySQL 8.4 上 3/3 通过。
+各阶段的完整命令和边界以对应 `.planning/phases/*/*-VERIFICATION.md` 为准。
 
 ## 已知简化（能跑，但不是生产完整实现）
 
@@ -62,7 +66,7 @@
 - F-11.1~F-11.8、F-11.10 除投诉占比外的其余统计与仪表盘配置
 - F-12 告警规则引擎与多渠道通知
 - F-13 短链生成/审核、状态码管理、号段管理、发送任务管理
-- F-14 操作日志的实际埋点（表已建，AOP 切面未写）
+- F-14 后续告警通知/处置编排（操作日志、安全事件检测与查询已由 Phase 06 实现）
 - 第 12 章：签约管理（F-2.9）、终止管理（F-2.10）——`Tenant` 实体已建好相应字段，Service 方法未写
 
 ## 建议的下一步顺序

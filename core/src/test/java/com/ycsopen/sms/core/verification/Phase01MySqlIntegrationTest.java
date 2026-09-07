@@ -181,7 +181,8 @@ final class Phase01ServiceHarness {
                             "PHASE01_MYSQL_PASSWORD", password,
                             "PHASE01_MYSQL_ROOT_PASSWORD", rootPassword
                     ), COMMAND_TIMEOUT_MILLIS, OUTPUT_LIMIT_BYTES);
-            Phase01ServiceSession session = Phase01ServiceSession.mysql(runId, identity, username, password);
+            Phase01ServiceSession session = Phase01ServiceSession.mysql(
+                    runId, identity, username, password, rootPassword);
             handedOff = true;
             return session;
         } finally {
@@ -633,6 +634,7 @@ final class Phase01ServiceSession implements AutoCloseable {
     private final String runId;
     private final String host;
     private final int port;
+    private final String containerName;
     private final String imageDigest;
     private final String platformImageDigest;
     private final String containerImageDigest;
@@ -641,16 +643,19 @@ final class Phase01ServiceSession implements AutoCloseable {
     private final String migrationSha256;
     private final String username;
     private final String password;
+    private final String rootPassword;
     private final Runnable cleanup;
     private final Thread shutdownHook;
     private boolean closed;
 
     private Phase01ServiceSession(String service, String runId, JsonNode identity,
-                                  String username, String password, Runnable cleanup) {
+                                  String username, String password, String rootPassword,
+                                  Runnable cleanup) {
         this.service = service;
         this.runId = runId;
         this.host = identity.path("host").asText();
         this.port = identity.path("port").asInt();
+        this.containerName = identity.path("container_name").asText();
         this.imageDigest = identity.path("image_digest").asText();
         this.platformImageDigest = identity.path("platform_image_digest").asText();
         this.containerImageDigest = identity.path("container_image_digest").asText();
@@ -659,6 +664,7 @@ final class Phase01ServiceSession implements AutoCloseable {
         this.migrationSha256 = identity.path("migration_sha256").asText();
         this.username = username;
         this.password = password;
+        this.rootPassword = rootPassword;
         this.cleanup = cleanup;
         assertThat(identity.path("status").asText()).isEqualTo("READY");
         assertThat(identity.path("run_id").asText()).isEqualTo(runId);
@@ -673,18 +679,20 @@ final class Phase01ServiceSession implements AutoCloseable {
         Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
-    static Phase01ServiceSession mysql(String runId, JsonNode identity, String username, String password) {
-        return new Phase01ServiceSession("mysql", runId, identity, username, password,
+    static Phase01ServiceSession mysql(String runId, JsonNode identity, String username,
+                                       String password, String rootPassword) {
+        return new Phase01ServiceSession("mysql", runId, identity, username, password, rootPassword,
                 () -> Phase01ServiceHarness.stop("mysql", runId));
     }
 
     static Phase01ServiceSession redis(String runId, JsonNode identity) {
-        return new Phase01ServiceSession("redis", runId, identity, null, null,
+        return new Phase01ServiceSession("redis", runId, identity, null, null, null,
                 () -> Phase01ServiceHarness.stop("redis", runId));
     }
 
     static Phase01ServiceSession forTest(JsonNode identity, Runnable cleanup) {
-        return new Phase01ServiceSession("mysql", "mysql-session01", identity, null, null, cleanup);
+        return new Phase01ServiceSession("mysql", "mysql-session01", identity,
+                null, null, null, cleanup);
     }
 
     String jdbcUrl() {
@@ -701,12 +709,20 @@ final class Phase01ServiceSession implements AutoCloseable {
         return password;
     }
 
+    String rootPassword() {
+        return rootPassword;
+    }
+
     String host() {
         return host;
     }
 
     int port() {
         return port;
+    }
+
+    String containerName() {
+        return containerName;
     }
 
     String imageDigest() {

@@ -1,4 +1,5 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   changePlatformAccountState,
@@ -15,6 +16,11 @@ import { useIdentityAccess } from './useIdentityAccess';
 import { protectedQueryKey } from '@/store/authStore';
 import ModalDialog from '@/components/common/ModalDialog';
 import { mutationErrorMessage } from '@/api/client';
+import {
+  AUDIT_PERMISSIONS,
+  revealPlatformAccountPhone,
+  type RevealPurpose,
+} from '@/api/audit';
 
 interface AccountFormState {
   username: string;
@@ -89,6 +95,27 @@ export default function UserManagementPage() {
   const [form, setForm] = useState<AccountFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [pendingDisable, setPendingDisable] = useState<PlatformAccount | null>(null);
+  const [revealAccount, setRevealAccount] = useState<PlatformAccount | null>(null);
+  const [revealPurpose, setRevealPurpose] = useState<RevealPurpose | ''>('');
+  const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
+  const [revealExpiresAt, setRevealExpiresAt] = useState<number | null>(null);
+  const [revealPending, setRevealPending] = useState(false);
+  const [revealError, setRevealError] = useState<string | null>(null);
+  const revealRequestSequence = useRef(0);
+  const canRevealPhone = access.can(AUDIT_PERMISSIONS.reveal)
+    && access.can(AUDIT_PERMISSIONS.revealApi)
+    && access.can(IDENTITY_PERMISSIONS.accountsAll);
+
+  useEffect(() => {
+    if (!revealExpiresAt) return undefined;
+    const remaining = Math.max(0, revealExpiresAt - Date.now());
+    const timer = window.setTimeout(() => {
+      setRevealedPhone(null);
+      setRevealExpiresAt(null);
+      setRevealError('本次查看已过期，请关闭后重新查看');
+    }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [revealExpiresAt]);
 
   const saveAccount = useMutation({
     mutationFn: ({ userId, request }: { userId: number | null; request: SavePlatformAccountRequest }) => (
@@ -184,6 +211,53 @@ export default function UserManagementPage() {
     setForm(EMPTY_FORM);
   }
 
+  function openRevealDialog(account: PlatformAccount) {
+    revealRequestSequence.current += 1;
+    setRevealAccount(account);
+    setRevealPurpose('');
+    setRevealedPhone(null);
+    setRevealExpiresAt(null);
+    setRevealPending(false);
+    setRevealError(null);
+  }
+
+  function closeRevealDialog() {
+    revealRequestSequence.current += 1;
+    setRevealAccount(null);
+    setRevealPurpose('');
+    setRevealedPhone(null);
+    setRevealExpiresAt(null);
+    setRevealPending(false);
+    setRevealError(null);
+  }
+
+  async function confirmReveal() {
+    if (!revealAccount || !revealPurpose || revealPending) return;
+    const requestSequence = ++revealRequestSequence.current;
+    setRevealedPhone(null);
+    setRevealExpiresAt(null);
+    setRevealError(null);
+    setRevealPending(true);
+    try {
+      const result = await revealPlatformAccountPhone(revealAccount.id, revealPurpose);
+      if (requestSequence !== revealRequestSequence.current) return;
+      const expiresAt = Date.parse(result.expiresAt);
+      if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+        setRevealError('完整手机号查看已过期，请重新申请');
+        return;
+      }
+      setRevealedPhone(result.value);
+      setRevealExpiresAt(expiresAt);
+    } catch (error) {
+      if (requestSequence !== revealRequestSequence.current) return;
+      setRevealError(axios.isAxiosError(error) && error.response?.status === 403
+        ? '无权查看完整手机号'
+        : '完整手机号加载失败，请稍后重试');
+    } finally {
+      if (requestSequence === revealRequestSequence.current) setRevealPending(false);
+    }
+  }
+
   if (access.isLoading || (canViewAccounts && accounts.isLoading) || (shouldLoadRoles && roles.isLoading)) return <div className="card">加载账号…</div>;
   if (access.isError) return <div className="card" role="alert">权限范围加载失败，请稍后重试</div>;
   if (!canViewAccounts) return <div className="card" role="alert">无权查看平台账号</div>;
@@ -216,7 +290,27 @@ export default function UserManagementPage() {
           <tbody>
             {accountRows.map((account, index) => (
               <tr key={account.id} data-row-key={account.id}>
-                <td>{account.username}</td><td>{account.realName ?? '—'}</td><td>{account.maskedPhone ?? '—'}</td>
+                <td>{account.username}</td><td>{account.realName ?? '—'}</td>
+                <td><span className="sensitive-value-cell">
+                  {index === 0
+                    ? <span data-testid="shared-privileged-data-sensitive-value">{account.maskedPhone ?? '—'}</span>
+                    : <span data-testid={`shared-privileged-data-sensitive-value-${account.id}`}>{account.maskedPhone ?? '—'}</span>}
+                  {canRevealPhone && account.maskedPhone && (index === 0 ? (
+                    <button
+                      data-testid="shared-privileged-data-sensitive-value-reveal"
+                      type="button"
+                      aria-label={`查看${account.username}完整手机号`}
+                      onClick={() => openRevealDialog(account)}
+                    >查看完整手机号</button>
+                  ) : (
+                    <button
+                      data-testid={`shared-privileged-data-sensitive-value-reveal-${account.id}`}
+                      type="button"
+                      aria-label={`查看${account.username}完整手机号`}
+                      onClick={() => openRevealDialog(account)}
+                    >查看完整手机号</button>
+                  ))}
+                </span></td>
                 <td>{account.userType}</td>
                 <td>{account.roleIds.map((roleId) => roleNames.get(roleId) ?? `角色 #${roleId}`).join('、') || '未分配'}</td>
                 <td>{STATUS_LABELS[account.status]}</td><td>{account.validUntil ?? '长期有效'}</td>
@@ -299,6 +393,44 @@ export default function UserManagementPage() {
             setPendingDisable(null);
           }}>确认禁用</button>{' '}
           <button type="button" onClick={() => setPendingDisable(null)}>保留启用状态</button>
+        </ModalDialog>
+      )}
+      {revealAccount && (
+        <ModalDialog labelledBy="privileged-data-reveal-title" onRequestClose={closeRevealDialog}>
+          <div data-testid="shared-privileged-data-sensitive-value-dialog">
+            <h2 data-testid="shared-privileged-data-sensitive-value-title" id="privileged-data-reveal-title">查看完整手机号</h2>
+            <p data-testid="shared-privileged-data-sensitive-value-account">账号：{revealAccount.username}</p>
+            <p data-testid="shared-privileged-data-sensitive-value-warning" className="sensitive-value-warning">完整手机号属于敏感信息。本次查看会记录操作人、用途和问题编号。</p>
+            <label>查看用途
+              <select
+                data-testid="shared-privileged-data-sensitive-value-purpose"
+                value={revealPurpose}
+                disabled={revealPending || Boolean(revealedPhone)}
+                onChange={(event) => setRevealPurpose(event.target.value as RevealPurpose | '')}
+              >
+                <option value="">请选择用途</option>
+                <option value="CUSTOMER_SUPPORT">客户支持</option>
+                <option value="SECURITY_INVESTIGATION">安全调查</option>
+                <option value="COMPLIANCE_REVIEW">合规审查</option>
+              </select>
+            </label>
+            {revealedPhone && (
+              <div data-testid="shared-privileged-data-sensitive-value-result" className="sensitive-value-result" aria-live="polite">
+                {revealedPhone}
+                <div style={{ marginTop: 4, fontSize: 13, fontWeight: 400, letterSpacing: 0 }}>仅本次查看，关闭后清除</div>
+              </div>
+            )}
+            {revealError && <p data-testid="shared-privileged-data-sensitive-value-error" role="alert">{revealError}</p>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button
+                data-testid="shared-privileged-data-sensitive-value-confirm"
+                type="button"
+                disabled={!revealPurpose || revealPending || Boolean(revealedPhone)}
+                onClick={confirmReveal}
+              >{revealPending ? '查看中…' : '确认查看'}</button>
+              <button data-testid="shared-privileged-data-sensitive-value-close" type="button" className="button-secondary" onClick={closeRevealDialog}>关闭并清除</button>
+            </div>
+          </div>
         </ModalDialog>
       )}
       {transitionAccount.isError && <div className="card" role="alert">

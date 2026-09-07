@@ -3,9 +3,12 @@ package com.ycsopen.sms.core.service.account;
 import com.ycsopen.sms.core.common.security.JwtTokenProvider;
 import com.ycsopen.sms.core.domain.entity.User;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.sql.PreparedStatement;
 
 /** Durable session and login-history boundary used by authentication and logout. */
 @Service
@@ -54,6 +57,28 @@ public class IdentitySessionService {
                 INSERT INTO login_history(user_id, username, login_ip, user_agent, outcome, occurred_at)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                 """, userId, username, clientIp, normalizeUserAgent(userAgent), outcome);
+    }
+
+    /** Inserts a detection source row and returns its stable database identity. */
+    public long recordWithId(Long userId, String username, String clientIp,
+                             String outcome, String userAgent) {
+        KeyHolder keys = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement statement = connection.prepareStatement("""
+                    INSERT INTO login_history(user_id, username, login_ip, user_agent, outcome, occurred_at)
+                    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    """, new String[] {"id"});
+            if (userId == null) statement.setNull(1, java.sql.Types.BIGINT);
+            else statement.setLong(1, userId);
+            statement.setString(2, username);
+            statement.setString(3, clientIp);
+            statement.setString(4, normalizeUserAgent(userAgent));
+            statement.setString(5, outcome);
+            return statement;
+        }, keys);
+        Number id = keys.getKey();
+        if (id == null) throw new IllegalStateException("login history key was not returned");
+        return id.longValue();
     }
 
     private static String normalizeUserAgent(String userAgent) {
