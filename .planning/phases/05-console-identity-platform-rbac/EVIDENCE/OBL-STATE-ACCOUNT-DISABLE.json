@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-STATE-ACCOUNT-DISABLE","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"AccountStateServiceTest; actor history and active-session revocation"},"browser":{"case":"C-P5-DISABLE","report":"playwright-report.raw.json","result":"PASS"}}

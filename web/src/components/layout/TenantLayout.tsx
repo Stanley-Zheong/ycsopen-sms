@@ -1,5 +1,6 @@
-import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { NavLink, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useAuthStore, isPlatformRole } from '@/store/authStore';
+import { logout as revokeSession } from '@/api/auth';
 
 const NAV_ITEMS: Array<{ to: string; label: string }> = [
   { to: '/tenant/overview', label: '概览 / 账户总览' },
@@ -15,6 +16,8 @@ const NAV_ITEMS: Array<{ to: string; label: string }> = [
 /** 机构端整体布局，导航结构与 ycsansms.md 8.2 节一一对应。 */
 export default function TenantLayout() {
   const userType = useAuthStore((s) => s.userType);
+  const clearSession = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   if (isPlatformRole(userType) || !userType) {
     return <Navigate to="/login" replace />;
   }
@@ -27,6 +30,9 @@ export default function TenantLayout() {
             {item.label}
           </NavLink>
         ))}
+        <button data-testid="shared-console-identity-profile-logout" type="button" onClick={async () => {
+          try { await revokeSession(); } finally { clearSession(); navigate('/login'); }
+        }}>退出登录</button>
       </nav>
       <main className="content">
         <Outlet />

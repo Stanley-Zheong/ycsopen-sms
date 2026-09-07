@@ -1,0 +1,27 @@
+{
+  "command": "PLAYWRIGHT_JSON_OUTPUT_NAME=../.planning/phases/05-console-identity-platform-rbac/EVIDENCE/playwright-report.raw.json npm --prefix web run test:e2e -- identity.spec.ts --reporter=json --workers=1",
+  "commit": "e94f35f0b7ba2d0fcdb7f8f7ddde17419f6def2e",
+  "config": "web/playwright.config.ts; installed Google Chrome 152.0.7977.76; desktop viewport 1440x900; one worker",
+  "result": "PASS",
+  "cases": [
+    "C-P5-ACCOUNT-CREATE",
+    "C-P5-ACCOUNT-DISABLE-REGION",
+    "C-P5-INTERNAL-ERROR",
+    "C-P5-LOCK",
+    "C-P5-LOGIN",
+    "C-P5-LOGIN-HISTORY",
+    "C-P5-LOGOUT",
+    "C-P5-OVERVIEW",
+    "C-P5-PASSWORD",
+    "C-P5-PERMISSION-LIVE",
+    "C-P5-PERMISSION-TREE",
+    "C-P5-PHONE",
+    "C-P5-ROLE-MIGRATE",
+    "C-P5-TYPE",
+    "C-P5-UNLOCK",
+    "C-P5-USERNAME",
+    "C-P5-VALIDITY",
+    "C-P5-DISABLE",
+    "C-P5-ENABLE"
+  ]
+}

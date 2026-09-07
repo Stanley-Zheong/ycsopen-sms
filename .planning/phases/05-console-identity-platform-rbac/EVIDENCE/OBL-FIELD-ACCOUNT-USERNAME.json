@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-ACCOUNT-USERNAME","result":"PASS","backend":{"command":"mvn -f core/pom.xml -Dtest=PlatformAccountPolicyTest,LoginRequestValidationTest test","suite":"4-20 account contract and public-login oversized-input rejection before persistence"},"browser":{"case":"C-P5-USERNAME","report":"playwright-report.raw.json","result":"PASS"}}

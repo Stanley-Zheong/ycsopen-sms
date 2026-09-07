@@ -27,4 +27,8 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> error(String errorCode, String message) {
         return new ApiResponse<>(400, message, null, org.slf4j.MDC.get("traceId"));
     }
+
+    public static <T> ApiResponse<T> error(int status, String message) {
+        return new ApiResponse<>(status, message, null, org.slf4j.MDC.get("traceId"));
+    }
 }

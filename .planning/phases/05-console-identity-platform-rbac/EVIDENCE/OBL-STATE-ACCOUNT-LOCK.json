@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-STATE-ACCOUNT-LOCK","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"AuthServiceTransactionTest; proxied concurrent rejected logins serialize without lost increments and persist LOCKED"},"browser":{"case":"C-P5-LOCK","report":"playwright-report.raw.json","result":"PASS"}}

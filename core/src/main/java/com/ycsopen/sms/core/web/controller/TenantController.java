@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /** F-2.1/F-2.2/F-2.8 机构注册、审核、试用激活（平台管理后台"机构管理"调用）。 */
 @RestController
 @RequestMapping("/api/v1/console/tenants")
+@PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
 public class TenantController {
 
     private final TenantService tenantService;

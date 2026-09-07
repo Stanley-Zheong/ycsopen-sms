@@ -2,6 +2,7 @@ package com.ycsopen.sms.core.common.security.migration;
 
 import com.ycsopen.sms.core.common.security.envelope.EnvelopeCodec;
 import com.ycsopen.sms.core.common.security.envelope.ProtectionContext;
+import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldContexts;
 import com.ycsopen.sms.core.common.security.migration.LegacyValueClassifier.Classification;
 import com.ycsopen.sms.core.common.security.migration.MigrationPreflight.CheckpointState;
 import com.ycsopen.sms.core.common.security.migration.MigrationStateRepository.BlindIndexEntry;
@@ -443,13 +444,7 @@ public final class ProtectedDataMigrationRunner {
     }
 
     private static ProtectionContext context(ProtectedDataTarget target, LegacyRow row) {
-        return new ProtectionContext(
-                ProtectionContext.Purpose.DATABASE_FIELD,
-                "crypto-storage-bootstrap",
-                target.table(),
-                target.column(),
-                row.tenantScope(),
-                target.identityColumn() + "=" + row.resourceIdentity());
+        return ProtectedFieldContexts.migration(target, row.tenantScope(), row.resourceIdentity());
     }
 
     private static ProtectionContext messageContext(LegacyRow row, MessageTaskSource source) {

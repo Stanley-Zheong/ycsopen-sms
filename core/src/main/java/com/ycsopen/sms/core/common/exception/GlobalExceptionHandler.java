@@ -10,6 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.BindException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 /**
  * 统一异常处理。对应 PRD 5.15 节"异常流与边界情况"：
@@ -32,11 +36,24 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage()));
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), "无权执行此操作"));
+    }
+
+    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class,
+            HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("VALIDATION_FAILED", "请求字段不合法"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
         security.error(Event.UNEXPECTED_FAILURE, Category.UNEXPECTED,
                 SafeLogValue.correlation(MDC.get("traceId")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("INTERNAL_ERROR", "系统繁忙，请稍后再试"));
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "系统繁忙，请稍后再试"));
     }
 }

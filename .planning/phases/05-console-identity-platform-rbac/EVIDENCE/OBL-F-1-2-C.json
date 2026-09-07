@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-1-2-C","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"RoleAdministrationServiceJdbcTest and RoleAdministrationServiceTransactionTest; migration/audit/delete atomicity, rollback, and rejection of over-privileged replacement roles"},"browser":{"case":"C-P5-ROLE-MIGRATE","report":"playwright-report.raw.json","result":"PASS"}}

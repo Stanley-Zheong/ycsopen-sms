@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-ACCOUNT-VALIDITY","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"PlatformAccountPolicyTest and JwtAccessVerifierTest; past-date rejection and expired-account denial"},"browser":{"case":"C-P5-VALIDITY","report":"playwright-report.raw.json","result":"PASS"}}

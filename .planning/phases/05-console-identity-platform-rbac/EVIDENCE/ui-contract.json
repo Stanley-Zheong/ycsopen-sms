@@ -1,0 +1,192 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/system/users",
+      "/admin/system/roles",
+      "/admin/auth/login",
+      "/admin/account-overview",
+      "/admin/system/login-history"
+    ],
+    "test_ids": [
+      "admin-console-identity-users-create",
+      "admin-console-identity-users-row-disable",
+      "admin-console-identity-roles-permission-tree",
+      "admin-console-identity-roles-save",
+      "admin-console-identity-roles-migrate-dialog",
+      "admin-console-identity-auth-login-submit",
+      "shared-console-identity-profile-logout",
+      "shared-console-identity-profile-login-history",
+      "admin-console-identity-account-overview",
+      "admin-console-identity-users-form-username",
+      "admin-console-identity-users-form-password",
+      "admin-console-identity-users-form-phone",
+      "admin-console-identity-users-form-type",
+      "admin-console-identity-users-form-validity",
+      "admin-console-identity-users-state",
+      "admin-console-identity-users-unlock",
+      "admin-console-identity-users-disable",
+      "admin-console-identity-users-enable",
+      "shared-console-identity-internal-error-message"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/05-console-identity-platform-rbac/design-output/identity-prototype.html",
+        "sha256": "b3b1a68b513542c5296096e71b94dc301a527b456403e45295b90b1a869bec66"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/05-console-identity-platform-rbac/design-output/identity.pen",
+        "sha256": "c5abf11ed6603e25149ed7c22871fbc366cdfe90abca6fae0cff24897190be3c"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/system/users",
+      "/admin/system/roles",
+      "/admin/auth/login",
+      "/admin/account-overview",
+      "/admin/system/login-history"
+    ],
+    "test_ids": [
+      "admin-console-identity-users-create",
+      "admin-console-identity-users-row-disable",
+      "admin-console-identity-roles-permission-tree",
+      "admin-console-identity-roles-save",
+      "admin-console-identity-roles-migrate-dialog",
+      "admin-console-identity-auth-login-submit",
+      "shared-console-identity-profile-logout",
+      "shared-console-identity-profile-login-history",
+      "admin-console-identity-account-overview",
+      "admin-console-identity-users-form-username",
+      "admin-console-identity-users-form-password",
+      "admin-console-identity-users-form-phone",
+      "admin-console-identity-users-form-type",
+      "admin-console-identity-users-form-validity",
+      "admin-console-identity-users-state",
+      "admin-console-identity-users-unlock",
+      "admin-console-identity-users-disable",
+      "admin-console-identity-users-enable",
+      "shared-console-identity-internal-error-message"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/05-console-identity-platform-rbac/design-output/identity-prototype.html",
+        "sha256": "b3b1a68b513542c5296096e71b94dc301a527b456403e45295b90b1a869bec66"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "admin-console-identity-users-create",
+      "admin-console-identity-users-row-disable",
+      "admin-console-identity-roles-permission-tree",
+      "admin-console-identity-roles-save",
+      "admin-console-identity-roles-migrate-dialog",
+      "admin-console-identity-auth-login-submit",
+      "shared-console-identity-profile-logout",
+      "shared-console-identity-profile-login-history",
+      "admin-console-identity-account-overview",
+      "admin-console-identity-users-form-username",
+      "admin-console-identity-users-form-password",
+      "admin-console-identity-users-form-phone",
+      "admin-console-identity-users-form-type",
+      "admin-console-identity-users-form-validity",
+      "admin-console-identity-users-state",
+      "admin-console-identity-users-unlock",
+      "admin-console-identity-users-disable",
+      "admin-console-identity-users-enable",
+      "shared-console-identity-internal-error-message"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [
+      {
+        "path": ".planning/phases/05-console-identity-platform-rbac/design-output/prototype.spec.ts",
+        "sha256": "a34a11a470ea04c075e9cbce75457780e1be9902b79aca7bc58ceb4a1d424cd8"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/system/users",
+      "/admin/system/roles",
+      "/admin/auth/login",
+      "/admin/account-overview",
+      "/admin/system/login-history"
+    ],
+    "test_ids": [
+      "admin-console-identity-users-create",
+      "admin-console-identity-users-row-disable",
+      "admin-console-identity-roles-permission-tree",
+      "admin-console-identity-roles-save",
+      "admin-console-identity-roles-migrate-dialog",
+      "admin-console-identity-auth-login-submit",
+      "shared-console-identity-profile-logout",
+      "shared-console-identity-profile-login-history",
+      "admin-console-identity-account-overview",
+      "admin-console-identity-users-form-username",
+      "admin-console-identity-users-form-password",
+      "admin-console-identity-users-form-phone",
+      "admin-console-identity-users-form-type",
+      "admin-console-identity-users-form-validity",
+      "admin-console-identity-users-state",
+      "admin-console-identity-users-unlock",
+      "admin-console-identity-users-disable",
+      "admin-console-identity-users-enable",
+      "shared-console-identity-internal-error-message"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "c84c2f4419ded7fceb1bc6f66783b2c383fcf7391dcd6aa6d2c6b9d59e91e092" },
+      { "path": "web/src/pages/LoginPage.tsx", "sha256": "8f951ccff2a852c23450b09c19bd51978ca33a0ba315b73982e69b84d73f5964" },
+      { "path": "web/src/components/layout/AdminLayout.tsx", "sha256": "ee9e6208806cdcba874f4cbe6921fc689ca484eacbea1816c416c50acbca9293" },
+      { "path": "web/src/pages/admin/identity/UserManagementPage.tsx", "sha256": "78ad5e3e2db002b05664f3631a7c48c3a654fa722027d78250c74563769ec5cd" },
+      { "path": "web/src/pages/admin/identity/RoleManagementPage.tsx", "sha256": "b3d2fd3d4c8520ffad6449309950bf78150928970bcb6e71f5cb9694089f3913" },
+      { "path": "web/src/pages/admin/identity/AccountOverviewPage.tsx", "sha256": "d7c14b923a81277f3036860fa6727375c82aef4114780f994b4f368983b367db" },
+      { "path": "web/src/pages/admin/identity/LoginHistoryPage.tsx", "sha256": "aebad5665afcd9a7fae14ce5dbf605b299fb4b6a62e0ad04a931b8c20f3fafdd" },
+      { "path": "web/src/components/common/InternalErrorNotice.tsx", "sha256": "1f859294cd47673393305650ddda1e4938d8b0ae0746b16c1faf41bbf7e66677" },
+      { "path": "web/src/components/common/ModalDialog.tsx", "sha256": "f335967b9f2b7bc33cc3c1591c39ad92388e494c998adb4b2a890219f4e10eb7" },
+      { "path": "web/src/api/queryClient.ts", "sha256": "98f84a6b28993f2f44a61a32c088120da084b651c947fd2b4e7d05b251f307c0" }
+    ]
+  },
+  "playwright": {
+    "test_ids": [
+      "admin-console-identity-users-create",
+      "admin-console-identity-users-row-disable",
+      "admin-console-identity-roles-permission-tree",
+      "admin-console-identity-roles-save",
+      "admin-console-identity-roles-migrate-dialog",
+      "admin-console-identity-auth-login-submit",
+      "shared-console-identity-profile-logout",
+      "shared-console-identity-profile-login-history",
+      "admin-console-identity-account-overview",
+      "admin-console-identity-users-form-username",
+      "admin-console-identity-users-form-password",
+      "admin-console-identity-users-form-phone",
+      "admin-console-identity-users-form-type",
+      "admin-console-identity-users-form-validity",
+      "admin-console-identity-users-state",
+      "admin-console-identity-users-unlock",
+      "admin-console-identity-users-disable",
+      "admin-console-identity-users-enable",
+      "shared-console-identity-internal-error-message"
+    ],
+    "evidence_kind": "production",
+    "sources": [
+      { "path": "web/test/scripts/identity.spec.ts", "sha256": "2bfdaa77e7316269f5fcc7bfa28b51245536a5a12f3759196633d1a2e96dd212" }
+    ]
+  },
+  "execution": {
+    "command": "PLAYWRIGHT_JSON_OUTPUT_NAME=../.planning/phases/05-console-identity-platform-rbac/EVIDENCE/playwright-report.raw.json npm --prefix web run test:e2e -- identity.spec.ts --reporter=json --workers=1",
+    "commit": "e94f35f0b7ba2d0fcdb7f8f7ddde17419f6def2e",
+    "config": "web/playwright.config.ts; installed Google Chrome 152.0.7977.76; desktop viewport 1440x900; one worker",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/05-console-identity-platform-rbac/EVIDENCE/playwright-execution.json",
+      "sha256": "0b1738c3caa8dfe59c614e8ddaa653d237b934eb29c7914d006112cd5af00818"
+    }
+  }
+}

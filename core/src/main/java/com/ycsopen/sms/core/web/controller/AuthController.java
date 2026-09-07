@@ -24,6 +24,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-        return ApiResponse.ok(authService.login(request, httpRequest.getRemoteAddr()));
+        return ApiResponse.ok(authService.login(
+                request,
+                httpRequest.getRemoteAddr(),
+                httpRequest.getHeader("User-Agent")));
     }
 }

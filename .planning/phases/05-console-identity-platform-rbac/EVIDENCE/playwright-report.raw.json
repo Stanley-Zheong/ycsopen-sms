@@ -1,0 +1,731 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "identity.spec.ts",
+      "--reporter=json",
+      "--workers=1"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 4173",
+      "url": "http://127.0.0.1:4173/login",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "identity.spec.ts",
+      "file": "identity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pw-p5-account-create C-P5-ACCOUNT-CREATE OBL-F-1-1-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:56.237Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-473dcfa7a61c999da399",
+          "file": "identity.spec.ts",
+          "line": 68,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-permission-tree C-P5-PERMISSION-TREE OBL-F-1-2-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 440,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:58.319Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-13b4d0cf92ae6edb5c6c",
+          "file": "identity.spec.ts",
+          "line": 93,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-overview C-P5-OVERVIEW OBL-F-1-5-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 383,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:58.772Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-5dc097a9170e17947cd3",
+          "file": "identity.spec.ts",
+          "line": 117,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-internal-error C-P5-INTERNAL-ERROR OBL-EDGE-INTERNAL-ERROR",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 261,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:59.162Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-aa0b6f4e4295cc292370",
+          "file": "identity.spec.ts",
+          "line": 129,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-account-disable-region C-P5-ACCOUNT-DISABLE-REGION OBL-F-1-1-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 287,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:59.434Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-4f0e6bda88879b12eb80",
+          "file": "identity.spec.ts",
+          "line": 150,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-permission-live-save C-P5-PERMISSION-LIVE OBL-F-1-2-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 369,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:27:59.732Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-4509efb045ea9bbf3807",
+          "file": "identity.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-role-migrate C-P5-ROLE-MIGRATE OBL-F-1-2-C",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 381,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:00.112Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-beb1aad29fa3c02956e0",
+          "file": "identity.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-login C-P5-LOGIN OBL-F-1-4-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 242,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:00.501Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-e7d3f5ff396e5b762d54",
+          "file": "identity.spec.ts",
+          "line": 175,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-logout C-P5-LOGOUT OBL-F-1-4-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 376,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:00.749Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-81f0f49125b7e0427ea9",
+          "file": "identity.spec.ts",
+          "line": 192,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-login-history C-P5-LOGIN-HISTORY OBL-F-1-4-C",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 276,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:01.132Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-6f126740c58f3dab816f",
+          "file": "identity.spec.ts",
+          "line": 202,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-username C-P5-USERNAME OBL-FIELD-ACCOUNT-USERNAME",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 303,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:01.414Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-0ff61d521a41217058ad",
+          "file": "identity.spec.ts",
+          "line": 209,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-password C-P5-PASSWORD OBL-FIELD-ACCOUNT-PASSWORD",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 424,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:01.723Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-738522435c2d980a79d1",
+          "file": "identity.spec.ts",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-phone C-P5-PHONE OBL-FIELD-ACCOUNT-PHONE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 307,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:02.153Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-41f324fce96a8b4e48f8",
+          "file": "identity.spec.ts",
+          "line": 227,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-type C-P5-TYPE OBL-FIELD-ACCOUNT-TYPE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 318,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:02.466Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-b13d84b47c003c7f0ca8",
+          "file": "identity.spec.ts",
+          "line": 236,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-validity C-P5-VALIDITY OBL-FIELD-ACCOUNT-VALIDITY",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 322,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:02.790Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-e0f7fa0e0ea66da16aec",
+          "file": "identity.spec.ts",
+          "line": 245,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-lock C-P5-LOCK OBL-STATE-ACCOUNT-LOCK",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 287,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:03.119Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-a1f32b3d3458a36b7939",
+          "file": "identity.spec.ts",
+          "line": 254,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-unlock C-P5-UNLOCK OBL-STATE-ACCOUNT-UNLOCK",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 316,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:03.412Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-83349cf1c2f36774e09a",
+          "file": "identity.spec.ts",
+          "line": 261,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-disable C-P5-DISABLE OBL-STATE-ACCOUNT-DISABLE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 333,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:03.734Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-351b1ca346b8736d80be",
+          "file": "identity.spec.ts",
+          "line": 270,
+          "column": 1
+        },
+        {
+          "title": "pw-p5-enable C-P5-ENABLE OBL-STATE-ACCOUNT-ENABLE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 433,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T02:28:04.073Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bc384e94f5cb1e491b4d-07ac8eaa43a9e009b75f",
+          "file": "identity.spec.ts",
+          "line": 278,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-07T02:27:55.560Z",
+    "duration": 9054.528,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

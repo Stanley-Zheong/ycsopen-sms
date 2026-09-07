@@ -1,0 +1,127 @@
+{
+  "version": "2.17",
+  "name": "Phase 5 Console Identity — desktop 1440x900",
+  "tokens": {
+    "page": "#f4f8fc",
+    "surface": "#ffffff",
+    "surfaceAlt": "#eef5ff",
+    "brand": "#0c85e8",
+    "brandDark": "#123250",
+    "border": "#dbe5ef",
+    "danger": "#c93647",
+    "warning": "#a56a00",
+    "success": "#0d8779"
+  },
+  "stableIds": [
+    "admin-console-identity-users-create",
+    "admin-console-identity-users-row-disable",
+    "admin-console-identity-roles-permission-tree",
+    "admin-console-identity-roles-save",
+    "admin-console-identity-roles-migrate-dialog",
+    "admin-console-identity-auth-login-submit",
+    "shared-console-identity-profile-logout",
+    "shared-console-identity-profile-login-history",
+    "admin-console-identity-account-overview",
+    "admin-console-identity-users-form-username",
+    "admin-console-identity-users-form-password",
+    "admin-console-identity-users-form-phone",
+    "admin-console-identity-users-form-type",
+    "admin-console-identity-users-form-validity",
+    "admin-console-identity-users-state",
+    "admin-console-identity-users-unlock",
+    "admin-console-identity-users-disable",
+    "admin-console-identity-users-enable",
+    "shared-console-identity-internal-error-message"
+  ],
+  "children": [
+    {
+      "type": "frame",
+      "id": "P5Log",
+      "x": 0,
+      "y": 0,
+      "name": "Admin login /admin/auth/login admin-console-identity-auth-login-submit",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f4f8fc",
+      "children": [
+        { "type": "frame", "id": "P5LgC", "x": 500, "y": 210, "name": "Credential card", "width": 400, "height": 420, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1, "layout": "vertical", "gap": 16, "padding": 32, "children": [
+          { "type": "text", "id": "P5LgT", "name": "Title", "content": "平台管理登录", "fontSize": 28, "fontWeight": "600", "fill": "#123250" },
+          { "type": "text", "id": "P5LgU", "name": "Username admin-console-identity-users-form-username", "content": "用户名", "fontSize": 14, "fill": "#344054" },
+          { "type": "text", "id": "P5LgP", "name": "Password admin-console-identity-users-form-password", "content": "密码", "fontSize": 14, "fill": "#344054" },
+          { "type": "frame", "id": "P5LgB", "name": "Login admin-console-identity-auth-login-submit", "height": 40, "fill": "#0c85e8", "cornerRadius": 6, "justifyContent": "center", "alignItems": "center", "children": [{ "type": "text", "id": "P5LgL", "content": "登录", "fontSize": 14, "fontWeight": "600", "fill": "#ffffff" }] }
+        ]}
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "P5Usr",
+      "x": 1520,
+      "y": 0,
+      "name": "Platform accounts /admin/system/users admin-console-identity-users-state",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f4f8fc",
+      "children": [
+        { "type": "frame", "id": "P5Nav", "name": "Admin navigation", "width": 220, "height": 900, "fill": "#123250" },
+        { "type": "text", "id": "P5UsT", "x": 260, "y": 56, "name": "Page title", "content": "平台账号", "fontSize": 28, "fontWeight": "600", "fill": "#123250" },
+        { "type": "frame", "id": "P5UsC", "x": 260, "y": 112, "name": "Create admin-console-identity-users-create", "width": 112, "height": 40, "fill": "#0c85e8", "cornerRadius": 6 },
+        { "type": "frame", "id": "P5UsTable", "x": 260, "y": 176, "name": "Account table admin-console-identity-users-state", "width": 1120, "height": 420, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "text", "id": "P5UsA", "x": 292, "y": 224, "name": "Actions", "content": "角色  状态  有效期  解锁  禁用  启用", "fontSize": 14, "fill": "#344054" }
+      ],
+      "annotations": ["admin-console-identity-users-row-disable", "admin-console-identity-users-unlock", "admin-console-identity-users-disable", "admin-console-identity-users-enable", "admin-console-identity-users-form-phone", "admin-console-identity-users-form-type", "admin-console-identity-users-form-validity"]
+    },
+    {
+      "type": "frame",
+      "id": "P5Rol",
+      "x": 3040,
+      "y": 0,
+      "name": "Roles /admin/system/roles admin-console-identity-roles-permission-tree",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f4f8fc",
+      "children": [
+        { "type": "frame", "id": "P5RoN", "name": "Admin navigation", "width": 220, "height": 900, "fill": "#123250" },
+        { "type": "text", "id": "P5RoT", "x": 260, "y": 56, "name": "Page title", "content": "角色与权限", "fontSize": 28, "fontWeight": "600", "fill": "#123250" },
+        { "type": "frame", "id": "P5RoL", "x": 260, "y": 120, "name": "Role list", "width": 280, "height": 600, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "frame", "id": "P5RoW", "x": 564, "y": 120, "name": "Permission tree admin-console-identity-roles-permission-tree", "width": 816, "height": 600, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "text", "id": "P5RoG", "x": 596, "y": 168, "name": "Groups", "content": "菜单权限\n按钮权限\n接口权限\n数据权限", "fontSize": 20, "fontWeight": "600", "fill": "#123250" },
+        { "type": "frame", "id": "P5RoS", "x": 1160, "y": 648, "name": "Save admin-console-identity-roles-save", "width": 140, "height": 40, "fill": "#0c85e8", "cornerRadius": 6 }
+      ],
+      "annotations": ["admin-console-identity-roles-migrate-dialog"]
+    },
+    {
+      "type": "frame",
+      "id": "P5Ovw",
+      "x": 4560,
+      "y": 0,
+      "name": "Account overview /admin/account-overview admin-account-overview admin-console-identity-account-overview",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f4f8fc",
+      "children": [
+        { "type": "frame", "id": "P5OvN", "name": "Admin navigation", "width": 220, "height": 900, "fill": "#123250" },
+        { "type": "text", "id": "P5OvT", "x": 260, "y": 56, "name": "Page title", "content": "账号总览", "fontSize": 28, "fontWeight": "600", "fill": "#123250" },
+        { "type": "frame", "id": "P5OvI", "x": 260, "y": 120, "name": "Identity card", "width": 360, "height": 240, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "frame", "id": "P5OvP", "x": 644, "y": 120, "name": "Permission card", "width": 736, "height": 240, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "frame", "id": "P5OvH", "x": 260, "y": 384, "name": "Login history /admin/system/login-history shared-console-identity-profile-login-history", "width": 1120, "height": 340, "fill": "#ffffff", "cornerRadius": 10, "stroke": "#dbe5ef", "strokeWidth": 1 },
+        { "type": "text", "id": "P5OvL", "x": 1220, "y": 64, "name": "Logout shared-console-identity-profile-logout", "content": "退出登录", "fontSize": 14, "fill": "#0c85e8" }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "P5Err",
+      "x": 6080,
+      "y": 0,
+      "name": "Safe error /admin/system/users shared-console-identity-internal-error-message",
+      "width": 1440,
+      "height": 900,
+      "fill": "#f4f8fc",
+      "children": [
+        { "type": "frame", "id": "P5ErC", "x": 930, "y": 48, "name": "Safe error alert", "width": 440, "height": 112, "fill": "#fff0f2", "cornerRadius": 10, "stroke": "#c93647", "strokeWidth": 1, "layout": "vertical", "gap": 8, "padding": 16, "children": [
+          { "type": "text", "id": "P5ErT", "content": "系统繁忙，请稍后再试", "fontSize": 14, "fontWeight": "600", "fill": "#c93647" },
+          { "type": "text", "id": "P5ErI", "content": "问题编号：trace-example", "fontSize": 12, "fill": "#344054" }
+        ]}
+      ]
+    }
+  ]
+}

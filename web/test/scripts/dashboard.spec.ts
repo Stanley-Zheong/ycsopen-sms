@@ -21,7 +21,7 @@ test('WEB-DASH-001 complaint ratio panels render values and threshold status', a
   await expect(channelRow.getByRole('cell').nth(2)).toHaveText('3');
   await expect(channelRow.getByRole('cell').nth(3)).toHaveText('3.00‰');
   await expect(channelRow.getByRole('cell').nth(4)).toHaveText('超阈值');
-  await expect(channelRow).toHaveCSS('background-color', 'rgb(253, 236, 236)');
+  await expect(channelRow).toHaveCSS('background-color', 'rgb(255, 240, 242)');
   await expect(page.getByText('1 项超阈值')).toBeVisible();
   const normalChannelRow = page.getByRole('row').filter({ hasText: '联通备用通道' });
   await expect(normalChannelRow.getByRole('cell').nth(1)).toHaveText('2,000');

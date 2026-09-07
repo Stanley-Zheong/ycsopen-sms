@@ -8,6 +8,11 @@ import TenantListPage from '@/pages/admin/tenants/TenantListPage';
 import ChannelListPage from '@/pages/admin/channels/ChannelListPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
 import SendPage from '@/pages/tenant/send/SendPage';
+import ProtectedRoute from './ProtectedRoute';
+import UserManagementPage from '@/pages/admin/identity/UserManagementPage';
+import RoleManagementPage from '@/pages/admin/identity/RoleManagementPage';
+import AccountOverviewPage from '@/pages/admin/identity/AccountOverviewPage';
+import LoginHistoryPage from '@/pages/admin/identity/LoginHistoryPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -17,10 +22,17 @@ import SendPage from '@/pages/tenant/send/SendPage';
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
   { path: '/login', element: <LoginPage /> },
+  { path: '/admin/auth/login', element: <LoginPage /> },
+  { path: '/admin/users', element: <Navigate to="/admin/system/users" replace /> },
+  { path: '/admin/roles', element: <Navigate to="/admin/system/roles" replace /> },
 
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute audience="platform">
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
@@ -38,13 +50,21 @@ export const router = createBrowserRouter([
       { path: 'finance', element: <PlaceholderPage title="财务中心" prdRef="F-8" /> },
       { path: 'alerts', element: <PlaceholderPage title="告警管理" prdRef="F-12" /> },
       { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
-      { path: 'system', element: <PlaceholderPage title="系统管理（账号/角色/日志）" prdRef="F-1/F-14" /> },
+      { path: 'system', element: <Navigate to="users" replace /> },
+      { path: '/admin/system/users', element: <UserManagementPage /> },
+      { path: '/admin/system/roles', element: <RoleManagementPage /> },
+      { path: '/admin/system/login-history', element: <LoginHistoryPage /> },
+      { path: '/admin/account-overview', element: <AccountOverviewPage /> },
     ],
   },
 
   {
     path: '/tenant',
-    element: <TenantLayout />,
+    element: (
+      <ProtectedRoute audience="tenant">
+        <TenantLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Navigate to="overview" replace /> },
       { path: 'overview', element: <OverviewPage /> },

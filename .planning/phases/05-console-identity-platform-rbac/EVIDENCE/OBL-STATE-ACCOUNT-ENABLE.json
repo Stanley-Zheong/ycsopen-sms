@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-STATE-ACCOUNT-ENABLE","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"AccountStateServiceTest; authorized transition and actor history"},"browser":{"case":"C-P5-ENABLE","report":"playwright-report.raw.json","result":"PASS"}}

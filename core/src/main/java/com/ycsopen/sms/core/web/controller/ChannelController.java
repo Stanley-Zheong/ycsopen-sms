@@ -4,6 +4,7 @@ import com.ycsopen.sms.core.domain.entity.Channel;
 import com.ycsopen.sms.core.repository.ChannelRepository;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 /** F-4.1/F-4.7 通道管理（新增/查询/暂停/恢复）。CRUD 主体走 Spring Data 默认方法，暂停/恢复是唯一的业务动作。 */
 @RestController
 @RequestMapping("/api/v1/console/channels")
+@PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
 public class ChannelController {
 
     private final ChannelRepository channelRepository;

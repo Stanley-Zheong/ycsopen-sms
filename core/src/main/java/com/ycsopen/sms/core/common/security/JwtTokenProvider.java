@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.time.Instant;
+import java.util.UUID;
 
 /** 控制台登录会话令牌（JWT + RBAC，见 PRD 3.2 / 6.2 节）。 */
 @Component
@@ -25,18 +27,28 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Long userId, String userType, Long tenantId) {
+        return issueToken(userId, userType, tenantId).token();
+    }
+
+    public IssuedToken issueToken(Long userId, String userType, Long tenantId) {
         Date now = new Date();
+        String sessionId = UUID.randomUUID().toString();
+        Date expiresAt = new Date(now.getTime() + accessTokenTtlMillis);
         var builder = Jwts.builder()
+                .id(sessionId)
                 .subject(String.valueOf(userId))
                 .claim("userType", userType)
                 .claim("tenantId", tenantId)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + accessTokenTtlMillis));
-        return builder.signWith(signingKey, SignatureAlgorithm.HS256).compact();
+                .expiration(expiresAt);
+        return new IssuedToken(builder.signWith(signingKey, SignatureAlgorithm.HS256).compact(),
+                sessionId, expiresAt.toInstant());
     }
 
     public Claims parse(String token) {
         return Jwts.parser().verifyWith((javax.crypto.SecretKey) signingKey).build()
                 .parseSignedClaims(token).getPayload();
     }
+
+    public record IssuedToken(String token, String sessionId, Instant expiresAt) { }
 }

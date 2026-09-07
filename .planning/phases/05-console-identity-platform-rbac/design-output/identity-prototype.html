@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Phase 5 平台账号与权限原型</title>
+  <style>
+    :root{--page:#f4f8fc;--surface:#fff;--alt:#eef5ff;--brand:#0c85e8;--dark:#123250;--border:#dbe5ef;--danger:#c93647;--success:#0d8779;--warning:#a56a00}*{box-sizing:border-box}body{margin:0;background:var(--page);color:#1d2939;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{display:grid;grid-template-columns:220px 1fr;min-height:900px}.nav{padding:24px 16px;background:var(--dark);color:#fff}.nav a{display:block;margin:8px 0;padding:10px 12px;border-radius:6px;color:#d9ebfa;text-decoration:none}.nav a:hover,.nav a:focus{background:#1f527d}.content{padding:24px}.toolbar{display:flex;align-items:center;justify-content:space-between}.card{margin-top:16px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);box-shadow:0 8px 24px #12325012}button,input,select{min-height:40px;border:1px solid #b8c8d8;border-radius:6px;padding:8px 12px;background:#fff}button{cursor:pointer}.primary{border-color:var(--brand);background:var(--brand);color:#fff}.danger{border-color:var(--danger);color:var(--danger)}table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left}.grid{display:grid;grid-template-columns:280px 1fr;gap:24px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.fields label{display:grid;gap:4px}.dialog{position:fixed;inset:120px auto auto 50%;z-index:3;width:560px;transform:translateX(-50%)}[hidden]{display:none!important}.notice{position:fixed;right:24px;top:24px;z-index:5;width:420px;border-color:var(--danger);background:#fff0f2}h1{font-size:28px}h2{font-size:20px}.badge{color:var(--success)}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" aria-label="平台导航">
+    <h2>YCSOpen SMS</h2>
+    <a href="#/admin/system/users" data-route="/admin/system/users">平台账号</a>
+    <a href="#/admin/system/roles" data-route="/admin/system/roles">角色与权限</a>
+    <a href="#/admin/system/login-history" data-route="/admin/system/login-history">登录历史</a>
+    <a href="#/admin/account-overview" data-route="/admin/account-overview">账号总览</a>
+    <a href="#/admin/auth/login" data-route="/admin/auth/login">登录</a>
+  </nav>
+  <main class="content">
+    <section id="login" data-route="/admin/auth/login">
+      <div class="card" style="max-width:400px;margin:140px auto">
+        <h1>平台管理登录</h1><label>用户名<input autocomplete="username"></label><br><label>密码<input type="password" autocomplete="current-password"></label><br>
+        <button class="primary" data-testid="admin-console-identity-auth-login-submit">登录</button>
+      </div>
+    </section>
+    <section id="users" data-route="/admin/system/users">
+      <div class="toolbar"><div><h1>平台账号</h1><p>管理管理员、运营和财务账号；状态变更由服务端鉴权并留痕。</p></div><button class="primary" data-testid="admin-console-identity-users-create">新建账号</button></div>
+      <div class="card"><table data-testid="admin-console-identity-users-state"><caption>平台账号状态与操作</caption><thead><tr><th>用户名</th><th>角色</th><th>状态</th><th>有效期</th><th>操作</th></tr></thead><tbody><tr data-row-key="locked"><td>locked_admin</td><td>系统管理员</td><td>锁定</td><td>长期有效</td><td><button data-testid="admin-console-identity-users-unlock">解锁</button></td></tr><tr data-row-key="active"><td>operator_user</td><td>运营人员</td><td class="badge">启用</td><td>2027-01-01</td><td data-testid="admin-console-identity-users-row-disable"><button class="danger" data-testid="admin-console-identity-users-disable">禁用</button></td></tr><tr data-row-key="disabled"><td>finance_user</td><td>财务人员</td><td>禁用</td><td>长期有效</td><td><button data-testid="admin-console-identity-users-enable">启用</button></td></tr></tbody></table></div>
+    </section>
+    <section id="roles" data-route="/admin/system/roles">
+      <h1>角色与权限</h1><div class="grid"><div class="card"><h2>平台角色</h2><button>系统管理员</button><br><button id="open-migrate" class="danger">删除系统管理员</button></div><div class="card" data-testid="admin-console-identity-roles-permission-tree"><legend>菜单权限</legend><label><input type="checkbox" checked> 账号与权限菜单</label><legend>按钮权限</legend><label><input type="checkbox"> 禁用账号</label><legend>接口权限</legend><label><input type="checkbox" checked> 查询账号</label><legend>数据权限</legend><label><input type="checkbox" checked> 平台账号全量范围</label><p><button class="primary" data-testid="admin-console-identity-roles-save">保存权限</button></p></div></div>
+    </section>
+    <section id="history" class="card" data-route="/admin/system/login-history" data-testid="shared-console-identity-profile-login-history"><h1>登录历史</h1><table><thead><tr><th>用户</th><th>时间</th><th>登录地址</th><th>客户端</th><th>结果</th></tr></thead><tbody><tr><td>admin</td><td>2026-09-07 08:30 +08:00</td><td>192.0.2.10</td><td>Google Chrome</td><td>异常登录</td></tr></tbody></table></section>
+    <section id="overview" data-route="/admin/account-overview" data-testid="admin-console-identity-account-overview"><div class="toolbar"><h1>账号总览</h1><button data-testid="shared-console-identity-profile-logout">退出登录</button></div><div class="grid"><div class="card"><h2>当前账号</h2><p>admin · 系统管理员</p><p>最近登录：192.0.2.10</p></div><div class="card"><h2>当前权限</h2><p>菜单 · 按钮 · 接口 · 数据</p></div></div></section>
+  </main>
+</div>
+<form id="account-dialog" class="card dialog" role="dialog" aria-modal="true" hidden><h2>新建平台账号</h2><div class="fields"><label>用户名<input data-testid="admin-console-identity-users-form-username"></label><label>密码<input type="password" data-testid="admin-console-identity-users-form-password"></label><label>手机号<input data-testid="admin-console-identity-users-form-phone"></label><label>用户类型<select data-testid="admin-console-identity-users-form-type"><option>系统管理员</option><option>运营</option><option>财务</option></select></label><label>有效期<input type="date" data-testid="admin-console-identity-users-form-validity"></label></div><p><button class="primary">保存账号</button> <button type="button" id="close-account">放弃账号修改</button></p></form>
+<div id="migrate-dialog" class="card dialog" role="dialog" aria-modal="true" data-testid="admin-console-identity-roles-migrate-dialog" hidden><h2>迁移关联用户后删除角色</h2><label>迁移到角色<select><option>运营人员</option></select></label><p><button class="danger">迁移并删除</button> <button id="close-migrate">保留原角色</button></p></div>
+<aside class="card notice" role="alert" data-testid="shared-console-identity-internal-error-message">系统繁忙，请稍后再试<br><small>问题编号：trace-example</small></aside>
+<script>
+  const routes={"/admin/auth/login":"login","/admin/system/users":"users","/admin/system/roles":"roles","/admin/system/login-history":"history","/admin/account-overview":"overview"};
+  function render(){const route=location.hash.slice(1)||"/admin/system/users";Object.values(routes).forEach(id=>document.getElementById(id).hidden=id!==routes[route]);}
+  addEventListener("hashchange",render);render();
+  document.querySelector('[data-testid="admin-console-identity-users-create"]').onclick=()=>document.getElementById("account-dialog").hidden=false;
+  document.getElementById("close-account").onclick=()=>document.getElementById("account-dialog").hidden=true;
+  document.getElementById("open-migrate").onclick=()=>document.getElementById("migrate-dialog").hidden=false;
+  document.getElementById("close-migrate").onclick=()=>document.getElementById("migrate-dialog").hidden=true;
+</script>
+</body>
+</html>
