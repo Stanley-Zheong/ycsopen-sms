@@ -4,6 +4,8 @@ import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.common.security.JwtTokenProvider;
 import com.ycsopen.sms.core.domain.entity.User;
 import com.ycsopen.sms.core.repository.UserRepository;
+import com.ycsopen.sms.core.service.configuration.PlatformConfigurationRegistry;
+import com.ycsopen.sms.core.service.configuration.PlatformConfigurationRuntime;
 import com.ycsopen.sms.core.web.dto.LoginRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,5 +98,8 @@ class AuthServiceTransactionTest {
         @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
         @Bean JwtTokenProvider jwtTokenProvider() { return mock(JwtTokenProvider.class); }
         @Bean LoginAnomalyService loginAnomalyService() { return mock(LoginAnomalyService.class); }
+        @Bean PlatformConfigurationRuntime platformConfigurationRuntime() {
+            return new PlatformConfigurationRuntime(new PlatformConfigurationRegistry());
+        }
     }
 }

@@ -150,7 +150,9 @@ npm run build
 ### 6. 当前可用范围
 
 登录后可查看已有真实页面和占位导航。控制台登录、机构注册/试用、通道基础管理、HTTP 单条发送、
-路由/预付费核心服务及投诉占比看板已有实现；其他模块的真实完成边界以
+路由/预付费核心服务、投诉占比看板，以及带类型校验、版本历史、热加载和回滚的系统配置已有实现；
+管理员可在 `/admin/system/configuration` 操作当前登记的三项运行时配置，权限和运维边界见
+[`使用手册的系统配置章节`](docs/使用手册.md#系统配置管理)。其他模块的真实完成边界以
 [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md)和
 [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)为准。
 
@@ -160,12 +162,12 @@ npm run build
 
 | 检查 | 结果 |
 |---|---|
-| `mvn -f core/pom.xml test` | ✅ Phase 06 工作树完整套件通过，精确数量见 Phase 06 verification |
-| `npm --prefix web test -- --run` | ✅ 32/32 通过 |
+| `mvn -f core/pom.xml test` | ✅ 499/499 通过，另有 22 项环境条件跳过 |
+| `npm --prefix web test -- --run` | ✅ 37/37 通过 |
 | `npm --prefix web run lint` | ✅ 通过 |
 | `npm --prefix web run build` | ✅ 通过 |
-| 本机 Google Chrome Phase 06 Playwright | ✅ 7/7 通过 |
-| Phase 05 + Phase 06 真实 MySQL | ✅ 独立迁移/运行账号、审计保护及登录事件链路通过 |
+| 本机 Google Chrome Phase 07 真实服务 Playwright | ✅ 3/3 通过，无平台 API 请求替身 |
+| Phase 07 真实 MySQL | ✅ V1600/V1601、历史保护、版本并发和回滚通过 |
 
 以上是实际执行过的命令结果，不是"应该能跑"的推测。
 

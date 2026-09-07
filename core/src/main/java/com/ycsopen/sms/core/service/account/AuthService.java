@@ -6,6 +6,7 @@ import com.ycsopen.sms.core.domain.entity.User;
 import com.ycsopen.sms.core.repository.UserRepository;
 import com.ycsopen.sms.core.web.dto.LoginRequest;
 import com.ycsopen.sms.core.web.dto.LoginResponse;
+import com.ycsopen.sms.core.service.configuration.PlatformConfigurationRuntime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,22 +22,22 @@ import java.time.LocalDate;
 @Service
 public class AuthService {
 
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final IdentitySessionService sessions;
     private final LoginAnomalyService anomalies;
+    private final PlatformConfigurationRuntime configuration;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider, IdentitySessionService sessions,
-                       LoginAnomalyService anomalies) {
+                       LoginAnomalyService anomalies, PlatformConfigurationRuntime configuration) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.sessions = sessions;
         this.anomalies = anomalies;
+        this.configuration = configuration;
     }
 
     @Transactional(noRollbackFor = BusinessException.class)
@@ -76,20 +77,22 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             int failures = user.getFailedLoginCount() == null ? 1 : user.getFailedLoginCount() + 1;
             user.setFailedLoginCount(failures);
-            if (user.getFailedLoginCount() >= MAX_FAILED_ATTEMPTS) {
+            int maximumFailures = configuration.loginMaxFailures();
+            if (user.getFailedLoginCount() >= maximumFailures) {
                 user.setStatus(User.UserStatus.LOCKED);
             }
             userRepository.save(user);
             long historyId = sessions.recordWithId(
                     user.getId(), user.getUsername(), clientIp, "INVALID_CREDENTIALS", userAgent);
-            if (failures == MAX_FAILED_ATTEMPTS) {
+            if (failures == maximumFailures) {
                 anomalies.repeatedFailure(user.getId(), user.getTenantId(), historyId,
                         clientIp, MDC.get("traceId"));
             }
             throw new BusinessException("INVALID_CREDENTIALS", "用户名或密码错误");
         }
 
-        boolean unusual = anomalies.isUnusual(user.getLastLoginIp(), clientIp);
+        boolean unusual = configuration.unusualIpEnabled()
+                && anomalies.isUnusual(user.getLastLoginIp(), clientIp);
         user.setFailedLoginCount(0);
         user.setLastLoginTime(LocalDateTime.now());
         user.setLastLoginIp(clientIp);

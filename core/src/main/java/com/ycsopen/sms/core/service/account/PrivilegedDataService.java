@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.account;
 
 import com.ycsopen.sms.core.service.audit.OperationAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class PrivilegedDataService {
     private final OperationAuditService audits;
     private final Clock clock;
 
+    @Autowired
     public PrivilegedDataService(PlatformAccountPhoneStore phones, OperationAuditService audits) {
         this(phones, audits, Clock.systemUTC());
     }

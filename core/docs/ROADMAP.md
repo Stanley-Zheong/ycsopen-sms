@@ -25,10 +25,12 @@
 | 控制台登录 | F-1.4（bcrypt，非 MD5） | `service/account/AuthService.java` | 无单测（TODO） |
 | 控制台身份、会话和平台 RBAC | F-1.1~F-1.4 | `service/account/*`、`web/controller/Platform*Controller.java` | Phase 05 单元、授权与真实 MySQL 测试 |
 | 操作审计、敏感查看与安全事件 | F-14.1/F-14.2、6.2.1 | `service/audit/*`、`service/account/PrivilegedDataService.java`、`web/controller/*Audit*` | Phase 06 单元、权限、真实 MySQL 与 Chrome 测试 |
+| 类型化平台系统配置 | 8.1 System | `service/configuration/*`、`web/controller/PlatformConfigurationController.java` | Phase 07 单元、真实 MySQL 与真实服务 Chrome 测试 |
 
-2026-08-29 的初始基线在 Java 21 + Maven 3.9 下通过 18/18 测试。加入 Phase 05/06 后的当前证据为：
-`mvn -f core/pom.xml test` 通过 483 项测试（0 failure、0 error、20 项环境条件跳过），且
-`Phase05IdentityMySqlIntegrationTest,Phase06AuditMySqlIntegrationTest` 在真实 MySQL 8.4 上 3/3 通过。
+2026-08-29 的初始基线在 Java 21 + Maven 3.9 下通过 18/18 测试。加入 Phase 07 后，
+`mvn -f core/pom.xml test` 通过 499 项测试（0 failure、0 error、22 项环境条件跳过），且
+`Phase07ConfigurationMySqlIntegrationTest` 在真实 MySQL 8.4 上通过；真实 Spring 服务、Vite 和
+本机 Google Chrome 的 `Phase07RealServicePlaywrightTest` 也通过。
 各阶段的完整命令和边界以对应 `.planning/phases/*/*-VERIFICATION.md` 为准。
 
 ## 已知简化（能跑，但不是生产完整实现）

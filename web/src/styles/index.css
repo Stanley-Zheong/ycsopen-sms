@@ -101,3 +101,16 @@ tr.over-threshold td:first-child { font-weight: 600; }
 .sensitive-value-cell button { min-height: 32px; padding: 4px 8px; }
 .sensitive-value-warning { padding: 12px; color: var(--color-warning); background: var(--color-warning-bg); border-radius: var(--radius-control); }
 .sensitive-value-result { padding: 16px; color: var(--color-text); background: var(--color-success-bg); border-radius: var(--radius-control); font-size: 18px; font-weight: 600; letter-spacing: .08em; }
+
+.configuration-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.configuration-summary { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 16px; margin: 0; }
+.configuration-summary div { min-width: 0; }
+.configuration-summary dt { color: var(--color-muted); }
+.configuration-summary dd { margin: 4px 0 0; overflow-wrap: anywhere; font-weight: 600; }
+.configuration-table-wrap { overflow-x: auto; }
+.configuration-table-wrap table { min-width: 1040px; }
+.configuration-draft-actions { display: grid; grid-template-columns: minmax(240px, 1fr) auto auto; gap: 12px; align-items: end; margin-bottom: 12px; }
+.configuration-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.configuration-alert { padding: 12px 16px; border-radius: var(--radius-control); }
+.configuration-alert.error { color: var(--color-danger); background: var(--color-error-bg); border: 1px solid var(--color-danger); }
+.configuration-alert.success { color: var(--color-success); background: var(--color-success-bg); border: 1px solid var(--color-success); }

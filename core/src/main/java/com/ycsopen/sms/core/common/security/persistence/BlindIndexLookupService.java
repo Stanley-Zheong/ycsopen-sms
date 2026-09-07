@@ -4,6 +4,7 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
 import com.ycsopen.sms.core.repository.BlacklistEntryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class BlindIndexLookupService {
     private final JdbcTemplate jdbcTemplate;
     private final LegacyMobileHashReader legacyReader;
 
+    @Autowired
     public BlindIndexLookupService(JdbcTemplate jdbcTemplate,
                                    BlacklistEntryRepository blacklistEntryRepository) {
         this(jdbcTemplate, new LegacyMobileHashReader(blacklistEntryRepository));

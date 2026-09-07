@@ -17,6 +17,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,7 +26,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** Atomic protected writer for blacklist row identity, policy and all queryable blind indexes. */
 @Repository
-public final class BlacklistEntryProtectionAdapter {
+public class BlacklistEntryProtectionAdapter {
 
     public static final String SANITIZED_FAILURE = "BLACKLIST_PROTECTION_FAILED";
     private static final String TARGET = "BLACKLIST_ENTRY";
@@ -39,9 +41,10 @@ public final class BlacklistEntryProtectionAdapter {
     private final SecureRandom random;
     private final FieldReferencePublicationFence fieldFence;
 
+    @Autowired
     public BlacklistEntryProtectionAdapter(
             KeyProtectionPort keyProtection,
-            BlindIndexPort blindIndexes,
+            @Qualifier("blindIndexPort") BlindIndexPort blindIndexes,
             JdbcTemplate jdbc,
             PlatformTransactionManager transactionManager,
             ActiveFieldKeyReference activeFieldKeyReference,

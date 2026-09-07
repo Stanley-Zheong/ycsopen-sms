@@ -34,7 +34,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 4: Platform system-message and notification bootstrap** — Controlled platform templates.
 - [x] **Phase 5: Console identity and platform RBAC** — Password hashing inside identity.
 - [x] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
-- [ ] **Phase 7: Platform system configuration** — Typed, versioned, auditable production settings.
+- [x] **Phase 7: Platform system configuration** — Typed, versioned, auditable production settings.
 - [ ] **Phase 8: Tenant qualification and status** — All qualification fields/files.
 - [ ] **Phase 9: Tenant subaccounts and access credentials** — Tenant roles/subaccounts and isolation.
 - [ ] **Phase 10: Channel configuration lifecycle** — Protocol/carrier/connectivity/credential/connection/price/priority/availability schema.
@@ -249,7 +249,7 @@ The independent entry check still uses `EXECUTION-STANDARD.md` format, but phase
 
 **Test layers**: Redaction/reveal unit, audit integrity integration, cross-tenant authorization, detection scenarios, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `06-01-PLAN.md`
 **UI hint**: yes
 
 ### Phase 7: Platform system configuration
@@ -272,7 +272,7 @@ The independent entry check still uses `EXECUTION-STANDARD.md` format, but phase
 
 **Test layers**: Schema and policy unit, persistence/concurrency integration, authorization/security, reload/rollback fault, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `07-01-PLAN.md`, `07-02-PLAN.md`, `07-03-PLAN.md`
 **UI hint**: yes
 
 ### Phase 8: Tenant qualification and status

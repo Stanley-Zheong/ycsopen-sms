@@ -25,6 +25,10 @@
 | GET | `/api/v1/console/login-history` | 按当前权限范围查询登录历史 | F-1.3 |
 | GET | `/api/v1/console/operation-audits` | 按操作人、操作、结果、时间查询脱敏操作日志 | F-14.1 |
 | GET | `/api/v1/console/security-events` | 按事件、操作人、结果、时间查询安全事件 | F-14.2 |
+| GET | `/api/v1/console/system-configuration` | 查询类型化配置、当前版本、草稿与历史；敏感引用固定脱敏 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions` | 按当前版本和变更原因暂存配置变更 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions/{id}/activate` | 以乐观并发检查激活草稿并热加载 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions/{id}/rollback` | 从历史快照创建并激活新版本 | 8.1 System |
 | POST | `/api/v1/console/tenants/register` | 机构注册 | F-2.1 |
 | POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 审核通过并开通试用 | F-2.2/F-2.8 |
 | POST | `/api/v1/console/tenants/{id}/reject` | 驳回注册 | F-2.2 |
@@ -41,6 +45,13 @@
 `STARTED` 表示请求已在进入控制器前持久化，但终态写入中断，需人工调查。安全事件类型限定为
 `UNUSUAL_LOGIN`、`REPEATED_LOGIN_FAILURE`、`BULK_EXPORT`，结果限定为 `DETECTED`、`BLOCKED`、
 `SUCCESS`、`FAILURE`。未知筛选值返回 HTTP 400。
+
+系统配置权限分为 `system:configuration:menu`、`system:configuration:read`、
+`system:configuration:write` 和 `system:configuration:activate`。服务端只接受登记的类型化 key 和
+非空变更原因；客户端只提交变化字段，不能回传脱敏占位值。版本冲突、不可激活状态与热加载拒绝
+返回 HTTP 409，且不会静默改变当前运行时配置。配置 mutation 的稳定机器码位于
+`data.errorCode`（例如 `STALE_VERSION`、`RELOAD_REJECTED`）；`message` 是可翻译展示文本，客户端
+不得据此判断错误类型。查询只返回最新 50 条不可变版本记录，这是当前管理页的明确边界。
 
 ## 机构注册证明材料暂存合同
 

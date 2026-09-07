@@ -1,5 +1,7 @@
 package com.ycsopen.sms.core.notification.provider;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -7,11 +9,13 @@ import java.util.function.Consumer;
 
 /** Thin orchestration service for provider-backed platform bootstrap messages. */
 @Service
+@ConditionalOnBean(PlatformNotificationSpi.class)
 public class PlatformMessageBootstrapService {
     private final PlatformNotificationSpi provider;
     private final PlatformMessageBootstrapRecursionGuard guard;
     private final Consumer<PlatformNotificationAudit> auditSink;
 
+    @Autowired
     public PlatformMessageBootstrapService(PlatformNotificationSpi provider) {
         this(provider, new PlatformMessageBootstrapRecursionGuard(), audit -> { });
     }
