@@ -38,7 +38,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 8: Tenant qualification and status** — Tenant qualification, review, status, and eligibility fence delivered.
 - [x] **Phase 9: Tenant subaccounts and access credentials** — Tenant roles/subaccounts and access credentials delivered.
 - [x] **Phase 10: Channel configuration lifecycle** — Protocol/carrier/connectivity/credential/connection/price/priority/availability lifecycle delivered.
-- [ ] **Phase 11: Channel health, pools, and candidate pause** — Heartbeat/test health.
+- [x] **Phase 11: Channel health, pools, and candidate pause** — Heartbeat/test health.
 - [ ] **Phase 12: Signature lifecycle and channel filing** — Signature application/proof/risk.
 - [ ] **Phase 13: Template lifecycle and send compliance contract** — Template fields/variables/rules/signature binding.
 - [ ] **Phase 14: Auditable exemption policy** — Signature/content/account exemption types.
@@ -360,7 +360,7 @@ Plans:
 **Package ID**: `channel-health-pools-candidate-pause`
 **Goal**: Actual health transitions are visible and emit a source event.
 **In scope**: Heartbeat/test health; connection/timeout/failure measures; maintenance event; weighted/primary-backup pools; manual/automatic pause; immediate candidate eviction; recovery test.
-**Out of scope**: In-flight durable task ownership and migration, owned by Phase 23.
+**Out of scope**: In-flight durable task ownership and migration, owned by Phase 25.
 **Depends on**: Phases 2, and 10.
 **Requirements**: REQ-F-4-3, REQ-F-4-6, REQ-F-4-7 (health/pool/candidate atomic obligations).
 **Owned atomic obligations**: Run `/usr/bin/env ruby .planning/tools/validate-prd-obligations.rb --owner channel-health-pools-candidate-pause --assert-unique --assert-traced`; the returned set is authoritative for this phase.
@@ -375,7 +375,7 @@ Plans:
 
 **Test layers**: Health/pool/state unit, scheduler integration, candidate concurrency, authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `11-01-PLAN.md`, `11-02-PLAN.md`, `11-03-PLAN.md`, `11-04-PLAN.md`
 **UI hint**: yes
 
 ### Phase 12: Signature lifecycle and channel filing

@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-4-7-B",
+  "case": "C-P11-CANDIDATE-FENCE",
+  "result": "PASS",
+  "evidence": [
+    "ChannelCandidateEligibilityServiceTest verifies paused, maintenance, offline, unavailable, and no-effective-version channels are candidate-ineligible.",
+    "ChannelSelectorTest verifies routing candidate selection consumes the shared eligibility fence.",
+    "The phase explicitly does not claim durable in-flight task migration."
+  ]
+}

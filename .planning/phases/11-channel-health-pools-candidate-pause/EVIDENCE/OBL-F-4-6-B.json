@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-4-6-B",
+  "case": "C-P11-POOL-VALIDATION",
+  "result": "PASS",
+  "evidence": [
+    "ChannelPoolServiceTest rejects invalid weighted totals, missing primary member, stale expectedVersion, duplicate channel IDs, and enabled ineligible members.",
+    "ChannelPoolsPage unit test verifies editor-side weighted validation before save.",
+    "Chrome Playwright verifies data-testid admin-channel-health-channel-pools-weight-editor."
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/channel/health", "/admin/channel/pools"],
+    "test_ids": [
+      "admin-channel-health-channel-monitor-page",
+      "admin-channel-health-channel-monitor-health-state",
+      "admin-channel-health-channel-pools-page",
+      "admin-channel-health-channel-pools-weight-editor",
+      "admin-channel-health-channel-monitor-pause",
+      "admin-channel-health-channel-monitor-maintenance",
+      "admin-channel-health-channel-monitor-maintenance-end"
+    ],
+    "sources": [{"path": ".planning/phases/11-channel-health-pools-candidate-pause/design-output/channel-health-prototype.html", "sha256": "fa14676c6265fd263f2db59e8ce293bb7c1a7f9f68a8781c13ef7bf071fa9886"}]
+  },
+  "pencil": {
+    "sources": [{"path": ".planning/phases/11-channel-health-pools-candidate-pause/design-output/channel-health-baseline.pen", "sha256": "b156cd445286c3ac69a9cdb98f47c9c85638b0ffef42ad4671245993eed4713d"}]
+  },
+  "prototype": {
+    "routes": ["/admin/channel/health", "/admin/channel/pools"],
+    "test_ids": [
+      "admin-channel-health-channel-monitor-page",
+      "admin-channel-health-channel-monitor-health-state",
+      "admin-channel-health-channel-pools-page",
+      "admin-channel-health-channel-pools-weight-editor",
+      "admin-channel-health-channel-monitor-pause",
+      "admin-channel-health-channel-monitor-maintenance",
+      "admin-channel-health-channel-monitor-maintenance-end"
+    ],
+    "sources": [{"path": ".planning/phases/11-channel-health-pools-candidate-pause/design-output/channel-health-prototype.html", "sha256": "fa14676c6265fd263f2db59e8ce293bb7c1a7f9f68a8781c13ef7bf071fa9886"}]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "admin-channel-health-channel-monitor-page",
+      "admin-channel-health-channel-monitor-health-state",
+      "admin-channel-health-channel-pools-page",
+      "admin-channel-health-channel-pools-weight-editor",
+      "admin-channel-health-channel-monitor-pause",
+      "admin-channel-health-channel-monitor-maintenance",
+      "admin-channel-health-channel-monitor-maintenance-end"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [{"path": ".planning/phases/11-channel-health-pools-candidate-pause/design-output/prototype.spec.ts", "sha256": "8c2e74ce62f3840400c4e944f121f3ac8776e18d1be2fef40fe9e8c76af210fd"}]
+  },
+  "implementation": {
+    "routes": ["/admin/channel/health", "/admin/channel/pools"],
+    "test_ids": [
+      "admin-channel-health-channel-monitor-page",
+      "admin-channel-health-channel-monitor-health-state",
+      "admin-channel-health-channel-pools-page",
+      "admin-channel-health-channel-pools-weight-editor",
+      "admin-channel-health-channel-monitor-pause",
+      "admin-channel-health-channel-monitor-maintenance",
+      "admin-channel-health-channel-monitor-maintenance-end"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "169ba569caa37e1f5e666ebdd3d39af41407b8e01bfee23c7f245f416c4b56dd"},
+      {"path": "web/src/pages/admin/channels/ChannelHealthPage.tsx", "sha256": "ec7d8c9e81dbdedbec9b1d0e5c60357451859fecae52197818e8dff84bea6ab1"},
+      {"path": "web/src/pages/admin/channels/ChannelPoolsPage.tsx", "sha256": "9f6dd8d8528fa28a7dc6266489c7a990477c95b985f565de610a79020a45ccf7"}
+    ]
+  },
+  "playwright": {
+    "test_ids": [
+      "admin-channel-health-channel-monitor-page",
+      "admin-channel-health-channel-monitor-health-state",
+      "admin-channel-health-channel-pools-page",
+      "admin-channel-health-channel-pools-weight-editor",
+      "admin-channel-health-channel-monitor-pause",
+      "admin-channel-health-channel-monitor-maintenance",
+      "admin-channel-health-channel-monitor-maintenance-end"
+    ],
+    "evidence_kind": "production",
+    "sources": [{"path": "web/test/scripts/channel-health.spec.ts", "sha256": "c859ebf2130f532845ab6c318eeb3f77842089ed3a8ff410709592ca8a2ac584"}]
+  },
+  "execution": {
+    "command": "mvn -q -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase11RealServicePlaywrightTest test (runs npm Playwright channel-health.spec.ts internally)",
+    "commit": "63c4f8c7e0a9b0e1231d72315300c66397b9a201",
+    "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900; one worker",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/11-channel-health-pools-candidate-pause/EVIDENCE/playwright-execution.json", "sha256": "ed400298787593e26c1150792e10697457e9bfb79a5ddda64648111d667284a9"}
+  }
+}

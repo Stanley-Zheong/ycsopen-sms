@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>通道监督 · 原型</title>
+  <style>
+    :root { --blue:#0C85E8; --teal:#31C9B6; --page:#F6FAFF; --text:#123250; --muted:#5F7389; --border:#DBE5EF; --danger:#E5484D; --warn:#FF9C00; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--text); background:var(--page); font:14px "Segoe UI","PingFang SC",sans-serif; }
+    header { height:60px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 28px; }
+    aside { position:fixed; top:60px; bottom:0; width:232px; background:#fff; border-right:1px solid var(--border); padding:24px 16px; }
+    main { margin-left:232px; padding:28px 32px; } .crumb { color:var(--muted); margin-bottom:8px; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
+    .summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; } .metric { background:#fff; border:1px solid var(--border); border-radius:8px; padding:14px; }
+    button { border:0; border-radius:4px; padding:9px 14px; background:var(--blue); color:#fff; cursor:pointer; } button.secondary { background:#eef5ff;color:var(--blue); } button.danger { background:var(--danger); }
+    input,select { border:1px solid var(--border); border-radius:4px; padding:8px; color:var(--text); } label { display:grid; gap:6px; }
+    table { width:100%; border-collapse:collapse; } th,td { padding:12px 10px; border-bottom:1px solid var(--border); text-align:left; } th { color:var(--muted); font-weight:600; }
+    .badge { border-radius:99px; padding:4px 8px; background:#E7F8F4; color:#0D8779; } .badge.warn { background:#FFF6E5; color:#A46400; }
+    dialog { border:1px solid var(--border); border-radius:10px; width:640px; padding:24px; } dialog::backdrop { background:#12325055; }
+  </style>
+</head>
+<body>
+  <header><strong>YCSOpen SMS</strong><span style="margin-left:auto">运营控制台　通道监督</span></header>
+  <aside><div>通道配置</div><div style="margin-top:16px;color:var(--blue)" aria-current="page">通道监督</div><div style="margin-top:16px">通道池</div></aside>
+  <main>
+    <div class="crumb">首页 / 通道管理 / 通道监督</div>
+    <section class="summary">
+      <div class="metric">正常通道 <strong>8</strong></div><div class="metric">维护中 <strong>1</strong></div><div class="metric">已暂停 <strong>1</strong></div><div class="metric">候选可用 <strong>7</strong></div>
+    </section>
+    <section class="card" data-route="/admin/channel/health" data-testid="admin-channel-health-channel-monitor-page">
+      <h1>通道监督</h1>
+      <table><thead><tr><th>通道</th><th>健康</th><th>超时率</th><th>失败率</th><th>平均时延</th><th>候选资格</th><th>操作</th></tr></thead><tbody>
+        <tr><td>演示 CMPP</td><td><span class="badge warn" data-testid="admin-channel-health-channel-monitor-health-state">维护中 · 已告警</span></td><td>12.50%</td><td>18.00%</td><td>860ms</td><td>不可选：MAINTENANCE</td><td><button class="danger" data-testid="admin-channel-health-channel-monitor-pause">暂停</button> <button class="secondary" data-testid="admin-channel-health-channel-monitor-maintenance">开始维护</button> <button class="secondary" data-testid="admin-channel-health-channel-monitor-maintenance-end">结束维护</button></td></tr>
+      </tbody></table>
+    </section>
+    <section class="card" data-route="/admin/channel/pools" data-testid="admin-channel-health-channel-pools-page">
+      <h1>通道池</h1>
+      <table><thead><tr><th>池名称</th><th>模式</th><th>成员</th><th>总权重</th><th>主通道</th><th>操作</th></tr></thead><tbody>
+        <tr><td>国内营销池</td><td>权重</td><td>3</td><td data-testid="admin-channel-health-channel-pools-weight-editor">100</td><td>-</td><td><button>编辑</button></td></tr>
+      </tbody></table>
+    </section>
+    <dialog open aria-label="暂停通道"><label>触发来源<select><option>manual</option><option>health</option><option>complaint</option><option>ratio</option></select></label><label>原因<input value="连续健康检查失败" /></label><p><button>确认暂停</button></p></dialog>
+  </main>
+</body>
+</html>

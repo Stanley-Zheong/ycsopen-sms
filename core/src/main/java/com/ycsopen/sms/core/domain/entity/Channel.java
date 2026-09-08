@@ -101,6 +101,6 @@ public class Channel {
 
     /** F-5.9：路由引擎只应该把消息投给"正常"状态的通道。 */
     public boolean isRoutable() {
-        return status == Status.NORMAL;
+        return status == Status.NORMAL && "AVAILABLE".equals(availability) && effectiveVersionId != null;
     }
 }

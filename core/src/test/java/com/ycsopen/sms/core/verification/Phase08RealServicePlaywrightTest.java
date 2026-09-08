@@ -61,7 +61,8 @@ class Phase08RealServicePlaywrightTest {
     public static void main(String[] arguments) throws Exception {
         if (arguments.length != 1 || !("real-smoke".equals(arguments[0])
                 || "real-smoke-p09".equals(arguments[0])
-                || "real-smoke-p10".equals(arguments[0]))) {
+                || "real-smoke-p10".equals(arguments[0])
+                || "real-smoke-p11".equals(arguments[0]))) {
             throw new IllegalArgumentException("closed real-service smoke invocation required");
         }
         runRealSmoke(scenario(arguments[0]));
@@ -247,6 +248,10 @@ class Phase08RealServicePlaywrightTest {
             seedPhase10SmokeData(jdbc, encoder);
             return;
         }
+        if ("phase11".equals(scenario)) {
+            seedPhase11SmokeData(jdbc, encoder);
+            return;
+        }
         String passwordHash = encoder.encode(PASSWORD);
         long admin = insertUser(jdbc, ADMIN, "ADMIN", passwordHash);
         long noRead = insertUser(jdbc, NO_READ, "OPERATOR", passwordHash);
@@ -310,6 +315,71 @@ class Phase08RealServicePlaywrightTest {
                 """, source);
     }
 
+    private static void seedPhase11SmokeData(JdbcTemplate jdbc, PasswordEncoder encoder) {
+        String passwordHash = encoder.encode("Phase11-Valid!123");
+        jdbc.update("DELETE FROM channel_pool_members WHERE pool_id IN "
+                + "(SELECT id FROM channel_pools WHERE pool_name LIKE 'phase11-%')");
+        jdbc.update("DELETE FROM channel_pools WHERE pool_name LIKE 'phase11-%'");
+        jdbc.update("DELETE FROM channel_pause_events WHERE channel_id IN "
+                + "(SELECT id FROM channels WHERE channel_name LIKE 'phase11-%')");
+        jdbc.update("DELETE FROM channel_health_observations WHERE channel_id IN "
+                + "(SELECT id FROM channels WHERE channel_name LIKE 'phase11-%')");
+        jdbc.update("DELETE FROM channel_configuration_versions WHERE channel_id IN "
+                + "(SELECT id FROM channels WHERE channel_name LIKE 'phase11-%')");
+        jdbc.update("DELETE FROM channels WHERE channel_name LIKE 'phase11-%'");
+        jdbc.update("DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username LIKE 'phase11-%')");
+        jdbc.update("DELETE FROM users WHERE username LIKE 'phase11-%'");
+        insertUser(jdbc, "phase11-admin", "ADMIN", passwordHash);
+        jdbc.update("""
+                INSERT INTO channels(channel_name, protocol, operator, host, port, account_encrypted,
+                                     password_encrypted, sp_id, service_id, src_id, max_connections,
+                                     window_size, tps_limit, price, priority, active_window,
+                                     availability, extra_config, status, configuration_version)
+                VALUES ('phase11-main','CMPP','MOBILE','channel-fixture.local',7890,X'11',X'12',
+                        'P11','svc','10691100',4,8,100,0.0100,90,'00:00-23:59','AVAILABLE',JSON_OBJECT(),'NORMAL',1),
+                       ('phase11-maintenance','CMPP','MOBILE','channel-fixture.local',7890,X'13',X'14',
+                        'P11M','svc','10691101',4,8,100,0.0100,80,'00:00-23:59','AVAILABLE',JSON_OBJECT(),'MAINTENANCE',1)
+                """);
+        long main = jdbc.queryForObject("SELECT id FROM channels WHERE channel_name='phase11-main'",
+                Long.class);
+        long maintenance = jdbc.queryForObject("SELECT id FROM channels WHERE channel_name='phase11-maintenance'",
+                Long.class);
+        long mainVersion = insertEffectiveChannelVersion(jdbc, main);
+        long maintenanceVersion = insertEffectiveChannelVersion(jdbc, maintenance);
+        jdbc.update("UPDATE channels SET effective_version_id=? WHERE id=?", mainVersion, main);
+        jdbc.update("UPDATE channels SET effective_version_id=? WHERE id=?", maintenanceVersion, maintenance);
+        jdbc.update("""
+                UPDATE channels
+                   SET pause_reason='seed maintenance',
+                       paused_by='phase11-seed',
+                       paused_at=CURRENT_TIMESTAMP(6) - INTERVAL 1 SECOND
+                 WHERE id=?
+                """, maintenance);
+        jdbc.update("""
+                INSERT INTO channel_health_observations(channel_id, connected, timeout_rate, failure_rate,
+                                                        average_latency_ms, result_status, reason_code)
+                VALUES (?, 1, 0.0000, 0.0000, 75, 'SUCCESS', 'SEED_HEALTHY'),
+                       (?, 1, 0.0000, 0.0000, 80, 'SUCCESS', 'SEED_VALIDATION')
+                """, main, maintenance);
+        jdbc.update("INSERT INTO channel_pools(pool_name, mode, version, status) VALUES ('phase11-weighted','WEIGHTED',1,'ACTIVE')");
+        long poolId = jdbc.queryForObject("SELECT id FROM channel_pools WHERE pool_name='phase11-weighted'",
+                Long.class);
+        jdbc.update("""
+                INSERT INTO channel_pool_members(pool_id, channel_id, weight, primary_member, enabled)
+                VALUES (?, ?, 100, 1, 1), (?, ?, 0, 0, 0)
+                """, poolId, main, poolId, maintenance);
+    }
+
+    private static long insertEffectiveChannelVersion(JdbcTemplate jdbc, long channelId) {
+        jdbc.update("""
+                INSERT INTO channel_configuration_versions(channel_id, payload_json, status, reason_code)
+                VALUES (?, JSON_OBJECT('seed','phase11'), 'EFFECTIVE', 'SEED')
+                """, channelId);
+        return jdbc.queryForObject("""
+                SELECT id FROM channel_configuration_versions WHERE channel_id=? ORDER BY id DESC LIMIT 1
+                """, Long.class, channelId);
+    }
+
     private static long insertTenantUser(JdbcTemplate jdbc, String username, String type,
                                          long tenantId, String passwordHash) {
         jdbc.update("INSERT INTO users(username,password_hash,real_name,user_type,tenant_id,status,created_by) VALUES (?,?,?,?,?,'ACTIVE','phase09-smoke')",
@@ -357,21 +427,25 @@ class Phase08RealServicePlaywrightTest {
             throws IOException, InterruptedException {
         boolean phase09 = "phase09".equals(scenario);
         boolean phase10 = "phase10".equals(scenario);
+        boolean phase11 = "phase11".equals(scenario);
         Path report = root.resolve(switch (scenario) {
             case "phase09" -> ".planning/phases/09-tenant-access-administration/EVIDENCE/phase09-playwright-raw.json";
             case "phase10" -> ".planning/phases/10-channel-configuration-lifecycle/EVIDENCE/phase10-playwright-raw.json";
+            case "phase11" -> ".planning/phases/11-channel-health-pools-candidate-pause/EVIDENCE/phase11-playwright-raw.json";
             default -> ".planning/phases/08-tenant-qualification-status/EVIDENCE/phase08-playwright-raw.json";
         });
         Path log = root.resolve(switch (scenario) {
             case "phase09" -> "core/target/phase09-playwright.log";
             case "phase10" -> "core/target/phase10-playwright.log";
+            case "phase11" -> "core/target/phase11-playwright.log";
             default -> "core/target/phase08-playwright.log";
         });
         Files.createDirectories(report.getParent());
         Files.deleteIfExists(report);
         ProcessBuilder builder = new ProcessBuilder(
                 "npm", "run", "test:e2e", "--",
-                phase10 ? "channel-configuration.spec.ts"
+                phase11 ? "channel-health.spec.ts"
+                        : phase10 ? "channel-configuration.spec.ts"
                         : phase09 ? "tenant-access.spec.ts" : "tenant-qualification.spec.ts",
                 "--reporter=json", "--workers=1");
         builder.directory(root.resolve("web").toFile());
@@ -389,6 +463,9 @@ class Phase08RealServicePlaywrightTest {
             environment.put("PHASE10_TEST_PASSWORD", "Phase10-Valid!123");
             environment.put("PHASE10_ADMIN_USERNAME", "phase10-admin");
             environment.put("PHASE10_FINANCE_USERNAME", "phase10-finance");
+        } else if (phase11) {
+            environment.put("PHASE11_TEST_PASSWORD", "Phase11-Valid!123");
+            environment.put("PHASE11_ADMIN_USERNAME", "phase11-admin");
         } else {
             environment.put("PHASE08_TEST_PASSWORD", PASSWORD);
             environment.put("PHASE08_ADMIN_USERNAME", ADMIN);
@@ -400,7 +477,9 @@ class Phase08RealServicePlaywrightTest {
         }
         environment.put("PLAYWRIGHT_JSON_OUTPUT_NAME", report.toString());
         builder.environment().putAll(environment);
-        Map<String, String> secrets = phase10
+        Map<String, String> secrets = phase11
+                ? Map.of("PHASE11_TEST_PASSWORD", "Phase11-Valid!123")
+                : phase10
                 ? Map.of("PHASE10_TEST_PASSWORD", "Phase10-Valid!123")
                 : phase09
                 ? Map.of("PHASE09_TEST_PASSWORD", "Phase09-Valid!123")
@@ -412,7 +491,11 @@ class Phase08RealServicePlaywrightTest {
         assertThat(result.exitCode()).as("Phase 08 Playwright smoke: %s", result.output()).isZero();
         assertThat(report).exists();
         String reportBody = Files.readString(report);
-        if (phase10) {
+        if (phase11) {
+            assertThat(reportBody)
+                    .contains("pw-p11-channel-monitor", "pw-p11-channel-pause",
+                            "pw-p11-channel-pools", "pw-p11-pool-weight-editor");
+        } else if (phase10) {
             assertThat(reportBody)
                     .contains("pw-p10-channel-configuration", "pw-p10-channel-offline",
                             "pw-p10-channel-access-denied")
@@ -429,6 +512,7 @@ class Phase08RealServicePlaywrightTest {
         return switch (argument) {
             case "real-smoke-p09" -> "phase09";
             case "real-smoke-p10" -> "phase10";
+            case "real-smoke-p11" -> "phase11";
             default -> "phase08";
         };
     }
@@ -437,6 +521,7 @@ class Phase08RealServicePlaywrightTest {
         return switch (scenario) {
             case "phase09" -> "PHASE09";
             case "phase10" -> "PHASE10";
+            case "phase11" -> "PHASE11";
             default -> "PHASE08";
         };
     }

@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-STATE-CHANNEL-MAINTAIN-END",
+  "case": "C-P11-STATE-MAINTAIN-END",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest verifies maintenance end is rejected without successful health validation after maintenance begins and persists the end reason.",
+    "Phase11ChannelHealthMySqlTest verifies maintenance end returns the channel to NORMAL after successful validation using MySQL DATETIME(6) boundaries.",
+    "Chrome Playwright verifies data-testid admin-channel-health-channel-monitor-maintenance-end."
+  ]
+}

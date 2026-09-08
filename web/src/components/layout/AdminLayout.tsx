@@ -13,6 +13,8 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
   { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read] },
   { to: '/admin/channel/configuration', label: '通道管理', roles: ['ADMIN', 'OPERATOR'] },
+  { to: '/admin/channel/health', label: '通道健康', roles: ['ADMIN', 'OPERATOR'] },
+  { to: '/admin/channel/pools', label: '通道池', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/audit', label: '审核中心', roles: OPERATIONS },
   { to: '/admin/riskcontrol', label: '验证规则', roles: OPERATIONS },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
@@ -52,6 +54,14 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/channel/configuration' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-channel-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/channel/health' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-channel-health-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/channel/pools' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-channel-health-pools-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

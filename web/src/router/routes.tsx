@@ -21,6 +21,8 @@ import TenantAdministratorsPage from '@/pages/tenant/TenantAdministratorsPage';
 import TenantApiKeysPage from '@/pages/tenant/TenantApiKeysPage';
 import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
 import ChannelConfigurationPage from '@/pages/admin/channels/ChannelConfigurationPage';
+import ChannelHealthPage from '@/pages/admin/channels/ChannelHealthPage';
+import ChannelPoolsPage from '@/pages/admin/channels/ChannelPoolsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -48,6 +50,8 @@ export const router = createBrowserRouter([
       { path: '/admin/tenants', element: <TenantListPage /> },
       { path: 'channels', element: <Navigate to="/admin/channel/configuration" replace /> },
       { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
+      { path: '/admin/channel/health', element: <ChannelHealthPage /> },
+      { path: '/admin/channel/pools', element: <ChannelPoolsPage /> },
       { path: 'audit', element: <PlaceholderPage title="审核中心（签名/模板/免审规则）" prdRef="F-3.2/F-3.5/F-3.6" /> },
       {
         path: 'riskcontrol',

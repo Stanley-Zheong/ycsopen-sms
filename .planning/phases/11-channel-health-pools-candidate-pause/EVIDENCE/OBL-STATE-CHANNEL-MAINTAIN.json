@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-STATE-CHANNEL-MAINTAIN",
+  "case": "C-P11-STATE-MAINTAIN",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest verifies planned maintenance start sets MAINTENANCE and records an event.",
+    "ChannelCandidateEligibilityServiceTest verifies MAINTENANCE exits new route candidates.",
+    "Chrome Playwright verifies data-testid admin-channel-health-channel-monitor-maintenance."
+  ]
+}

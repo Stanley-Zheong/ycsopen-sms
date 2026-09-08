@@ -1,0 +1,11 @@
+{
+  "obligation": "OBL-F-4-3-B",
+  "case": "C-P11-SUSTAINED-FAILURE",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest verifies consecutive failed observations move the channel to maintenance and persist one health-failure source event per episode.",
+    "ChannelHealthServiceTest verifies rate-based failures are derived from result_status and show DEGRADED before the sustained-failure threshold.",
+    "ChannelCandidateEligibilityServiceTest verifies non-normal channel states are candidate-ineligible.",
+    "Chrome Playwright asserts data-testid admin-channel-health-channel-monitor-health-state on the monitor table."
+  ]
+}

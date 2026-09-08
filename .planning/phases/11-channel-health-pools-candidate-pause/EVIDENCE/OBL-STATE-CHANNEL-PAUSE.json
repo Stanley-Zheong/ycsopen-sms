@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-STATE-CHANNEL-PAUSE",
+  "case": "C-P11-STATE-PAUSE",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest verifies NORMAL to PAUSED transition through the pause endpoint/service.",
+    "ChannelCandidateEligibilityServiceTest verifies PAUSED exits new route candidates.",
+    "Chrome Playwright verifies the state transition through the monitor page."
+  ]
+}
