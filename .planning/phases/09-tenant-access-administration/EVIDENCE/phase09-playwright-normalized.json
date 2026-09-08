@@ -1,0 +1,7 @@
+{
+  "command": "mvn -q -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase09RealServicePlaywrightTest test",
+  "commit": "0468fe5c9fd229c43fc748b8760a8c273527f8bd",
+  "config": "web/playwright.config.ts; local Google Chrome 152.0.7977.76; viewport 1440x900; one worker; real Spring/Vite/MySQL/MinIO/SoftHSM; no interception",
+  "result": "PASS",
+  "cases": ["C-P9-SUBACCOUNT-CREATE", "C-P9-SUBACCOUNT-ISOLATION", "C-P9-API-KEY-POLICY", "C-P9-API-KEY-SECRET", "C-P9-CMPP-CREDENTIAL", "C-P9-ADMIN-SETTINGS"]
+}

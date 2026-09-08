@@ -18,6 +18,9 @@ import SecurityEventsPage from '@/pages/admin/security/SecurityEventsPage';
 import SystemConfigurationPage from '@/pages/admin/system/SystemConfigurationPage';
 import TenantRegistrationPage from '@/pages/tenant/TenantRegistrationPage';
 import TenantQualificationPage from '@/pages/tenant/TenantQualificationPage';
+import TenantAdministratorsPage from '@/pages/tenant/TenantAdministratorsPage';
+import TenantApiKeysPage from '@/pages/tenant/TenantApiKeysPage';
+import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -85,6 +88,9 @@ export const router = createBrowserRouter([
       { path: 'uplink', element: <PlaceholderPage title="上行消息查询" prdRef="F-7.5/F-7.9" /> },
       { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },
       { path: '/tenant/qualification', element: <TenantQualificationPage /> },
+      { path: '/tenant/administrators', element: <TenantAdministratorsPage /> },
+      { path: '/tenant/api/keys', element: <TenantApiKeysPage /> },
+      { path: '/tenant/cmpp/access', element: <TenantCmppAccessPage /> },
     ],
   },
 ]);

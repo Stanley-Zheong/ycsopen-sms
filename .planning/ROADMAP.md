@@ -318,7 +318,12 @@ The independent entry check still uses `EXECUTION-STANDARD.md` format, but phase
 
 **Test layers**: Role/credential unit, encryption integration, tenant isolation/adversarial API, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 09-01-PLAN.md — Tenant subaccounts, tenant roles, and isolation.
+- [ ] 09-02-PLAN.md — HTTP API-key management and revocation.
+- [ ] 09-03-PLAN.md — Downstream CMPP credential management.
+- [ ] 09-04-PLAN.md — Tenant access UI and real Chrome acceptance.
 **UI hint**: yes
 
 ### Phase 10: Channel configuration lifecycle

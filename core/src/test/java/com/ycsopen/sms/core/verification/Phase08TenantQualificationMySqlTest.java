@@ -167,7 +167,9 @@ class Phase08TenantQualificationMySqlTest {
         assertThatThrownBy(() -> jdbc.update(
                 "DELETE FROM tenant_qualification_events WHERE tenant_id=?", tenantId))
                 .isInstanceOf(DataAccessException.class);
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1701");
+        // Phase 09 owns the next additive migrations; this regression guard must
+        // track the latest schema rather than freeze the Phase 08 version.
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1801");
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
     }
 

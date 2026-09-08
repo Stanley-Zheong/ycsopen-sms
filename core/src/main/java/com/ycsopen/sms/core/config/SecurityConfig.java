@@ -53,8 +53,13 @@ public class SecurityConfig {
                             "/api/v1/console/tenants/registration-object-sessions/{sessionId}/objects/{purpose}").permitAll()
                     .requestMatchers(HttpMethod.DELETE,
                             "/api/v1/console/tenants/registration-object-sessions/{sessionId}").permitAll()
-                    .requestMatchers("/api/v1/console/tenant/qualification")
+            .requestMatchers("/api/v1/console/tenant/qualification")
                     .hasRole("TENANT_ADMIN")
+                    .requestMatchers("/api/v1/console/tenant/administrators/**")
+                    .hasRole("TENANT_ADMIN")
+                    .requestMatchers("/api/v1/console/tenant/api-keys/**",
+                            "/api/v1/console/tenant/cmpp-credentials/**")
+                    .hasAnyRole("TENANT_ADMIN", "TENANT_DEV")
                     .requestMatchers("/api/v1/console/**")
                     .hasAnyRole("ADMIN", "OPERATOR", "FINANCE")
                     .anyRequest().permitAll())

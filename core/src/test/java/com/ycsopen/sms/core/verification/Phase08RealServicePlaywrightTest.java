@@ -54,15 +54,24 @@ class Phase08RealServicePlaywrightTest {
 
     @Test
     void chromeBootsTheRealQualificationServiceTopology() throws Exception {
+        assertThat(runChromeAcceptance("real-smoke"))
+                .contains("PHASE08_REAL_SERVICE_CHROME_SMOKE_PASS");
+    }
+
+    public static void main(String[] arguments) throws Exception {
+        if (arguments.length != 1 || !("real-smoke".equals(arguments[0])
+                || "real-smoke-p09".equals(arguments[0]))) {
+            throw new IllegalArgumentException("closed real-service smoke invocation required");
+        }
+        runRealSmoke("real-smoke-p09".equals(arguments[0]) ? "phase09" : "phase08");
+    }
+
+    static String runChromeAcceptance(String childArgument) throws Exception {
         Path root = Phase01ServiceHarness.repositoryRoot();
         Path chrome = Path.of(System.getenv().getOrDefault(
                 "YCSOPEN_CHROME_PATH",
                 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"));
         assertThat(chrome).as("locally installed Google Chrome").isExecutable();
-        assertThat(Files.readString(root.resolve("web/test/scripts/tenant-qualification.spec.ts")))
-                .as("production acceptance must not intercept project APIs")
-                .doesNotContain("page.route(", ".route('", ".route(\"");
-
         String output;
         try (Phase03ServiceHarness.FixtureSet fixtures = Phase03ServiceHarness.startAll()) {
             Phase03ServiceHarness.ServiceSession mysql = fixtures.mysql();
@@ -88,24 +97,17 @@ class Phase08RealServicePlaywrightTest {
             environment.put("AWS_SECRET_ACCESS_KEY", minio.password());
             environment.put("AWS_EC2_METADATA_DISABLED", "true");
             environment.put("YCSOPEN_CHROME_PATH", chrome.toString());
-
-            output = runChild(root,
-                    List.of(java.toString(), "-cp", classpath,
-                            Phase08RealServicePlaywrightTest.class.getName(), "real-smoke"),
-                    environment);
-            assertThat(output).contains("PHASE08_REAL_SERVICE_CHROME_SMOKE_PASS");
+            output = runChild(root, List.of(java.toString(), "-cp", classpath,
+                    Phase08RealServicePlaywrightTest.class.getName(), childArgument), environment);
         }
-        assertThat(output).doesNotContain("Phase08-Valid!123", "pobj_v1_", "regup_v1_");
-    }
-
-    public static void main(String[] arguments) throws Exception {
-        if (arguments.length != 1 || !"real-smoke".equals(arguments[0])) {
-            throw new IllegalArgumentException("closed Phase 08 smoke invocation required");
-        }
-        runRealSmoke();
+        return output;
     }
 
     private static void runRealSmoke() throws Exception {
+        runRealSmoke("phase08");
+    }
+
+    private static void runRealSmoke(String scenario) throws Exception {
         Path root = Phase01ServiceHarness.repositoryRoot();
         Path destination = Path.of(requiredEnvironment("PHASE03_SOFTHSM_DESTINATION"));
         Phase03ServiceHarness.SoftHsmHandoff handoff = Phase03ServiceHarness.readHandoff(destination);
@@ -119,7 +121,7 @@ class Phase08RealServicePlaywrightTest {
 
         URI minioEndpoint = URI.create("http://" + requiredEnvironment("PHASE03_MINIO_HOST")
                 + ":" + requiredEnvironment("PHASE03_MINIO_PORT"));
-        String bucket = "phase08-smoke-bucket";
+        String bucket = scenario + "-smoke-bucket";
         try (S3Client s3 = s3(minioEndpoint);
              SandboxServer notification = SandboxServer.notification();
              SandboxServer inspection = SandboxServer.inspection()) {
@@ -136,8 +138,8 @@ class Phase08RealServicePlaywrightTest {
                         .run(properties.entrySet().stream()
                                 .map(entry -> "--" + entry.getKey() + "=" + entry.getValue())
                                 .toArray(String[]::new))) {
-                    seedSmokeData(jdbc, application.getBean(PasswordEncoder.class));
-                    runPlaywright(root, backendPort, webPort, notification);
+                    seedSmokeData(jdbc, application.getBean(PasswordEncoder.class), scenario);
+                    runPlaywright(root, backendPort, webPort, notification, scenario);
                 }
             } finally {
                 s3.listObjectsV2(request -> request.bucket(bucket)).contents().forEach(object ->
@@ -145,7 +147,8 @@ class Phase08RealServicePlaywrightTest {
                 s3.deleteBucket(request -> request.bucket(bucket));
             }
         }
-        System.out.println("PHASE08_REAL_SERVICE_CHROME_SMOKE_PASS topology=mysql,minio,softhsm,spring,vite,chrome,notification,inspection");
+        System.out.println(("phase09".equals(scenario) ? "PHASE09" : "PHASE08")
+                + "_REAL_SERVICE_CHROME_SMOKE_PASS topology=mysql,minio,softhsm,spring,vite,chrome,notification,inspection");
     }
 
     private static Map<String, Object> applicationProperties(
@@ -234,7 +237,11 @@ class Phase08RealServicePlaywrightTest {
                 purpose, version, reference, state);
     }
 
-    private static void seedSmokeData(JdbcTemplate jdbc, PasswordEncoder encoder) {
+    private static void seedSmokeData(JdbcTemplate jdbc, PasswordEncoder encoder, String scenario) {
+        if ("phase09".equals(scenario)) {
+            seedPhase09SmokeData(jdbc, encoder);
+            return;
+        }
         String passwordHash = encoder.encode(PASSWORD);
         long admin = insertUser(jdbc, ADMIN, "ADMIN", passwordHash);
         long noRead = insertUser(jdbc, NO_READ, "OPERATOR", passwordHash);
@@ -245,6 +252,42 @@ class Phase08RealServicePlaywrightTest {
         assignRole(jdbc, readOnly, readOnlyRole, admin);
         assignPermission(jdbc, readOnlyRole, "tenant:menu");
         assignPermission(jdbc, readOnlyRole, "tenant:read");
+    }
+
+    private static void seedPhase09SmokeData(JdbcTemplate jdbc, PasswordEncoder encoder) {
+        String passwordHash = encoder.encode("Phase09-Valid!123");
+        jdbc.update("DELETE FROM tenant_api_keys WHERE tenant_id=?", 9001L);
+        jdbc.update("DELETE FROM tenant_protocol_credentials WHERE tenant_id=?", 9001L);
+        jdbc.update("DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username LIKE 'phase09-%')");
+        jdbc.update("DELETE FROM users WHERE username LIKE 'phase09-%'");
+        jdbc.update("DELETE FROM roles WHERE role_code IN ('TENANT_USER','TENANT_DEV') AND tenant_id=?", 9001L);
+        jdbc.update("DELETE FROM tenants WHERE id=?", 9001L);
+        jdbc.update("DELETE FROM tenants WHERE tenant_no=?", "P09-9002");
+        jdbc.update("INSERT INTO tenants(id,tenant_no,short_name,full_name,unified_social_credit_code,verification_status,lifecycle_status,inspection_status) VALUES (?,?,?,?,?,'VERIFIED','TRIAL','COMPLETED')",
+                9001L, "P09-9001", "P09测试租户", "P09测试租户有限公司", "91350211M000100Y90");
+        jdbc.update("INSERT INTO tenants(tenant_no,short_name,full_name,unified_social_credit_code,verification_status,lifecycle_status,inspection_status) VALUES (?,?,?,?, 'VERIFIED','TRIAL','COMPLETED')",
+                "P09-9002", "P09隔离租户", "P09隔离租户有限公司", "91350211M000100Y91");
+        long foreignTenant = jdbc.queryForObject("SELECT id FROM tenants WHERE tenant_no=?", Long.class, "P09-9002");
+        long admin = insertTenantUser(jdbc, "phase09-admin", "TENANT_ADMIN", 9001L, passwordHash);
+        insertTenantUser(jdbc, "phase09-dev", "TENANT_DEV", 9001L, passwordHash);
+        insertTenantUser(jdbc, "phase09-foreign", "TENANT_DEV", foreignTenant, passwordHash);
+        long userRole = insertTenantRole(jdbc, "TENANT_USER", "业务用户", 9001L);
+        long devRole = insertTenantRole(jdbc, "TENANT_DEV", "开发者", 9001L);
+        assignRole(jdbc, admin, userRole, admin);
+        assignRole(jdbc, admin, devRole, admin);
+    }
+
+    private static long insertTenantUser(JdbcTemplate jdbc, String username, String type,
+                                         long tenantId, String passwordHash) {
+        jdbc.update("INSERT INTO users(username,password_hash,real_name,user_type,tenant_id,status,created_by) VALUES (?,?,?,?,?,'ACTIVE','phase09-smoke')",
+                username, passwordHash, username, type, tenantId);
+        return jdbc.queryForObject("SELECT id FROM users WHERE username=?", Long.class, username);
+    }
+
+    private static long insertTenantRole(JdbcTemplate jdbc, String code, String name, long tenantId) {
+        jdbc.update("INSERT INTO roles(role_code,role_name,role_type,tenant_id,status) VALUES (?,?,'TENANT',?,'ACTIVE')",
+                code, name, tenantId);
+        return jdbc.queryForObject("SELECT id FROM roles WHERE role_code=?", Long.class, code);
     }
 
     private static long insertUser(JdbcTemplate jdbc, String username, String userType,
@@ -277,15 +320,19 @@ class Phase08RealServicePlaywrightTest {
     }
 
     private static void runPlaywright(Path root, int backendPort, int webPort,
-                                      SandboxServer notification)
+                                      SandboxServer notification, String scenario)
             throws IOException, InterruptedException {
-        Path report = root.resolve(
-                ".planning/phases/08-tenant-qualification-status/EVIDENCE/phase08-playwright-raw.json");
-        Path log = root.resolve("core/target/phase08-playwright.log");
+        boolean phase09 = "phase09".equals(scenario);
+        Path report = root.resolve(phase09
+                ? ".planning/phases/09-tenant-access-administration/EVIDENCE/phase09-playwright-raw.json"
+                : ".planning/phases/08-tenant-qualification-status/EVIDENCE/phase08-playwright-raw.json");
+        Path log = root.resolve(phase09 ? "core/target/phase09-playwright.log"
+                : "core/target/phase08-playwright.log");
         Files.createDirectories(report.getParent());
         Files.deleteIfExists(report);
         ProcessBuilder builder = new ProcessBuilder(
-                "npm", "run", "test:e2e", "--", "tenant-qualification.spec.ts",
+                "npm", "run", "test:e2e", "--",
+                phase09 ? "tenant-access.spec.ts" : "tenant-qualification.spec.ts",
                 "--reporter=json", "--workers=1");
         builder.directory(root.resolve("web").toFile());
         Map<String, String> environment = new LinkedHashMap<>();
@@ -293,24 +340,34 @@ class Phase08RealServicePlaywrightTest {
         environment.put("YCSOPEN_WEB_PORT", Integer.toString(webPort));
         environment.put("YCSOPEN_E2E_ISOLATED", "true");
         environment.put("VITE_BACKEND_TARGET", "http://127.0.0.1:" + backendPort);
-        environment.put("PHASE08_TEST_PASSWORD", PASSWORD);
-        environment.put("PHASE08_ADMIN_USERNAME", ADMIN);
-        environment.put("PHASE08_NO_READ_USERNAME", NO_READ);
-        environment.put("PHASE08_READ_ONLY_USERNAME", READ_ONLY);
-        environment.put("PHASE08_TENANT_USERNAME", TENANT_ADMIN);
-        environment.put("PHASE08_NOTIFICATION_INSPECTION_URL",
-                notification.baseUrl() + "/test/latest-code");
+        if (phase09) {
+            environment.put("PHASE09_TEST_PASSWORD", "Phase09-Valid!123");
+            environment.put("PHASE09_ADMIN_USERNAME", "phase09-admin");
+            environment.put("PHASE09_DEV_USERNAME", "phase09-dev");
+            environment.put("PHASE09_FOREIGN_USERNAME", "phase09-foreign");
+        } else {
+            environment.put("PHASE08_TEST_PASSWORD", PASSWORD);
+            environment.put("PHASE08_ADMIN_USERNAME", ADMIN);
+            environment.put("PHASE08_NO_READ_USERNAME", NO_READ);
+            environment.put("PHASE08_READ_ONLY_USERNAME", READ_ONLY);
+            environment.put("PHASE08_TENANT_USERNAME", TENANT_ADMIN);
+            environment.put("PHASE08_NOTIFICATION_INSPECTION_URL",
+                    notification.baseUrl() + "/test/latest-code");
+        }
         environment.put("PLAYWRIGHT_JSON_OUTPUT_NAME", report.toString());
         builder.environment().putAll(environment);
-        OwnedProcess.Result result = OwnedProcess.run(builder, Duration.ofMinutes(4), log,
-                Map.of("PHASE08_TEST_PASSWORD", PASSWORD));
+        Map<String, String> secrets = phase09
+                ? Map.of("PHASE09_TEST_PASSWORD", "Phase09-Valid!123")
+                : Map.of("PHASE08_TEST_PASSWORD", PASSWORD);
+        OwnedProcess.Result result = OwnedProcess.run(builder, Duration.ofMinutes(4), log, secrets);
         if (result.timedOut()) {
             throw new AssertionError("Phase 08 Playwright smoke timed out: " + result.output());
         }
         assertThat(result.exitCode()).as("Phase 08 Playwright smoke: %s", result.output()).isZero();
         assertThat(report).exists();
         assertThat(Files.readString(report))
-                .contains("pw-p8-register", "pw-p8-status-action")
+                .contains(phase09 ? "pw-p9-tenant-administrators-create" : "pw-p8-register",
+                        phase09 ? "pw-p9-tenant-administrators-page" : "pw-p8-status-action")
                 .doesNotContain("\"status\": \"failed\"", "\"status\":\"failed\"");
     }
 

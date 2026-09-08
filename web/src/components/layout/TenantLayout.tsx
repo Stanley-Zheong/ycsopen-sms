@@ -12,6 +12,9 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/uplink', label: '上行消息查询' },
   { to: '/tenant/shortlink', label: '短链管理' },
   { to: '/tenant/qualification', label: '资质认证', adminOnly: true },
+  { to: '/tenant/administrators', label: '子账号管理', adminOnly: true },
+  { to: '/tenant/api/keys', label: 'API 密钥' },
+  { to: '/tenant/cmpp/access', label: 'CMPP 接入' },
 ];
 
 /** 机构端整体布局，导航结构与 ycsansms.md 8.2 节一一对应。 */

@@ -17,6 +17,8 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
             select apiKey.id as id, apiKey.tenantId as tenantId, apiKey.status as status
               from TenantApiKey apiKey
              where apiKey.appKey = :appKey
+               and apiKey.status = 'ACTIVE'
+               and (apiKey.expireTime is null or apiKey.expireTime > CURRENT_TIMESTAMP)
             """)
     Optional<AuthenticationProjection> findAuthenticationByAppKey(@Param("appKey") String appKey);
 
