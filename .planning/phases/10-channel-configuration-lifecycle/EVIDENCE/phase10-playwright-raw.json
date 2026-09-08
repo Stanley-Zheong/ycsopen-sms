@@ -1,0 +1,604 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "channel-configuration.spec.ts",
+      "--reporter=json",
+      "--workers=1"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 63520",
+      "url": "http://127.0.0.1:63520/login",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "channel-configuration.spec.ts",
+      "file": "channel-configuration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Phase 10 channel configuration lifecycle",
+          "file": "channel-configuration.spec.ts",
+          "line": 31,
+          "column": 6,
+          "specs": [
+            {
+              "title": "pw-p10-channel-configuration C-P10-CHANNEL-CONFIGURATION OBL-F-4-1-A",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1164,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:32.480Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-ce5de931d05ea12b1282",
+              "file": "channel-configuration.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-connectivity C-P10-CONNECTIVITY OBL-F-4-1-B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 449,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:34.440Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-d5f90a11fcb89088fd65",
+              "file": "channel-configuration.spec.ts",
+              "line": 63,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-pricing C-P10-PRICING OBL-F-4-1-C",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 391,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:34.896Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-ad9937e52a86ec84cfa4",
+              "file": "channel-configuration.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-activation-result C-P10-ACTIVATION-ROLLBACK OBL-F-4-2-B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 439,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:35.294Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-fe2b534cbf50c368b226",
+              "file": "channel-configuration.spec.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-dependency-preview C-P10-DEPENDENCY-PREVIEW OBL-F-4-4-A",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 462,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:35.741Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-8af8d7827456f4dc9081",
+              "file": "channel-configuration.spec.ts",
+              "line": 93,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-migration C-P10-DEPENDENCY-MIGRATION OBL-F-4-4-B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 634,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:36.215Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-d2b9ac7c410ed8d0e04f",
+              "file": "channel-configuration.spec.ts",
+              "line": 104,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-name C-P10-FIELD-NAME OBL-FIELD-CHANNEL-NAME",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 388,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:36.860Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-9dee53031ce35229416c",
+              "file": "channel-configuration.spec.ts",
+              "line": 116,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-protocol C-P10-FIELD-PROTOCOL OBL-FIELD-CHANNEL-PROTOCOL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 405,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:37.253Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-be08d17eeeaa93f55343",
+              "file": "channel-configuration.spec.ts",
+              "line": 124,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-endpoint C-P10-FIELD-ENDPOINT OBL-FIELD-CHANNEL-ENDPOINT",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 378,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:37.665Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-4d12cade1c6829883298",
+              "file": "channel-configuration.spec.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-credential C-P10-FIELD-CREDENTIAL OBL-FIELD-CHANNEL-CREDENTIAL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 409,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:38.049Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-9ef5c799703d1a255cb5",
+              "file": "channel-configuration.spec.ts",
+              "line": 141,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-connection C-P10-FIELD-CONNECTION OBL-FIELD-CHANNEL-CONNECTION",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 397,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:38.467Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-7ac5485c04fd6b77d29a",
+              "file": "channel-configuration.spec.ts",
+              "line": 149,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-price C-P10-FIELD-PRICE OBL-FIELD-CHANNEL-PRICE",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:38.872Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-f4a190da1a11503de2b9",
+              "file": "channel-configuration.spec.ts",
+              "line": 157,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-field-priority C-P10-FIELD-PRIORITY OBL-FIELD-CHANNEL-PRIORITY",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 385,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:39.331Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-1672c664d05bd6466302",
+              "file": "channel-configuration.spec.ts",
+              "line": 166,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-offline C-P10-CHANNEL-OFFLINE OBL-STATE-CHANNEL-OFFLINE",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 490,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:39.721Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-0c4e32ccfc6579bb26be",
+              "file": "channel-configuration.spec.ts",
+              "line": 175,
+              "column": 3
+            },
+            {
+              "title": "pw-p10-channel-access-denied C-P10-RBAC OBL-F-4-1-B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 346,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-08T10:36:40.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d75a1d58f64a37d59641-824215370c6336d9d8c5",
+              "file": "channel-configuration.spec.ts",
+              "line": 188,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-08T10:36:31.788Z",
+    "duration": 8882.757,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

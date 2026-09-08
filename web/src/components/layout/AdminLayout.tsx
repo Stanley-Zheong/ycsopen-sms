@@ -12,7 +12,7 @@ const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; roles?: PlatformUserType[] }> = [
   { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
   { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read] },
-  { to: '/admin/channels', label: '通道管理', roles: OPERATIONS },
+  { to: '/admin/channel/configuration', label: '通道管理', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/audit', label: '审核中心', roles: OPERATIONS },
   { to: '/admin/riskcontrol', label: '验证规则', roles: OPERATIONS },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
@@ -48,6 +48,10 @@ export default function AdminLayout() {
           && (!item.permissions || item.permissions.every(access.can))).map((item) => (
           item.to === '/admin/tenants' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-tenant-qualification-tenants-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/channel/configuration' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-channel-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

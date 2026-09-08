@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-4-2-A","result":"PASS","evidence":["ChannelConfigurationHotReloadTest"],"commands":["mvn -f core/pom.xml -Dtest=ChannelConfigurationHotReloadTest test","mvn -f core/pom.xml test"],"notes":"Validated channel versions become effective through ChannelConfigurationSnapshotRegistry without service restart."}

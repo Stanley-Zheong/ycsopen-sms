@@ -60,10 +60,11 @@ class Phase08RealServicePlaywrightTest {
 
     public static void main(String[] arguments) throws Exception {
         if (arguments.length != 1 || !("real-smoke".equals(arguments[0])
-                || "real-smoke-p09".equals(arguments[0]))) {
+                || "real-smoke-p09".equals(arguments[0])
+                || "real-smoke-p10".equals(arguments[0]))) {
             throw new IllegalArgumentException("closed real-service smoke invocation required");
         }
-        runRealSmoke("real-smoke-p09".equals(arguments[0]) ? "phase09" : "phase08");
+        runRealSmoke(scenario(arguments[0]));
     }
 
     static String runChromeAcceptance(String childArgument) throws Exception {
@@ -147,7 +148,7 @@ class Phase08RealServicePlaywrightTest {
                 s3.deleteBucket(request -> request.bucket(bucket));
             }
         }
-        System.out.println(("phase09".equals(scenario) ? "PHASE09" : "PHASE08")
+        System.out.println(phaseMarker(scenario)
                 + "_REAL_SERVICE_CHROME_SMOKE_PASS topology=mysql,minio,softhsm,spring,vite,chrome,notification,inspection");
     }
 
@@ -242,6 +243,10 @@ class Phase08RealServicePlaywrightTest {
             seedPhase09SmokeData(jdbc, encoder);
             return;
         }
+        if ("phase10".equals(scenario)) {
+            seedPhase10SmokeData(jdbc, encoder);
+            return;
+        }
         String passwordHash = encoder.encode(PASSWORD);
         long admin = insertUser(jdbc, ADMIN, "ADMIN", passwordHash);
         long noRead = insertUser(jdbc, NO_READ, "OPERATOR", passwordHash);
@@ -275,6 +280,34 @@ class Phase08RealServicePlaywrightTest {
         long devRole = insertTenantRole(jdbc, "TENANT_DEV", "开发者", 9001L);
         assignRole(jdbc, admin, userRole, admin);
         assignRole(jdbc, admin, devRole, admin);
+    }
+
+    private static void seedPhase10SmokeData(JdbcTemplate jdbc, PasswordEncoder encoder) {
+        String passwordHash = encoder.encode("Phase10-Valid!123");
+        jdbc.update("DELETE FROM route_rules WHERE rule_name LIKE 'phase10-%'");
+        jdbc.update("DELETE FROM channel_configuration_versions WHERE channel_id IN "
+                + "(SELECT id FROM channels WHERE channel_name LIKE 'phase10-%')");
+        jdbc.update("DELETE FROM channels WHERE channel_name LIKE 'phase10-%'");
+        jdbc.update("DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username LIKE 'phase10-%')");
+        jdbc.update("DELETE FROM users WHERE username LIKE 'phase10-%'");
+        insertUser(jdbc, "phase10-admin", "ADMIN", passwordHash);
+        insertUser(jdbc, "phase10-finance", "FINANCE", passwordHash);
+        jdbc.update("""
+                INSERT INTO channels(channel_name, protocol, operator, host, port, account_encrypted,
+                                     password_encrypted, sp_id, service_id, src_id, max_connections,
+                                     window_size, tps_limit, price, priority, active_window,
+                                     availability, extra_config, status)
+                VALUES ('phase10-source','CMPP','MOBILE','channel-fixture.local',7890,X'01',X'02',
+                        'P10','svc','10690000',4,8,100,0.0100,60,'00:00-23:59','AVAILABLE',JSON_OBJECT(),'NORMAL'),
+                       ('phase10-destination','CMPP','MOBILE','channel-fixture.local',7890,X'03',X'04',
+                        'P10D','svc','10690001',4,8,100,0.0100,55,'00:00-23:59','AVAILABLE',JSON_OBJECT(),'NORMAL')
+                """);
+        long source = jdbc.queryForObject("SELECT id FROM channels WHERE channel_name='phase10-source'",
+                Long.class);
+        jdbc.update("""
+                INSERT INTO route_rules(rule_name, operator, target_channel_id, priority, status)
+                VALUES ('phase10-route','MOBILE',?,100,'ACTIVE')
+                """, source);
     }
 
     private static long insertTenantUser(JdbcTemplate jdbc, String username, String type,
@@ -323,16 +356,23 @@ class Phase08RealServicePlaywrightTest {
                                       SandboxServer notification, String scenario)
             throws IOException, InterruptedException {
         boolean phase09 = "phase09".equals(scenario);
-        Path report = root.resolve(phase09
-                ? ".planning/phases/09-tenant-access-administration/EVIDENCE/phase09-playwright-raw.json"
-                : ".planning/phases/08-tenant-qualification-status/EVIDENCE/phase08-playwright-raw.json");
-        Path log = root.resolve(phase09 ? "core/target/phase09-playwright.log"
-                : "core/target/phase08-playwright.log");
+        boolean phase10 = "phase10".equals(scenario);
+        Path report = root.resolve(switch (scenario) {
+            case "phase09" -> ".planning/phases/09-tenant-access-administration/EVIDENCE/phase09-playwright-raw.json";
+            case "phase10" -> ".planning/phases/10-channel-configuration-lifecycle/EVIDENCE/phase10-playwright-raw.json";
+            default -> ".planning/phases/08-tenant-qualification-status/EVIDENCE/phase08-playwright-raw.json";
+        });
+        Path log = root.resolve(switch (scenario) {
+            case "phase09" -> "core/target/phase09-playwright.log";
+            case "phase10" -> "core/target/phase10-playwright.log";
+            default -> "core/target/phase08-playwright.log";
+        });
         Files.createDirectories(report.getParent());
         Files.deleteIfExists(report);
         ProcessBuilder builder = new ProcessBuilder(
                 "npm", "run", "test:e2e", "--",
-                phase09 ? "tenant-access.spec.ts" : "tenant-qualification.spec.ts",
+                phase10 ? "channel-configuration.spec.ts"
+                        : phase09 ? "tenant-access.spec.ts" : "tenant-qualification.spec.ts",
                 "--reporter=json", "--workers=1");
         builder.directory(root.resolve("web").toFile());
         Map<String, String> environment = new LinkedHashMap<>();
@@ -345,6 +385,10 @@ class Phase08RealServicePlaywrightTest {
             environment.put("PHASE09_ADMIN_USERNAME", "phase09-admin");
             environment.put("PHASE09_DEV_USERNAME", "phase09-dev");
             environment.put("PHASE09_FOREIGN_USERNAME", "phase09-foreign");
+        } else if (phase10) {
+            environment.put("PHASE10_TEST_PASSWORD", "Phase10-Valid!123");
+            environment.put("PHASE10_ADMIN_USERNAME", "phase10-admin");
+            environment.put("PHASE10_FINANCE_USERNAME", "phase10-finance");
         } else {
             environment.put("PHASE08_TEST_PASSWORD", PASSWORD);
             environment.put("PHASE08_ADMIN_USERNAME", ADMIN);
@@ -356,7 +400,9 @@ class Phase08RealServicePlaywrightTest {
         }
         environment.put("PLAYWRIGHT_JSON_OUTPUT_NAME", report.toString());
         builder.environment().putAll(environment);
-        Map<String, String> secrets = phase09
+        Map<String, String> secrets = phase10
+                ? Map.of("PHASE10_TEST_PASSWORD", "Phase10-Valid!123")
+                : phase09
                 ? Map.of("PHASE09_TEST_PASSWORD", "Phase09-Valid!123")
                 : Map.of("PHASE08_TEST_PASSWORD", PASSWORD);
         OwnedProcess.Result result = OwnedProcess.run(builder, Duration.ofMinutes(4), log, secrets);
@@ -365,10 +411,34 @@ class Phase08RealServicePlaywrightTest {
         }
         assertThat(result.exitCode()).as("Phase 08 Playwright smoke: %s", result.output()).isZero();
         assertThat(report).exists();
-        assertThat(Files.readString(report))
-                .contains(phase09 ? "pw-p9-tenant-administrators-create" : "pw-p8-register",
-                        phase09 ? "pw-p9-tenant-administrators-page" : "pw-p8-status-action")
-                .doesNotContain("\"status\": \"failed\"", "\"status\":\"failed\"");
+        String reportBody = Files.readString(report);
+        if (phase10) {
+            assertThat(reportBody)
+                    .contains("pw-p10-channel-configuration", "pw-p10-channel-offline",
+                            "pw-p10-channel-access-denied")
+                    .doesNotContain("P10-Secret!123");
+        } else {
+            assertThat(reportBody)
+                    .contains(phase09 ? "pw-p9-tenant-administrators-create" : "pw-p8-register",
+                            phase09 ? "pw-p9-tenant-administrators-page" : "pw-p8-status-action");
+        }
+        assertThat(reportBody).doesNotContain("\"status\": \"failed\"", "\"status\":\"failed\"");
+    }
+
+    private static String scenario(String argument) {
+        return switch (argument) {
+            case "real-smoke-p09" -> "phase09";
+            case "real-smoke-p10" -> "phase10";
+            default -> "phase08";
+        };
+    }
+
+    private static String phaseMarker(String scenario) {
+        return switch (scenario) {
+            case "phase09" -> "PHASE09";
+            case "phase10" -> "PHASE10";
+            default -> "PHASE08";
+        };
     }
 
     private static S3Client s3(URI endpoint) {

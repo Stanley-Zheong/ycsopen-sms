@@ -5,7 +5,6 @@ import PlaceholderPage from '@/components/common/PlaceholderPage';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/admin/dashboard/DashboardPage';
 import TenantListPage from '@/pages/admin/tenants/TenantListPage';
-import ChannelListPage from '@/pages/admin/channels/ChannelListPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
 import SendPage from '@/pages/tenant/send/SendPage';
 import ProtectedRoute from './ProtectedRoute';
@@ -21,6 +20,7 @@ import TenantQualificationPage from '@/pages/tenant/TenantQualificationPage';
 import TenantAdministratorsPage from '@/pages/tenant/TenantAdministratorsPage';
 import TenantApiKeysPage from '@/pages/tenant/TenantApiKeysPage';
 import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
+import ChannelConfigurationPage from '@/pages/admin/channels/ChannelConfigurationPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -46,7 +46,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
       { path: '/admin/tenants', element: <TenantListPage /> },
-      { path: 'channels', element: <ChannelListPage /> },
+      { path: 'channels', element: <Navigate to="/admin/channel/configuration" replace /> },
+      { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
       { path: 'audit', element: <PlaceholderPage title="审核中心（签名/模板/免审规则）" prdRef="F-3.2/F-3.5/F-3.6" /> },
       {
         path: 'riskcontrol',

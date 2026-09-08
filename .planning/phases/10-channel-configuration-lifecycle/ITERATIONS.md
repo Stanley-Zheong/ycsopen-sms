@@ -1,0 +1,9 @@
+# Iterations
+
+| Iteration ID | Trigger or finding | Evidence | Change made | Affected behavior/decision | Recheck |
+| --- | --- | --- | --- | --- | --- |
+| I-001 | Existing `Channel` entity and controller expose a partial unsafe projection | `core/src/main/java/com/ycsopen/sms/core/domain/entity/Channel.java`, `ChannelController.java` | Planned explicit configuration/version services and safe DTOs instead of extending entity serialization | D-10-001, channel-configuration-lifecycle-01 | Phase entry schema/design review |
+| I-002 | Phase 10 depends on reference tables owned by later modules | `V1__init_schema.sql` tables `route_rules`, `channel_group_members`, `signature_channel_registrations`, `message_tasks` | Planned explicit dependency providers and migration gate that reports zero rows honestly without inventing later routing/health behavior | D-10-003, channel-configuration-lifecycle-03 | Dependency integration tests |
+| I-003 | Phase 02 route registry uses `/admin/channel/configuration` while current code has `/admin/channels` | Phase 02 `UI-ELEMENTS.md`, `web/src/router/routes.tsx` | Plan canonical registered route and preserve old path only as a redirect/compatibility adapter | D-10-004, channel-configuration-lifecycle-04 | UI design and production route validator |
+| I-004 | Independent review found retry/rollback and OFFLINE immutability gaps | `/root/phase10_quick_review` findings | Added immutable version payload loading, retry/rollback status rules, SQL `status<>'OFFLINE'` guards, registry clearing, and OFFLINE UI disabled states | DR-10-002, DR-10-003 | Focused Java tests, UI unit tests, subagent recheck |
+| I-005 | Claude review found current-draft activation could race a concurrent edit | `CLAUDE-REVIEW.md` | Added `configuration_version` to activation payload/CAS and regression test `activationRejectsDraftChangedAfterPayloadRead` | DR-10-002 | Focused Java tests, full backend suite, Claude recheck |
