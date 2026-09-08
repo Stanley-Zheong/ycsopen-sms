@@ -33,4 +33,4 @@ Status: complete; verified TODO set is empty.
 - Branch: `phase/12-signature-lifecycle-filing`
 - Remote: `origin`
 - Implementation commit: `8f953b5727ab3cdd392455cf8aa106622e3a309e`
-- Remote verification: `git ls-remote origin refs/heads/phase/12-signature-lifecycle-filing` returned `8f953b5727ab3cdd392455cf8aa106622e3a309e`.
+- Remote verification: the implementation commit is an ancestor of `origin/phase/12-signature-lifecycle-filing`.
