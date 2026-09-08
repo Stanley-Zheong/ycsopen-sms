@@ -35,7 +35,8 @@ Phase 10 delivers the channel configuration lifecycle module:
 
 ## Commit evidence
 
-This summary, process documents, code, tests, and evidence are intended to be
-committed together with subject:
+- Branch: `phase/10-channel-configuration-lifecycle`
+- Remote SHA: `2358fb7`
+- Subject: `feat(phase10): deliver channel configuration lifecycle`
 
-`feat(phase10): deliver channel configuration lifecycle`
+The scoped TODO set is empty.

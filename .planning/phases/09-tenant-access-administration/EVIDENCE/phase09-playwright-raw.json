@@ -58,8 +58,8 @@
     "version": "1.62.1",
     "workers": 1,
     "webServer": {
-      "command": "npm run dev -- --host 127.0.0.1 --port 55431",
-      "url": "http://127.0.0.1:55431/login",
+      "command": "npm run dev -- --host 127.0.0.1 --port 53369",
+      "url": "http://127.0.0.1:53369/login",
       "reuseExistingServer": false
     }
   },
@@ -93,12 +93,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1874,
+                      "duration": 1414,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:02.078Z",
+                      "startTime": "2026-09-08T10:46:47.261Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -127,12 +127,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 412,
+                      "duration": 388,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:04.339Z",
+                      "startTime": "2026-09-08T10:46:49.625Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -161,12 +161,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 564,
+                      "duration": 560,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:04.760Z",
+                      "startTime": "2026-09-08T10:46:50.021Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -195,12 +195,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 643,
+                      "duration": 640,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:05.333Z",
+                      "startTime": "2026-09-08T10:46:50.591Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -229,12 +229,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 607,
+                      "duration": 755,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:05.992Z",
+                      "startTime": "2026-09-08T10:46:51.250Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -263,12 +263,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 364,
+                      "duration": 365,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-09-08T02:49:06.608Z",
+                      "startTime": "2026-09-08T10:46:52.018Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -288,8 +288,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-08T02:49:01.314Z",
-    "duration": 5761.434,
+    "startTime": "2026-09-08T10:46:46.512Z",
+    "duration": 5984.570000000001,
     "expected": 6,
     "skipped": 0,
     "unexpected": 0,
