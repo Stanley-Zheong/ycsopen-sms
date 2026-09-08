@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-CONTACT","playwright_id":"pw-p8-contact","case_id":"C-P8-CONTACT","result":"PASS","evidence":"Chrome rejected an invalid phone, consumed the provider-delivered one-time code, showed verified state, and invalidated it when the phone changed.","raw_report":"phase08-playwright-raw.json"}

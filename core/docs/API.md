@@ -29,9 +29,9 @@
 | POST | `/api/v1/console/system-configuration/versions` | 按当前版本和变更原因暂存配置变更 | 8.1 System |
 | POST | `/api/v1/console/system-configuration/versions/{id}/activate` | 以乐观并发检查激活草稿并热加载 | 8.1 System |
 | POST | `/api/v1/console/system-configuration/versions/{id}/rollback` | 从历史快照创建并激活新版本 | 8.1 System |
-| POST | `/api/v1/console/tenants/register` | 机构注册 | F-2.1 |
-| POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 审核通过并开通试用 | F-2.2/F-2.8 |
-| POST | `/api/v1/console/tenants/{id}/reject` | 驳回注册 | F-2.2 |
+| POST | `/api/v1/console/tenants/register` | 旧机构注册路径，仅返回迁移提示；请使用 public tenant registration | 兼容 |
+| POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 旧审核路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
+| POST | `/api/v1/console/tenants/{id}/reject` | 旧驳回路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
 | GET | `/api/v1/console/channels` | 通道列表 | F-4.1 |
 | POST | `/api/v1/console/channels` | 新建通道 | F-4.1 |
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |

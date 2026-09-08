@@ -71,6 +71,55 @@ public class Tenant {
     @Column(name = "contact_name")
     private String contactName;
 
+    @Column(name = "registered_capital", length = 50)
+    private String registeredCapital;
+    @Column(name = "business_scope", columnDefinition = "TEXT")
+    private String businessScope;
+    @Column(name = "registered_address", length = 255)
+    private String registeredAddress;
+    @Column(name = "business_address", length = 255)
+    private String businessAddress;
+    @Column(name = "license_valid_until")
+    private LocalDate licenseValidUntil;
+    @Column(name = "customer_level")
+    private Integer customerLevel = 1;
+    @Column(name = "biz_manager", length = 64)
+    private String bizManager;
+    @Column(name = "industry", length = 64)
+    private String industry;
+    @Column(name = "trademark_use", nullable = false)
+    @org.hibernate.annotations.ColumnDefault("false")
+    private boolean trademarkUse;
+    @Column(name = "qualification_submitted_at")
+    private LocalDateTime qualificationSubmittedAt;
+    @Column(name = "verification_time")
+    private LocalDateTime verificationTime;
+    @Column(name = "verification_updated_at")
+    private LocalDateTime verificationUpdatedAt;
+    @Column(name = "qualification_reason", length = 500)
+    private String qualificationReason;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "inspection_status", nullable = false)
+    @org.hibernate.annotations.ColumnDefault("'NOT_STARTED'")
+    private InspectionStatus inspectionStatus = InspectionStatus.NOT_STARTED;
+    @Column(name = "inspection_company_name", length = 100)
+    private String inspectionCompanyName;
+    @Column(name = "inspection_credit_code", length = 18)
+    private String inspectionCreditCode;
+    @Column(name = "inspection_confidence")
+    private Double inspectionConfidence;
+    @Column(name = "inspection_provider_request_id", length = 100)
+    private String inspectionProviderRequestId;
+    @Column(name = "inspection_completed_at")
+    private LocalDateTime inspectionCompletedAt;
+    @JsonIgnore
+    @Column(name = "initial_admin_user_id")
+    private Long initialAdminUserId;
+    @Version
+    @Column(name = "qualification_revision", nullable = false)
+    @org.hibernate.annotations.ColumnDefault("0")
+    private long qualificationRevision;
+
     @JsonIgnore
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -129,9 +178,31 @@ public class Tenant {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public enum VerificationStatus { UNVERIFIED, PENDING, VERIFIED, REJECTED }
+    public enum VerificationStatus { UNVERIFIED, PENDING, VERIFIED, REJECTED, SUPPLEMENT_REQUIRED }
+    public enum InspectionStatus { NOT_STARTED, COMPLETED, FAILED }
     public enum LifecycleStatus { SUBMITTED, TRIAL, TRIAL_FROZEN, SIGNED, FROZEN, TERMINATED }
     public enum BillingMode { PREPAID, POSTPAID }
+
+    /** Presence describes stored material without disclosing or decrypting its protected value. */
+    @JsonIgnore
+    public boolean hasBusinessLicense() { return present(businessLicenseObjectId); }
+    @JsonIgnore
+    public boolean hasLegalRepresentativeIdentity() { return present(legalRepIdNoEncrypted); }
+    @JsonIgnore
+    public boolean hasLegalRepresentativeIdFront() { return present(legalRepIdFrontObjectId); }
+    @JsonIgnore
+    public boolean hasLegalRepresentativeIdBack() { return present(legalRepIdBackObjectId); }
+    @JsonIgnore
+    public boolean hasContactIdentity() { return present(contactIdNoEncrypted); }
+    @JsonIgnore
+    public boolean hasContactPhone() { return present(contactPhoneEncrypted); }
+    @JsonIgnore
+    public boolean hasShortlinkProof() { return present(shortlinkDomainProofObjectId); }
+    @JsonIgnore
+    public boolean hasTrademarkProof() { return present(trademarkProofObjectId); }
+
+    private static boolean present(String value) { return value != null && !value.isBlank(); }
+    private static boolean present(byte[] value) { return value != null && value.length > 0; }
 
     /**
      * Assigns the complete protected registration state through the sole persistence adapter.

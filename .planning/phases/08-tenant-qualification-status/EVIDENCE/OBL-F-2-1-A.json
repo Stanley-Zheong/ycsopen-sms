@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-1-A","playwright_id":"pw-p8-qualification-form","case_id":"C-P8-QUALIFICATION-FORM","result":"PASS","evidence":"Real tenant administrator opened the safe own-tenant workspace and verified read-only protected-field behavior.","raw_report":"phase08-playwright-raw.json"}

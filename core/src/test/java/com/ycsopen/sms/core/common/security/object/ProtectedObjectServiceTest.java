@@ -150,6 +150,26 @@ class ProtectedObjectServiceTest {
     }
 
     @Test
+    void claimedQualificationEvidenceRemainsReadableAfterItsStagingExpiry() {
+        Fixture fixture = fixture(true);
+        byte[] plaintext = "claimed-business-license".getBytes(StandardCharsets.US_ASCII);
+        ProtectedObjectService.CreatedObject created = fixture.service.create(request(
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE, "application/pdf",
+                new ByteArrayInputStream(plaintext), (long) plaintext.length, null));
+        fixture.repository.markClaimed(created.protectedObjectId());
+        String token = fixture.issueCapability(created.protectedObjectId());
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(new EnvelopeCodec(), fixture.keyPort,
+                new SecureRandom(), KEY_REFERENCE);
+        ProtectedObjectService laterReader = new ProtectedObjectService(codec, fixture.objectStore,
+                fixture.repositoryBoundary, fixture.capabilityService, new SecureRandom(),
+                Clock.fixed(EXPIRY.plusSeconds(1), ZoneOffset.UTC));
+
+        assertThat(laterReader.read(readRequest(created.protectedObjectId(), token,
+                PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE)).bytes())
+                .containsExactly(plaintext);
+    }
+
+    @Test
     void denialPrecedesMetadataHeadBodyAndKeyAccessWithProductionDefaultAlsoDenying() {
         Fixture denied = fixture(false);
         ProtectedObjectService.CreatedObject created = denied.service.create(request(
@@ -347,6 +367,22 @@ class ProtectedObjectServiceTest {
                 keyPort, capabilityService, service);
     }
 
+    static EvidenceStack evidenceStack(ObjectAccessAuthorizationPort authorization, Clock clock) {
+        List<String> events = new ArrayList<>();
+        FakeRepositoryStore repositoryStore = new FakeRepositoryStore(events);
+        ProtectedObjectMetadataRepository repository =
+                new ProtectedObjectMetadataRepository(repositoryStore);
+        FakeKeyPort keyPort = new FakeKeyPort(events);
+        ProtectedFieldCodec codec = new ProtectedFieldCodec(
+                new EnvelopeCodec(), keyPort, new SecureRandom(), KEY_REFERENCE);
+        FakeObjectStore objectStore = new FakeObjectStore(events);
+        ObjectCapabilityService capabilities = new ObjectCapabilityService(
+                new FakeDigestPort(events), repository, authorization, clock, new SecureRandom());
+        ProtectedObjectService objects = new ProtectedObjectService(codec, objectStore, repository,
+                capabilities, new SecureRandom(), clock);
+        return new EvidenceStack(repositoryStore, capabilities, objects, clock);
+    }
+
     private static ProtectedObjectService.CreateRequest request(
             PrivateObjectStorePort.ObjectPurpose purpose,
             String mediaType,
@@ -425,6 +461,43 @@ class ProtectedObjectServiceTest {
                     objectId, TENANT_SCOPE, SUBJECT, ACCESS_PURPOSE, EXPIRY))
                     .claimApplicationRelativePath();
             return path.substring(ObjectCapabilityService.CAPABILITY_PATH_PREFIX.length());
+        }
+    }
+
+    static final class EvidenceStack {
+        private final FakeRepositoryStore repository;
+        final ObjectCapabilityService capabilities;
+        final ProtectedObjectService objects;
+        private final Clock clock;
+
+        EvidenceStack(FakeRepositoryStore repository, ObjectCapabilityService capabilities,
+                      ProtectedObjectService objects, Clock clock) {
+            this.repository = repository;
+            this.capabilities = capabilities;
+            this.objects = objects;
+            this.clock = clock;
+        }
+
+        String createClaimed(byte[] plaintext) {
+            ProtectedObjectService.CreatedObject created = objects.create(
+                    new ProtectedObjectService.CreateRequest(SESSION, TENANT_DRAFT,
+                            PrivateObjectStorePort.ObjectPurpose.BUSINESS_LICENSE,
+                            "application/pdf", new ByteArrayInputStream(plaintext),
+                            (long) plaintext.length, 1, clock.instant().plusSeconds(7_200), null));
+            repository.markClaimed(created.protectedObjectId());
+            return created.protectedObjectId();
+        }
+
+        String issue(String objectId, String subject) {
+            String path = capabilities.issue(new ObjectCapabilityService.IssueRequest(
+                            objectId, TENANT_SCOPE, subject, "qualification-review",
+                            clock.instant().plusSeconds(300)))
+                    .claimApplicationRelativePath();
+            return path.substring(ObjectCapabilityService.CAPABILITY_PATH_PREFIX.length());
+        }
+
+        int capabilitiesIn(ObjectAccessAuthorizationPort.CapabilityState state) {
+            return repository.capabilitiesIn(state);
         }
     }
 
@@ -855,6 +928,17 @@ class ProtectedObjectServiceTest {
             ProtectedObjectMetadataRepository.ProtectedObjectMetadata current = onlyObject();
             objects.put(current.protectedObjectId(), copy(current, current.state(),
                     stored.sha256(), stored.size()));
+        }
+
+        void markClaimed(String id) {
+            ProtectedObjectMetadataRepository.ProtectedObjectMetadata current = objects.get(id);
+            objects.put(id, copy(current, ProtectedObjectMetadataRepository.ObjectState.CLAIMED,
+                    current.envelopeSha256(), current.envelopeSize()));
+        }
+
+        int capabilitiesIn(ObjectAccessAuthorizationPort.CapabilityState state) {
+            return (int) capabilities.values().stream()
+                    .filter(value -> value.state() == state).count();
         }
 
         private static ProtectedObjectMetadataRepository.ProtectedObjectMetadata metadata(

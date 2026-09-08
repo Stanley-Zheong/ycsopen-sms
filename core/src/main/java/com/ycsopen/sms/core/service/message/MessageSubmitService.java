@@ -14,6 +14,7 @@ import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
+import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
@@ -40,21 +41,26 @@ public class MessageSubmitService {
     private final RoutingEngine routingEngine;
     private final BillingService billingService;
     private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
+    private final TenantEligibilityPolicy tenantEligibilityPolicy;
 
     public MessageSubmitService(TemplateRepository templateRepository,
                                  SignatureRepository signatureRepository,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
-                                 MessageTaskProtectionAdapter messageTaskProtectionAdapter) {
+                                 MessageTaskProtectionAdapter messageTaskProtectionAdapter,
+                                 TenantEligibilityPolicy tenantEligibilityPolicy) {
         this.templateRepository = templateRepository;
         this.signatureRepository = signatureRepository;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
         this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
+        this.tenantEligibilityPolicy = tenantEligibilityPolicy;
     }
 
     @Transactional
     public SmsSendResponse submit(Long tenantId, SmsSendRequest request, String clientIp) {
+        tenantEligibilityPolicy.requireNewWorkAllowed(tenantId);
+
         Template template = templateRepository.findById(Long.valueOf(request.templateId()))
                 .orElseThrow(() -> new BusinessException("TEMPLATE_NOT_FOUND", "模板不存在"));
 

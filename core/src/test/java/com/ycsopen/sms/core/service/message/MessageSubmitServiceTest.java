@@ -18,6 +18,7 @@ import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
+import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +67,7 @@ class MessageSubmitServiceTest {
     @Mock RoutingEngine routingEngine;
     @Mock BillingService billingService;
     @Mock MessageTaskProtectionAdapter messageTaskProtectionAdapter;
+    @Mock TenantEligibilityPolicy eligibilityPolicy;
     @Mock MessageTaskRepository legacyMessageTaskRepository;
     @Mock PreparedMessageRouting preparedRouting;
     @Mock PreparedMessageMobile preparedMobile;
@@ -76,12 +78,25 @@ class MessageSubmitServiceTest {
     @BeforeEach
     void setUp() {
         service = new MessageSubmitService(templateRepository, signatureRepository,
-                routingEngine, billingService, messageTaskProtectionAdapter);
-        approvedTemplateAndSignature();
+                routingEngine, billingService, messageTaskProtectionAdapter, eligibilityPolicy);
+    }
+
+    @Test
+    void eligibilityDenialStopsBeforeTemplateRoutingBillingOrPersistenceWork() {
+        var denial = new BusinessException("TENANT_QUALIFICATION_REQUIRED", "not eligible");
+        org.mockito.Mockito.doThrow(denial).when(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
+
+        assertThatThrownBy(() -> service.submit(TENANT_ID, request(), "127.0.0.1"))
+                .isSameAs(denial);
+
+        verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
+        verifyNoInteractions(templateRepository, signatureRepository, routingEngine,
+                billingService, messageTaskProtectionAdapter, legacyMessageTaskRepository);
     }
 
     @Test
     void preparesOpaqueRoutingThenProtectsOnceAfterAcceptanceAndSavesThroughAdapter() throws Exception {
+        approvedTemplateAndSignature();
         stubPreparedQueryIndexes();
         when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
                 .thenReturn(preparedRouting);
@@ -99,7 +114,8 @@ class MessageSubmitServiceTest {
         ArgumentCaptor<String> messageId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RoutingContext> routing = ArgumentCaptor.forClass(RoutingContext.class);
         ArgumentCaptor<MessageTask> task = ArgumentCaptor.forClass(MessageTask.class);
-        InOrder order = inOrder(messageTaskProtectionAdapter, routingEngine, billingService);
+        InOrder order = inOrder(eligibilityPolicy, messageTaskProtectionAdapter, routingEngine, billingService);
+        order.verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
         order.verify(messageTaskProtectionAdapter).prepareForRouting(
                 eq(TENANT_ID), messageId.capture(), eq(MOBILE));
         order.verify(routingEngine).route(routing.capture());
@@ -129,6 +145,7 @@ class MessageSubmitServiceTest {
             names = {"BLACKLIST", "CONTENT_REVIEW", "FREQUENCY_LIMIT"})
     void routingRejectionDoesNotProtectPersistOrReserveBilling(
             RoutingDecision.RejectStage rejectStage) {
+        approvedTemplateAndSignature();
         stubPreparedQueryIndexes();
         when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
                 .thenReturn(preparedRouting);
@@ -153,6 +170,7 @@ class MessageSubmitServiceTest {
 
     @Test
     void protectionDependencyFailureStopsBeforeRoutingAndEveryWrite() {
+        approvedTemplateAndSignature();
         when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
                 .thenThrow(new IllegalStateException(MessageTaskProtectionAdapter.SANITIZED_FAILURE));
 
@@ -167,6 +185,7 @@ class MessageSubmitServiceTest {
 
     @Test
     void protectedSaveFailureDoesNotContinueToBillingOrLegacyRepository() {
+        approvedTemplateAndSignature();
         stubPreparedQueryIndexes();
         when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
                 .thenReturn(preparedRouting);

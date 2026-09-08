@@ -22,6 +22,13 @@ server:
   port: 8080
 
 ycsopen:
+  tenant-qualification:
+    trial-quota: ${YCSOPEN_TENANT_TRIAL_QUOTA:500}
+    trial-days: ${YCSOPEN_TENANT_TRIAL_DAYS:14}
+    inspection:
+      endpoint: ${YCSOPEN_QUALIFICATION_INSPECTION_ENDPOINT:}
+      credential: ${YCSOPEN_QUALIFICATION_INSPECTION_CREDENTIAL:}
+      timeout: ${YCSOPEN_QUALIFICATION_INSPECTION_TIMEOUT:5s}
   database:
     runtime-grants:
       enabled: false
@@ -70,6 +77,11 @@ ycsopen:
     app-id: ${THIRD_PARTY_BLACKLIST_APP_ID:}
     timeout-ms: 800
     fail-open: true   # F-5.3 超时降级策略：默认放行，避免外部依赖拖垮主链路
+  platform-notification:
+    enabled: ${YCSOPEN_PLATFORM_NOTIFICATION_ENABLED:false}
+    base-url: ${YCSOPEN_PLATFORM_NOTIFICATION_BASE_URL:}
+    path: ${YCSOPEN_PLATFORM_NOTIFICATION_PATH:/messages}
+    timeout-ms: ${YCSOPEN_PLATFORM_NOTIFICATION_TIMEOUT_MS:800}
 
 management:
   endpoints:

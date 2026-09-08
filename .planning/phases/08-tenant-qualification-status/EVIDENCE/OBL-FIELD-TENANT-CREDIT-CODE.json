@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-CREDIT-CODE","playwright_id":"pw-p8-credit-code","case_id":"C-P8-CREDIT-CODE","result":"PASS","evidence":"Chrome rejected a wrong USCC checksum and accepted the valid synthetic 18-character vector.","raw_report":"phase08-playwright-raw.json"}

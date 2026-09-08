@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-LICENSE","playwright_id":"pw-p8-license","case_id":"C-P8-LICENSE","result":"PASS","evidence":"Chrome rejected an unsupported text file then completed a real PDF protected upload to MinIO through Spring.","raw_report":"phase08-playwright-raw.json"}

@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-TRADEMARK-PROOF","playwright_id":"pw-p8-trademark-proof","case_id":"C-P8-TRADEMARK-PROOF","result":"PASS","evidence":"Chrome made trademark proof required after intent selection, rendered the validation error, then accepted a real protected PDF upload.","raw_report":"phase08-playwright-raw.json"}

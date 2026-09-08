@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-FULL-NAME","playwright_id":"pw-p8-full-name","case_id":"C-P8-FULL-NAME","result":"PASS","evidence":"Chrome accepted a valid full name and exposed required-field validation after clearing it.","raw_report":"phase08-playwright-raw.json"}

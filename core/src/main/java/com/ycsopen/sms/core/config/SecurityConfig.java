@@ -48,6 +48,13 @@ public class SecurityConfig {
                             "/api/v1/sms/**",
                             "/actuator/health").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/console/session/logout").authenticated()
+                    .requestMatchers(HttpMethod.POST,
+                            "/api/v1/console/tenants/registration-object-sessions",
+                            "/api/v1/console/tenants/registration-object-sessions/{sessionId}/objects/{purpose}").permitAll()
+                    .requestMatchers(HttpMethod.DELETE,
+                            "/api/v1/console/tenants/registration-object-sessions/{sessionId}").permitAll()
+                    .requestMatchers("/api/v1/console/tenant/qualification")
+                    .hasRole("TENANT_ADMIN")
                     .requestMatchers("/api/v1/console/**")
                     .hasAnyRole("ADMIN", "OPERATOR", "FINANCE")
                     .anyRequest().permitAll())

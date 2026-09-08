@@ -12,6 +12,7 @@ import com.ycsopen.sms.core.common.security.object.ProtectedObjectService;
 import com.ycsopen.sms.core.common.security.object.S3PrivateObjectStoreAdapter;
 import com.ycsopen.sms.core.common.security.object.TenantRegistrationObjectSessionService;
 import com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodec;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -39,7 +40,7 @@ public class ObjectStorageConfiguration {
 
     @Bean
     ObjectCapabilityService objectCapabilityService(
-            OpaqueTokenDigestPort tokenDigestPort,
+            @Qualifier("opaqueTokenDigestPort") OpaqueTokenDigestPort tokenDigestPort,
             ProtectedObjectMetadataRepository metadataRepository,
             ObjectAccessAuthorizationPort authorizationPort) {
         return new ObjectCapabilityService(tokenDigestPort, metadataRepository,
@@ -62,7 +63,7 @@ public class ObjectStorageConfiguration {
 
     @Bean
     TenantRegistrationObjectSessionService tenantRegistrationObjectSessionService(
-            OpaqueTokenDigestPort tokenDigestPort,
+            @Qualifier("opaqueTokenDigestPort") OpaqueTokenDigestPort tokenDigestPort,
             ProtectedObjectService protectedObjectService,
             JdbcTemplate jdbcTemplate,
             PlatformTransactionManager transactionManager) {

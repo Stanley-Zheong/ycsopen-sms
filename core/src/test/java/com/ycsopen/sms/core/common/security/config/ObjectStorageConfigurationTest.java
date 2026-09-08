@@ -27,6 +27,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 class ObjectStorageConfigurationTest {
 
@@ -81,6 +82,50 @@ class ObjectStorageConfigurationTest {
                         .doesNotHaveBean(TenantRegistrationObjectController.class));
     }
 
+    @Test
+    void enabledConfigurationSelectsTheDigestPortFromTheProductionAdapterShape() {
+        KeyProtectionPort sharedAdapter = mock(
+                KeyProtectionPort.class,
+                withSettings().extraInterfaces(BlindIndexPort.class, OpaqueTokenDigestPort.class));
+        new ApplicationContextRunner()
+                .withUserConfiguration(SharedCryptoAdapterApplication.class)
+                .withInitializer(context -> {
+                    context.getBeanFactory().registerSingleton(
+                            "keyProtectionPort", sharedAdapter);
+                    context.getBeanFactory().registerSingleton(
+                            "blindIndexPort", (BlindIndexPort) sharedAdapter);
+                    context.getBeanFactory().registerSingleton(
+                            "opaqueTokenDigestPort", (OpaqueTokenDigestPort) sharedAdapter);
+                })
+                .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
+                .withBean(PlatformTransactionManager.class,
+                        () -> mock(PlatformTransactionManager.class))
+                .withBean(ProtectedObjectMetadataRepository.class,
+                        () -> mock(ProtectedObjectMetadataRepository.class))
+                .withBean(ObjectAccessAuthorizationPort.class,
+                        DenyAllObjectAccessAuthorization::new)
+                .withBean(ActiveFieldKeyReference.class, () -> {
+                    ActiveFieldKeyReference reference = mock(ActiveFieldKeyReference.class);
+                    when(reference.current()).thenReturn("field-kek.v1");
+                    return reference;
+                })
+                .withBean(CryptoStorageRuntime.class,
+                        ObjectStorageConfigurationTest::enabledRuntime)
+                .withPropertyValues(
+                        "ycsopen.object-store.enabled=true",
+                        "ycsopen.object-store.bucket=phase03-private",
+                        "ycsopen.object-store.region=us-east-1",
+                        "ycsopen.object-store.endpoint=http://127.0.0.1:9",
+                        "ycsopen.object-store.allowed-endpoints=http://127.0.0.1:9",
+                        "ycsopen.object-store.credential-provider=DEFAULT_CHAIN",
+                        "ycsopen.object-store.path-style-access=true",
+                        "ycsopen.object-store.allow-insecure-loopback=true")
+                .run(context -> assertThat(context)
+                        .hasNotFailed()
+                        .hasSingleBean(ObjectCapabilityService.class)
+                        .hasSingleBean(TenantRegistrationObjectSessionService.class));
+    }
+
     private static CryptoStorageRuntime enabledRuntime() {
         CryptoStorageStartupVerifier.Settings settings = new CryptoStorageStartupVerifier.Settings(
                 true, CryptoStorageStartupVerifier.ADAPTER_ID,
@@ -105,5 +150,10 @@ class ObjectStorageConfigurationTest {
     @Import({ObjectStorageConfiguration.class, ProtectedObjectAccessController.class,
             TenantRegistrationObjectController.class})
     static class TestApplication {
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @Import(ObjectStorageConfiguration.class)
+    static class SharedCryptoAdapterApplication {
     }
 }

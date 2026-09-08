@@ -35,7 +35,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 5: Console identity and platform RBAC** — Password hashing inside identity.
 - [x] **Phase 6: Privileged data access, operation audit, and security detection** — Masked default views.
 - [x] **Phase 7: Platform system configuration** — Typed, versioned, auditable production settings.
-- [ ] **Phase 8: Tenant qualification and status** — All qualification fields/files.
+- [ ] **Phase 8: Tenant qualification and status** — Implementation and executable evidence assembled; final independent/Claude review and atomic delivery remain.
 - [ ] **Phase 9: Tenant subaccounts and access credentials** — Tenant roles/subaccounts and isolation.
 - [ ] **Phase 10: Channel configuration lifecycle** — Protocol/carrier/connectivity/credential/connection/price/priority/availability schema.
 - [ ] **Phase 11: Channel health, pools, and candidate pause** — Heartbeat/test health.

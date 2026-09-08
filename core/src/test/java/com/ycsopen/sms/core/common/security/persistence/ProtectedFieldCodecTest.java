@@ -145,7 +145,7 @@ class ProtectedFieldCodecTest {
 
         assertInvalid(() -> codec.protect(new byte[111], databaseContext("message-48"),
                 EnvelopeCodec.Target.DATABASE_FIELD));
-        assertInvalid(() -> codec.protect(new byte[5_242_881], protectedObjectContext("object-1"),
+        assertInvalid(() -> codec.protect(new byte[10_485_761], protectedObjectContext("object-1"),
                 EnvelopeCodec.Target.REPRESENTATIVE_ID_FRONT));
         assertInvalid(() -> codec.protect(new byte[10_485_761], snapshotContext(),
                 EnvelopeCodec.Target.MYSQL_ENCRYPTED_SNAPSHOT_CHUNK));

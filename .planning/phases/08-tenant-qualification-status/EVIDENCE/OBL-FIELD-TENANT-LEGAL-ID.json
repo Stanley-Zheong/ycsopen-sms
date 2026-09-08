@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-LEGAL-ID","playwright_id":"pw-p8-legal-id","case_id":"C-P8-LEGAL-ID","result":"PASS","evidence":"Chrome rejected a bad resident-ID checksum, accepted the valid synthetic vector, and verified no persisted value was disclosed on read-only reload.","raw_report":"phase08-playwright-raw.json"}

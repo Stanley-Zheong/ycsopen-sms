@@ -345,7 +345,7 @@
     {
       "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_FIELD_AND_OBJECT_CLAIM", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "TenantRegistrationResponse.from"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "LEGACY_REGISTRATION_ROUTE_REMOVED"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId", "String legalRepIdNo", "String legalRepIdFrontObjectId", "String legalRepIdBackObjectId", "String contactIdNo", "String contactPhone", "String shortlinkDomainProofObjectId", "String trademarkProofObjectId"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "protectedFieldCodec.protect", "verifier.claim", "object_state = 'CLAIMED'"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.validateRequest", "registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] },

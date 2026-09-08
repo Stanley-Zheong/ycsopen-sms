@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-3-B","playwright_id":"pw-p8-recertify","case_id":"C-P8-RECERTIFY","result":"PASS","evidence":"Verified tenant observed recertification consequences, cancel behavior, and explicit transition to the editable resubmission form.","raw_report":"phase08-playwright-raw.json"}

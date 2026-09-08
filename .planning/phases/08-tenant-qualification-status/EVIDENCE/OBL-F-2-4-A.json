@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-4-A","playwright_id":"pw-p8-status-action","case_id":"C-P8-STATUS-ACTION","result":"PASS","evidence":"Two real Admin sessions exercised stale retry, DISABLED, ARREARS_FROZEN, NORMAL, retained reason, and history reads while ineligible.","raw_report":"phase08-playwright-raw.json"}

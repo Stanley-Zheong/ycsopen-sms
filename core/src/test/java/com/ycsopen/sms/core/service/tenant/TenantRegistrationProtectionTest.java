@@ -14,9 +14,7 @@ import com.ycsopen.sms.core.repository.TenantAccountRepository;
 import com.ycsopen.sms.core.repository.TenantRepository;
 import com.ycsopen.sms.core.web.controller.TenantController;
 import com.ycsopen.sms.core.web.dto.TenantRegistrationRequest;
-import com.ycsopen.sms.core.web.dto.TenantRegistrationResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -207,26 +206,15 @@ class TenantRegistrationProtectionTest {
     }
 
     @Test
-    void registrationResponseAndControllerContractExposeOnlyPublicState() throws Exception {
-        Tenant tenant = new Tenant();
-        tenant.setId(73L);
-        tenant.setTenantNo("T_PUBLIC");
-        tenant.setShortName("示例机构");
-        tenant.setFullName("示例机构有限公司");
-        tenant.setVerificationStatus(Tenant.VerificationStatus.PENDING);
-        tenant.setLifecycleStatus(Tenant.LifecycleStatus.SUBMITTED);
-
-        String json = new ObjectMapper().writeValueAsString(TenantRegistrationResponse.from(tenant));
-        assertThat(json).contains("T_PUBLIC", "PENDING", "SUBMITTED")
-                .doesNotContain("legal", "contact", "ObjectId", "Token", "storage");
-
+    void legacyControllerRegistrationContractAlwaysRejectsAndKeepsOldServiceOutOfPath() throws Exception {
         Method register = TenantController.class.getMethod("register", String.class,
                 TenantRegistrationRequest.class);
         assertThat(register.getGenericReturnType().getTypeName())
-                .contains("TenantRegistrationResponse").doesNotContain("<Tenant>");
-        Method submit = TenantService.class.getMethod("submitRegistration",
-                TenantRegistrationRequest.class, String.class);
-        assertThat(submit.getAnnotation(Transactional.class)).isNotNull();
+                .contains("TenantRegistrationResponse");
+        TenantService service = mock(TenantService.class);
+        assertThatThrownBy(() -> new TenantController(service).register(null, completeRequest()))
+                .hasMessage("LEGACY_REGISTRATION_ROUTE_REMOVED");
+        verify(service, never()).submitRegistration(any(), any());
     }
 
     @Test

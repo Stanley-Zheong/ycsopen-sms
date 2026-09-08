@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-SHORT-NAME","playwright_id":"pw-p8-short-name","case_id":"C-P8-SHORT-NAME","result":"PASS","evidence":"Chrome accepted a valid short name and exposed required-field validation after clearing it.","raw_report":"phase08-playwright-raw.json"}

@@ -16,6 +16,8 @@ import LoginHistoryPage from '@/pages/admin/identity/LoginHistoryPage';
 import OperationAuditPage from '@/pages/admin/security/OperationAuditPage';
 import SecurityEventsPage from '@/pages/admin/security/SecurityEventsPage';
 import SystemConfigurationPage from '@/pages/admin/system/SystemConfigurationPage';
+import TenantRegistrationPage from '@/pages/tenant/TenantRegistrationPage';
+import TenantQualificationPage from '@/pages/tenant/TenantQualificationPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -28,6 +30,7 @@ export const router = createBrowserRouter([
   { path: '/admin/auth/login', element: <LoginPage /> },
   { path: '/admin/users', element: <Navigate to="/admin/system/users" replace /> },
   { path: '/admin/roles', element: <Navigate to="/admin/system/roles" replace /> },
+  { path: '/tenant/register', element: <TenantRegistrationPage /> },
 
   {
     path: '/admin',
@@ -39,7 +42,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'tenants', element: <TenantListPage /> },
+      { path: '/admin/tenants', element: <TenantListPage /> },
       { path: 'channels', element: <ChannelListPage /> },
       { path: 'audit', element: <PlaceholderPage title="审核中心（签名/模板/免审规则）" prdRef="F-3.2/F-3.5/F-3.6" /> },
       {
@@ -81,6 +84,7 @@ export const router = createBrowserRouter([
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行消息查询" prdRef="F-7.5/F-7.9" /> },
       { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },
+      { path: '/tenant/qualification', element: <TenantQualificationPage /> },
     ],
   },
 ]);

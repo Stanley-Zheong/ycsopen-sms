@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-LEGAL-ID-FILES","playwright_id":"pw-p8-legal-id-files","case_id":"C-P8-LEGAL-ID-FILES","result":"PASS","evidence":"Chrome showed the missing back-side error after a real front upload, then completed both protected JPEG uploads serially.","raw_report":"phase08-playwright-raw.json"}

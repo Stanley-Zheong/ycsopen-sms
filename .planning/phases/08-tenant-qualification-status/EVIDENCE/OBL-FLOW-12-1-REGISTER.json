@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FLOW-12-1-REGISTER","playwright_id":"pw-p8-register","case_id":"C-P8-REGISTER","result":"PASS","evidence":"Installed Chrome completed credentials, all required protected uploads, provider-backed verification, real registration, later Admin approval, and first tenant trial login with no offline handoff.","raw_report":"phase08-playwright-raw.json"}

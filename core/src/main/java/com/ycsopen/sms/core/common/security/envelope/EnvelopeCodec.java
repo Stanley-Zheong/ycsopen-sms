@@ -32,8 +32,8 @@ public final class EnvelopeCodec {
     public enum Target {
         DATABASE_FIELD(110, 255, ProtectionContext.Purpose.DATABASE_FIELD),
         BUSINESS_LICENSE(10_485_760, 10_485_905, ProtectionContext.Purpose.PROTECTED_OBJECT),
-        REPRESENTATIVE_ID_FRONT(5_242_880, 5_243_025, ProtectionContext.Purpose.PROTECTED_OBJECT),
-        REPRESENTATIVE_ID_BACK(5_242_880, 5_243_025, ProtectionContext.Purpose.PROTECTED_OBJECT),
+        REPRESENTATIVE_ID_FRONT(10_485_760, 10_485_905, ProtectionContext.Purpose.PROTECTED_OBJECT),
+        REPRESENTATIVE_ID_BACK(10_485_760, 10_485_905, ProtectionContext.Purpose.PROTECTED_OBJECT),
         SHORT_LINK_DOMAIN_PROOF(10_485_760, 10_485_905, ProtectionContext.Purpose.PROTECTED_OBJECT),
         TRADEMARK_PROOF(10_485_760, 10_485_905, ProtectionContext.Purpose.PROTECTED_OBJECT),
         MYSQL_ENCRYPTED_SNAPSHOT_CHUNK(

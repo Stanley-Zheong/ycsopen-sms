@@ -6,11 +6,12 @@ import { IDENTITY_PERMISSIONS } from '@/api/identity';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { AUDIT_PERMISSIONS } from '@/api/audit';
 import { SYSTEM_CONFIGURATION_PERMISSIONS } from '@/api/systemConfiguration';
+import { TENANT_PERMISSIONS } from '@/api/tenantQualificationApi';
 
-const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
+const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; roles?: PlatformUserType[] }> = [
   { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
-  { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS },
+  { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read] },
   { to: '/admin/channels', label: '通道管理', roles: OPERATIONS },
   { to: '/admin/audit', label: '审核中心', roles: OPERATIONS },
   { to: '/admin/riskcontrol', label: '验证规则', roles: OPERATIONS },
@@ -45,7 +46,11 @@ export default function AdminLayout() {
         <div style={{ fontWeight: 700, marginBottom: 16 }}>YCSAN-SMS 平台管理后台</div>
         {NAV_ITEMS.filter((item) => (!item.roles || item.roles.includes(userType as PlatformUserType))
           && (!item.permissions || item.permissions.every(access.can))).map((item) => (
-          item.to === '/admin/system/configuration' ? (
+          item.to === '/admin/tenants' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-tenant-qualification-tenants-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/system/configuration' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-platform-system-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
