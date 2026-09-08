@@ -1,6 +1,6 @@
 # Phase 12 Summary
 
-Status: implementation and verification complete; commit pending until final repository staging.
+Status: complete; verified TODO set is empty.
 
 ## Delivered
 
@@ -27,3 +27,10 @@ Status: implementation and verification complete; commit pending until final rep
 - Verification: `12-VERIFICATION.md`
 - Independent review: `12-REVIEW.md`
 - Claude review: `CLAUDE-REVIEW.md`
+
+## Git delivery
+
+- Branch: `phase/12-signature-lifecycle-filing`
+- Remote: `origin`
+- Implementation commit: `8f953b5727ab3cdd392455cf8aa106622e3a309e`
+- Remote verification: `git ls-remote origin refs/heads/phase/12-signature-lifecycle-filing` returned `8f953b5727ab3cdd392455cf8aa106622e3a309e`.
