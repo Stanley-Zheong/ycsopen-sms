@@ -25,4 +25,4 @@ present and the scoped TODO query confirms the obligation is closed.
 - [x] Frontend tests/build, production UI validator, and real Chrome evidence pass — Evidence: `EVIDENCE/ui-contract.json`, `EVIDENCE/playwright-execution.json`
 - [x] Independent review has no unresolved BLOCKER/HIGH — Evidence: `11-REVIEW.md`
 - [x] Claude review has no unresolved BLOCKER/HIGH — Evidence: `CLAUDE-REVIEW.md`
-- [ ] Atomic commit is visible on the configured GitHub remote — Evidence: `SUMMARY.md`
+- [x] Atomic commit is visible on the configured GitHub remote — Evidence: `SUMMARY.md`
