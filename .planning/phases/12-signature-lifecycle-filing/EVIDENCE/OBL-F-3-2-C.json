@@ -1,0 +1,27 @@
+{
+  "obligation_id": "OBL-F-3-2-C",
+  "requirement_ids": ["REQ-F-3-2"],
+  "phase": 12,
+  "package": "signature-lifecycle-filing",
+  "status": "PASS",
+  "evidence": [
+    {
+      "kind": "backend-unit",
+      "command": "mvn -q -f core/pom.xml -Dtest=SignatureLifecycleServiceTest test",
+      "result": "PASS",
+      "summary": "Approve, reject, and supplement decisions record server-side actor, opinion, audit time, risk context, and tenant-visible history; unsafe opinion text is rejected."
+    },
+    {
+      "kind": "chrome-acceptance",
+      "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+      "cwd": "web",
+      "result": "PASS",
+      "case_id": "C-P12-REVIEW-DECISION"
+    }
+  ],
+  "implementation_refs": [
+    "core/src/main/java/com/ycsopen/sms/core/service/signature/SignatureLifecycleService.java",
+    "web/src/pages/admin/signatures/SignatureReviewPage.tsx"
+  ],
+  "test_ids": ["admin-signature-lifecycle-signature-review-decision"]
+}

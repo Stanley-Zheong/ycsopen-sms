@@ -15,7 +15,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/channel/configuration', label: '通道管理', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/channel/health', label: '通道健康', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/channel/pools', label: '通道池', roles: ['ADMIN', 'OPERATOR'] },
-  { to: '/admin/audit', label: '审核中心', roles: OPERATIONS },
+  { to: '/admin/signatures/review', label: '签名审核', roles: OPERATIONS },
   { to: '/admin/riskcontrol', label: '验证规则', roles: OPERATIONS },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
@@ -62,6 +62,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/channel/pools' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-channel-health-pools-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/signatures/review' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-signature-lifecycle-signature-review-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

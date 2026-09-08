@@ -1,0 +1,70 @@
+.signature-lifecycle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.signature-lifecycle-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.signature-lifecycle-form h2 {
+  grid-column: 1 / -1;
+}
+
+.signature-lifecycle-form label,
+.signature-lifecycle-filter,
+.signature-lifecycle-detail label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.signature-lifecycle-form input,
+.signature-lifecycle-form select,
+.signature-lifecycle-filter input,
+.signature-lifecycle-detail textarea,
+.signature-lifecycle-detail input {
+  border: 1px solid #d5dbe7;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.signature-lifecycle-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.signature-lifecycle-stats span {
+  background: #f7f9fc;
+  border: 1px solid #e6ebf3;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.signature-lifecycle-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.signature-lifecycle-alert.success {
+  background: #eefbf3;
+  color: #17633a;
+}
+
+.signature-lifecycle-alert.error {
+  background: #fff1f0;
+  color: #9f1d1d;
+}
+
+.signature-lifecycle-detail,
+.signature-lifecycle-usable {
+  margin-top: 16px;
+}

@@ -1,0 +1,6 @@
+{
+  "format": "pen-json-placeholder",
+  "phase": 12,
+  "routes": ["/tenant/signatures", "/admin/signatures/review"],
+  "note": "Phase 12 layout contract; production selectors are authoritative in UI-ELEMENTS.md."
+}

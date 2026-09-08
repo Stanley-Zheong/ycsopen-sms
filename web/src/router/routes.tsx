@@ -23,6 +23,8 @@ import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
 import ChannelConfigurationPage from '@/pages/admin/channels/ChannelConfigurationPage';
 import ChannelHealthPage from '@/pages/admin/channels/ChannelHealthPage';
 import ChannelPoolsPage from '@/pages/admin/channels/ChannelPoolsPage';
+import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
+import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -52,7 +54,8 @@ export const router = createBrowserRouter([
       { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
       { path: '/admin/channel/health', element: <ChannelHealthPage /> },
       { path: '/admin/channel/pools', element: <ChannelPoolsPage /> },
-      { path: 'audit', element: <PlaceholderPage title="审核中心（签名/模板/免审规则）" prdRef="F-3.2/F-3.5/F-3.6" /> },
+      { path: 'audit', element: <Navigate to="/admin/signatures/review" replace /> },
+      { path: '/admin/signatures/review', element: <SignatureReviewPage /> },
       {
         path: 'riskcontrol',
         element: <PlaceholderPage title="验证规则（黑白名单/内容审核/频次/携号转网）" prdRef="F-5.1~F-5.7" />,
@@ -87,7 +90,7 @@ export const router = createBrowserRouter([
       { path: 'overview', element: <OverviewPage /> },
       { path: 'send', element: <SendPage /> },
       { path: 'templates', element: <PlaceholderPage title="模板管理" prdRef="F-3.4" /> },
-      { path: 'signatures', element: <PlaceholderPage title="签名管理" prdRef="F-3.1" /> },
+      { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行消息查询" prdRef="F-7.5/F-7.9" /> },

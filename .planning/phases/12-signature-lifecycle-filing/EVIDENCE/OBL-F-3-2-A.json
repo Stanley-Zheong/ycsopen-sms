@@ -1,0 +1,27 @@
+{
+  "obligation_id": "OBL-F-3-2-A",
+  "requirement_ids": ["REQ-F-3-2"],
+  "phase": 12,
+  "package": "signature-lifecycle-filing",
+  "status": "PASS",
+  "evidence": [
+    {
+      "kind": "unit-ui",
+      "command": "npm --prefix web test",
+      "result": "PASS",
+      "summary": "Admin review page renders queue stats from API response and exposes the documented review page root selector."
+    },
+    {
+      "kind": "chrome-acceptance",
+      "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+      "cwd": "web",
+      "result": "PASS",
+      "case_id": "C-P12-REVIEW-STATS"
+    }
+  ],
+  "implementation_refs": [
+    "web/src/pages/admin/signatures/SignatureReviewPage.tsx",
+    "core/src/main/java/com/ycsopen/sms/core/service/signature/SignatureLifecycleService.java"
+  ],
+  "test_ids": ["admin-signature-lifecycle-signature-review-page"]
+}

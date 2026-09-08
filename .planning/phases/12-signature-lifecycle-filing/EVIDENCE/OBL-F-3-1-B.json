@@ -1,0 +1,25 @@
+{
+  "obligation_id": "OBL-F-3-1-B",
+  "requirement_ids": ["REQ-F-3-1"],
+  "phase": 12,
+  "package": "signature-lifecycle-filing",
+  "status": "PASS",
+  "evidence": [
+    {
+      "kind": "backend-unit",
+      "command": "mvn -q -f core/pom.xml -Dtest=SignatureLifecycleServiceTest test",
+      "result": "PASS",
+      "summary": "Valid applications enter PENDING review with SUBMITTED history; duplicate and incomplete conditional-proof applications are rejected before persistence."
+    },
+    {
+      "kind": "backend-full",
+      "command": "mvn -q -f core/pom.xml test",
+      "result": "PASS"
+    }
+  ],
+  "implementation_refs": [
+    "core/src/main/java/com/ycsopen/sms/core/service/signature/SignatureLifecycleService.java",
+    "core/src/main/java/com/ycsopen/sms/core/web/controller/SignatureLifecycleController.java"
+  ],
+  "test_ids": ["tenant-signature-lifecycle-signatures-application-submit"]
+}
