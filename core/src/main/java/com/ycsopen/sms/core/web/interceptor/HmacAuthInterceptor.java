@@ -4,6 +4,7 @@ import com.ycsopen.sms.core.common.security.HmacSignatureVerifier;
 import com.ycsopen.sms.core.domain.entity.TenantApiKey.Status;
 import com.ycsopen.sms.core.repository.TenantApiKeyRepository;
 import com.ycsopen.sms.core.repository.TenantApiKeyRepository.AuthenticationProjection;
+import com.ycsopen.sms.core.service.routing.ApiKeyRateLimitService.RatePolicy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class HmacAuthInterceptor implements HandlerInterceptor {
 
     public static final String ATTR_TENANT_ID = "ycsopen.tenantId";
+    public static final String ATTR_API_KEY_ID = "ycsopen.apiKeyId";
+    public static final String ATTR_RATE_POLICY = "ycsopen.ratePolicy";
 
     private final TenantApiKeyRepository tenantApiKeyRepository;
     private final HmacSignatureVerifier hmacSignatureVerifier;
@@ -61,6 +64,9 @@ public class HmacAuthInterceptor implements HandlerInterceptor {
         // appSecretEncrypted 再校验签名；当前先只做"密钥存在 + 时间戳 + nonce"三项。
 
         request.setAttribute(ATTR_TENANT_ID, apiKey.getTenantId());
+        request.setAttribute(ATTR_API_KEY_ID, apiKey.getId());
+        request.setAttribute(ATTR_RATE_POLICY, new RatePolicy(apiKey.getRateLimitPerSec(),
+                apiKey.getRateLimitPerMin(), apiKey.getRateLimitPerHour(), apiKey.getRateLimitPerDay()));
         return true;
     }
 }

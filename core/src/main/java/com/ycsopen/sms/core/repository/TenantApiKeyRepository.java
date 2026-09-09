@@ -14,7 +14,13 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
      * complete body-signature path owns an explicit protected-secret read.
      */
     @Query("""
-            select apiKey.id as id, apiKey.tenantId as tenantId, apiKey.status as status
+            select apiKey.id as id,
+                   apiKey.tenantId as tenantId,
+                   apiKey.status as status,
+                   apiKey.rateLimitPerSec as rateLimitPerSec,
+                   apiKey.rateLimitPerMin as rateLimitPerMin,
+                   apiKey.rateLimitPerHour as rateLimitPerHour,
+                   apiKey.rateLimitPerDay as rateLimitPerDay
               from TenantApiKey apiKey
              where apiKey.appKey = :appKey
                and apiKey.status = 'ACTIVE'
@@ -28,5 +34,13 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
         Long getTenantId();
 
         TenantApiKey.Status getStatus();
+
+        Integer getRateLimitPerSec();
+
+        Integer getRateLimitPerMin();
+
+        Integer getRateLimitPerHour();
+
+        Integer getRateLimitPerDay();
     }
 }

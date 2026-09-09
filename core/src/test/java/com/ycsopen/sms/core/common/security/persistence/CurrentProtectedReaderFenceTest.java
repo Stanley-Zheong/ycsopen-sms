@@ -117,7 +117,8 @@ class CurrentProtectedReaderFenceTest {
                 .contains(8250L);
 
         assertThat(publicProjectionMethods(TenantApiKeyRepository.AuthenticationProjection.class))
-                .containsExactlyInAnyOrder("getId", "getStatus", "getTenantId");
+                .containsExactlyInAnyOrder("getId", "getStatus", "getTenantId", "getRateLimitPerSec",
+                        "getRateLimitPerMin", "getRateLimitPerHour", "getRateLimitPerDay");
         assertThat(publicProjectionMethods(BlacklistEntryRepository.LookupProjection.class))
                 .containsExactlyInAnyOrder("getId", "getStatus", "getListType", "getTenantId", "getLegacyIndex");
         assertThat(publicProjectionMethods(TenantRepository.IdProjection.class)).containsExactly("getId");
@@ -131,6 +132,10 @@ class CurrentProtectedReaderFenceTest {
                 TenantApiKeyRepository.AuthenticationProjection.class);
         when(authentication.getTenantId()).thenReturn(42L);
         when(authentication.getStatus()).thenReturn(TenantApiKey.Status.ACTIVE);
+        when(authentication.getRateLimitPerSec()).thenReturn(10);
+        when(authentication.getRateLimitPerMin()).thenReturn(100);
+        when(authentication.getRateLimitPerHour()).thenReturn(1000);
+        when(authentication.getRateLimitPerDay()).thenReturn(10000);
         when(apiKeys.findAuthenticationByAppKey("app-key")).thenReturn(Optional.of(authentication));
         when(signatures.verifyTimestamp(anyLong())).thenReturn(true);
         when(signatures.checkAndRecordNonce("nonce-1")).thenReturn(true);
@@ -143,6 +148,7 @@ class CurrentProtectedReaderFenceTest {
         assertThat(new HmacAuthInterceptor(apiKeys, signatures)
                 .preHandle(request, new MockHttpServletResponse(), new Object())).isTrue();
         assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID)).isEqualTo(42L);
+        assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_RATE_POLICY)).isNotNull();
 
         BlindIndexLookupService lookup = mock(BlindIndexLookupService.class);
         ThirdPartyBlacklistClient thirdParty = mock(ThirdPartyBlacklistClient.class);
@@ -234,7 +240,8 @@ class CurrentProtectedReaderFenceTest {
     @Test
     void repositoryQueriesAndCallSitesCannotSelectOrExposeProtectedState() throws Exception {
         assertSafeQuery(TenantApiKeyRepository.class, "findAuthenticationByAppKey",
-                Set.of("id", "tenantId", "status"), "appSecretEncrypted", String.class);
+                Set.of("id", "tenantId", "status", "rateLimitPerSec", "rateLimitPerMin",
+                        "rateLimitPerHour", "rateLimitPerDay"), "appSecretEncrypted", String.class);
         assertSafeQuery(BlacklistEntryRepository.class, "findSystemLegacyCompatibilityMatches",
                 Set.of("id", "status", "listType", "tenantId", "mobileHash"), "mobileEncrypted",
                 String.class, BlacklistEntry.Status.class);

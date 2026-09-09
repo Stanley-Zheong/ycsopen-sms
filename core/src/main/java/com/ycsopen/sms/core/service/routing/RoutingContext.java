@@ -21,6 +21,7 @@ public class RoutingContext {
     private final String content;        // 模板 + 变量拼接后的最终文本（见 PRD 检视 Finding #2：变量也要审）
     private final Long templateId;
     private final Long signatureId;
+    private final Long apiKeyId;
 
     /**
      * Current-version opaque HMAC value for third-party risk-list lookup only.

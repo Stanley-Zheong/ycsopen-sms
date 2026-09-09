@@ -7,4 +7,11 @@ import java.util.List;
 
 public interface FrequencyRuleRepository extends JpaRepository<FrequencyRule, Long> {
     List<FrequencyRule> findAllByStatus(FrequencyRule.Status status);
+
+    boolean existsByRuleNameAndLimitTypeAndScopeAndScopeRefIdAndStatus(
+            String ruleName,
+            FrequencyRule.LimitType limitType,
+            FrequencyRule.Scope scope,
+            Long scopeRefId,
+            FrequencyRule.Status status);
 }

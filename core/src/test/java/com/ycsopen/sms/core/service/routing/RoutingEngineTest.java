@@ -95,7 +95,7 @@ class RoutingEngineTest {
     void frequencyLimitHit_shouldRejectAfterEarlierStagesPass() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
         when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
-        when(frequencyChecker.check(any())).thenReturn(new FrequencyChecker.Result(true, "1分钟内超过10次"));
+        when(frequencyChecker.check(any())).thenReturn(new FrequencyChecker.Result(true, false, "1分钟内超过10次", 0));
 
         RoutingDecision decision = newEngine().route(sampleContext());
 

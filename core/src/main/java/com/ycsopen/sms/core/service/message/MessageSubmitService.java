@@ -50,6 +50,11 @@ public class MessageSubmitService {
 
     @Transactional
     public SmsSendResponse submit(Long tenantId, SmsSendRequest request, String clientIp) {
+        return submit(tenantId, null, request, clientIp);
+    }
+
+    @Transactional
+    public SmsSendResponse submit(Long tenantId, Long apiKeyId, SmsSendRequest request, String clientIp) {
         tenantEligibilityPolicy.requireNewWorkAllowed(tenantId);
 
         TemplateSendComplianceService.Result compliance = templateCompliance.validateDomesticSend(
@@ -70,6 +75,7 @@ public class MessageSubmitService {
                 .content(compliance.finalContent())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
+                .apiKeyId(apiKeyId)
                 .build();
 
         RoutingDecision decision = routingEngine.route(ctx);

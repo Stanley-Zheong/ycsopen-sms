@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-5-6-A","owner":"frequency-api-rate-controls","status":"PASS","evidence":["web/src/pages/admin/risk/FrequencyRulesPage.tsx","web/test/scripts/frequency-rules.spec.ts"],"summary":"Admin rule metrics and rows expose rule name, dimension, count/window, action, scope, state, and hit metrics."}

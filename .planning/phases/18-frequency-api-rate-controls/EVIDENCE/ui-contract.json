@@ -1,0 +1,80 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/frequency/rules", "/tenant/api/keys"],
+    "test_ids": [
+      "admin-frequency-api-frequency-rules-page",
+      "admin-frequency-api-frequency-rules-import",
+      "tenant-frequency-api-api-keys-rate-limits",
+      "shared-frequency-api-queued-feedback"
+    ],
+    "sources": [
+      { "path": ".planning/phases/18-frequency-api-rate-controls/design-output/prototype.html", "sha256": "ed1ad30f48ab1df6866c3bb5260408f8a1543847b73d2b4ee9a3ca32e1c750c0" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/18-frequency-api-rate-controls/runtime-frequency-rules.pen", "sha256": "fd793ef7864faa4089e786acd9dd8b286244d80f6d5d72da939a4d9b2eae0f33" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/frequency/rules", "/tenant/api/keys"],
+    "test_ids": [
+      "admin-frequency-api-frequency-rules-page",
+      "admin-frequency-api-frequency-rules-import",
+      "tenant-frequency-api-api-keys-rate-limits",
+      "shared-frequency-api-queued-feedback"
+    ],
+    "sources": [
+      { "path": ".planning/phases/18-frequency-api-rate-controls/design-output/prototype.html", "sha256": "ed1ad30f48ab1df6866c3bb5260408f8a1543847b73d2b4ee9a3ca32e1c750c0" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-frequency-api-frequency-rules-page",
+      "admin-frequency-api-frequency-rules-import",
+      "tenant-frequency-api-api-keys-rate-limits",
+      "shared-frequency-api-queued-feedback"
+    ],
+    "sources": [
+      { "path": ".planning/phases/18-frequency-api-rate-controls/design-output/prototype.spec.ts", "sha256": "51931fd38843e2025a17467a31d24d629571f13dc97793984537c41466837801" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/frequency/rules", "/tenant/api/keys"],
+    "test_ids": [
+      "admin-frequency-api-frequency-rules-page",
+      "admin-frequency-api-frequency-rules-import",
+      "tenant-frequency-api-api-keys-rate-limits",
+      "shared-frequency-api-queued-feedback"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "325b044a37f5fa82d8980a303f71365a1114b122a14c9f1db5594f1d761479d1" },
+      { "path": "web/src/pages/admin/risk/FrequencyRulesPage.tsx", "sha256": "94207f535d02276c700249f6dd36a9ec673853bdfbbf0ad13455bc49679602dc" },
+      { "path": "web/src/pages/tenant/TenantApiKeysPage.tsx", "sha256": "20b93cee365fe62754af8da37ca4df45938d1a41594d3b9796ceec8cd8157950" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-frequency-api-frequency-rules-page",
+      "admin-frequency-api-frequency-rules-import",
+      "tenant-frequency-api-api-keys-rate-limits",
+      "shared-frequency-api-queued-feedback"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/frequency-rules.spec.ts", "sha256": "f30c32696354f2f60591be2bb4867e5757b7164139b614aac67ea3b08edd90a2" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test frequency-rules.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "7fa6c1034a9a77e3772a8b0cd1b240042b14508e",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/18-frequency-api-rate-controls/EVIDENCE/playwright-execution.json",
+      "sha256": "61fd2c79e96ac8fe1cc28161d426f037db3b5dec6811ce39115fa9551ec898f8"
+    }
+  }
+}

@@ -81,6 +81,21 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.message").value("请求参数不合法"));
     }
 
+    @Test
+    void rateLimitFailureReturnsStandard429Contract() throws Exception {
+        var mvc = MockMvcBuilders.standaloneSetup(new FailureController())
+                .setControllerAdvice(new GlobalExceptionHandler(mock(SecurityEventLogger.class)))
+                .build();
+
+        mvc.perform(get("/phase18/rate-limit"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value(429))
+                .andExpect(jsonPath("$.message").value("请求过于频繁，请稍后重试"))
+                .andExpect(jsonPath("$.data.limitKey").value("api-key-SECOND"))
+                .andExpect(jsonPath("$.data.retryAfterSeconds").value(1))
+                .andExpect(jsonPath("$.data.guidance").value("稍后重试，不会创建任务或扣费"));
+    }
+
     @RestController
     static class FailureController {
         @GetMapping("/phase5/failure")
@@ -96,6 +111,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/phase6/bad-request")
         void badRequest() {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "internal detail");
+        }
+
+        @GetMapping("/phase18/rate-limit")
+        void rateLimit() {
+            throw new RateLimitExceededException("api-key-SECOND", 1);
         }
 
         @PostMapping("/phase5/validate")
