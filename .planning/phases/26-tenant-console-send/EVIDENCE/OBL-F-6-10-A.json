@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-F-6-10-A",
+  "owner": "tenant-console-send",
+  "status": "PASS",
+  "evidence": [
+    "web/test/unit/send-page.test.tsx: previews approved resources and submits console send with a stable request shape",
+    "web/test/scripts/send.spec.ts: pw-p26-tenant-send-page",
+    "EVIDENCE/npm-unit-send-page.log",
+    "EVIDENCE/npm-test.log",
+    "EVIDENCE/playwright-send.log",
+    "EVIDENCE/ui-contract-production.log"
+  ],
+  "verified_behavior": "The tenant send page lists only approved templates whose bound signature is approved, captures declared variables, and renders canonical preview output before submit."
+}

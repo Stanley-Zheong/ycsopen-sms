@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-EDGE-NETWORK-TIMEOUT",
+  "owner": "tenant-console-send",
+  "status": "PASS",
+  "evidence": [
+    "web/test/unit/send-page.test.tsx: shows the prescribed network message and retries with the same correlation identity",
+    "web/test/scripts/send.spec.ts: pw-p26-network-retry",
+    "EVIDENCE/npm-unit-send-page.log",
+    "EVIDENCE/npm-test.log",
+    "EVIDENCE/playwright-send.log"
+  ],
+  "verified_behavior": "Network failure shows the required Chinese retry message and the retry button resubmits with the same correlation-derived submitId."
+}
