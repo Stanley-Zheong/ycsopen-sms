@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-7-3-A","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["bulk-scheduled.spec.ts pw-p29-admin-bulk-details","AdminBulkDetailsPage"],"verified_behavior":"Admin bulk details expose task cards, tenant filter, total, cost, name, tenant, state, type, and priority."}

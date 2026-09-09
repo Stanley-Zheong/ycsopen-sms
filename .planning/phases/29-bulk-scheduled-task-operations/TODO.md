@@ -1,0 +1,23 @@
+# Phase 29 TODO
+
+- [x] OBL-F-6-2-A REST bulk accepts multiple recipients with per-item variables and stable batch/item tracking IDs.
+- [x] OBL-F-6-2-B Valid bulk items reuse the single-message acceptance pipeline and invalidity is item-explicit.
+- [x] OBL-F-6-11-A Upload/import validation covers type, size, malware verdict, header/variables, numbers, duplicates, and tenant resources.
+- [x] OBL-F-6-11-B Import preview exposes valid/invalid rows, reasons, and creation snapshot.
+- [x] OBL-F-6-12-A Tenant can set future send time/priority and see scheduled task state.
+- [x] OBL-F-6-12-B Pause/resume/cancel/restart boundaries are explicit and idempotent.
+- [x] OBL-F-7-3-A Admin cards/filter expose task totals, type, priority, tenant, state, and cost.
+- [x] OBL-F-7-3-B Admin detail reconciles task progress and recipient item states.
+- [x] OBL-F-13-5-A Authorized operations can search supported send jobs with progress and ownership.
+- [x] OBL-F-13-5-B Admin send job controls obey supported states and report outcome.
+- [x] OBL-STATE-BATCH-START Pending/running state transition is explicit.
+- [x] OBL-STATE-BATCH-COMPLETE Completion derives from terminal item states.
+- [x] OBL-STATE-BATCH-PAUSE Pause boundary is enforced.
+- [x] OBL-STATE-BATCH-RESUME Resume boundary is enforced.
+- [x] OBL-STATE-BATCH-FAIL Failure state records reason and recovery inventory.
+- [x] OBL-STATE-BATCH-RESTART Restart does not duplicate terminal item work.
+- [x] OBL-DATA-10-7-BULK Bulk data model preserves required task/item fields.
+- [x] UI elements, Playwright IDs, and test matrix are documented.
+- [x] Verification evidence is captured.
+- [x] Review evidence is captured.
+- [x] Phase29 changes are committed, pushed, and PR-created.

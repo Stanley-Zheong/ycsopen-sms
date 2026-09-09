@@ -1,0 +1,27 @@
+[WebServer] (node:93928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 4 tests using 4 workers
+
+(node:93937) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:93938) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:93939) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:93936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] [local-google-chrome] › web/test/scripts/bulk-scheduled.spec.ts:63:3 › Phase 29 bulk scheduled task operations › pw-p29-tenant-bulk-send C-P29-TENANT-BULK-SEND OBL-F-6-11-A pw-p29-import-preview C-P29-IMPORT-PREVIEW OBL-F-6-11-B
+[2/4] [local-google-chrome] › web/test/scripts/bulk-scheduled.spec.ts:87:3 › Phase 29 bulk scheduled task operations › pw-p29-admin-bulk-details C-P29-ADMIN-BULK-DETAILS OBL-F-7-3-A pw-p29-admin-bulk-detail-table C-P29-ADMIN-BULK-DETAIL-TABLE OBL-F-7-3-B
+[3/4] [local-google-chrome] › web/test/scripts/bulk-scheduled.spec.ts:74:3 › Phase 29 bulk scheduled task operations › pw-p29-tenant-scheduled-tasks C-P29-TENANT-SCHEDULED-TASKS OBL-F-6-12-A pw-p29-tenant-task-control C-P29-TENANT-TASK-CONTROL OBL-F-6-12-B pw-p29-state-start C-P29-STATE-START OBL-STATE-BATCH-START pw-p29-state-complete C-P29-STATE-COMPLETE OBL-STATE-BATCH-COMPLETE pw-p29-state-fail C-P29-STATE-FAIL OBL-STATE-BATCH-FAIL pw-p29-state-pause C-P29-STATE-PAUSE OBL-STATE-BATCH-PAUSE pw-p29-state-resume C-P29-STATE-RESUME OBL-STATE-BATCH-RESUME pw-p29-state-restart C-P29-STATE-RESTART OBL-STATE-BATCH-RESTART
+[4/4] [local-google-chrome] › web/test/scripts/bulk-scheduled.spec.ts:97:3 › Phase 29 bulk scheduled task operations › pw-p29-admin-send-jobs C-P29-ADMIN-SEND-JOBS OBL-F-13-5-A pw-p29-admin-send-job-control C-P29-ADMIN-SEND-JOB-CONTROL OBL-F-13-5-B
+  4 passed (4.0s)

@@ -40,6 +40,10 @@ import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumption
 import MessageOperationsPage from '@/pages/admin/records/MessageOperationsPage';
 import TenantWebhooksPage from '@/pages/tenant/webhooks/TenantWebhooksPage';
 import AdminPushFailuresPage from '@/pages/admin/webhooks/AdminPushFailuresPage';
+import TenantBulkSendPage from '@/pages/tenant/bulk/TenantBulkSendPage';
+import TenantScheduledTasksPage from '@/pages/tenant/bulk/TenantScheduledTasksPage';
+import AdminBulkDetailsPage from '@/pages/admin/bulk/AdminBulkDetailsPage';
+import AdminSendJobsPage from '@/pages/admin/bulk/AdminSendJobsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -89,6 +93,8 @@ export const router = createBrowserRouter([
       { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
       { path: '/admin/error/details', element: <MessageOperationsPage initialSection="errors" /> },
       { path: '/admin/push/failures', element: <AdminPushFailuresPage /> },
+      { path: '/admin/bulk/details', element: <AdminBulkDetailsPage /> },
+      { path: '/admin/send/jobs', element: <AdminSendJobsPage /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行数据（含退订记录）" prdRef="F-10" /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
@@ -118,6 +124,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="overview" replace /> },
       { path: '/tenant/overview', element: <OverviewPage /> },
       { path: '/tenant/send', element: <SendPage /> },
+      { path: '/tenant/bulk/send', element: <TenantBulkSendPage /> },
+      { path: '/tenant/scheduled/tasks', element: <TenantScheduledTasksPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },

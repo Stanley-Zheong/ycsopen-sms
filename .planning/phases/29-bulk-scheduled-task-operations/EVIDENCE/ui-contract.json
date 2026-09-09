@@ -1,0 +1,119 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/bulk/send", "/tenant/scheduled/tasks", "/admin/bulk/details", "/admin/send/jobs"],
+    "test_ids": [
+      "tenant-bulk-scheduled-bulk-send-page",
+      "tenant-bulk-scheduled-bulk-send-validation-results",
+      "tenant-bulk-scheduled-scheduled-tasks-page",
+      "tenant-bulk-scheduled-scheduled-tasks-control",
+      "tenant-bulk-scheduled-scheduled-tasks-state",
+      "tenant-bulk-scheduled-scheduled-tasks-pause",
+      "tenant-bulk-scheduled-scheduled-tasks-resume",
+      "tenant-bulk-scheduled-scheduled-tasks-restart",
+      "admin-bulk-scheduled-bulk-details-page",
+      "admin-bulk-scheduled-bulk-details-table",
+      "admin-bulk-scheduled-send-jobs-page",
+      "admin-bulk-scheduled-send-jobs-control"
+    ],
+    "sources": [
+      {"path": ".planning/phases/29-bulk-scheduled-task-operations/UI-ELEMENTS.md", "sha256": "a2532cfe03b1d982f1017e327f00520d7a12b1a248cfc906d0258f23d09110a9"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/29-bulk-scheduled-task-operations/design-output/bulk-scheduled-baseline.pen", "sha256": "42b12385c1539913635cdea9a2f9d46d8674cb99704868223e9b05d72b5b974b"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/tenant/bulk/send", "/tenant/scheduled/tasks", "/admin/bulk/details", "/admin/send/jobs"],
+    "test_ids": [
+      "tenant-bulk-scheduled-bulk-send-page",
+      "tenant-bulk-scheduled-bulk-send-validation-results",
+      "tenant-bulk-scheduled-scheduled-tasks-page",
+      "tenant-bulk-scheduled-scheduled-tasks-control",
+      "tenant-bulk-scheduled-scheduled-tasks-state",
+      "tenant-bulk-scheduled-scheduled-tasks-pause",
+      "tenant-bulk-scheduled-scheduled-tasks-resume",
+      "tenant-bulk-scheduled-scheduled-tasks-restart",
+      "admin-bulk-scheduled-bulk-details-page",
+      "admin-bulk-scheduled-bulk-details-table",
+      "admin-bulk-scheduled-send-jobs-page",
+      "admin-bulk-scheduled-send-jobs-control"
+    ],
+    "sources": [
+      {"path": ".planning/phases/29-bulk-scheduled-task-operations/design-output/prototype.html", "sha256": "bbc7c84b863824b71dd0c7db51717823969dc06c4abcca620942c7f59d80c572"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-bulk-scheduled-bulk-send-page",
+      "tenant-bulk-scheduled-bulk-send-validation-results",
+      "tenant-bulk-scheduled-scheduled-tasks-page",
+      "tenant-bulk-scheduled-scheduled-tasks-control",
+      "tenant-bulk-scheduled-scheduled-tasks-state",
+      "tenant-bulk-scheduled-scheduled-tasks-pause",
+      "tenant-bulk-scheduled-scheduled-tasks-resume",
+      "tenant-bulk-scheduled-scheduled-tasks-restart",
+      "admin-bulk-scheduled-bulk-details-page",
+      "admin-bulk-scheduled-bulk-details-table",
+      "admin-bulk-scheduled-send-jobs-page",
+      "admin-bulk-scheduled-send-jobs-control"
+    ],
+    "sources": [
+      {"path": ".planning/phases/29-bulk-scheduled-task-operations/design-output/prototype.spec.ts", "sha256": "5d89ba9e22bdff044ec6015289a09007aacb1ca7bda74f5429966f36653ccb1d"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/tenant/bulk/send", "/tenant/scheduled/tasks", "/admin/bulk/details", "/admin/send/jobs"],
+    "test_ids": [
+      "tenant-bulk-scheduled-bulk-send-page",
+      "tenant-bulk-scheduled-bulk-send-validation-results",
+      "tenant-bulk-scheduled-scheduled-tasks-page",
+      "tenant-bulk-scheduled-scheduled-tasks-control",
+      "admin-bulk-scheduled-bulk-details-page",
+      "admin-bulk-scheduled-bulk-details-table",
+      "admin-bulk-scheduled-send-jobs-page",
+      "admin-bulk-scheduled-send-jobs-control",
+      "tenant-bulk-scheduled-scheduled-tasks-state",
+      "tenant-bulk-scheduled-scheduled-tasks-pause",
+      "tenant-bulk-scheduled-scheduled-tasks-resume",
+      "tenant-bulk-scheduled-scheduled-tasks-restart"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "b9c8648164c78ce7be5d67ca3dc0b7e4a228e4e48b5c35d347f45b38b4a444c7"},
+      {"path": "web/src/pages/tenant/bulk/TenantBulkSendPage.tsx", "sha256": "2e889201b403ee261e486dd17077f918d57cd6fc5318ac183170c598ba4f0285"},
+      {"path": "web/src/pages/tenant/bulk/TenantScheduledTasksPage.tsx", "sha256": "2661cf9238bb4ba7003aa5f28c5e861bc75c1d3a16d5fa17651f30ce1333c226"},
+      {"path": "web/src/pages/admin/bulk/AdminBulkDetailsPage.tsx", "sha256": "38e4902eb5a912a47656cc3ab1364a3ece3c9dfe37290faaf9749d522a6aa8c0"},
+      {"path": "web/src/pages/admin/bulk/AdminSendJobsPage.tsx", "sha256": "784ecf2efabe0c491167b082ec30bede97877c6120b14be98de8c99d9a53d7db"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-bulk-scheduled-bulk-send-page",
+      "tenant-bulk-scheduled-bulk-send-validation-results",
+      "tenant-bulk-scheduled-scheduled-tasks-page",
+      "tenant-bulk-scheduled-scheduled-tasks-control",
+      "admin-bulk-scheduled-bulk-details-page",
+      "admin-bulk-scheduled-bulk-details-table",
+      "admin-bulk-scheduled-send-jobs-page",
+      "admin-bulk-scheduled-send-jobs-control",
+      "tenant-bulk-scheduled-scheduled-tasks-state",
+      "tenant-bulk-scheduled-scheduled-tasks-pause",
+      "tenant-bulk-scheduled-scheduled-tasks-resume",
+      "tenant-bulk-scheduled-scheduled-tasks-restart"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/bulk-scheduled.spec.ts", "sha256": "337bb8409cf3d108086324b95de45e060be0209b1d1b6eac457ae64ccd9542cb"}
+    ]
+  },
+  "execution": {
+    "command": "YCSOPEN_CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm --prefix web exec -- playwright test bulk-scheduled.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "bd6a70c1fe3f09a62ff66988adedddf2620164c9",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/29-bulk-scheduled-task-operations/EVIDENCE/playwright-bulk-scheduled-report.json", "sha256": "52e10495752207c0f5d5962f7f3f6c17178f06300e9da5b7cdcd92073722a29e"}
+  }
+}
