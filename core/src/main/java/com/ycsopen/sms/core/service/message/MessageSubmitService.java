@@ -122,9 +122,6 @@ public class MessageSubmitService {
         idempotency.enqueueSendIntent(tenantId, savedTask.getId(), messageId, decision.getSelectedChannelId());
         idempotency.markAccepted(claim.submissionId());
 
-        // TODO(F-6.7/CMPP + 上游 HTTP 连接器): 真正把消息投递给 decision.getSelectedChannelId()
-        // 对应的上游通道——这是当前仓库里最大的一块"占位而非实现"，见 core/docs/ROADMAP.md。
-
         return new SmsSendResponse(messageId, task.getSendStatus().name());
     }
 

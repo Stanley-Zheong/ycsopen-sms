@@ -1,4 +1,4 @@
-ALTER TABLE message_submissions
+ALTER TABLE message_submits
     ADD COLUMN request_digest CHAR(64) NULL;
 
 CREATE TABLE message_send_outbox (

@@ -41,6 +41,7 @@ public class MessageTaskProtectionAdapter {
     private static final int MOBILE_PLAINTEXT_BYTES = 11;
     private static final int MAXIMUM_MOBILE_ENVELOPE_BYTES = 156;
     private static final AssignmentPermit ASSIGNMENT_PERMIT = new AssignmentPermit();
+    private static final ReadPermit READ_PERMIT = new ReadPermit();
 
     private final ProtectedFieldCodec protectedFieldCodec;
     private final BlindIndexPort blindIndexPort;
@@ -193,6 +194,36 @@ public class MessageTaskProtectionAdapter {
         }
     }
 
+    /** Reveals the mobile only for the provider-dispatch boundary that owns sending the message. */
+    public String revealMobileForDispatch(MessageTask task) {
+        byte[] envelope = null;
+        byte[] plaintext = null;
+        try {
+            if (task == null || task.getId() == null || task.getTenantId() == null
+                    || task.getMessageId() == null) {
+                throw sanitized();
+            }
+            envelope = task.copyProtectedMobileEnvelope(READ_PERMIT);
+            ProtectionContext fieldContext = new ProtectionContext(
+                    ProtectionContext.Purpose.DATABASE_FIELD,
+                    LOGICAL_OWNER, LOGICAL_TABLE, CONTENT_ROLE,
+                    "tenant:" + task.getTenantId(), "message_id=" + task.getMessageId());
+            plaintext = protectedFieldCodec.unprotect(
+                    envelope, fieldContext, EnvelopeCodec.Target.DATABASE_FIELD);
+            if (plaintext.length != MOBILE_PLAINTEXT_BYTES) {
+                throw sanitized();
+            }
+            String mobile = new String(plaintext, java.nio.charset.StandardCharsets.US_ASCII);
+            requireMobile(mobile);
+            return mobile;
+        } catch (RuntimeException failure) {
+            throw sanitized();
+        } finally {
+            clear(envelope);
+            clear(plaintext);
+        }
+    }
+
     private static long requireTenantId(Long tenantId) {
         if (tenantId == null || tenantId <= 0) {
             throw new IllegalArgumentException("tenant identity is required");
@@ -252,6 +283,12 @@ public class MessageTaskProtectionAdapter {
     /** Unforgeable cross-package permit that keeps protected entity mutation adapter-owned. */
     public static final class AssignmentPermit {
         private AssignmentPermit() {
+        }
+    }
+
+    /** Unforgeable permit for the dispatch-only protected read boundary. */
+    public static final class ReadPermit {
+        private ReadPermit() {
         }
     }
 }

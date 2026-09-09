@@ -29,7 +29,7 @@ public class MessageAcceptanceIdempotencyService {
             KeyHolder key = new GeneratedKeyHolder();
             jdbc.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement("""
-                        INSERT INTO message_submissions(tenant_id, submit_id, request_digest,
+                        INSERT INTO message_submits(tenant_id, submit_id, request_digest,
                           source_protocol, product_type, status)
                         VALUES (?, ?, ?, 'HTTP', 'NOTIFY', 'QUEUED')
                         """, Statement.RETURN_GENERATED_KEYS);
@@ -46,14 +46,14 @@ public class MessageAcceptanceIdempotencyService {
 
     public void attachResources(long submissionId, long templateId, long signatureId) {
         jdbc.update("""
-                UPDATE message_submissions
+                UPDATE message_submits
                    SET template_id = ?, signature_id = ?
                  WHERE id = ?
                 """, templateId, signatureId, submissionId);
     }
 
     public void markAccepted(long submissionId) {
-        jdbc.update("UPDATE message_submissions SET status='ACCEPTED' WHERE id=?", submissionId);
+        jdbc.update("UPDATE message_submits SET status='ACCEPTED' WHERE id=?", submissionId);
     }
 
     public void enqueueSendIntent(long tenantId, long taskId, String messageId, long channelId) {
@@ -66,7 +66,7 @@ public class MessageAcceptanceIdempotencyService {
     private Claim existingClaim(long tenantId, String submitId, String requestDigest) {
         ExistingSubmission existing = jdbc.query("""
                 SELECT ms.id, ms.request_digest, mt.message_id, mt.send_status
-                  FROM message_submissions ms
+                  FROM message_submits ms
                   LEFT JOIN message_tasks mt ON mt.submit_id = ms.id
                  WHERE ms.tenant_id = ? AND ms.submit_id = ?
                  FOR UPDATE

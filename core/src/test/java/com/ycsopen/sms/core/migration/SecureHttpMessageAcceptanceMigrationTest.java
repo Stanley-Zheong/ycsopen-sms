@@ -15,7 +15,7 @@ class SecureHttpMessageAcceptanceMigrationTest {
         try (var connection = DriverManager.getConnection(
                 "jdbc:h2:mem:phase23_migration;MODE=MySQL;DATABASE_TO_UPPER=false")) {
             connection.createStatement().execute("""
-                    CREATE TABLE message_submissions(
+                    CREATE TABLE message_submits(
                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
                       submit_id VARCHAR(64) NOT NULL,
                       tenant_id BIGINT NOT NULL,
@@ -43,7 +43,7 @@ class SecureHttpMessageAcceptanceMigrationTest {
             connection.createStatement().execute(migration);
 
             try (var columns = connection.getMetaData().getColumns(null, null,
-                    "message_submissions", "request_digest")) {
+                    "message_submits", "request_digest")) {
                 assertThat(columns.next()).isTrue();
             }
             try (var tables = connection.getMetaData().getTables(null, null,

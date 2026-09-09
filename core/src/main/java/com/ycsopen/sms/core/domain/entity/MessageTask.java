@@ -65,6 +65,9 @@ public class MessageTask {
     @Column(name = "channel_id")
     private Long channelId;
 
+    @Column(name = "channel_msg_id")
+    private String channelMessageId;
+
     @Column(name = "error_code")
     private String errorCode;
 
@@ -78,6 +81,12 @@ public class MessageTask {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "send_time")
+    private LocalDateTime sendTime;
+
+    @Column(name = "deliver_time")
+    private LocalDateTime deliverTime;
 
     @Version
     private Integer version;
@@ -108,6 +117,14 @@ public class MessageTask {
 
     public boolean hasPreparedMobile() {
         return mobileEncrypted != null || mobileHash != null;
+    }
+
+    /** Returns the opaque envelope only to the protected adapter read boundary. */
+    public byte[] copyProtectedMobileEnvelope(MessageTaskProtectionAdapter.ReadPermit permit) {
+        if (permit == null || mobileEncrypted == null) {
+            throw new IllegalStateException("protected mobile read rejected");
+        }
+        return mobileEncrypted.clone();
     }
 
     /** Existing plaintext callers fail closed until Plan 03-26 rewires them to the adapter. */

@@ -32,7 +32,7 @@ class MessageAcceptanceIdempotencyServiceTest {
                 .build();
         jdbc = new JdbcTemplate(database);
         jdbc.execute("""
-                CREATE TABLE message_submissions(
+                CREATE TABLE message_submits(
                   id BIGINT AUTO_INCREMENT PRIMARY KEY,
                   tenant_id BIGINT NOT NULL,
                   submit_id VARCHAR(64) NOT NULL,
@@ -80,7 +80,7 @@ class MessageAcceptanceIdempotencyServiceTest {
         assertThat(duplicate.existingResponse()).isPresent();
         assertThat(duplicate.existingResponse().orElseThrow().messageId())
                 .isEqualTo("MSG_1700000000000_ABCDEF12");
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM message_submissions", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM message_submits", Integer.class)).isEqualTo(1);
     }
 
     @Test
