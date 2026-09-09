@@ -14,6 +14,7 @@ import { CONTENT_SAFETY_PERMISSIONS } from '@/api/contentSafetyApi';
 import { FREQUENCY_PERMISSIONS } from '@/api/frequencyRuleApi';
 import { NUMBER_ATTRIBUTION_PERMISSIONS } from '@/api/numberAttributionApi';
 import { PROVIDER_STATUS_PERMISSIONS } from '@/api/providerStatusApi';
+import { ROUTING_POLICY_PERMISSIONS } from '@/api/routingPolicyApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -23,6 +24,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/channel/configuration', label: '通道管理', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/channel/health', label: '通道健康', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/channel/pools', label: '通道池', roles: ['ADMIN', 'OPERATOR'] },
+  { to: '/admin/routing-policy', label: '路由策略', roles: ['ADMIN', 'OPERATOR'], permissions: [ROUTING_POLICY_PERMISSIONS.menu, ROUTING_POLICY_PERMISSIONS.read] },
   { to: '/admin/signatures/review', label: '签名审核', roles: OPERATIONS },
   { to: '/admin/templates/review', label: '模板审核', roles: OPERATIONS },
   { to: '/admin/exemption/policy', label: '豁免策略', roles: OPERATIONS, permissions: [EXEMPTION_PERMISSIONS.menu, EXEMPTION_PERMISSIONS.read] },
@@ -79,6 +81,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/channel/pools' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-channel-health-pools-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/routing-policy' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-routing-circuit-routing-policy-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/signatures/review' ? (

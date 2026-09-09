@@ -1,0 +1,79 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/routing-policy"],
+    "test_ids": [
+      "admin-routing-circuit-routing-policy-page",
+      "admin-routing-circuit-routing-policy-simulator",
+      "admin-routing-circuit-routing-circuit-state",
+      "admin-routing-circuit-routing-retry-rules"
+    ],
+    "sources": [
+      { "path": ".planning/phases/21-routing-circuit-policy/design-output/prototype.html", "sha256": "7a69c355849e1c9b531277412f6c8e96a19d830d8c12b6137053fb8df3d4e61c" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/21-routing-circuit-policy/routing-circuit-policy.pen", "sha256": "994fdd9b751cf6d0c301dce1b22ef9a6f10708efd8059bf7db273c3c9fac400d" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/routing-policy"],
+    "test_ids": [
+      "admin-routing-circuit-routing-policy-page",
+      "admin-routing-circuit-routing-policy-simulator",
+      "admin-routing-circuit-routing-circuit-state",
+      "admin-routing-circuit-routing-retry-rules"
+    ],
+    "sources": [
+      { "path": ".planning/phases/21-routing-circuit-policy/design-output/prototype.html", "sha256": "7a69c355849e1c9b531277412f6c8e96a19d830d8c12b6137053fb8df3d4e61c" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-routing-circuit-routing-policy-page",
+      "admin-routing-circuit-routing-policy-simulator",
+      "admin-routing-circuit-routing-circuit-state",
+      "admin-routing-circuit-routing-retry-rules"
+    ],
+    "sources": [
+      { "path": ".planning/phases/21-routing-circuit-policy/design-output/prototype.spec.ts", "sha256": "f01a7050853f0ce4380506942072d1f90b0a354cf0f2aa2a77dc0c1e32150c21" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/routing-policy"],
+    "test_ids": [
+      "admin-routing-circuit-routing-policy-page",
+      "admin-routing-circuit-routing-policy-simulator",
+      "admin-routing-circuit-routing-circuit-state",
+      "admin-routing-circuit-routing-retry-rules"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "f30b805e2c2a8b52f91e60d33ba1585a92cc99cb6812159ca5a7dbfd037fd788" },
+      { "path": "web/src/pages/admin/channels/RoutingPolicyPage.tsx", "sha256": "2619717d2a1e61d1402cab574b1f6f27e28bd7f805b9ae62cb9688fd7ed062f2" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-routing-circuit-routing-policy-page",
+      "admin-routing-circuit-routing-policy-simulator",
+      "admin-routing-circuit-routing-circuit-state",
+      "admin-routing-circuit-routing-retry-rules"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/routing-policy.spec.ts", "sha256": "b15cb9d697e65565ef942d35c8407aef104be0a36b862ef6a6e2aee6cc7fc641" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test routing-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "435bb2825adb871e01921eb86a45e3bee9e08baf",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/21-routing-circuit-policy/EVIDENCE/playwright-execution.json",
+      "sha256": "bbc793ec228d180868731108bfb4ca54a51f3b892c0da677114c10ebfd446fec"
+    }
+  }
+}

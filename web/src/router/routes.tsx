@@ -23,6 +23,7 @@ import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
 import ChannelConfigurationPage from '@/pages/admin/channels/ChannelConfigurationPage';
 import ChannelHealthPage from '@/pages/admin/channels/ChannelHealthPage';
 import ChannelPoolsPage from '@/pages/admin/channels/ChannelPoolsPage';
+import RoutingPolicyPage from '@/pages/admin/channels/RoutingPolicyPage';
 import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
 import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
 import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
       { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
       { path: '/admin/channel/health', element: <ChannelHealthPage /> },
       { path: '/admin/channel/pools', element: <ChannelPoolsPage /> },
+      { path: '/admin/routing-policy', element: <RoutingPolicyPage /> },
       { path: 'audit', element: <Navigate to="/admin/signatures/review" replace /> },
       { path: '/admin/signatures/review', element: <SignatureReviewPage /> },
       { path: '/admin/templates/review', element: <TemplateReviewPage /> },

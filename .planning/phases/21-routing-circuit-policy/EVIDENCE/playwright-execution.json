@@ -1,0 +1,14 @@
+{
+  "command": "npm --prefix web exec -- playwright test routing-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "435bb2825adb871e01921eb86a45e3bee9e08baf",
+  "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P21-ROUTE-AUTHOR",
+    "C-P21-ROUTE-SIMULATOR",
+    "C-P21-CIRCUIT",
+    "C-P21-RETRY",
+    "C-P21-ROUTING-FLOW"
+  ]
+}
+

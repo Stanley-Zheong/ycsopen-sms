@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 21 Routing Policy Prototype</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f7fb; color: #101828; }
+    main { padding: 24px; display: grid; gap: 16px; }
+    .card { background: #fff; border: 1px solid #eaecf0; border-radius: 12px; padding: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eaecf0; padding: 10px; text-align: left; }
+  </style>
+</head>
+<body>
+  <main data-route="/admin/routing-policy" data-testid="admin-routing-circuit-routing-policy-page">
+    <section class="card"><h1>路由策略</h1><button data-testid="admin-routing-circuit-routing-policy-import">导入策略</button></section>
+    <section class="card" data-testid="admin-routing-circuit-routing-policy-simulator"><h2>路由模拟</h2><button data-testid="admin-routing-circuit-routing-policy-simulate">模拟路由</button><p data-testid="admin-routing-circuit-routing-policy-simulation-result">CH_MAIN</p></section>
+    <section class="card" data-testid="admin-routing-circuit-routing-circuit-state"><h2>熔断状态</h2><table><tbody><tr data-testid="admin-routing-circuit-routing-circuit-row"><td>CH_MAIN</td><td>CLOSED</td></tr></tbody></table></section>
+    <section class="card" data-testid="admin-routing-circuit-routing-retry-rules"><h2>重试规则</h2><button data-testid="admin-routing-circuit-routing-retry-save">保存重试策略</button></section>
+  </main>
+</body>
+</html>
+
