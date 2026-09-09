@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-13-5-A","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["bulk-scheduled.spec.ts pw-p29-admin-send-jobs","AdminSendJobsPage"],"verified_behavior":"Authorized operations search supported send jobs with ownership, type, current progress, and state."}

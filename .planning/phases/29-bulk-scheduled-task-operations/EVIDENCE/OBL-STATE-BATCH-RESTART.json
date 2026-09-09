@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-BATCH-RESTART","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.cancelFailAndRestartControlsHaveExecutableStateEvidence"],"verified_behavior":"Restart is accepted only from FAILED and restores failed/cancelled non-terminal item rows without duplicating delivered items."}

@@ -1,0 +1,114 @@
+
+> ycsopen-sms-web@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /Users/laosanzheong/Documents/codebases/ycsopen-sms/web
+
+stderr | test/unit/system-configuration.test.tsx > Phase 07 system configuration UI > edits, validates, stages only changed values, and activates the staged version
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/template-lifecycle.test.tsx > Phase 13 template lifecycle UI > submits and previews a tenant template with exact variable selectors
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/auth-session.test.tsx (10 tests) 649ms
+stderr | test/unit/channel-health.test.tsx > Phase 11 channel health and pool UI > renders monitor state, records validation, and pauses a channel with reason evidence
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/channel-configuration.test.tsx > Phase 10 channel configuration UI > creates a complete channel and never renders saved credential plaintext
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/signature-lifecycle.test.tsx > Phase 12 signature lifecycle UI > submits a complete tenant signature application and shows feedback history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/tenant-qualification.test.tsx > Phase 08 tenant qualification production UI > renders truthful own-tenant status and the complete shared form selector contract
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/template-lifecycle.test.tsx (3 tests) 350ms
+ ✓ test/unit/signature-lifecycle.test.tsx (3 tests) 290ms
+ ✓ test/unit/channel-health.test.tsx (5 tests) 554ms
+ ✓ test/unit/privileged-audit.test.tsx (5 tests) 664ms
+   ✓ Phase 6 privileged audit UI > submits audit filters and opens only the sanitized detail record 323ms
+ ✓ test/unit/system-configuration.test.tsx (5 tests) 824ms
+   ✓ Phase 07 system configuration UI > edits, validates, stages only changed values, and activates the staged version 417ms
+ ✓ test/unit/channel-configuration.test.tsx (5 tests) 822ms
+   ✓ Phase 10 channel configuration UI > creates a complete channel and never renders saved credential plaintext 476ms
+ ✓ test/unit/identity-pages.test.tsx (8 tests) 1797ms
+   ✓ Phase 5 identity administration pages > creates a validated platform account and can apply explicit state transitions 552ms
+   ✓ Phase 5 identity administration pages > saves all four permission granularities and requires migration for an in-use role 411ms
+stderr | test/unit/blacklist-risk-control.test.tsx > Phase 16 blacklist risk control UI > manages lists, provider, decisions, degraded evidence, and appeal actions
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/blacklist-risk-control.test.tsx (1 test) 502ms
+   ✓ Phase 16 blacklist risk control UI > manages lists, provider, decisions, degraded evidence, and appeal actions 501ms
+stderr | test/unit/exemption-policy.test.tsx > Phase 14 auditable exemption policy UI > configures bounded exemptions and records the request payload
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/tenant-qualification.test.tsx (15 tests) 3418ms
+   ✓ Phase 08 tenant qualification production UI > completes protected uploads and verified contact before sending the exact registration payload 379ms
+   ✓ Phase 08 tenant qualification production UI > invalidates all prior file claims when the upload session expires locally 467ms
+   ✓ Phase 08 tenant qualification production UI > refreshes stale decision, edit, and status tokens while retaining input for a valid retry 385ms
+   ✓ Phase 08 tenant qualification production UI > keeps a successful VERIFIED resubmission pending and read-only when aggregate refresh fails 766ms
+   ✓ Phase 08 tenant qualification production UI > keeps a successful REJECTED resubmission pending and read-only when aggregate refresh fails 363ms
+stderr | test/unit/content-safety.test.tsx > Phase 17 runtime content safety UI > manages policies, import/export, hot update, and final-content scan
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/trial-prepaid.test.tsx > Phase 22 trial prepaid ledger UI > shows trial status, decrements quota, and requests conversion
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/exemption-policy.test.tsx (3 tests) 768ms
+   ✓ Phase 14 auditable exemption policy UI > configures bounded exemptions and records the request payload 397ms
+ ✓ test/unit/content-safety.test.tsx (1 test) 490ms
+   ✓ Phase 17 runtime content safety UI > manages policies, import/export, hot update, and final-content scan 489ms
+ ✓ test/unit/trial-prepaid.test.tsx (3 tests) 428ms
+ ✓ test/unit/message-operations.test.tsx (4 tests) 780ms
+   ✓ Phase 27 message receipt error operations UI > shows submission trace, masked send rows, and export handoff 323ms
+ ✓ test/unit/send-page.test.tsx (2 tests) 638ms
+   ✓ Phase 26 tenant console send page > previews approved resources and submits console send with a stable request shape 472ms
+ ✓ test/unit/bulk-scheduled.test.tsx (3 tests) 683ms
+   ✓ Phase 29 bulk scheduled pages > previews and creates a tenant bulk task with validation results 308ms
+   ✓ Phase 29 bulk scheduled pages > shows admin detail reconciliation and operations search controls 349ms
+ ✓ test/unit/webhook-delivery.test.tsx (2 tests) 379ms
+stderr | test/unit/resource-review-history.test.tsx > Phase 15 unified resource review history UI > filters unified history and opens immutable detail
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/resource-review-history.test.tsx (1 test) 93ms
+stderr | test/unit/routing-policy.test.tsx > Phase 21 routing circuit policy UI > imports, simulates, records circuit state, and saves retry policy
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/internal-error-notice.test.tsx (2 tests) 46ms
+ ✓ test/unit/routing-policy.test.tsx (1 test) 83ms
+ ✓ test/unit/format.test.ts (4 tests) 1ms
+stderr | test/unit/frequency-rules.test.tsx > Phase 18 frequency and API rate controls UI > manages rules, import/export, hot update, and high concurrency feedback
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/number-attribution.test.tsx > Phase 19 number attribution and portability UI > imports prefixes, queries attribution, and saves protected portability cache
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | test/unit/provider-status.test.tsx > Phase 20 provider status taxonomy UI > imports, normalizes, exports, and shows version history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ test/unit/login-page.test.tsx (3 tests) 97ms
+ ✓ test/unit/frequency-rules.test.tsx (1 test) 110ms
+ ✓ test/unit/provider-status.test.tsx (1 test) 78ms
+ ✓ test/unit/number-attribution.test.tsx (1 test) 83ms
+
+ Test Files  25 passed (25)
+      Tests  92 passed (92)
+   Start at  22:44:38
+   Duration  8.84s (transform 2.31s, setup 4.14s, collect 18.23s, tests 14.63s, environment 27.65s, prepare 4.20s)

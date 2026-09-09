@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-BATCH-PAUSE","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.controlsStateBoundariesAndReconcilesTerminalItems"],"verified_behavior":"Pause is accepted only from PENDING/RUNNING and records reason."}

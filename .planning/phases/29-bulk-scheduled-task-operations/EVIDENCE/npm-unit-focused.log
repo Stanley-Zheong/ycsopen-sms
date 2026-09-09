@@ -1,0 +1,13 @@
+
+> ycsopen-sms-web@0.1.0 test
+> vitest run bulk-scheduled.test.tsx
+
+
+ RUN  v2.1.9 /Users/laosanzheong/Documents/codebases/ycsopen-sms/web
+
+ ✓ test/unit/bulk-scheduled.test.tsx (3 tests) 102ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  22:42:15
+   Duration  838ms (transform 67ms, setup 44ms, collect 121ms, tests 102ms, environment 304ms, prepare 66ms)
