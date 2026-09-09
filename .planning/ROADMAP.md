@@ -42,7 +42,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 12: Signature lifecycle and channel filing** — Signature application/proof/risk delivered.
 - [x] **Phase 13: Template lifecycle and send compliance contract** — Template fields/variables/rules/signature binding.
 - [x] **Phase 14: Auditable exemption policy** — Signature/content/account exemption types.
-- [ ] **Phase 15: Unified resource review history** — Cross-resource immutable review decisions.
+- [x] **Phase 15: Unified resource review history** — Cross-resource immutable review decisions.
 - [ ] **Phase 16: Blacklist and third-party risk control** — System/tenant black/white lists.
 - [ ] **Phase 17: Runtime final-content safety** — Sensitive word/category/level/replacement/action/scope/state.
 - [ ] **Phase 18: Frequency and API rate controls** — Per-key second/minute/hour/day limits.

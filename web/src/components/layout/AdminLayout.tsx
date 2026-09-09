@@ -8,8 +8,10 @@ import { AUDIT_PERMISSIONS } from '@/api/audit';
 import { SYSTEM_CONFIGURATION_PERMISSIONS } from '@/api/systemConfiguration';
 import { TENANT_PERMISSIONS } from '@/api/tenantQualificationApi';
 import { EXEMPTION_PERMISSIONS } from '@/api/exemptionPolicyApi';
+import { REVIEW_HISTORY_PERMISSIONS } from '@/api/resourceReviewHistoryApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
+const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
 const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; roles?: PlatformUserType[] }> = [
   { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
   { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read] },
@@ -19,6 +21,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/signatures/review', label: '签名审核', roles: OPERATIONS },
   { to: '/admin/templates/review', label: '模板审核', roles: OPERATIONS },
   { to: '/admin/exemption/policy', label: '豁免策略', roles: OPERATIONS, permissions: [EXEMPTION_PERMISSIONS.menu, EXEMPTION_PERMISSIONS.read] },
+  { to: '/admin/review-history', label: '审核历史', roles: REVIEW_HISTORY_ROLES, permissions: [REVIEW_HISTORY_PERMISSIONS.menu, REVIEW_HISTORY_PERMISSIONS.read] },
   { to: '/admin/riskcontrol', label: '验证规则', roles: OPERATIONS },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
@@ -77,6 +80,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/exemption/policy' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-auditable-exemption-exemption-policy-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/review-history' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-resource-review-history-review-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

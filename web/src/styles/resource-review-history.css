@@ -1,0 +1,55 @@
+.review-history-page {
+  display: grid;
+  gap: 16px;
+}
+
+.review-history-header,
+.review-history-filters {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.review-history-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.review-history-filters label,
+.review-history-detail dl {
+  display: grid;
+  gap: 6px;
+}
+
+.review-history-detail {
+  min-width: 720px;
+}
+
+.review-history-detail dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.review-history-detail div {
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 0;
+}
+
+.review-history-detail dt {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.review-history-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.review-history-pagination {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

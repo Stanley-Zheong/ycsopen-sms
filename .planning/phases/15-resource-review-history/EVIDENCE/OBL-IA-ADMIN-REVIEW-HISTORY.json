@@ -1,0 +1,19 @@
+{
+  "obligation": "OBL-IA-ADMIN-REVIEW-HISTORY",
+  "owner": "resource-review-history",
+  "result": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/review/ResourceReviewHistoryService.java",
+    "core/src/main/java/com/ycsopen/sms/core/web/controller/ResourceReviewHistoryController.java",
+    "web/src/pages/admin/review/ResourceReviewHistoryPage.tsx",
+    "web/test/scripts/resource-review-history.spec.ts"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml test",
+    "npm --prefix web test",
+    "npm --prefix web run build",
+    "npm --prefix web exec -- playwright test resource-review-history.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "/usr/bin/env ruby .planning/tools/validate-prd-obligations.rb --owner resource-review-history",
+    "/usr/bin/env ruby .planning/tools/validate-ui-contract.rb --phase 15 --package resource-review-history --stage production"
+  ]
+}

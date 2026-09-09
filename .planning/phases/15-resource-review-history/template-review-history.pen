@@ -1,0 +1,4 @@
+phase=15
+page=admin-review-history
+route=/admin/review-history
+test_ids=admin-resource-review-history-review-page,admin-resource-review-history-review-filters,admin-resource-review-history-review-table,admin-resource-review-history-review-detail-drawer
