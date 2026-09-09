@@ -1,0 +1,66 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< com.ycsopen:ycsopen-sms-core >--------------------
+[INFO] Building ycsopen-sms-core 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ ycsopen-sms-core ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 44 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ ycsopen-sms-core ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 347 source files with javac [debug parameters release 21] to target/classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /Users/laosanzheong/Documents/codebases/ycsopen-sms/core/src/main/java/com/ycsopen/sms/core/common/security/JwtTokenProvider.java: Some input files use or override a deprecated API.
+[INFO] /Users/laosanzheong/Documents/codebases/ycsopen-sms/core/src/main/java/com/ycsopen/sms/core/common/security/JwtTokenProvider.java: Recompile with -Xlint:deprecation for details.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ycsopen-sms-core ---
+[INFO] Copying 5 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ ycsopen-sms-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 196 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[WARNING] /Users/laosanzheong/Documents/codebases/ycsopen-sms/core/src/test/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapterTest.java:[225,40] setMobileEncrypted(java.lang.String) in com.ycsopen.sms.core.domain.entity.MessageTask has been deprecated and marked for removal
+[WARNING] /Users/laosanzheong/Documents/codebases/ycsopen-sms/core/src/test/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapterTest.java:[227,40] setMobileHash(java.lang.String) in com.ycsopen.sms.core.domain.entity.MessageTask has been deprecated and marked for removal
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ ycsopen-sms-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.ycsopen.sms.core.cmpp.CmppDownstreamGatewaySessionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.057 s -- in com.ycsopen.sms.core.cmpp.CmppDownstreamGatewaySessionTest
+[INFO] Running com.ycsopen.sms.core.cmpp.CmppMessageSubmitAcceptanceAdapterTest
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/laosanzheong/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.459 s -- in com.ycsopen.sms.core.cmpp.CmppMessageSubmitAcceptanceAdapterTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.213 s
+[INFO] Finished at: 2026-09-09T23:46:49+08:00
+[INFO] ------------------------------------------------------------------------
