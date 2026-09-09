@@ -13,6 +13,7 @@ import { BLACKLIST_RISK_PERMISSIONS } from '@/api/blacklistRiskControlApi';
 import { CONTENT_SAFETY_PERMISSIONS } from '@/api/contentSafetyApi';
 import { FREQUENCY_PERMISSIONS } from '@/api/frequencyRuleApi';
 import { NUMBER_ATTRIBUTION_PERMISSIONS } from '@/api/numberAttributionApi';
+import { PROVIDER_STATUS_PERMISSIONS } from '@/api/providerStatusApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -32,6 +33,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/number-attribution', label: '号码归属', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
   { to: '/admin/number-portability', label: '携号转网', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
   { to: '/admin/prefixes', label: '号段管理', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
+  { to: '/admin/status-codes', label: '状态码映射', roles: ['ADMIN', 'OPERATOR'], permissions: [PROVIDER_STATUS_PERMISSIONS.menu, PROVIDER_STATUS_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
@@ -117,6 +119,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/prefixes' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-prefixes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/status-codes' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-provider-status-taxonomy-status-codes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

@@ -1,0 +1,12 @@
+{
+  "obligation_id": "OBL-PROVIDER-TAXONOMY-002",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/tool/ProviderStatusTaxonomyService.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/tool/ProviderStatusTaxonomyServiceTest.java",
+    "web/src/pages/admin/tools/ProviderStatusPage.tsx"
+  ],
+  "case_id": "C-P20-VERSION-HISTORY",
+  "playwright_id": "pw-p20-version"
+}
+

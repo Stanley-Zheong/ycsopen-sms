@@ -1,0 +1,11 @@
+{
+  "command": "npm --prefix web exec -- playwright test provider-status.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "c3da2f3475bf19f3f8e3b619223842b24a32bb49",
+  "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P20-STATUS-MAP",
+    "C-P20-STATUS-CRUD",
+    "C-P20-VERSION-HISTORY"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/status-codes"],
+    "test_ids": [
+      "admin-provider-status-taxonomy-status-codes-page",
+      "admin-provider-status-status-codes-version-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/20-provider-status-taxonomy/design-output/prototype.html", "sha256": "ebef104b0ca6a3c2fa5cd2ed04644952740670b35f12b152cd9bc3b5dd2803d9" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/20-provider-status-taxonomy/provider-status-taxonomy.pen", "sha256": "59f7ea912f6c67ee075432befb1599e4414929d68f6dcfd4c5de9d2320548418" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/status-codes"],
+    "test_ids": [
+      "admin-provider-status-taxonomy-status-codes-page",
+      "admin-provider-status-status-codes-version-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/20-provider-status-taxonomy/design-output/prototype.html", "sha256": "ebef104b0ca6a3c2fa5cd2ed04644952740670b35f12b152cd9bc3b5dd2803d9" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-provider-status-taxonomy-status-codes-page",
+      "admin-provider-status-status-codes-version-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/20-provider-status-taxonomy/design-output/prototype.spec.ts", "sha256": "745b3fdfb768412d567a472c8426722e6d692132bc8adec8be325ece3ebce0c6" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/status-codes"],
+    "test_ids": [
+      "admin-provider-status-taxonomy-status-codes-page",
+      "admin-provider-status-status-codes-version-history"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "14d6634b1afeb1040d155d94242448895bc938ffef0310da78f5f2f35d0ebccc" },
+      { "path": "web/src/pages/admin/tools/ProviderStatusPage.tsx", "sha256": "3cef15004f4abeecce99deff5266db0504ce27a7c93dec03117461f31557c82e" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-provider-status-taxonomy-status-codes-page",
+      "admin-provider-status-status-codes-version-history"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/provider-status.spec.ts", "sha256": "1800b955115585da878f3edf0739ed4e0df961971408758fa4b99bca86b57033" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test provider-status.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "c3da2f3475bf19f3f8e3b619223842b24a32bb49",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/20-provider-status-taxonomy/EVIDENCE/playwright-execution.json",
+      "sha256": "2dc0c3eb3953b1396bbcc1febd6c4739074bd31f43050eae62d2b3236294a46b"
+    }
+  }
+}
