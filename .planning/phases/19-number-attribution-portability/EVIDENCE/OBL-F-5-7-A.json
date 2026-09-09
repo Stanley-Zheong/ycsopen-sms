@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-5-7-A","status":"covered","evidence":["NumberAttributionServiceTest.longestPrefixReturnsCarrierProvinceCityFromVersionedMappings","web/test/scripts/number-attribution.spec.ts"]}

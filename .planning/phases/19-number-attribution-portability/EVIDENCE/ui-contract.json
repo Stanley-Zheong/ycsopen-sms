@@ -1,0 +1,74 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/number-attribution", "/admin/number-portability", "/admin/prefixes"],
+    "test_ids": [
+      "admin-number-attribution-portability-attribution-page",
+      "admin-number-attribution-portability-portability-page",
+      "admin-number-attribution-portability-prefixes-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/19-number-attribution-portability/design-output/prototype.html", "sha256": "d5a8a1c3d16a4245630e04727999e2941da9f70fac8c9334ebe6fff438cb3dcb" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/19-number-attribution-portability/number-attribution-portability.pen", "sha256": "6a8cc705188229b6916f38b17017bffe239ec8b05ae7e9ce07dc9b73d6c3e233" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/number-attribution", "/admin/number-portability", "/admin/prefixes"],
+    "test_ids": [
+      "admin-number-attribution-portability-attribution-page",
+      "admin-number-attribution-portability-portability-page",
+      "admin-number-attribution-portability-prefixes-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/19-number-attribution-portability/design-output/prototype.html", "sha256": "d5a8a1c3d16a4245630e04727999e2941da9f70fac8c9334ebe6fff438cb3dcb" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-number-attribution-portability-attribution-page",
+      "admin-number-attribution-portability-portability-page",
+      "admin-number-attribution-portability-prefixes-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/19-number-attribution-portability/design-output/prototype.spec.ts", "sha256": "c9245d10b2629072f4fc7d63f27c60595054ea3298f470e0f99b457c584bffea" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/number-attribution", "/admin/number-portability", "/admin/prefixes"],
+    "test_ids": [
+      "admin-number-attribution-portability-attribution-page",
+      "admin-number-attribution-portability-portability-page",
+      "admin-number-attribution-portability-prefixes-page"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "c929f5ff3ed4c14a57c354f8e6af051d6c6e095753ebfd0015b9f60db2171fd0" },
+      { "path": "web/src/pages/admin/tools/NumberAttributionPage.tsx", "sha256": "6476db687c9f696ef02a46e029b309b1935378f48d25d33575ebedf543c08079" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-number-attribution-portability-attribution-page",
+      "admin-number-attribution-portability-portability-page",
+      "admin-number-attribution-portability-prefixes-page"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/number-attribution.spec.ts", "sha256": "e594f42508ed6229342e0db6ab9a5f8d7e2e8907658fb007a7e64a2836ac0bf5" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test number-attribution.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "4806bad49f7ba861558870121df69cd04d4733c1",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/19-number-attribution-portability/EVIDENCE/playwright-execution.json",
+      "sha256": "1c854334178efe47ae13ad2b48001866b375521c26b12807882b26cdc31a250e"
+    }
+  }
+}

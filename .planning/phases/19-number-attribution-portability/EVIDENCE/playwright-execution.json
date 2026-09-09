@@ -1,0 +1,11 @@
+{
+  "command": "npm --prefix web exec -- playwright test number-attribution.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "4806bad49f7ba861558870121df69cd04d4733c1",
+  "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P19-ATTRIBUTION",
+    "C-P19-PORTABILITY",
+    "C-P19-PREFIX-IMPORT"
+  ]
+}

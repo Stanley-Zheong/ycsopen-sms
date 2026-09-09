@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-5-7-B","status":"covered","evidence":["NumberAttributionServiceTest.currentPortabilityCacheOverridesPrefixOnlyWithinFreshness","web/test/unit/number-attribution.test.tsx"]}

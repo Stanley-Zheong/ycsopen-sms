@@ -12,6 +12,7 @@ import { REVIEW_HISTORY_PERMISSIONS } from '@/api/resourceReviewHistoryApi';
 import { BLACKLIST_RISK_PERMISSIONS } from '@/api/blacklistRiskControlApi';
 import { CONTENT_SAFETY_PERMISSIONS } from '@/api/contentSafetyApi';
 import { FREQUENCY_PERMISSIONS } from '@/api/frequencyRuleApi';
+import { NUMBER_ATTRIBUTION_PERMISSIONS } from '@/api/numberAttributionApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -28,6 +29,9 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/riskcontrol', label: '验证规则', roles: ['ADMIN', 'OPERATOR'], permissions: [BLACKLIST_RISK_PERMISSIONS.menu, BLACKLIST_RISK_PERMISSIONS.read] },
   { to: '/admin/content-safety', label: '内容审核', roles: ['ADMIN', 'OPERATOR'], permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read] },
   { to: '/admin/frequency/rules', label: '频控规则', roles: ['ADMIN', 'OPERATOR'], permissions: [FREQUENCY_PERMISSIONS.menu, FREQUENCY_PERMISSIONS.read] },
+  { to: '/admin/number-attribution', label: '号码归属', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
+  { to: '/admin/number-portability', label: '携号转网', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
+  { to: '/admin/prefixes', label: '号段管理', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
@@ -101,6 +105,18 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/frequency/rules' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-frequency-api-frequency-rules-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/number-attribution' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-number-attribution-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/number-portability' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-number-portability-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/prefixes' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-prefixes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (
