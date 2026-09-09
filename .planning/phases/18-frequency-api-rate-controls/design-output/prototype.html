@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>Phase18 频控规则</title></head>
+  <body>
+    <nav aria-label="Phase18 routes">/admin/frequency/rules /tenant/api/keys</nav>
+    <main data-testid="admin-frequency-api-frequency-rules-page">
+      <section data-testid="admin-frequency-api-frequency-rules-cards">规则总数 启用 今日命中 今日拦截 延迟 告警 拦截率 覆盖率</section>
+      <section data-testid="admin-frequency-api-frequency-rules-policy-page">
+        <input data-testid="admin-frequency-api-frequency-rules-filter-name">
+        <select data-testid="admin-frequency-api-frequency-rules-filter-type"></select>
+        <select data-testid="admin-frequency-api-frequency-rules-filter-action"></select>
+        <select data-testid="admin-frequency-api-frequency-rules-filter-status"></select>
+        <input data-testid="admin-frequency-api-frequency-rules-name">
+        <select data-testid="admin-frequency-api-frequency-rules-type"></select>
+        <input data-testid="admin-frequency-api-frequency-rules-count">
+        <select data-testid="admin-frequency-api-frequency-rules-window"></select>
+        <select data-testid="admin-frequency-api-frequency-rules-action"></select>
+        <select data-testid="admin-frequency-api-frequency-rules-scope"></select>
+        <input data-testid="admin-frequency-api-frequency-rules-scope-ref">
+        <button data-testid="admin-frequency-api-frequency-rules-save">保存并热更新</button>
+        <textarea data-testid="admin-frequency-api-frequency-rules-import-input"></textarea>
+        <button data-testid="admin-frequency-api-frequency-rules-import">导入规则</button>
+        <button data-testid="admin-frequency-api-frequency-rules-export">请求导出</button>
+        <table data-testid="admin-frequency-api-frequency-rules-table"><tr data-testid="admin-frequency-api-frequency-rules-row"></tr></table>
+        <button data-testid="admin-frequency-api-frequency-rules-disable">停用</button>
+      </section>
+      <section data-testid="tenant-frequency-api-api-keys-rate-limits">API Key 秒/分/时/日限流</section>
+      <section data-testid="shared-frequency-api-queued-feedback">429 / 排队 / 延迟反馈</section>
+    </main>
+  </body>
+</html>

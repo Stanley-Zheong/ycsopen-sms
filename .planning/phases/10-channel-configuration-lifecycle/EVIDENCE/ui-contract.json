@@ -1,0 +1,116 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/channel/configuration"],
+    "test_ids": [
+      "admin-channel-configuration-channel-configuration-page",
+      "admin-channel-configuration-channel-configuration-connectivity-test",
+      "admin-channel-configuration-channel-configuration-price",
+      "admin-channel-configuration-channel-configuration-activation-result",
+      "admin-channel-configuration-channel-dependency-preview",
+      "admin-channel-configuration-channel-migration-wizard",
+      "admin-channel-configuration-channel-form-name",
+      "admin-channel-configuration-channel-form-protocol",
+      "admin-channel-configuration-channel-form-endpoint",
+      "admin-channel-configuration-channel-form-credential",
+      "admin-channel-configuration-channel-form-connection",
+      "admin-channel-configuration-channel-form-price",
+      "admin-channel-configuration-channel-form-priority",
+      "admin-channel-configuration-channel-offline"
+    ],
+    "sources": [{"path": ".planning/phases/10-channel-configuration-lifecycle/design-output/channel-configuration-prototype.html", "sha256": "2c30e7c5a55a597a9995416ea707a9f2640ae4282dc4706f1e98c8c0d0b5da30"}]
+  },
+  "pencil": {
+    "sources": [{"path": ".planning/phases/10-channel-configuration-lifecycle/design-output/channel-configuration-baseline.pen", "sha256": "8c53266a3f24fa9ab76f6982ca60188d82ec756df0d9db41e083e07ce5933f51"}]
+  },
+  "prototype": {
+    "routes": ["/admin/channel/configuration"],
+    "test_ids": [
+      "admin-channel-configuration-channel-configuration-page",
+      "admin-channel-configuration-channel-configuration-connectivity-test",
+      "admin-channel-configuration-channel-configuration-price",
+      "admin-channel-configuration-channel-configuration-activation-result",
+      "admin-channel-configuration-channel-dependency-preview",
+      "admin-channel-configuration-channel-migration-wizard",
+      "admin-channel-configuration-channel-form-name",
+      "admin-channel-configuration-channel-form-protocol",
+      "admin-channel-configuration-channel-form-endpoint",
+      "admin-channel-configuration-channel-form-credential",
+      "admin-channel-configuration-channel-form-connection",
+      "admin-channel-configuration-channel-form-price",
+      "admin-channel-configuration-channel-form-priority",
+      "admin-channel-configuration-channel-offline"
+    ],
+    "sources": [{"path": ".planning/phases/10-channel-configuration-lifecycle/design-output/channel-configuration-prototype.html", "sha256": "2c30e7c5a55a597a9995416ea707a9f2640ae4282dc4706f1e98c8c0d0b5da30"}]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "admin-channel-configuration-channel-configuration-page",
+      "admin-channel-configuration-channel-configuration-connectivity-test",
+      "admin-channel-configuration-channel-configuration-price",
+      "admin-channel-configuration-channel-configuration-activation-result",
+      "admin-channel-configuration-channel-dependency-preview",
+      "admin-channel-configuration-channel-migration-wizard",
+      "admin-channel-configuration-channel-form-name",
+      "admin-channel-configuration-channel-form-protocol",
+      "admin-channel-configuration-channel-form-endpoint",
+      "admin-channel-configuration-channel-form-credential",
+      "admin-channel-configuration-channel-form-connection",
+      "admin-channel-configuration-channel-form-price",
+      "admin-channel-configuration-channel-form-priority",
+      "admin-channel-configuration-channel-offline"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [{"path": ".planning/phases/10-channel-configuration-lifecycle/design-output/prototype.spec.ts", "sha256": "2c43a60ae0e58ebd3a2fb5e0de38fa5158513d7b09d434d4f9e0b705781ecd6e"}]
+  },
+  "implementation": {
+    "routes": ["/admin/channel/configuration"],
+    "test_ids": [
+      "admin-channel-configuration-channel-configuration-page",
+      "admin-channel-configuration-channel-configuration-connectivity-test",
+      "admin-channel-configuration-channel-configuration-price",
+      "admin-channel-configuration-channel-configuration-activation-result",
+      "admin-channel-configuration-channel-dependency-preview",
+      "admin-channel-configuration-channel-migration-wizard",
+      "admin-channel-configuration-channel-form-name",
+      "admin-channel-configuration-channel-form-protocol",
+      "admin-channel-configuration-channel-form-endpoint",
+      "admin-channel-configuration-channel-form-credential",
+      "admin-channel-configuration-channel-form-connection",
+      "admin-channel-configuration-channel-form-price",
+      "admin-channel-configuration-channel-form-priority",
+      "admin-channel-configuration-channel-offline"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "9f66f04d24fbf35542b3f9f9c3f5479d29d3c33d2252aee9d5007d6e5b938af9"},
+      {"path": "web/src/pages/admin/channels/ChannelConfigurationPage.tsx", "sha256": "12c95970362ef2d27e0d6418e29d5e038e7388ecfd34ebcd335212d8ff0f8712"}
+    ]
+  },
+  "playwright": {
+    "test_ids": [
+      "admin-channel-configuration-channel-configuration-page",
+      "admin-channel-configuration-channel-configuration-connectivity-test",
+      "admin-channel-configuration-channel-configuration-price",
+      "admin-channel-configuration-channel-configuration-activation-result",
+      "admin-channel-configuration-channel-dependency-preview",
+      "admin-channel-configuration-channel-migration-wizard",
+      "admin-channel-configuration-channel-form-name",
+      "admin-channel-configuration-channel-form-protocol",
+      "admin-channel-configuration-channel-form-endpoint",
+      "admin-channel-configuration-channel-form-credential",
+      "admin-channel-configuration-channel-form-connection",
+      "admin-channel-configuration-channel-form-price",
+      "admin-channel-configuration-channel-form-priority",
+      "admin-channel-configuration-channel-offline"
+    ],
+    "evidence_kind": "production",
+    "sources": [{"path": "web/test/scripts/channel-configuration.spec.ts", "sha256": "9abdfa4d675e3018733d3caab84c2879ba9c7daf8d80042178cf3388455b3edc"}]
+  },
+  "execution": {
+    "command": "mvn -q -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase10RealServicePlaywrightTest test (runs npm Playwright channel-configuration.spec.ts internally)",
+    "commit": "bda6ceb1e9939f0186d90e4910eee755ab77d540",
+    "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; version=152.0.7977.76; viewport=1440x900; one worker",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/10-channel-configuration-lifecycle/EVIDENCE/playwright-execution.json", "sha256": "fc47bb2d453970ad420daf0501c8faaf8888c43869c032f433d15a7032545d77"}
+  }
+}

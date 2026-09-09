@@ -11,15 +11,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /** F-2.1/F-2.2/F-2.8 机构注册、审核、试用激活（平台管理后台"机构管理"调用）。 */
 @RestController
 @RequestMapping("/api/v1/console/tenants")
+@PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
 public class TenantController {
 
     private final TenantService tenantService;
-
+    @Autowired
     public TenantController(TenantService tenantService) {
         this.tenantService = tenantService;
     }
@@ -29,11 +32,33 @@ public class TenantController {
             @RequestHeader(value = TenantRegistrationProtectionAdapter.UPLOAD_TOKEN_HEADER,
                     required = false) String uploadToken,
             @RequestBody TenantRegistrationRequest request) {
-        Tenant tenant = tenantService.submitRegistration(request, uploadToken);
-        return ResponseEntity.ok()
-                .cacheControl(CacheControl.noStore())
-                .header(HttpHeaders.PRAGMA, "no-cache")
-                .body(ApiResponse.ok(TenantRegistrationResponse.from(tenant)));
+        // This route predates the public qualification flow and has no contact receipt or
+        // initial-admin contract.  Keep the mapping for old clients, but never allow it to
+        // create a partially qualified tenant.
+        if (request == null) {
+            throw new LegacyRouteException("LEGACY_REGISTRATION_ROUTE_REMOVED");
+        }
+        if (request.hasLegacyObjectUrlInput()) {
+            throw TenantRegistrationProtectionAdapter.Failure.legacyObjectUrlNotAccepted();
+        }
+        throw new LegacyRouteException("LEGACY_REGISTRATION_ROUTE_REMOVED");
+    }
+
+    /** Compatibility adapters retain the old URLs while requiring the authoritative review contract. */
+    @PostMapping("/{tenantId}/approve-and-activate-trial")
+    public ResponseEntity<ApiResponse<Void>> legacyApprove(@PathVariable long tenantId,
+            @RequestParam(required = false) Long expectedRevision,
+            @RequestParam(required = false) String approvedBy,
+            @RequestParam(required = false) Integer trialQuota,
+            @RequestParam(required = false) Integer trialDays) {
+        throw new LegacyRouteException("LEGACY_APPROVAL_REQUIRES_REVIEW");
+    }
+
+    @PostMapping("/{tenantId}/reject")
+    public ResponseEntity<ApiResponse<Void>> legacyReject(@PathVariable long tenantId,
+            @RequestParam(required = false) Long expectedRevision,
+            @RequestParam(required = false) String reason) {
+        throw new LegacyRouteException("LEGACY_REJECTION_REQUIRES_REVIEW");
     }
 
     @ExceptionHandler(TenantRegistrationProtectionAdapter.Failure.class)
@@ -67,21 +92,17 @@ public class TenantController {
                 .body(new RegistrationError(failure.category().name(), failure.getMessage()));
     }
 
-    @PostMapping("/{tenantId}/approve-and-activate-trial")
-    public ApiResponse<Tenant> approveAndActivateTrial(
-            @PathVariable Long tenantId,
-            @RequestParam(defaultValue = "500") int trialQuota,
-            @RequestParam(defaultValue = "14") int trialDays,
-            @RequestParam String approvedBy) {
-        return ApiResponse.ok(tenantService.approveAndActivateTrial(tenantId, trialQuota, trialDays, approvedBy));
-    }
-
-    @PostMapping("/{tenantId}/reject")
-    public ApiResponse<Void> reject(@PathVariable Long tenantId, @RequestParam String reason) {
-        tenantService.rejectRegistration(tenantId, reason);
-        return ApiResponse.ok(null);
-    }
-
     record RegistrationError(String code, String message) {
+    }
+
+    @ExceptionHandler(LegacyRouteException.class)
+    ResponseEntity<RegistrationError> handleLegacyRoute(LegacyRouteException failure) {
+        return ResponseEntity.status(HttpStatus.GONE).cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .body(new RegistrationError(failure.getMessage(), failure.getMessage()));
+    }
+
+    static final class LegacyRouteException extends RuntimeException {
+        LegacyRouteException(String code) { super(code); }
     }
 }

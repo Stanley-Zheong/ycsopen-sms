@@ -23,9 +23,10 @@ class RoutingEngineTest {
     @Mock ContentReviewChecker contentReviewChecker;
     @Mock FrequencyChecker frequencyChecker;
     @Mock ChannelSelector channelSelector;
+    @Mock RiskDecisionRecorder riskDecisionRecorder;
 
     private RoutingEngine newEngine() {
-        return new RoutingEngine(blacklistChecker, contentReviewChecker, frequencyChecker, channelSelector);
+        return new RoutingEngine(blacklistChecker, contentReviewChecker, frequencyChecker, channelSelector, riskDecisionRecorder);
     }
 
     private RoutingContext sampleContext() {
@@ -45,26 +46,56 @@ class RoutingEngineTest {
         assertThat(decision.isAllowed()).isFalse();
         assertThat(decision.getRejectStage()).isEqualTo(RoutingDecision.RejectStage.BLACKLIST);
         assertThat(decision.getRejectReason()).contains("黑名单");
+        org.mockito.Mockito.verify(riskDecisionRecorder).recordBlacklistDecision(any(), any());
         org.mockito.Mockito.verifyNoInteractions(contentReviewChecker, frequencyChecker, channelSelector);
+    }
+
+    @Test
+    void blacklistHitStillRejectsWhenDecisionEvidenceRecorderFails() {
+        when(blacklistChecker.check(any())).thenReturn(new BlacklistChecker.Result(true, "机构级黑名单命中"));
+        org.mockito.Mockito.doThrow(new IllegalStateException("recorder down"))
+                .when(riskDecisionRecorder).recordBlacklistDecision(any(), any());
+
+        RoutingDecision decision = newEngine().route(sampleContext());
+
+        assertThat(decision.isAllowed()).isFalse();
+        assertThat(decision.getRejectStage()).isEqualTo(RoutingDecision.RejectStage.BLACKLIST);
+        assertThat(decision.getRejectReason()).contains("黑名单");
+    }
+
+    @Test
+    void degradedProviderAllowRecordsEvidenceAndContinuesRouting() {
+        when(blacklistChecker.check(any())).thenReturn(new BlacklistChecker.Result(false,
+                "第三方风险服务失败，按配置放行并记录降级",
+                "THIRD_PARTY_DEGRADED", "DEGRADED_ALLOW", true));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
+        when(channelSelector.select(any())).thenReturn(Optional.of(42L));
+
+        RoutingDecision decision = newEngine().route(sampleContext());
+
+        assertThat(decision.isAllowed()).isTrue();
+        org.mockito.Mockito.verify(riskDecisionRecorder).recordBlacklistDecision(any(), any());
     }
 
     @Test
     void contentReviewHit_shouldRejectAfterBlacklistPasses_beforeFrequencyCheck() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.blocked("命中内容审核词库"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.blocked("命中内容审核词库"));
 
         RoutingDecision decision = newEngine().route(sampleContext());
 
         assertThat(decision.isAllowed()).isFalse();
         assertThat(decision.getRejectStage()).isEqualTo(RoutingDecision.RejectStage.CONTENT_REVIEW);
+        org.mockito.Mockito.verifyNoInteractions(riskDecisionRecorder);
         org.mockito.Mockito.verifyNoInteractions(frequencyChecker, channelSelector);
     }
 
     @Test
     void frequencyLimitHit_shouldRejectAfterEarlierStagesPass() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
-        when(frequencyChecker.check(any())).thenReturn(new FrequencyChecker.Result(true, "1分钟内超过10次"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(frequencyChecker.check(any())).thenReturn(new FrequencyChecker.Result(true, false, "1分钟内超过10次", 0));
 
         RoutingDecision decision = newEngine().route(sampleContext());
 
@@ -76,7 +107,7 @@ class RoutingEngineTest {
     @Test
     void allChecksPass_butNoChannelAvailable_shouldRejectWithNoAvailableChannel() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
         when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
         when(channelSelector.select(any())).thenReturn(Optional.empty());
 
@@ -89,7 +120,7 @@ class RoutingEngineTest {
     @Test
     void allChecksPass_andChannelAvailable_shouldAllowWithSelectedChannelAndFinalContent() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("敏感词已替换后的文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("敏感词已替换后的文本"));
         when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
         when(channelSelector.select(any())).thenReturn(Optional.of(42L));
 

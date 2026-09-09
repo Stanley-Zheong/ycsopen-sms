@@ -4,6 +4,8 @@ import com.ycsopen.sms.core.domain.entity.Channel;
 import com.ycsopen.sms.core.domain.entity.RouteRule;
 import com.ycsopen.sms.core.repository.ChannelRepository;
 import com.ycsopen.sms.core.repository.RouteRuleRepository;
+import com.ycsopen.sms.core.service.channel.health.ChannelCandidateEligibilityService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -21,10 +23,18 @@ public class ChannelSelector {
 
     private final ChannelRepository channelRepository;
     private final RouteRuleRepository routeRuleRepository;
+    private final ChannelCandidateEligibilityService eligibility;
 
     public ChannelSelector(ChannelRepository channelRepository, RouteRuleRepository routeRuleRepository) {
+        this(channelRepository, routeRuleRepository, new ChannelCandidateEligibilityService());
+    }
+
+    @Autowired
+    public ChannelSelector(ChannelRepository channelRepository, RouteRuleRepository routeRuleRepository,
+                           ChannelCandidateEligibilityService eligibility) {
         this.channelRepository = channelRepository;
         this.routeRuleRepository = routeRuleRepository;
+        this.eligibility = eligibility;
     }
 
     public Optional<Long> select(RoutingContext ctx) {
@@ -34,7 +44,7 @@ public class ChannelSelector {
         for (RouteRule rule : tenantRules) {
             if (matches(rule, ctx)) {
                 Optional<Channel> ch = channelRepository.findById(rule.getTargetChannelId());
-                if (ch.isPresent() && ch.get().isRoutable()) {
+                if (ch.isPresent() && eligibility.evaluate(ch.get()).eligible()) {
                     return Optional.of(ch.get().getId());
                 }
             }
@@ -44,7 +54,7 @@ public class ChannelSelector {
         for (RouteRule rule : globalRules) {
             if (matches(rule, ctx)) {
                 Optional<Channel> ch = channelRepository.findById(rule.getTargetChannelId());
-                if (ch.isPresent() && ch.get().isRoutable()) {
+                if (ch.isPresent() && eligibility.evaluate(ch.get()).eligible()) {
                     return Optional.of(ch.get().getId());
                 }
             }
@@ -52,7 +62,7 @@ public class ChannelSelector {
 
         // 2. 无匹配规则：退化为"选优先级最高的可用通道"作为默认通道 (F-5.8 "条件不匹配时走默认通道")
         return channelRepository.findAll().stream()
-                .filter(Channel::isRoutable)
+                .filter(channel -> eligibility.evaluate(channel).eligible())
                 .max(Comparator.comparingInt(Channel::getPriority))
                 .map(Channel::getId);
     }

@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-F-6-1-C","evidence":["mvn-test.log"],"notes":"Authentication, validation, routing, rate-limit, and dependency failures are covered by unit/controller tests and standard ApiResponse error handlers."}

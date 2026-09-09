@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-4-A",
+  "result": "PASS",
+  "evidence": "Analytics query aggregates totals, blocked, allowed, system, tenant, provider and degraded counts from risk_intercept_decisions.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test", "npm --prefix web exec -- playwright test blacklist-risk-control.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json"]
+}

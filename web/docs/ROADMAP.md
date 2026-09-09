@@ -13,8 +13,14 @@
 | 机构列表 + 审核通过并开通试用 | F-2.1/F-2.2/F-2.8 | `src/pages/admin/tenants/TenantListPage.tsx` | 构建通过，未接后端联调测试 |
 | 通道列表 + 暂停/恢复 | F-4.1/F-4.7 | `src/pages/admin/channels/ChannelListPage.tsx` | 构建通过，未接后端联调测试 |
 | 手工发送（对接 F-6.1 接口） | F-6.10 | `src/pages/tenant/send/SendPage.tsx` | 构建通过；**注意**：真实调用会被 core 的 HMAC 拦截器拒绝，因为控制台会话不等于 HTTP API 签名，见下方"已知问题" |
+| 平台账号、角色、登录历史 | F-1.1~F-1.4 | `src/pages/admin/identity/*` | Phase 05 unit/build/Chrome 验证 |
+| 操作日志、安全事件、敏感手机号临时查看 | F-14.1/F-14.2、6.2.1 | `src/pages/admin/security/*`、`UserManagementPage.tsx` | Phase 06 unit/build/Chrome 验证 |
+| 系统配置管理 | 8.1 System | `src/pages/admin/system/SystemConfigurationPage.tsx` | Phase 07 unit/build 与真实服务 Chrome 验证 |
 
-2026-08-29：`npx tsc -b`、`npm run build`、`npx vitest run` 均通过（4/4 测试）。
+2026-08-29 的初始基线通过 4/4 测试。加入 Phase 07 后，当前 `npm --prefix web test -- --run`
+通过 37/37，lint 与生产构建通过；Phase 07 使用真实 Spring/MySQL 服务和本机 Google Chrome 的
+Playwright 场景 3/3 通过。
+完整命令和边界以对应 `.planning/phases/*/*-VERIFICATION.md` 为准。
 
 ## 已知问题 / 简化
 
@@ -22,15 +28,11 @@
    `HmacAuthInterceptor`），控制台的 JWT 会话不满足这个要求——实际点击会收到 401。
    正确做法是 core 另开一个走会话鉴权的"控制台内发送"接口，代理到
    `MessageSubmitService`；这个接口在 core 里还没有，是前后端一起要补的缺口。
-2. **登录后没有实际的 JWT 校验拦截**——`authStore` 存了 token，但因为 core 的
-   `SecurityConfig` 当前 `anyRequest().permitAll()`（见 core/docs/ROADMAP.md），
-   没有 token 也能调所有接口，鉴权目前形同虚设。
-3. 除仪表盘投诉占比、机构列表、通道列表、手工发送外，其余全部页面是 `PlaceholderPage`
-   占位（见 `src/router/routes.tsx` 里挂载的组件），不是真实功能。
-4. 没有做样式系统统一（用的是一份手写的极简 CSS，`src/styles/index.css`），生产化时
-   建议引入 Ant Design / shadcn-ui 之类的组件库替换。
-5. E2E 测试目录 `test/e2e/` 只建了目录，没有写用例（建议用 Playwright，覆盖 4.4 节
-   Task Flow A/B/C 的关键路径）。
+2. 身份、审计页面之外仍有多项 `PlaceholderPage` 占位；具体以 `src/router/routes.tsx` 为准。
+4. Phase 02 已建立共享 token/组件样式，但身份与审计以外的旧页面仍需在各自 owner phase 内收敛，
+   不在本阶段引入第二套 UI 框架。
+5. Phase 05/06/07 已有本机 Chrome Playwright 脚本；其他尚未认领的业务页仍缺少其 owner phase 的
+   生产 E2E 验收。
 
 ## 建议的下一步顺序
 

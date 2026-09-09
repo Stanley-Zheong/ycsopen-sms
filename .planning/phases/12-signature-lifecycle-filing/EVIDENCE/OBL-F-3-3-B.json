@@ -1,0 +1,27 @@
+{
+  "obligation_id": "OBL-F-3-3-B",
+  "requirement_ids": ["REQ-F-3-3"],
+  "phase": 12,
+  "package": "signature-lifecycle-filing",
+  "status": "PASS",
+  "evidence": [
+    {
+      "kind": "backend-unit",
+      "command": "mvn -q -f core/pom.xml -Dtest=SignatureLifecycleServiceTest test",
+      "result": "PASS",
+      "summary": "Filing request is idempotent for in-flight/registered rows and retries failed rows with attempt count, provider request id, actor, and last attempt evidence."
+    },
+    {
+      "kind": "chrome-acceptance",
+      "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+      "cwd": "web",
+      "result": "PASS",
+      "case_id": "C-P12-FILING-RETRY"
+    }
+  ],
+  "implementation_refs": [
+    "core/src/main/java/com/ycsopen/sms/core/service/signature/SignatureLifecycleService.java",
+    "core/src/main/resources/db/migration/V2100__signature_lifecycle_filing.sql"
+  ],
+  "test_ids": ["admin-signature-lifecycle-signature-filing-retry"]
+}

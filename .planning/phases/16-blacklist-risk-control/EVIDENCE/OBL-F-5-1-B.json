@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-1-B",
+  "result": "PASS",
+  "evidence": "Risk decisions record sourceCategory, riskResult, traceReason, taskCreated=false, charged=false for blacklist and provider hits.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

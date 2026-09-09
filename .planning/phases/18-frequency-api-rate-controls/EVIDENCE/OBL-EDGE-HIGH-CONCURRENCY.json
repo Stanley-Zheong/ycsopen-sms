@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-EDGE-HIGH-CONCURRENCY","owner":"frequency-api-rate-controls","status":"PASS","evidence":["web/src/pages/admin/risk/FrequencyRulesPage.tsx","web/test/scripts/frequency-rules.spec.ts"],"summary":"High-concurrency feedback exposes API 429 and console queued/delayed handling copy."}

@@ -1,0 +1,11 @@
+{
+  "obligation_id": "OBL-PROVIDER-TAXONOMY-003",
+  "status": "PASS",
+  "evidence": [
+    "ProviderStatusTaxonomyServiceTest#unknownCodesUseSafeExplicitOperationsFallback",
+    "provider_status_normalization_events.source=UNKNOWN_SAFE_FALLBACK"
+  ],
+  "case_id": "C-P20-UNKNOWN-FALLBACK",
+  "playwright_id": "pw-p20-unknown"
+}
+

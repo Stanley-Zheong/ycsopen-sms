@@ -1,0 +1,94 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/review-history"],
+    "test_ids": [
+      "admin-resource-review-history-review-page",
+      "admin-resource-review-history-review-filters",
+      "admin-resource-review-history-review-table",
+      "admin-resource-review-history-review-pagination",
+      "admin-resource-review-history-review-page-prev",
+      "admin-resource-review-history-review-page-next",
+      "admin-resource-review-history-review-detail-drawer"
+    ],
+    "sources": [
+      { "path": ".planning/phases/15-resource-review-history/design-output/prototype.html", "sha256": "c70200a1c418db358cff8793a1cc7dfd64bd4e97a66acb9bfbb65a74712c9c02" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/15-resource-review-history/template-review-history.pen", "sha256": "ab310baade680fabb10715be708ce4661fa6634755069698ceaf95cf5aa3edc7" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/review-history"],
+    "test_ids": [
+      "admin-resource-review-history-review-page",
+      "admin-resource-review-history-review-filters",
+      "admin-resource-review-history-review-table",
+      "admin-resource-review-history-review-pagination",
+      "admin-resource-review-history-review-page-prev",
+      "admin-resource-review-history-review-page-next",
+      "admin-resource-review-history-review-detail-drawer"
+    ],
+    "sources": [
+      { "path": ".planning/phases/15-resource-review-history/design-output/prototype.html", "sha256": "c70200a1c418db358cff8793a1cc7dfd64bd4e97a66acb9bfbb65a74712c9c02" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-resource-review-history-review-page",
+      "admin-resource-review-history-review-filters",
+      "admin-resource-review-history-review-table",
+      "admin-resource-review-history-review-pagination",
+      "admin-resource-review-history-review-page-prev",
+      "admin-resource-review-history-review-page-next",
+      "admin-resource-review-history-review-detail-drawer"
+    ],
+    "sources": [
+      { "path": ".planning/phases/15-resource-review-history/design-output/prototype.spec.ts", "sha256": "cc47523837cb12c01995939ffcb6fc5eeb65e8eb310db48c9042dcce801841ca" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/review-history"],
+    "test_ids": [
+      "admin-resource-review-history-review-page",
+      "admin-resource-review-history-review-filters",
+      "admin-resource-review-history-review-table",
+      "admin-resource-review-history-review-pagination",
+      "admin-resource-review-history-review-page-prev",
+      "admin-resource-review-history-review-page-next",
+      "admin-resource-review-history-review-detail-drawer"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "b2a6014fae5c312c77b94f8399cc113f34ff0769da577e655ce04c985c4f4ade" },
+      { "path": "web/src/pages/admin/review/ResourceReviewHistoryPage.tsx", "sha256": "16a18cf8a42272487bfd460182870c29166ba58b6dcdc3233890663694323e43" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-resource-review-history-review-page",
+      "admin-resource-review-history-review-filters",
+      "admin-resource-review-history-review-table",
+      "admin-resource-review-history-review-pagination",
+      "admin-resource-review-history-review-page-prev",
+      "admin-resource-review-history-review-page-next",
+      "admin-resource-review-history-review-detail-drawer"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/resource-review-history.spec.ts", "sha256": "06e7237c3b3ab2c7c9100a1db967daefe14115b004a54fe37fae8a03a44cbc72" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test resource-review-history.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "48dffd5ef24e48586eaf1244cb08f7805adf4efa",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/15-resource-review-history/EVIDENCE/playwright-resource-review-history.json",
+      "sha256": "29c313e9004b6258510e36c7d6574569bd7565f92ab0e9535132c0d9d3cf4c23"
+    }
+  }
+}

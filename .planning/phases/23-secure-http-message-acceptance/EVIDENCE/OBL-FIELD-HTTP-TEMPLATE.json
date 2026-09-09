@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-FIELD-HTTP-TEMPLATE","evidence":["mvn-test.log"],"notes":"TemplateSendComplianceService validates tenant-owned approved template before routing, persistence, billing, or outbox intent."}

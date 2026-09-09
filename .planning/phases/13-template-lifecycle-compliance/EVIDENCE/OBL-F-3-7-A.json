@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-F-3-7-A",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateSendComplianceService.java",
+    "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/template/TemplateSendComplianceServiceTest.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/message/MessageSubmitServiceTest.java"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test"
+  ],
+  "result": "Domestic message submission delegates template/signature/variable checks to one shared pre-send validator before routing and task creation."
+}

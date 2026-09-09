@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-5-D",
+  "result": "PASS",
+  "evidence": "ContentReviewChecker records hit evidence and applies deterministic scope, level, and action precedence for block, replace, and alert.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=ContentReviewCheckerTest,RoutingEngineTest test"]
+}

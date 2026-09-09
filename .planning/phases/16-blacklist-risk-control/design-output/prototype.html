@@ -1,0 +1,35 @@
+<main data-testid="admin-blacklist-risk-page" data-route="/admin/riskcontrol">
+  <section data-testid="admin-blacklist-risk-black-white-lists-page">
+    <form data-testid="admin-blacklist-risk-black-white-lists-form">
+      <input data-testid="admin-blacklist-risk-black-white-lists-tenant" />
+      <input data-testid="admin-blacklist-risk-black-white-lists-mobile" />
+      <select data-testid="admin-blacklist-risk-black-white-lists-type"></select>
+      <select data-testid="admin-blacklist-risk-black-white-lists-source"></select>
+      <input data-testid="admin-blacklist-risk-black-white-lists-reason" />
+      <button data-testid="admin-blacklist-risk-black-white-lists-save">保存</button>
+    </form>
+    <textarea data-testid="admin-blacklist-risk-black-white-lists-import-input"></textarea>
+    <button data-testid="admin-blacklist-risk-black-white-lists-import">导入</button>
+    <button data-testid="admin-blacklist-risk-black-white-lists-export">请求导出</button>
+    <table data-testid="admin-blacklist-risk-black-white-lists-table"><tr data-testid="admin-blacklist-risk-black-white-lists-row"><td>139****0001</td></tr></table>
+  </section>
+  <section data-testid="admin-blacklist-risk-risk-provider-page">
+    <input data-testid="admin-blacklist-risk-risk-provider-name" />
+    <input data-testid="admin-blacklist-risk-risk-provider-url" />
+    <input data-testid="admin-blacklist-risk-risk-provider-credential" />
+    <select data-testid="admin-blacklist-risk-risk-provider-level"></select>
+    <input data-testid="admin-blacklist-risk-risk-provider-threshold" />
+    <input data-testid="admin-blacklist-risk-risk-provider-timeout" />
+    <select data-testid="admin-blacklist-risk-risk-provider-fallback"></select>
+    <button data-testid="admin-blacklist-risk-risk-provider-save">保存风控配置</button>
+    <ul data-testid="admin-blacklist-risk-risk-provider-list"></ul>
+    <button data-testid="admin-blacklist-risk-risk-provider-degraded">模拟降级</button>
+  </section>
+  <section data-testid="admin-blacklist-risk-intercept-analytics-page">
+    <div data-testid="admin-blacklist-risk-intercept-analytics-cards"></div>
+    <textarea data-testid="admin-blacklist-risk-intercept-check-input"></textarea>
+    <button data-testid="admin-blacklist-risk-intercept-check-run">执行试算</button>
+    <table data-testid="admin-blacklist-risk-intercept-decisions-table"><tr data-testid="admin-blacklist-risk-intercept-decision-row"><td>BLOCK</td></tr></table>
+    <button data-testid="admin-blacklist-risk-intercept-appeal">误判</button>
+  </section>
+</main>

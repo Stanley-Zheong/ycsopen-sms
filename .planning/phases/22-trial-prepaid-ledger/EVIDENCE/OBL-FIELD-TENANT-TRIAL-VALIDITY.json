@@ -1,0 +1,1 @@
+{"phase":"22","owner":"trial-prepaid-ledger","obligation_id":"OBL-FIELD-TENANT-TRIAL-VALIDITY","status":"PASS","evidence":["core/src/main/java/com/ycsopen/sms/core/service/billing/TrialPrepaidLedgerService.java","web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx","EVIDENCE/playwright-raw.json"],"case_id":"C-P22-VALIDITY-FIELD"}

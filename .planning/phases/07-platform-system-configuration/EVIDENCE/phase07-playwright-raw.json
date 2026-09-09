@@ -1,0 +1,187 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "system-configuration.spec.ts",
+      "--reporter=json",
+      "--workers=1"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 62551",
+      "url": "http://127.0.0.1:62551/login",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "system-configuration.spec.ts",
+      "file": "system-configuration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pw-p7-system-configuration C-P7-SYSTEM-CONFIG OBL-IA-ADMIN-SYSTEM-CONFIG",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1858,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T06:35:38.948Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b296ca6c582828c0ea7-0bb9e5ff63c0a735089b",
+          "file": "system-configuration.spec.ts",
+          "line": 73,
+          "column": 1
+        },
+        {
+          "title": "real permission boundaries hide or deny each restricted action",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1378,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T06:35:42.194Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b296ca6c582828c0ea7-868bc870c9595ccb70da",
+          "file": "system-configuration.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "real concurrent sessions reject stale stage and real offline fetch can retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1294,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-07T06:35:43.580Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b296ca6c582828c0ea7-6faaa228bcaa2c4cf007",
+          "file": "system-configuration.spec.ts",
+          "line": 139,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-07T06:35:38.247Z",
+    "duration": 6821.511,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

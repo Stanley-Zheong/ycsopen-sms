@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-FIELD-TEMPLATE-SIGNATURE",
+  "status": "PASS",
+  "evidence": ["TemplateLifecycleService.requireApprovedTenantSignature", "TemplateSendComplianceService.validateDomesticSend", "TemplateLifecyclePage data-testid tenant-template-lifecycle-templates-form-signature"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Template applications and sends require an approved tenant-owned signature bound to the template."
+}

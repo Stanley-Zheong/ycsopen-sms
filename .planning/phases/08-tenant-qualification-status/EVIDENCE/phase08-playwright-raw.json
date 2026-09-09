@@ -1,0 +1,697 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "tenant-qualification.spec.ts",
+      "--reporter=json",
+      "--workers=1"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 52459",
+      "url": "http://127.0.0.1:52459/login",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "tenant-qualification.spec.ts",
+      "file": "tenant-qualification.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pw-p8-register C-P8-REGISTER OBL-FLOW-12-1-REGISTER",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1967,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:16.205Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-204ef92d4aaeb47d6cb5",
+          "file": "tenant-qualification.spec.ts",
+          "line": 219,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2877,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:19.003Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-5c45c7cf5cdc42f3e8f6",
+          "file": "tenant-qualification.spec.ts",
+          "line": 237,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-review-decision C-P8-REVIEW-DECISION OBL-F-2-2-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:21.886Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-ef1609707706bcdbf86b",
+          "file": "tenant-qualification.spec.ts",
+          "line": 274,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-qualification-status C-P8-QUALIFICATION-STATUS OBL-F-2-1-C",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 534,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:22.941Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-93d463ca78cb81737ccd",
+          "file": "tenant-qualification.spec.ts",
+          "line": 293,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-recertify C-P8-RECERTIFY OBL-F-2-3-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 670,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:23.482Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-e2e3eac5ecff3e189f2b",
+          "file": "tenant-qualification.spec.ts",
+          "line": 305,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-qualification-form C-P8-QUALIFICATION-FORM OBL-F-2-1-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 429,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:24.160Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-b4bc0101272a8d1e018b",
+          "file": "tenant-qualification.spec.ts",
+          "line": 318,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-short-name C-P8-SHORT-NAME OBL-FIELD-TENANT-SHORT-NAME",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 541,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:24.597Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-7958ca4ccc8e6301ef86",
+          "file": "tenant-qualification.spec.ts",
+          "line": 331,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-full-name C-P8-FULL-NAME OBL-FIELD-TENANT-FULL-NAME",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 535,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:25.143Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-76c499f0ef49315b64ef",
+          "file": "tenant-qualification.spec.ts",
+          "line": 345,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-credit-code C-P8-CREDIT-CODE OBL-FIELD-TENANT-CREDIT-CODE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 629,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:25.684Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-0469b6123223084ebbb0",
+          "file": "tenant-qualification.spec.ts",
+          "line": 359,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-license C-P8-LICENSE OBL-FIELD-TENANT-LICENSE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 863,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:26.318Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-bb2fc7bfad7e3a4616bb",
+          "file": "tenant-qualification.spec.ts",
+          "line": 373,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-legal-id C-P8-LEGAL-ID OBL-FIELD-TENANT-LEGAL-ID",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 654,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:27.189Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-a4d09eae6295aa6814d1",
+          "file": "tenant-qualification.spec.ts",
+          "line": 387,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-legal-id-files C-P8-LEGAL-ID-FILES OBL-FIELD-TENANT-LEGAL-ID-FILES",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:27.856Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-aebc93fb11cdcb81ac1f",
+          "file": "tenant-qualification.spec.ts",
+          "line": 401,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-contact C-P8-CONTACT OBL-FIELD-TENANT-CONTACT",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1008,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:29.062Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-f20682a7501b5757783d",
+          "file": "tenant-qualification.spec.ts",
+          "line": 417,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-shortlink-proof C-P8-SHORTLINK-PROOF OBL-FIELD-TENANT-SHORTLINK-PROOF",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 549,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:30.079Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-7f3397fcb3ae7c5f2cbb",
+          "file": "tenant-qualification.spec.ts",
+          "line": 432,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-trademark-proof C-P8-TRADEMARK-PROOF OBL-FIELD-TENANT-TRADEMARK-PROOF",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 782,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:30.636Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-42757c363a1eeae05f81",
+          "file": "tenant-qualification.spec.ts",
+          "line": 442,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-qualification-submit C-P8-QUALIFICATION-SUBMIT OBL-F-2-1-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1138,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:31.426Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-f2c9c50d1dba39a995fc",
+          "file": "tenant-qualification.spec.ts",
+          "line": 455,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-tenant-edit C-P8-TENANT-EDIT OBL-F-2-3-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1450,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:32.576Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-67dddc38dc83c117b9cf",
+          "file": "tenant-qualification.spec.ts",
+          "line": 469,
+          "column": 1
+        },
+        {
+          "title": "pw-p8-status-action C-P8-STATUS-ACTION OBL-F-2-4-A",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1779,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-08T02:00:34.033Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "74090aea0bb88131064c-09238111deccac81eec6",
+          "file": "tenant-qualification.spec.ts",
+          "line": 497,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-08T02:00:15.424Z",
+    "duration": 20662.844,
+    "expected": 18,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

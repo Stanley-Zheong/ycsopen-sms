@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>租户接入管理原型</title>
+  <style>
+    :root { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2937; background: #f6f8fb; }
+    body { margin: 0; } .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+    nav { padding: 24px 16px; background: #0f172a; color: #dbeafe; } nav h1 { font-size: 16px; margin: 0 0 24px; }
+    nav a { display: block; color: #cbd5e1; padding: 10px 12px; border-radius: 6px; text-decoration: none; margin: 4px 0; }
+    nav a:hover, nav a.active { color: white; background: #1d4ed8; } main { padding: 36px; max-width: 1200px; }
+    section { display: none; } section.active { display: block; } h2 { margin-top: 0; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 14px; }
+    button { border: 0; border-radius: 6px; padding: 9px 14px; background: #2563eb; color: white; cursor: pointer; }
+    button.secondary { background: #e5e7eb; color: #374151; } button.danger { background: #dc2626; }
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px #dbe2ea; }
+    th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 12px; } th { color: #64748b; font-size: 13px; }
+    dialog { border: 0; border-radius: 10px; padding: 24px; min-width: 420px; box-shadow: 0 20px 60px #0f172a33; }
+    label { display: block; margin: 12px 0 4px; font-size: 13px; color: #475569; } input, select { width: 100%; box-sizing: border-box; padding: 9px; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; } .hint { color: #64748b; }
+    .secret { background: #eff6ff; padding: 14px; border-radius: 6px; font-family: monospace; } .status { color: #047857; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav>
+      <h1>YCSOpen SMS · 租户端</h1>
+      <a href="/tenant/administrators" data-testid="tenant-tenant-access-administrators-page">管理员配置</a>
+      <a href="/tenant/api/keys" data-testid="tenant-tenant-access-api-keys-page">API Key 管理</a>
+      <a href="/tenant/cmpp/access" data-testid="tenant-tenant-access-cmpp-access-page">CMPP 接入</a>
+    </nav>
+    <main>
+      <section id="administrators" data-route="/tenant/administrators">
+        <h2>管理员配置</h2><p class="hint">仅机构管理员可创建机构内业务用户和开发人员。</p>
+        <div class="toolbar"><span>机构子账号</span><button data-testid="tenant-tenant-access-administrators-create">新建子账号</button></div>
+        <table data-testid="tenant-tenant-access-administrators-table"><thead><tr><th>用户名</th><th>角色</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody><tr data-testid="tenant-tenant-access-administrators-row"><td>developer_demo</td><td data-testid="tenant-tenant-access-administrators-role">开发人员</td><td>启用</td><td><button class="secondary" data-testid="tenant-tenant-access-administrators-status-action">禁用</button></td></tr></tbody></table>
+        <dialog id="admin-dialog" data-testid="tenant-tenant-access-administrators-create-dialog"><h3>新建子账号</h3>
+          <label>用户名<input data-testid="tenant-tenant-access-administrators-username-field"></label>
+          <label>角色<select data-testid="tenant-tenant-access-administrators-role-field"><option>业务用户</option><option>开发人员</option></select></label>
+          <div class="actions"><button class="secondary">取消</button><button>创建</button></div></dialog>
+      </section>
+      <section id="api-keys" data-route="/tenant/api/keys">
+        <h2>API Key 管理</h2><p class="hint">App Secret 仅在创建成功时交付一次，列表不会显示。</p>
+        <div class="toolbar"><span>HTTP API 凭证</span><button>创建 API Key</button></div>
+        <table data-testid="tenant-tenant-access-api-keys-table"><thead><tr><th>App Key</th><th>名称</th><th>状态</th><th>过期时间</th><th>操作</th></tr></thead>
+          <tbody><tr data-testid="tenant-tenant-access-api-keys-row"><td>app_demo</td><td>验证码服务</td><td>激活</td><td>长期</td><td><button class="danger" data-testid="tenant-tenant-access-api-keys-revoke">吊销</button></td></tr></tbody></table>
+        <dialog data-testid="tenant-tenant-access-api-keys-create-dialog"><h3>创建 API Key</h3>
+          <label>名称<input data-testid="tenant-tenant-access-api-keys-name-field"></label><label>过期时间<input data-testid="tenant-tenant-access-api-keys-expiry-field"></label>
+          <label>IP 白名单<input data-testid="tenant-tenant-access-api-keys-ip-allow-list-field"></label><label>四级限流<input data-testid="tenant-tenant-access-api-keys-rate-policy-field"></label>
+          <div class="actions"><button class="secondary">取消</button><button>创建并交付密钥</button></div></dialog>
+        <dialog data-testid="tenant-tenant-access-api-keys-secret-dialog"><h3>请立即保存 App Secret</h3><p class="secret" data-testid="tenant-tenant-access-api-keys-secret-once">仅本次创建响应可见</p><div class="actions"><button>我已保存</button></div></dialog>
+      </section>
+      <section id="cmpp" data-route="/tenant/cmpp/access">
+        <h2>CMPP 接入参数</h2><p class="hint">本页管理接入凭证和参数，不建立协议连接。</p>
+        <div class="toolbar"><span>下游 CMPP 凭证</span><button>申请接入</button></div>
+        <table data-testid="tenant-tenant-access-cmpp-table"><thead><tr><th>协议/账号</th><th>SPID</th><th>地址</th><th>连接/窗口/TPS</th><th>操作</th></tr></thead>
+          <tbody><tr data-testid="tenant-tenant-access-cmpp-row"><td> C M P P / **** </td><td>sp_demo</td><td>gateway.example</td><td>4 / 8 / 100</td><td><button class="danger" data-testid="tenant-tenant-access-cmpp-revoke">吊销</button></td></tr></tbody></table>
+        <dialog data-testid="tenant-tenant-access-cmpp-request-form"><h3>申请 CMPP 接入</h3><label>接入地址<input data-testid="tenant-tenant-access-cmpp-endpoint"></label><label>连接策略<input data-testid="tenant-tenant-access-cmpp-connection-policy"></label><div class="actions"><button class="secondary">取消</button><button>提交申请</button></div></dialog>
+        <dialog data-testid="tenant-tenant-access-cmpp-secret-once"><h3>请立即保存 CMPP 密码</h3><p class="secret">仅本次申请响应可见</p><div class="actions"><button>我已保存</button></div></dialog>
+      </section>
+    </main>
+  </div>
+  <script>
+    const sections = [...document.querySelectorAll('section[data-route]')];
+    function selectRoute() { const route = location.hash.slice(1) || '/tenant/administrators'; sections.forEach((s) => s.classList.toggle('active', s.dataset.route === route)); }
+    window.addEventListener('hashchange', selectRoute); selectRoute();
+    document.querySelectorAll('nav a').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); location.hash = link.getAttribute('href'); selectRoute(); }));
+  </script>
+</body>
+</html>

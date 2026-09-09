@@ -200,9 +200,9 @@ class TenantRegistrationObjectApiTest {
 
         assertThat(fixture.store.sessionAttempts(session.registrationObjectSessionId())).isZero();
         assertThat(fixture.objectCalls).hasValue(0);
-        assertThat(UploadPurpose.LEGAL_REP_ID_FRONT.maximumPlaintextBytes()).isEqualTo(5_242_880L);
+        assertThat(UploadPurpose.LEGAL_REP_ID_FRONT.maximumPlaintextBytes()).isEqualTo(10_485_760L);
         assertThat(UploadPurpose.BUSINESS_LICENSE.maximumPlaintextBytes()).isEqualTo(10_485_760L);
-        assertThat(UploadPurpose.LEGAL_REP_ID_FRONT.maximumEnvelopeBytes()).isEqualTo(5_243_025L);
+        assertThat(UploadPurpose.LEGAL_REP_ID_FRONT.maximumEnvelopeBytes()).isEqualTo(10_485_905L);
         assertThat(UploadPurpose.BUSINESS_LICENSE.maximumEnvelopeBytes()).isEqualTo(10_485_905L);
     }
 

@@ -1,0 +1,4 @@
+phase=14
+page=admin-exemption-policy
+route=/admin/exemption/policy
+test_ids=admin-auditable-exemption-exemption-policy-page,admin-auditable-exemption-exemption-effective-preview,admin-auditable-exemption-exemption-usage-history

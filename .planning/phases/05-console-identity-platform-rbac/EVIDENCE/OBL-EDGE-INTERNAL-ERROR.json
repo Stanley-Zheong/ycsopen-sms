@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-EDGE-INTERNAL-ERROR","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"GlobalExceptionHandlerTest; fixed safe message, correlation identity, and 400/403 preservation"},"browser":{"case":"C-P5-INTERNAL-ERROR","report":"playwright-report.raw.json","result":"PASS"}}

@@ -1,0 +1,1 @@
+{"obligation":"OBL-HTTP-UPSTREAM-002","status":"covered","evidence":["HttpMessageDeliveryServiceTest.unknownProviderOutcomeIsQuarantinedAndNotRetriedAutomatically"],"notes":"Unknown provider outcome remains CLAIMED with explicit error and is not returned to READY automatically."}

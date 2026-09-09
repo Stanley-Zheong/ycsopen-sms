@@ -1,0 +1,95 @@
+import { expect, test } from '@playwright/test';
+
+test('pw-p7-system-configuration C-P7-SYSTEM-CONFIG OBL-IA-ADMIN-SYSTEM-CONFIG', async ({ page }) => {
+  await page.goto('/admin/system/configuration');
+  await expect(page.getByTestId('admin-platform-system-configuration-nav-menu')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-breadcrumb')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-page')).toBeVisible();
+});
+
+test('prototype inventories the complete system configuration contract', async ({ page }) => {
+  await page.goto('/admin/system/configuration');
+  await expect(page.getByTestId('admin-platform-system-configuration-heading')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-card')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-version')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-checksum')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-actor')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-time')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-reload-status')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-settings-table')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-row')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-key')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-label')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-type')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-validation')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-sensitivity')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-default')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-setting-value')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-draft-card')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-draft-status')).toHaveText('无未保存修改');
+  await expect(page.getByTestId('admin-platform-system-configuration-history-table')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-row')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-version')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-status')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-actor')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-reason')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-time')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-changed-keys')).toBeVisible();
+
+  await page.getByTestId('admin-platform-system-configuration-refresh').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-loading')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-error')).toBeVisible();
+  await page.getByTestId('admin-platform-system-configuration-retry').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-error')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-success-status')).toContainText('刷新成功');
+
+  await page.getByTestId('admin-platform-system-configuration-edit-open').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-edit-dialog')).toBeVisible();
+  await page.getByTestId('admin-platform-system-configuration-edit-input').fill('2');
+  await expect(page.getByTestId('admin-platform-system-configuration-validation-error')).toBeVisible();
+  await page.getByTestId('admin-platform-system-configuration-edit-input').fill('8');
+  await expect(page.getByTestId('admin-platform-system-configuration-validation-error')).toBeHidden();
+  await page.getByTestId('admin-platform-system-configuration-edit-cancel').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-edit-dialog')).toBeHidden();
+  await page.getByTestId('admin-platform-system-configuration-edit-open').click();
+  await page.getByTestId('admin-platform-system-configuration-edit-input').fill('8');
+  await page.getByTestId('admin-platform-system-configuration-edit-save').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-draft-status')).toContainText('未保存');
+  await page.getByTestId('admin-platform-system-configuration-draft-reason').fill('调整登录保护');
+  await expect(page.getByTestId('admin-platform-system-configuration-draft-save')).toBeEnabled();
+  await page.getByTestId('admin-platform-system-configuration-draft-discard').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-draft-status')).toHaveText('无未保存修改');
+
+  await page.getByTestId('admin-platform-system-configuration-edit-open').click();
+  await page.getByTestId('admin-platform-system-configuration-edit-input').fill('8');
+  await page.getByTestId('admin-platform-system-configuration-edit-save').click();
+  await page.getByTestId('admin-platform-system-configuration-draft-reason').fill('调整登录保护');
+  await page.getByTestId('admin-platform-system-configuration-draft-save').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-activate-open')).toBeEnabled();
+  await page.getByTestId('admin-platform-system-configuration-activate-open').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-activate-dialog')).toBeVisible();
+  await page.getByTestId('admin-platform-system-configuration-activate-cancel').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-activate-dialog')).toBeHidden();
+  await page.getByTestId('admin-platform-system-configuration-activate-open').click();
+  await page.getByTestId('admin-platform-system-configuration-activate-confirm').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-active-version')).toHaveText('v13');
+  await page.getByTestId('admin-platform-system-configuration-activate-open').click();
+  await page.getByTestId('admin-platform-system-configuration-activate-confirm').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-stale-alert')).toBeVisible();
+
+  await page.getByTestId('admin-platform-system-configuration-rollback-open').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-rollback-dialog')).toBeVisible();
+  await page.getByTestId('admin-platform-system-configuration-rollback-cancel').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-rollback-dialog')).toBeHidden();
+  await page.getByTestId('admin-platform-system-configuration-rollback-open').click();
+  await page.getByTestId('admin-platform-system-configuration-rollback-reason').fill('触发安全拒绝');
+  await expect(page.getByTestId('admin-platform-system-configuration-rollback-confirm')).toBeEnabled();
+  await page.getByTestId('admin-platform-system-configuration-rollback-confirm').click();
+  await expect(page.getByTestId('admin-platform-system-configuration-reload-error')).toBeVisible();
+  await expect(page.getByTestId('admin-platform-system-configuration-history-empty')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-access-loading')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-access-error')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-access-denied')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-write-denied')).toBeHidden();
+  await expect(page.getByTestId('admin-platform-system-configuration-activate-denied')).toBeHidden();
+});

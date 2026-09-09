@@ -1,0 +1,15 @@
+{
+  "obligation": "OBL-F-3-4-B",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateRuleEngine.java",
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateLifecycleService.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/template/TemplateLifecycleServiceTest.java",
+    "web/test/scripts/template-lifecycle.spec.ts"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test",
+    "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"
+  ],
+  "result": "Variable placeholders, parameter-rule grammar, exact variable matching, preview rendering, and injection rejection are covered."
+}

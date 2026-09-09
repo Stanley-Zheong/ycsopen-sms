@@ -10,14 +10,28 @@
 
 **待实现**：`/api/v1/sms/batch-send`（F-6.2）、`/api/v1/sms/query`（F-6.3）。
 
-## 控制台 API（当前未接 JWT 鉴权拦截器，见 core/docs/ROADMAP.md 与 SecurityConfig 的 TODO）
+## 控制台 API（JWT 会话与当前数据库 RBAC）
 
 | 方法 | 路径 | 说明 | PRD 编号 |
 |---|---|---|---|
 | POST | `/api/v1/console/auth/login` | 登录 | F-1.4 |
-| POST | `/api/v1/console/tenants/register` | 机构注册 | F-2.1 |
-| POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 审核通过并开通试用 | F-2.2/F-2.8 |
-| POST | `/api/v1/console/tenants/{id}/reject` | 驳回注册 | F-2.2 |
+| POST | `/api/v1/console/session/logout` | 撤销当前会话 | F-1.4 |
+| GET | `/api/v1/console/account-overview` | 当前账号、角色与权限 | F-1.4 |
+| GET/POST/PUT | `/api/v1/console/platform-accounts` | 平台账号查询、新建与修改 | F-1.1 |
+| POST | `/api/v1/console/platform-accounts/{id}/{disable,enable,unlock}` | 账号状态变更 | F-1.1/F-1.3 |
+| POST | `/api/v1/console/platform-accounts/{id}/phone/reveal` | 有用途、无缓存、留审计的临时手机号查看 | 6.2.1 |
+| GET/POST/PUT | `/api/v1/console/platform-roles` | 平台角色查询、新建与修改 | F-1.2 |
+| PUT | `/api/v1/console/platform-roles/{id}/permissions` | 原子替换角色权限并记录变更 | F-1.2 |
+| GET | `/api/v1/console/login-history` | 按当前权限范围查询登录历史 | F-1.3 |
+| GET | `/api/v1/console/operation-audits` | 按操作人、操作、结果、时间查询脱敏操作日志 | F-14.1 |
+| GET | `/api/v1/console/security-events` | 按事件、操作人、结果、时间查询安全事件 | F-14.2 |
+| GET | `/api/v1/console/system-configuration` | 查询类型化配置、当前版本、草稿与历史；敏感引用固定脱敏 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions` | 按当前版本和变更原因暂存配置变更 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions/{id}/activate` | 以乐观并发检查激活草稿并热加载 | 8.1 System |
+| POST | `/api/v1/console/system-configuration/versions/{id}/rollback` | 从历史快照创建并激活新版本 | 8.1 System |
+| POST | `/api/v1/console/tenants/register` | 旧机构注册路径，仅返回迁移提示；请使用 public tenant registration | 兼容 |
+| POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 旧审核路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
+| POST | `/api/v1/console/tenants/{id}/reject` | 旧驳回路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
 | GET | `/api/v1/console/channels` | 通道列表 | F-4.1 |
 | POST | `/api/v1/console/channels` | 新建通道 | F-4.1 |
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |
@@ -25,7 +39,19 @@
 | GET | `/api/v1/console/dashboard/complaint-ratio/channel` | **通道投诉占比排行（本次新增需求）** | F-11.9 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/tenant` | **机构投诉占比排行（本次新增需求）** | F-11.9 |
 
-其余控制台 API（详单查询、审核中心、财务、告警、工具管理等）均未实现，见 ROADMAP.md。
+其余控制台 API（详单查询、审核中心、财务、告警、工具管理等）的真实边界见 ROADMAP.md。
+
+操作日志的结果集合为 `STARTED`、`SUCCESS`、`CLIENT_FAILURE`、`SERVER_FAILURE`、`DENIED`。
+`STARTED` 表示请求已在进入控制器前持久化，但终态写入中断，需人工调查。安全事件类型限定为
+`UNUSUAL_LOGIN`、`REPEATED_LOGIN_FAILURE`、`BULK_EXPORT`，结果限定为 `DETECTED`、`BLOCKED`、
+`SUCCESS`、`FAILURE`。未知筛选值返回 HTTP 400。
+
+系统配置权限分为 `system:configuration:menu`、`system:configuration:read`、
+`system:configuration:write` 和 `system:configuration:activate`。服务端只接受登记的类型化 key 和
+非空变更原因；客户端只提交变化字段，不能回传脱敏占位值。版本冲突、不可激活状态与热加载拒绝
+返回 HTTP 409，且不会静默改变当前运行时配置。配置 mutation 的稳定机器码位于
+`data.errorCode`（例如 `STALE_VERSION`、`RELOAD_REJECTED`）；`message` 是可翻译展示文本，客户端
+不得据此判断错误类型。查询只返回最新 50 条不可变版本记录，这是当前管理页的明确边界。
 
 ## 机构注册证明材料暂存合同
 

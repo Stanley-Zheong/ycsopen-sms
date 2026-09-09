@@ -1,0 +1,17 @@
+{
+  "command": "mvn -q -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase11RealServicePlaywrightTest test (runs npm Playwright channel-health.spec.ts internally)",
+  "commit": "63c4f8c7e0a9b0e1231d72315300c66397b9a201",
+  "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900; one worker",
+  "result": "PASS",
+  "cases": [
+    "C-P11-HEALTH-METRICS",
+    "C-P11-SUSTAINED-FAILURE",
+    "C-P11-POOL-CREATE",
+    "C-P11-POOL-VALIDATION",
+    "C-P11-CHANNEL-PAUSE",
+    "C-P11-STATE-PAUSE",
+    "C-P11-STATE-MAINTAIN",
+    "C-P11-STATE-MAINTAIN-END"
+  ],
+  "raw_report": ".planning/phases/11-channel-health-pools-candidate-pause/EVIDENCE/phase11-playwright-raw.json"
+}

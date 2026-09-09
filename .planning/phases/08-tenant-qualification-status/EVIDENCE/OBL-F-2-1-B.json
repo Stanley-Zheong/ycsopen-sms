@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-1-B","playwright_id":"pw-p8-qualification-submit","case_id":"C-P8-QUALIFICATION-SUBMIT","result":"PASS","evidence":"Real protected uploads and provider-delivered contact verification submitted requalification to PENDING exactly once.","raw_report":"phase08-playwright-raw.json"}

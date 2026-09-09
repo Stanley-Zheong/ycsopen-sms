@@ -92,6 +92,8 @@ class BlacklistEntryProtectionAdapterTest {
 
         assertThat(jdbc.queryForObject("SELECT status FROM blacklist_entries WHERE id=?",
                 String.class, id)).isEqualTo("ACTIVE");
+        assertThat(jdbc.queryForObject("SELECT masked_mobile FROM blacklist_entries WHERE id=?",
+                String.class, id)).isEqualTo("138****8000");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ycs_crypto_blind_indexes "
                 + "WHERE legacy_row_id=?", Long.class, id)).isEqualTo(2);
         assertThat(jdbc.queryForList("SELECT key_version,index_status,OCTET_LENGTH(row_binding_digest) "

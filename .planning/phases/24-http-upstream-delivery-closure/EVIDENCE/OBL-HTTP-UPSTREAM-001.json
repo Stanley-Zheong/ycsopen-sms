@@ -1,0 +1,1 @@
+{"obligation":"OBL-HTTP-UPSTREAM-001","status":"covered","evidence":["HttpMessageDeliveryServiceTest.dispatchClaimsOneReadyOutboxAndSendsExactlyOnce"],"notes":"One READY outbox row is claimed and a second dispatch attempt does not re-send it."}

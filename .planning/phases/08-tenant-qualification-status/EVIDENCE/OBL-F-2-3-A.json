@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-3-A","playwright_id":"pw-p8-tenant-edit","case_id":"C-P8-TENANT-EDIT","result":"PASS","evidence":"Two real Admin browser sessions produced a stale metadata edit; latest revision and retained input were verified before successful retry.","raw_report":"phase08-playwright-raw.json"}

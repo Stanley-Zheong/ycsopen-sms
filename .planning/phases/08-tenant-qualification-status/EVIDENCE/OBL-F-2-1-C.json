@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-1-C","playwright_id":"pw-p8-qualification-status","case_id":"C-P8-QUALIFICATION-STATUS","result":"PASS","evidence":"Installed Chrome rendered verified state, certification/update times, and no protected identity or object identifier.","raw_report":"phase08-playwright-raw.json"}

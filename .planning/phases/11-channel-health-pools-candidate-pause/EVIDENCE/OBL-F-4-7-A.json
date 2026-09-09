@@ -1,0 +1,11 @@
+{
+  "obligation": "OBL-F-4-7-A",
+  "case": "C-P11-CHANNEL-PAUSE",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest verifies pause records trigger, actor, reason, pausedAt, and event evidence.",
+    "ChannelHealthControllerTest verifies the API actor comes from Authentication instead of editable client input.",
+    "ChannelHealthPage unit test verifies pause dialog reason body, read-only actor note, and feedback.",
+    "Chrome Playwright verifies data-testid admin-channel-health-channel-monitor-pause against the real service."
+  ]
+}

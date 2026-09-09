@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-FIELD-HTTP-PHONE","evidence":["mvn-test.log"],"notes":"SmsSendRequest validation requires domestic mobile pattern and MessageTaskProtectionAdapter rejects invalid normalized mobiles."}

@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-4-6-A",
+  "case": "C-P11-POOL-CREATE",
+  "result": "PASS",
+  "evidence": [
+    "ChannelPoolServiceTest verifies weighted and primary-backup pool creation from eligible channels.",
+    "Phase11ChannelHealthMySqlTest verifies pool creation through real MySQL schema.",
+    "Chrome Playwright verifies /admin/channel/pools with data-testid admin-channel-health-channel-pools-page."
+  ]
+}

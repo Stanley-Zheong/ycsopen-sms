@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-F-6-4-B","evidence":["mvn-test.log"],"notes":"Timestamp, nonce replay, altered body, inactive key lookup, and disallowed IP reject before business attributes are set."}

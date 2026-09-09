@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-F-6-1-B","evidence":["mvn-test.log"],"notes":"MessageSubmitService binds submission row, protected task, billing reserve, outbox intent, and accepted state before returning messageId."}

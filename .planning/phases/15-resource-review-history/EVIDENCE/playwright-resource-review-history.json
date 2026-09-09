@@ -1,0 +1,9 @@
+{
+  "command": "npm --prefix web exec -- playwright test resource-review-history.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "48dffd5ef24e48586eaf1244cb08f7805adf4efa",
+  "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P15-REVIEW-HISTORY"
+  ]
+}

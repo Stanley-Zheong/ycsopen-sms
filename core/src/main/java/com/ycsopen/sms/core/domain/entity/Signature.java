@@ -45,5 +45,5 @@ public class Signature {
 
     public enum SignType { ENTERPRISE, APP, TRADEMARK, INSTITUTION, GOVERNMENT }
     public enum RiskLevel { LOW, MEDIUM, HIGH }
-    public enum AuditStatus { PENDING, APPROVED, REJECTED }
+    public enum AuditStatus { PENDING, APPROVED, REJECTED, SUPPLEMENT_REQUIRED }
 }

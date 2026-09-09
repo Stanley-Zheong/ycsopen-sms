@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-MESSAGE-FAILED-PRE","status":"covered","evidence":["HttpMessageDeliveryServiceTest.providerRejectionFailsTaskAndReversesReservedBillingOnce"],"notes":"Provider rejection moves PENDING to FAILED with exact error and billing reversal."}

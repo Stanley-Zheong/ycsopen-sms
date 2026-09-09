@@ -1,0 +1,83 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/signatures", "/admin/signatures/review"],
+    "test_ids": [
+      "tenant-signature-lifecycle-signatures-page",
+      "tenant-signature-lifecycle-signatures-application-submit",
+      "admin-signature-lifecycle-signature-review-page",
+      "admin-signature-lifecycle-signature-review-filters",
+      "admin-signature-lifecycle-signature-review-decision",
+      "admin-signature-lifecycle-signature-filing-matrix",
+      "admin-signature-lifecycle-signature-filing-retry"
+    ],
+    "sources": [{"path": ".planning/phases/12-signature-lifecycle-filing/design-output/signature-lifecycle-prototype.html", "sha256": "8a18d517f0fe107ed7ab556f77743a27c4ffce51a64d3b4c4cec8471c31194b8"}]
+  },
+  "pencil": {
+    "sources": [{"path": ".planning/phases/12-signature-lifecycle-filing/design-output/signature-lifecycle-baseline.pen", "sha256": "364fadbcdb328a96138ceb58268b62b6c8cc345a9cc52e0d0a5d37d973b0b5b4"}]
+  },
+  "prototype": {
+    "routes": ["/tenant/signatures", "/admin/signatures/review"],
+    "test_ids": [
+      "tenant-signature-lifecycle-signatures-page",
+      "tenant-signature-lifecycle-signatures-application-submit",
+      "admin-signature-lifecycle-signature-review-page",
+      "admin-signature-lifecycle-signature-review-filters",
+      "admin-signature-lifecycle-signature-review-decision",
+      "admin-signature-lifecycle-signature-filing-matrix",
+      "admin-signature-lifecycle-signature-filing-retry"
+    ],
+    "sources": [{"path": ".planning/phases/12-signature-lifecycle-filing/design-output/signature-lifecycle-prototype.html", "sha256": "8a18d517f0fe107ed7ab556f77743a27c4ffce51a64d3b4c4cec8471c31194b8"}]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "tenant-signature-lifecycle-signatures-page",
+      "tenant-signature-lifecycle-signatures-application-submit",
+      "admin-signature-lifecycle-signature-review-page",
+      "admin-signature-lifecycle-signature-review-filters",
+      "admin-signature-lifecycle-signature-review-decision",
+      "admin-signature-lifecycle-signature-filing-matrix",
+      "admin-signature-lifecycle-signature-filing-retry"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [{"path": ".planning/phases/12-signature-lifecycle-filing/design-output/prototype.spec.ts", "sha256": "14f8686c15f7ed83b333e81f2824b75573caddc660f97453a1befe82deba18c7"}]
+  },
+  "implementation": {
+    "routes": ["/tenant/signatures", "/admin/signatures/review"],
+    "test_ids": [
+      "tenant-signature-lifecycle-signatures-page",
+      "tenant-signature-lifecycle-signatures-application-submit",
+      "admin-signature-lifecycle-signature-review-page",
+      "admin-signature-lifecycle-signature-review-filters",
+      "admin-signature-lifecycle-signature-review-decision",
+      "admin-signature-lifecycle-signature-filing-matrix",
+      "admin-signature-lifecycle-signature-filing-retry"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "5163ff3e2c3404f59952e91efcf69cc7037428e17002705363108c5977a1d50a"},
+      {"path": "web/src/pages/tenant/signatures/SignatureLifecyclePage.tsx", "sha256": "550c2442ecd9c55a9628607211e8d0cf0bc95d818728d8b2552161d5d8774a20"},
+      {"path": "web/src/pages/admin/signatures/SignatureReviewPage.tsx", "sha256": "88d48b0197248194c6ff55bbdd49b92fdee71ac208fa93b620a7cbf860d25387"}
+    ]
+  },
+  "playwright": {
+    "test_ids": [
+      "tenant-signature-lifecycle-signatures-page",
+      "tenant-signature-lifecycle-signatures-application-submit",
+      "admin-signature-lifecycle-signature-review-page",
+      "admin-signature-lifecycle-signature-review-filters",
+      "admin-signature-lifecycle-signature-review-decision",
+      "admin-signature-lifecycle-signature-filing-matrix",
+      "admin-signature-lifecycle-signature-filing-retry"
+    ],
+    "evidence_kind": "production",
+    "sources": [{"path": "web/test/scripts/signature-lifecycle.spec.ts", "sha256": "8cce2f5f3ca07861a7eb9ae6ec0c81d0ef1f06e0f55e339926a710b4d4392dfa"}]
+  },
+  "execution": {
+    "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+    "cwd": "web",
+    "commit": "c2356e3515eb4ba10b14dd17ff7ab599f11338d7",
+    "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/12-signature-lifecycle-filing/EVIDENCE/playwright-execution.json", "sha256": "5dfbf0609545c518e17c72bb10c15d315fa2534ff54fde0dbf33d0876b53d8d8"}
+  }
+}

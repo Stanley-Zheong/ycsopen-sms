@@ -214,7 +214,8 @@ public final class ProtectedObjectService {
                 || !tenantScope(expected.tenantDraftId()).equals(request.tenantScope())
                 || expected.state() != ProtectedObjectMetadataRepository.ObjectState.STAGED
                 && expected.state() != ProtectedObjectMetadataRepository.ObjectState.CLAIMED
-                || !clock.instant().isBefore(expected.expiresAt())) {
+                || expected.state() == ProtectedObjectMetadataRepository.ObjectState.STAGED
+                && !clock.instant().isBefore(expected.expiresAt())) {
             throw Failure.denied();
         }
 

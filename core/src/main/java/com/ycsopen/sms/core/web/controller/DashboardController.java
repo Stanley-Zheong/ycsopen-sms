@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.YearMonth;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 /** F-11.9 仪表盘"通道/机构月度投诉占比看板"数据接口。 */
 @RestController
 @RequestMapping("/api/v1/console/dashboard")
+@PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'FINANCE')")
 public class DashboardController {
 
     private final ComplaintRatioService complaintRatioService;

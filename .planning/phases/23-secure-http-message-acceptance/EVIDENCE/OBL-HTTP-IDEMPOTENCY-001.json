@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-HTTP-IDEMPOTENCY-001","evidence":["mvn-test.log"],"notes":"MessageAcceptanceIdempotencyServiceTest and MessageSubmitServiceTest prove duplicate same-payload submitId returns original response and bypasses routing/billing/persistence."}

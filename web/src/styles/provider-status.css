@@ -1,0 +1,50 @@
+.provider-status-page {
+  display: grid;
+  gap: 16px;
+}
+
+.provider-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.provider-status-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.provider-status-form label {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+}
+
+.provider-status-form input,
+.provider-status-form select,
+.provider-status-form textarea {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.provider-status-form textarea {
+  min-height: 72px;
+}
+
+.provider-status-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.provider-status-alert.success {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.provider-status-alert.error {
+  color: #b42318;
+  background: #fef3f2;
+}

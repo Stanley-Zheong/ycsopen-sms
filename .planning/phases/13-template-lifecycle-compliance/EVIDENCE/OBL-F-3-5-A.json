@@ -1,0 +1,16 @@
+{
+  "obligation": "OBL-F-3-5-A",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateLifecycleService.java",
+    "web/src/pages/admin/templates/TemplateReviewPage.tsx",
+    "web/test/unit/template-lifecycle.test.tsx",
+    "web/test/scripts/template-lifecycle.spec.ts"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test",
+    "npm --prefix web test -- template-lifecycle.test.tsx",
+    "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"
+  ],
+  "result": "Admin template review exposes queue stats and filterable review rows for name, tenant, state, and type."
+}

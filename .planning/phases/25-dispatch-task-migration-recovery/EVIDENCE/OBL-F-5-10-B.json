@@ -1,0 +1,11 @@
+{
+  "obligation": "OBL-F-5-10-B",
+  "owner": "dispatch-task-migration-recovery",
+  "status": "PASS",
+  "evidence": [
+    "DispatchTaskRecoveryServiceTest.retryFailedTaskCreatesNewPendingAttemptWithoutOverwritingOriginal",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/mvn-test.log"
+  ],
+  "verified_behavior": "FAILED retry creates one new protected PENDING attempt and READY outbox row while preserving the original FAILED task."
+}

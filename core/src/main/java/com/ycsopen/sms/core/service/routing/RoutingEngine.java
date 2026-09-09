@@ -1,5 +1,7 @@
 package com.ycsopen.sms.core.service.routing;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,29 +24,40 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RoutingEngine {
+    private static final Logger log = LoggerFactory.getLogger(RoutingEngine.class);
 
     private final BlacklistChecker blacklistChecker;
     private final ContentReviewChecker contentReviewChecker;
     private final FrequencyChecker frequencyChecker;
     private final ChannelSelector channelSelector;
+    private final RiskDecisionRecorder riskDecisionRecorder;
 
     public RoutingEngine(BlacklistChecker blacklistChecker,
                           ContentReviewChecker contentReviewChecker,
                           FrequencyChecker frequencyChecker,
-                          ChannelSelector channelSelector) {
+                          ChannelSelector channelSelector,
+                          RiskDecisionRecorder riskDecisionRecorder) {
         this.blacklistChecker = blacklistChecker;
         this.contentReviewChecker = contentReviewChecker;
         this.frequencyChecker = frequencyChecker;
         this.channelSelector = channelSelector;
+        this.riskDecisionRecorder = riskDecisionRecorder;
     }
 
     public RoutingDecision route(RoutingContext ctx) {
         BlacklistChecker.Result blacklistResult = blacklistChecker.check(ctx);
+        if (blacklistResult.recordable()) {
+            try {
+                riskDecisionRecorder.recordBlacklistDecision(ctx, blacklistResult);
+            } catch (RuntimeException failure) {
+                log.warn("risk decision evidence recorder failed; preserving routing decision");
+            }
+        }
         if (blacklistResult.blocked()) {
             return RoutingDecision.reject(RoutingDecision.RejectStage.BLACKLIST, blacklistResult.reason());
         }
 
-        ContentReviewChecker.Result contentResult = contentReviewChecker.check(ctx.getContent(), ctx.getTenantId());
+        ContentReviewChecker.Result contentResult = contentReviewChecker.check(ctx);
         if (contentResult.blocked()) {
             return RoutingDecision.reject(RoutingDecision.RejectStage.CONTENT_REVIEW, contentResult.reason());
         }

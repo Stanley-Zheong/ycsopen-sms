@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YCSOpen SMS · 机构资质与状态</title>
+  <style>
+    :root{font-family:Inter,"PingFang SC",sans-serif;color:#172033;background:#f3f6fb}*{box-sizing:border-box}
+    body{margin:0}.shell{display:grid;grid-template-columns:224px 1fr;min-height:100vh}.nav{background:#123a72;color:white;padding:24px}.nav h1{font-size:18px}.nav button{display:block;width:100%;margin:10px 0;padding:10px;border:0;border-radius:6px;text-align:left}.main{padding:28px}.bar{display:flex;justify-content:space-between;align-items:center}.card{background:white;border:1px solid #dce4ef;border-radius:10px;padding:20px;margin:16px 0;box-shadow:0 2px 8px #1b37670d}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.control{padding:10px;border:1px solid #cbd6e5;border-radius:6px;background:white;color:#24334d}.primary{background:#1768d5;color:white}.status{display:inline-block;padding:5px 10px;border-radius:99px;background:#fff2c6;color:#8a5b00}.drawer{border-left:4px solid #1768d5}.muted{color:#607089}.inventory{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.inventory button{font-size:11px;overflow-wrap:anywhere} @media(max-width:1100px){.grid,.inventory{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="nav"><h1>YCSOpen SMS</h1><button onclick="show('/tenant/register')">企业注册</button><button onclick="show('/tenant/qualification')">资质认证</button><button onclick="show('/admin/tenants')">机构管理</button></nav>
+    <main class="main">
+      <div class="bar"><div><span class="muted">机构管理 / 资质审核</span><h2>资质认证与机构状态</h2></div><span class="status">待审核</span></div>
+      <section class="card"><h3>企业资料</h3><div class="grid"><input class="control" aria-label="企业简称"><input class="control" aria-label="企业全称"><input class="control" aria-label="统一社会信用代码"></div></section>
+      <section class="card"><h3>证照、法人和联系人</h3><p class="muted">证件加密保存；营业执照与身份证图片单个不超过 10 MiB。</p><div class="grid"><button class="control">上传营业执照</button><button class="control">上传身份证正面</button><button class="control">发送验证码</button></div></section>
+      <section class="card drawer"><h3>审核抽屉</h3><p>OCR 辅助结果仅供人工核对。通过、驳回、要求补充材料均需填写原因。</p><div class="grid"><button class="control primary">通过</button><button class="control">要求补充</button><button class="control">驳回</button></div></section>
+      <section id="inventory" class="card inventory" aria-label="Phase 08 interaction inventory"></section>
+    </main>
+  </div>
+  <script>
+    const routes = ["/tenant/register", "/tenant/qualification", "/admin/tenants"];
+    function show(route){history.pushState({}, "", route);document.title="YCSOpen SMS · "+route}
+    const inventory = `
+tenant-tenant-qualification-qualification-page
+tenant-tenant-qualification-qualification-submit
+tenant-tenant-qualification-qualification-status
+admin-tenant-qualification-tenants-page
+admin-tenant-qualification-tenants-review-decision
+admin-tenant-qualification-tenants-edit
+tenant-tenant-qualification-qualification-recertify
+admin-tenant-qualification-tenants-status-action
+tenant-tenant-qualification-qualification-short-name
+tenant-tenant-qualification-qualification-full-name
+tenant-tenant-qualification-qualification-credit-code
+tenant-tenant-qualification-qualification-license-upload
+tenant-tenant-qualification-qualification-legal-id
+tenant-tenant-qualification-qualification-legal-id-files
+tenant-tenant-qualification-qualification-contact
+tenant-tenant-qualification-qualification-shortlink-proof
+tenant-tenant-qualification-qualification-trademark-proof
+public-tenant-qualification-register-page
+tenant-tenant-qualification-qualification-nav-menu
+tenant-tenant-qualification-qualification-breadcrumb
+tenant-tenant-qualification-qualification-heading
+tenant-tenant-qualification-qualification-certified-at
+tenant-tenant-qualification-qualification-updated-at
+tenant-tenant-qualification-qualification-review-feedback
+tenant-tenant-qualification-qualification-form
+tenant-tenant-qualification-qualification-company-section
+tenant-tenant-qualification-qualification-registration-capital
+tenant-tenant-qualification-qualification-business-scope
+tenant-tenant-qualification-qualification-registered-address
+tenant-tenant-qualification-qualification-operating-address
+tenant-tenant-qualification-qualification-license-valid-until
+tenant-tenant-qualification-qualification-license-upload-status
+tenant-tenant-qualification-qualification-legal-section
+tenant-tenant-qualification-qualification-legal-name
+tenant-tenant-qualification-qualification-legal-id-front-upload
+tenant-tenant-qualification-qualification-legal-id-back-upload
+tenant-tenant-qualification-qualification-contact-name
+tenant-tenant-qualification-qualification-contact-id
+tenant-tenant-qualification-qualification-contact-phone
+tenant-tenant-qualification-qualification-contact-code-send
+tenant-tenant-qualification-qualification-contact-code-input
+tenant-tenant-qualification-qualification-contact-code-verify
+tenant-tenant-qualification-qualification-contact-verified-status
+tenant-tenant-qualification-qualification-shortlink-proof-upload
+tenant-tenant-qualification-qualification-trademark-signature-intent
+tenant-tenant-qualification-qualification-trademark-proof-upload
+tenant-tenant-qualification-qualification-error-summary
+tenant-tenant-qualification-qualification-submit-status
+tenant-tenant-qualification-qualification-recertify-dialog
+tenant-tenant-qualification-qualification-recertify-cancel
+tenant-tenant-qualification-qualification-recertify-confirm
+tenant-tenant-qualification-qualification-loading
+tenant-tenant-qualification-qualification-error
+tenant-tenant-qualification-qualification-retry
+tenant-tenant-qualification-qualification-access-denied
+public-tenant-qualification-register-heading
+public-tenant-qualification-register-admin-username
+public-tenant-qualification-register-admin-password
+public-tenant-qualification-register-admin-email
+public-tenant-qualification-register-privacy-notice
+public-tenant-qualification-register-error-summary
+public-tenant-qualification-register-submit
+public-tenant-qualification-register-success
+public-tenant-qualification-register-session-expired
+public-tenant-qualification-register-session-restart
+admin-tenant-qualification-tenants-nav-menu
+admin-tenant-qualification-tenants-heading
+admin-tenant-qualification-tenants-keyword
+admin-tenant-qualification-tenants-verification-status
+admin-tenant-qualification-tenants-operating-status
+admin-tenant-qualification-tenants-query
+admin-tenant-qualification-tenants-reset
+admin-tenant-qualification-tenants-table
+admin-tenant-qualification-tenants-row
+admin-tenant-qualification-tenants-review-open
+admin-tenant-qualification-tenants-previous
+admin-tenant-qualification-tenants-page-status
+admin-tenant-qualification-tenants-next
+admin-tenant-qualification-tenants-review-drawer
+admin-tenant-qualification-tenants-review-evidence-open
+admin-tenant-qualification-tenants-review-evidence-legal-id-front-open
+admin-tenant-qualification-tenants-review-evidence-legal-id-back-open
+admin-tenant-qualification-tenants-review-evidence-dialog
+admin-tenant-qualification-tenants-review-ocr-status
+admin-tenant-qualification-tenants-review-human-confirmed
+admin-tenant-qualification-tenants-review-approve-open
+admin-tenant-qualification-tenants-review-supplement-open
+admin-tenant-qualification-tenants-review-reject-open
+admin-tenant-qualification-tenants-review-decision-reason
+admin-tenant-qualification-tenants-review-decision-consequence
+admin-tenant-qualification-tenants-review-decision-confirm
+admin-tenant-qualification-tenants-edit-drawer
+admin-tenant-qualification-tenants-edit-customer-grade
+admin-tenant-qualification-tenants-edit-business-manager
+admin-tenant-qualification-tenants-edit-industry
+admin-tenant-qualification-tenants-edit-reason
+admin-tenant-qualification-tenants-edit-save
+admin-tenant-qualification-tenants-status-dialog
+admin-tenant-qualification-tenants-status-target
+admin-tenant-qualification-tenants-status-reason
+admin-tenant-qualification-tenants-status-consequence
+admin-tenant-qualification-tenants-status-confirm
+admin-tenant-qualification-tenants-loading
+admin-tenant-qualification-tenants-empty
+admin-tenant-qualification-tenants-error
+admin-tenant-qualification-tenants-retry
+admin-tenant-qualification-tenants-access-denied
+    `.trim().split(/\s+/);
+    const root=document.getElementById("inventory");
+    inventory.forEach(id=>{const button=document.createElement("button");button.className="control";button.dataset.testid=id;button.textContent=id;root.appendChild(button)});
+  </script>
+</body>
+</html>

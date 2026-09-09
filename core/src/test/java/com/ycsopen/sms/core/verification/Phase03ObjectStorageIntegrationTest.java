@@ -1424,8 +1424,8 @@ class Phase03ObjectStorageIntegrationTest {
         ASSERTIONS.addAndGet(count);
     }
 
-    private static void provisionKeys(Path destination,
-                                      Phase03ServiceHarness.SoftHsmHandoff handoff) throws Exception {
+    static void provisionKeys(Path destination,
+                              Phase03ServiceHarness.SoftHsmHandoff handoff) throws Exception {
         Path header;
         try (var files = Files.walk(destination.resolve("source"))) {
             List<Path> headers = files.filter(path -> path.getFileName().toString().equals("cryptoki.h"))

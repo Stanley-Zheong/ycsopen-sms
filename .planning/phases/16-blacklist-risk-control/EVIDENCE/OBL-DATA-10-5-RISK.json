@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-DATA-10-5-RISK",
+  "result": "PASS",
+  "evidence": "Migration stores masked_mobile, protected mobile refs, provider config, provider logs, decisions, timing, actor and appeal evidence.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

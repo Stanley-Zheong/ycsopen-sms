@@ -1,0 +1,116 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/administrators", "/tenant/api/keys", "/tenant/cmpp/access"],
+    "test_ids": [
+      "tenant-tenant-access-administrators-page",
+      "tenant-tenant-access-administrators-create",
+      "tenant-tenant-access-administrators-role",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-cmpp-access-page",
+      "tenant-tenant-access-administrators-row",
+      "tenant-tenant-access-administrators-create-dialog",
+      "tenant-tenant-access-administrators-username-field",
+      "tenant-tenant-access-administrators-role-field",
+      "tenant-tenant-access-administrators-status-action",
+      "tenant-tenant-access-api-keys-create-dialog",
+      "tenant-tenant-access-api-keys-name-field",
+      "tenant-tenant-access-api-keys-expiry-field",
+      "tenant-tenant-access-api-keys-ip-allow-list-field",
+      "tenant-tenant-access-api-keys-rate-policy-field",
+      "tenant-tenant-access-api-keys-row",
+      "tenant-tenant-access-api-keys-revoke",
+      "tenant-tenant-access-api-keys-secret-dialog",
+      "tenant-tenant-access-cmpp-request-form",
+      "tenant-tenant-access-cmpp-endpoint",
+      "tenant-tenant-access-cmpp-connection-policy",
+      "tenant-tenant-access-cmpp-row",
+      "tenant-tenant-access-cmpp-secret-once",
+      "tenant-tenant-access-cmpp-revoke"
+    ],
+    "sources": [{"path": ".planning/phases/09-tenant-access-administration/design-output/tenant-access-prototype.html", "sha256": "2a2725f8bdb25202aba4b32bb6c364058f2226bb1ec38e1464f6083fbe33aa22"}]
+  },
+  "pencil": {
+    "sources": [{"path": ".planning/phases/09-tenant-access-administration/design-output/tenant-access-baseline.pen", "sha256": "7345cbd6e1364d0ea58cded020e67a01a979cd8fe801610d09f6f729cd0dea0f"}]
+  },
+  "prototype": {
+    "routes": ["/tenant/administrators", "/tenant/api/keys", "/tenant/cmpp/access"],
+    "test_ids": [
+      "tenant-tenant-access-administrators-page",
+      "tenant-tenant-access-administrators-create",
+      "tenant-tenant-access-administrators-role",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-cmpp-access-page",
+      "tenant-tenant-access-administrators-row",
+      "tenant-tenant-access-administrators-create-dialog",
+      "tenant-tenant-access-administrators-username-field",
+      "tenant-tenant-access-administrators-role-field",
+      "tenant-tenant-access-administrators-status-action",
+      "tenant-tenant-access-api-keys-create-dialog",
+      "tenant-tenant-access-api-keys-name-field",
+      "tenant-tenant-access-api-keys-expiry-field",
+      "tenant-tenant-access-api-keys-ip-allow-list-field",
+      "tenant-tenant-access-api-keys-rate-policy-field",
+      "tenant-tenant-access-api-keys-row",
+      "tenant-tenant-access-api-keys-revoke",
+      "tenant-tenant-access-api-keys-secret-dialog",
+      "tenant-tenant-access-cmpp-request-form",
+      "tenant-tenant-access-cmpp-endpoint",
+      "tenant-tenant-access-cmpp-connection-policy",
+      "tenant-tenant-access-cmpp-row",
+      "tenant-tenant-access-cmpp-secret-once",
+      "tenant-tenant-access-cmpp-revoke"
+    ],
+    "sources": [{"path": ".planning/phases/09-tenant-access-administration/design-output/tenant-access-prototype.html", "sha256": "2a2725f8bdb25202aba4b32bb6c364058f2226bb1ec38e1464f6083fbe33aa22"}]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "tenant-tenant-access-administrators-page",
+      "tenant-tenant-access-administrators-create",
+      "tenant-tenant-access-administrators-role",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-cmpp-access-page",
+      "tenant-tenant-access-administrators-row",
+      "tenant-tenant-access-administrators-create-dialog",
+      "tenant-tenant-access-administrators-username-field",
+      "tenant-tenant-access-administrators-role-field",
+      "tenant-tenant-access-administrators-status-action",
+      "tenant-tenant-access-api-keys-create-dialog",
+      "tenant-tenant-access-api-keys-name-field",
+      "tenant-tenant-access-api-keys-expiry-field",
+      "tenant-tenant-access-api-keys-ip-allow-list-field",
+      "tenant-tenant-access-api-keys-rate-policy-field",
+      "tenant-tenant-access-api-keys-row",
+      "tenant-tenant-access-api-keys-revoke",
+      "tenant-tenant-access-api-keys-secret-dialog",
+      "tenant-tenant-access-cmpp-request-form",
+      "tenant-tenant-access-cmpp-endpoint",
+      "tenant-tenant-access-cmpp-connection-policy",
+      "tenant-tenant-access-cmpp-row",
+      "tenant-tenant-access-cmpp-secret-once",
+      "tenant-tenant-access-cmpp-revoke"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [{"path": ".planning/phases/09-tenant-access-administration/design-output/prototype.spec.ts", "sha256": "899609b52b36aabd04271f89ff15ab742cbccbf2904127f0644b980d2a056e77"}]
+  },
+  "implementation": {
+    "routes": ["/tenant/administrators", "/tenant/api/keys", "/tenant/cmpp/access"],
+    "test_ids": ["tenant-tenant-access-administrators-page", "tenant-tenant-access-administrators-create", "tenant-tenant-access-administrators-role", "tenant-tenant-access-api-keys-page", "tenant-tenant-access-api-keys-secret-once", "tenant-tenant-access-cmpp-access-page", "tenant-tenant-access-administrators-row", "tenant-tenant-access-administrators-create-dialog", "tenant-tenant-access-administrators-username-field", "tenant-tenant-access-administrators-role-field", "tenant-tenant-access-administrators-status-action", "tenant-tenant-access-api-keys-create-dialog", "tenant-tenant-access-api-keys-name-field", "tenant-tenant-access-api-keys-expiry-field", "tenant-tenant-access-api-keys-ip-allow-list-field", "tenant-tenant-access-api-keys-rate-policy-field", "tenant-tenant-access-api-keys-row", "tenant-tenant-access-api-keys-revoke", "tenant-tenant-access-api-keys-secret-dialog", "tenant-tenant-access-cmpp-request-form", "tenant-tenant-access-cmpp-endpoint", "tenant-tenant-access-cmpp-connection-policy", "tenant-tenant-access-cmpp-row", "tenant-tenant-access-cmpp-secret-once", "tenant-tenant-access-cmpp-revoke"],
+    "sources": [{"path": "web/src/router/routes.tsx", "sha256": "9f66f04d24fbf35542b3f9f9c3f5479d29d3c33d2252aee9d5007d6e5b938af9"}, {"path": "web/src/components/layout/TenantLayout.tsx", "sha256": "ba261f24049432bddebfe0f5e77f9b461bcc1671374c1f074deedd376d87573c"}, {"path": "web/src/pages/tenant/TenantAdministratorsPage.tsx", "sha256": "9235a6209cf4e6013942476ca1b9993d1a5013e05621b6594f6d391523dadd67"}, {"path": "web/src/pages/tenant/TenantApiKeysPage.tsx", "sha256": "89e5f3ba2a52487d2c344e98f66b83c1d057399c0e327864efc0c04f5e20c65a"}, {"path": "web/src/pages/tenant/TenantCmppAccessPage.tsx", "sha256": "091039cf75fc900bb46dc3390d0fa87ff6537fb7c1996f2e7ef7ff0c806035ee"}]
+  },
+  "playwright": {
+    "test_ids": ["tenant-tenant-access-administrators-page", "tenant-tenant-access-administrators-create", "tenant-tenant-access-administrators-role", "tenant-tenant-access-api-keys-page", "tenant-tenant-access-api-keys-secret-once", "tenant-tenant-access-cmpp-access-page", "tenant-tenant-access-administrators-row", "tenant-tenant-access-administrators-create-dialog", "tenant-tenant-access-administrators-username-field", "tenant-tenant-access-administrators-role-field", "tenant-tenant-access-administrators-status-action", "tenant-tenant-access-api-keys-create-dialog", "tenant-tenant-access-api-keys-name-field", "tenant-tenant-access-api-keys-expiry-field", "tenant-tenant-access-api-keys-ip-allow-list-field", "tenant-tenant-access-api-keys-rate-policy-field", "tenant-tenant-access-api-keys-row", "tenant-tenant-access-api-keys-revoke", "tenant-tenant-access-api-keys-secret-dialog", "tenant-tenant-access-cmpp-request-form", "tenant-tenant-access-cmpp-endpoint", "tenant-tenant-access-cmpp-connection-policy", "tenant-tenant-access-cmpp-row", "tenant-tenant-access-cmpp-secret-once", "tenant-tenant-access-cmpp-revoke"],
+    "evidence_kind": "production",
+    "sources": [{"path": "web/test/scripts/tenant-access.spec.ts", "sha256": "ef89fc9ba4eeda29de44a2af47057651607295365e9e89aaff8f2c97eaa23b52"}]
+  },
+  "execution": {
+    "command": "mvn -q -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase09RealServicePlaywrightTest test (runs npm Playwright tenant-access.spec.ts internally)",
+    "commit": "0468fe5c9fd229c43fc748b8760a8c273527f8bd",
+    "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; version=152.0.7977.76; viewport=1440x900; one worker",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/09-tenant-access-administration/EVIDENCE/playwright-execution.json", "sha256": "254a469f61133bc9be842360d7c60209800f295818854a1170e48e490316c407"}
+  }
+}

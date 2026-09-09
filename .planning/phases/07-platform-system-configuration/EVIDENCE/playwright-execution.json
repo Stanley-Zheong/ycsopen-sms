@@ -1,0 +1,9 @@
+{
+  "command": "mvn -f core/pom.xml -Pphase01-integration -Dtest=Phase07RealServicePlaywrightTest test",
+  "commit": "1a17d47453e1e18c7376b4c4a5ef37407e1534c5",
+  "config": "web/playwright.config.ts; real Spring Boot and MySQL; installed Google Chrome 152.0.7977.76; desktop viewport 1440x900; one worker; no page.route interception",
+  "result": "PASS",
+  "cases": [
+    "C-P7-SYSTEM-CONFIG"
+  ]
+}

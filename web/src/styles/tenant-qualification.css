@@ -1,0 +1,196 @@
+.qualification-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.qualification-eyebrow {
+  margin: 0 0 4px;
+  color: var(--color-brand-deep);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.public-registration-page {
+  width: min(1180px, calc(100% - 48px));
+  min-width: 1052px;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.qualification-form {
+  display: grid;
+  gap: 16px;
+}
+
+.qualification-form fieldset {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.qualification-form legend {
+  padding: 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.qualification-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.qualification-form textarea,
+[data-testid^="admin-tenant-qualification"] textarea {
+  width: 100%;
+  padding: 8px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  font: inherit;
+  resize: vertical;
+}
+
+.qualification-field-error {
+  color: var(--color-danger);
+  font-size: 12px;
+}
+
+.qualification-upload-group {
+  padding: 12px;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-control);
+}
+
+.qualification-upload-state {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.qualification-contact-actions,
+.qualification-form-footer,
+.qualification-dialog-actions,
+.qualification-filter-actions,
+.qualification-row-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.qualification-contact-actions label { flex: 0 0 180px; }
+.qualification-form-footer { justify-content: space-between; }
+.qualification-dialog-actions { justify-content: flex-end; margin-top: 16px; }
+.qualification-row-actions { flex-wrap: wrap; }
+.qualification-row-actions button { min-height: 32px; padding: 4px 8px; }
+
+.qualification-check {
+  display: flex;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.qualification-check input { width: auto; }
+
+.qualification-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-control);
+}
+
+.qualification-alert.error {
+  color: var(--color-danger);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-danger);
+}
+
+.qualification-alert.warning,
+.status-pending,
+.status-supplement_required {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: 1px solid #f0d899;
+}
+
+.qualification-success,
+.status-verified {
+  color: var(--color-success);
+}
+
+.qualification-success-panel {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+
+.qualification-status-card > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qualification-status-card dl,
+.qualification-review-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+}
+
+.qualification-status-card dl div,
+.qualification-review-facts div {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 8px;
+}
+
+.qualification-status-card dt,
+.qualification-review-facts dt { color: var(--color-muted); }
+.qualification-status-card dd,
+.qualification-review-facts dd { margin: 0; overflow-wrap: anywhere; }
+
+.qualification-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-unverified { color: var(--color-muted); background: var(--color-table-header); }
+.status-rejected { color: var(--color-danger); background: var(--color-error-bg); }
+
+.qualification-filter-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.qualification-table-wrap { overflow-x: auto; }
+.qualification-table-wrap table { min-width: 1180px; }
+.qualification-privacy-notice { color: var(--color-muted); }
+.qualification-drawer { display: grid; gap: 16px; }
+.qualification-inspection { padding: 16px; background: var(--color-surface-alt); border-radius: var(--radius-control); }
+.qualification-evidence-frame { width: 100%; min-height: 480px; border: 1px solid var(--color-border); }
+.button-danger { color: #fff; background: var(--color-danger); border-color: var(--color-danger); }
+
+[role="dialog"].card:has(.qualification-drawer) {
+  inset: 0 0 0 auto;
+  width: min(640px, calc(100vw - 48px));
+  max-height: 100vh;
+  border-radius: 0;
+  transform: none;
+}

@@ -1,0 +1,11 @@
+{
+  "obligation_id": "OBL-PROVIDER-TAXONOMY-004",
+  "status": "PASS",
+  "evidence": [
+    "ProviderStatusTaxonomyPort",
+    "ProviderStatusTaxonomyServiceTest#httpAndCmppConsumersUseSamePortContract"
+  ],
+  "case_id": "C-P20-SHARED-CONTRACT",
+  "playwright_id": "pw-p20-shared-contract"
+}
+

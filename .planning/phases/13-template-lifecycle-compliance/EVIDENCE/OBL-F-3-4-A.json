@@ -1,0 +1,16 @@
+{
+  "obligation": "OBL-F-3-4-A",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateLifecycleService.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/template/TemplateLifecycleServiceTest.java",
+    "web/src/pages/tenant/templates/TemplateLifecyclePage.tsx",
+    "web/test/scripts/template-lifecycle.spec.ts"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test",
+    "npm --prefix web test -- template-lifecycle.test.tsx",
+    "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"
+  ],
+  "result": "Tenant template application captures required fields, approved signature binding, variables, parameter rules, rationale, and enters PENDING review."
+}

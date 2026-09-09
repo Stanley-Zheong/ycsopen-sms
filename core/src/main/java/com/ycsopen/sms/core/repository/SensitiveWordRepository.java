@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface SensitiveWordRepository extends JpaRepository<SensitiveWord, Long> {
     List<SensitiveWord> findAllByStatus(SensitiveWord.Status status);
+
+    boolean existsByWordAndScopeAndScopeRefIdAndStatus(String word, SensitiveWord.Scope scope, Long scopeRefId,
+                                                       SensitiveWord.Status status);
 }

@@ -1,0 +1,1 @@
+{"phase":"22","owner":"trial-prepaid-ledger","obligation_id":"OBL-F-8-1-B","status":"PASS","evidence":["core/src/main/java/com/ycsopen/sms/core/service/billing/TrialPrepaidLedgerService.java","core/src/test/java/com/ycsopen/sms/core/service/billing/TrialPrepaidLedgerServiceTest.java","EVIDENCE/mvn-test.log","CLAUDE-REVIEW.md"],"case_id":"C-P22-PREPAID-CONFIRM-REVERSE"}

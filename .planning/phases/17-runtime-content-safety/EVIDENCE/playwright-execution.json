@@ -1,0 +1,7 @@
+{
+  "command": "npm --prefix web exec -- playwright test content-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "2dea136689b9ca0f7fd7ac10d3dab5d26713d2e7",
+  "config": "web/playwright.config.ts#local-google-chrome",
+  "result": "PASS",
+  "cases": ["C-P17-POLICY-METRICS", "C-P17-POLICY-CRUD"]
+}

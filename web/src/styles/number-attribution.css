@@ -1,0 +1,54 @@
+.number-attribution-page {
+  display: grid;
+  gap: 16px;
+}
+
+.number-attribution-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.number-attribution-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.number-attribution-form label,
+.number-attribution-page label {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+}
+
+.number-attribution-form input,
+.number-attribution-form select,
+.number-attribution-form textarea,
+.number-attribution-page input,
+.number-attribution-page select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.number-attribution-form textarea {
+  min-height: 72px;
+}
+
+.number-attribution-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.number-attribution-alert.success {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.number-attribution-alert.error {
+  color: #b42318;
+  background: #fef3f2;
+}

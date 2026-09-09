@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-FIELD-HTTP-PARAMS","evidence":["mvn-test.log"],"notes":"TemplateSendComplianceService validates exact template variable mapping before acceptance side effects."}

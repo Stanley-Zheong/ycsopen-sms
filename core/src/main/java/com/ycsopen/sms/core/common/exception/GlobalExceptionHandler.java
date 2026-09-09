@@ -10,6 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.BindException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * 统一异常处理。对应 PRD 5.15 节"异常流与边界情况"：
@@ -32,11 +38,42 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage()));
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiResponse<RateLimitView>> handleRateLimit(RateLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+                .body(ApiResponse.error(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage(),
+                        new RateLimitView(ex.getLimitKey(), ex.getRetryAfterSeconds(), "稍后重试，不会创建任务或扣费")));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(HttpStatus.FORBIDDEN.value(), "无权执行此操作"));
+    }
+
+    @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class,
+            HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("VALIDATION_FAILED", "请求字段不合法"));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatus(ResponseStatusException ex) {
+        int status = ex.getStatusCode().value();
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ApiResponse.error(status, status >= 400 && status < 500
+                        ? "请求参数不合法" : "请求处理失败"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
         security.error(Event.UNEXPECTED_FAILURE, Category.UNEXPECTED,
                 SafeLogValue.correlation(MDC.get("traceId")));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("INTERNAL_ERROR", "系统繁忙，请稍后再试"));
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "系统繁忙，请稍后再试"));
     }
+
+    public record RateLimitView(String limitKey, int retryAfterSeconds, String guidance) { }
 }

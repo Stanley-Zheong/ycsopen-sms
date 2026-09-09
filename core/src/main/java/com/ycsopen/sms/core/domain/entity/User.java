@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /** F-1.1/F-1.3 平台与机构用户统一账号表。 */
 @Entity
@@ -56,8 +57,25 @@ public class User {
     @Column(name = "failed_login_count")
     private Integer failedLoginCount = 0;
 
+    @Column(name = "password_expire_time")
+    private LocalDateTime passwordExpireTime;
+
+    @Column(name = "valid_until")
+    private LocalDate validUntil;
+
+    @Column(name = "created_by")
+    private String createdBy;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    public boolean isPasswordExpired(LocalDateTime now) {
+        return passwordExpireTime != null && passwordExpireTime.isBefore(now);
+    }
+
+    public boolean isAccountExpired(LocalDate today) {
+        return validUntil != null && validUntil.isBefore(today);
+    }
 
     public enum UserType { ADMIN, OPERATOR, FINANCE, TENANT_ADMIN, TENANT_USER, TENANT_DEV }
     public enum UserStatus { ACTIVE, DISABLED, LOCKED }

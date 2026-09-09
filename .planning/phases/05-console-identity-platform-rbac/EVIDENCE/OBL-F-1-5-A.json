@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-1-5-A","result":"PASS","backend":{"command":"mvn -f core/pom.xml -Dtest=RoleAdministrationServiceJdbcTest,LoginHistoryControllerTest test","suite":"account overview current roles and MENU/BUTTON/API/DATA grants plus own-history default and privileged broader access"},"browser":{"case":"C-P5-OVERVIEW","report":"playwright-report.raw.json","result":"PASS"}}

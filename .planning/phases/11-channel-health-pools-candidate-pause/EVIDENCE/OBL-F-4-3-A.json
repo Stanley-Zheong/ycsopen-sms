@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-4-3-A",
+  "case": "C-P11-HEALTH-METRICS",
+  "result": "PASS",
+  "evidence": [
+    "ChannelHealthServiceTest records health observations with connected, timeout, failure, latency and reason fields.",
+    "Phase11ChannelHealthMySqlTest verifies the same behavior through real MySQL migrations.",
+    "Phase11RealServicePlaywrightTest verifies /admin/channel/health in local Chrome with data-testid admin-channel-health-channel-monitor-page."
+  ]
+}

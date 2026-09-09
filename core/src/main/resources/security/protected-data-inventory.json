@@ -136,11 +136,12 @@
       "tenant_column": "tenant_id", "identity_column": "id",
       "readers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface SignatureAuthenticationProjection", "apiKey.appSecretEncrypted as appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/security/HmacRequestAuthenticator.java", "tokens": ["findSignatureAuthenticationByAppKey", "secrets.reveal"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] }
       ],
       "writers": [],
-      "reason": "Current incomplete authentication lookup selects only ID, tenant and status; the protected secret is not hydrated before an explicit signature owner exists."
+      "reason": "Phase 23 gives the SMS HMAC filter an explicit protected-secret owner; the legacy interceptor remains a header-only compatibility boundary."
     },
     {
       "id": "tenant_protocol_credentials.account_encrypted", "table": "tenant_protocol_credentials", "column": "account_encrypted",
@@ -165,13 +166,15 @@
       "capacity_result": "FITS", "migration_state": "CURRENT_EXECUTABLE", "blind_index": "REQUIRED_VERSIONED_HMAC",
       "tenant_column": "tenant_id", "identity_column": "message_id",
       "readers": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/MessageTask.java", "tokens": ["@Column(name = \"mobile_encrypted\", nullable = false, length = 255)", "private byte[] mobileEncrypted", "copyProtectedMobileEnvelope"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["revealMobileForDispatch", "protectedFieldCodec.unprotect", "LOGICAL_TABLE"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/service/delivery/ProtectedMessageDispatchRecipientResolver.java", "tokens": ["requireRecipient", "protection.revealMobileForDispatch"] }
       ],
       "writers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/service/message/MessageSubmitService.java", "tokens": ["messageTaskProtectionAdapter.prepareForRouting", ".mobileQueryIndexes(preparedRouting.queryIndexes())", "messageTaskProtectionAdapter.protectForPersistence", "messageTaskProtectionAdapter.save"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/MessageTaskProtectionAdapter.java", "tokens": ["task.assignPreparedMobile", "messageTaskRepository.saveAndFlush(task)"] }
       ],
-      "reason": "The live submission service prepares only opaque routing values before routing, then creates one YCSE envelope and non-queryable locator after acceptance and persists them with per-version indexes through the adapter transaction."
+      "reason": "The live submission service prepares only opaque routing values before routing, then creates one YCSE envelope and non-queryable locator after acceptance and persists them with per-version indexes through the adapter transaction. Phase 24 adds a dispatch-only adapter read boundary so the upstream connector can send the SMS without exposing the recipient through logs or query APIs."
     },
     {
       "id": "bulk_sending_items.mobile_encrypted", "table": "bulk_sending_items", "column": "mobile_encrypted",
@@ -325,7 +328,7 @@
     { "id": "tenant_callback_configs.delivery_callback_url", "table": "tenant_callback_configs", "column": "delivery_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "webhook-delivery-transport", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
     { "id": "tenant_callback_configs.uplink_callback_url", "table": "tenant_callback_configs", "column": "uplink_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "uplink-normalization-operations", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
     { "id": "tenant_callback_configs.unsubscribe_callback_url", "table": "tenant_callback_configs", "column": "unsubscribe_callback_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "unsubscribe-compliance", "sources": [], "reason": "Future callback owner must validate and reject embedded credentials before execution." },
-    { "id": "delivery_reports.raw_payload", "table": "delivery_reports", "column": "raw_payload", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "http-upstream-delivery-closure", "sources": [], "reason": "Future receipt owner must classify provider payload contents before adding an executable writer." },
+    { "id": "delivery_reports.raw_payload", "table": "delivery_reports", "column": "raw_payload", "classification": "NOT_PROTECTED_WITH_REASON", "executable": true, "migratable": false, "future_owner": null, "sources": [{ "path": "core/src/main/java/com/ycsopen/sms/core/service/delivery/HttpMessageDeliveryService.java", "tokens": ["safePayload", "trimmed.length() <= 1000", "INSERT INTO delivery_reports"] }], "reason": "Phase 24 writes only a caller-provided, length-capped safe receipt fragment for operational trace. It does not persist recipient mobile, provider credentials, or the full upstream request payload." },
     { "id": "uplink_records.push_url", "table": "uplink_records", "column": "push_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "uplink-normalization-operations", "sources": [], "reason": "Future uplink owner must validate and reject embedded credentials before execution." },
     { "id": "short_links.target_url", "table": "short_links", "column": "target_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "shortlink-safety-review", "sources": [], "reason": "Future short-link owner controls validation; no executable source surface exists today." },
     { "id": "operation_logs.request_url", "table": "operation_logs", "column": "request_url", "classification": "DEFERRED_OWNER", "executable": false, "migratable": false, "future_owner": "privileged-data-access-audit", "sources": [], "reason": "Future audit owner must strip query credentials before adding an executable writer." }
@@ -345,7 +348,7 @@
     {
       "id": "tenant-registration-persistence", "role": "READER_WRITER", "disposition": "ADOPTED_PROTECTED_ADAPTER_ATOMIC_FIELD_AND_OBJECT_CLAIM", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "TenantRegistrationResponse.from"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/controller/TenantController.java", "tokens": ["@PostMapping(\"/register\")", "UPLOAD_TOKEN_HEADER", "LEGACY_REGISTRATION_ROUTE_REMOVED"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/dto/TenantRegistrationRequest.java", "tokens": ["String businessLicenseObjectId", "String legalRepIdNo", "String legalRepIdFrontObjectId", "String legalRepIdBackObjectId", "String contactIdNo", "String contactPhone", "String shortlinkDomainProofObjectId", "String trademarkProofObjectId"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/common/security/persistence/TenantRegistrationProtectionAdapter.java", "tokens": ["protectRegistration", "protectedFieldCodec.protect", "verifier.claim", "object_state = 'CLAIMED'"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantService.java", "tokens": ["registrationProtectionAdapter.validateRequest", "registrationProtectionAdapter.protectRegistration", "tenantRepository.saveAndFlush"] },
@@ -364,13 +367,14 @@
       "reason": "Plan 08 maps the protected cell as hidden opaque bytes and proves exact-byte preservation across unrelated authentication writes."
     },
     {
-      "id": "hmac-api-key-hydration", "role": "READER", "disposition": "ADOPTED_SECRET_EXCLUDING_AUTHENTICATION_PROJECTION", "obligation_blocking": false,
+      "id": "hmac-api-key-hydration", "role": "READER", "disposition": "ADOPTED_EXPLICIT_PROTECTED_SECRET_HMAC_AUTHENTICATION", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/security/HmacRequestAuthenticator.java", "tokens": ["findSignatureAuthenticationByAppKey", "secrets.reveal", "canonicalHeaders"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface SignatureAuthenticationProjection", "apiKey.appSecretEncrypted as appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] }
       ],
-      "reason": "The current incomplete authentication path selects only ID, tenant and status; app_secret_encrypted is absent from the closed query and projection."
+      "reason": "The SMS HMAC authentication filter reads the protected App Secret only through a dedicated projection and reveal context before business processing."
     },
     {
       "id": "blacklist-lookup-hydration", "role": "READER", "disposition": "ADOPTED_METADATA_FIRST_CHECKPOINT_GATED_LOOKUP", "obligation_blocking": false,

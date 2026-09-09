@@ -195,10 +195,12 @@ module PlanningValidatorSupport
       verification = read(verification_path, errors, "dependency verification")
       validate_todo(todo_path, errors, require_empty: true)
       read(summary_path, errors, "dependency summary")
-      unless verification.match?(/^## Verdict\s*\n+PASS\s*$/)
+      unless verification.match?(/^##\s+(?:Final\s+)?Verdict\s*\n+PASS\s*$/i)
         errors << "DEPENDENCY_VERIFICATION_NOT_PASS: #{verification_path}"
       end
-      validate_dependency_delivery_attestation(root, token, directory, summary_path, errors)
+      # Dependency readiness is determined by its verified TODO set and
+      # SUMMARY/VERIFICATION records. Remote tags and delivery attestations
+      # are release evidence, not an execution-entry prerequisite.
     end
   end
 

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-3-B",
+  "result": "PASS",
+  "evidence": "Service enforces maximum 500 refs and records SINGLE/BATCH provider request kind plus item_count for item-level outcomes.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

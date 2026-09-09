@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-5-C",
+  "result": "PASS",
+  "evidence": "ContentReviewCheckerTest proves final rendered text is canonicalized with NFKC and variable-only Unicode content is scanned.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=ContentReviewCheckerTest test"]
+}

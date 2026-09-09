@@ -1,0 +1,27 @@
+[WebServer] (node:36765) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 4 tests using 4 workers
+
+(node:36771) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:36772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:36773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:36770) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] [local-google-chrome] › web/test/scripts/dispatch-recovery.spec.ts:135:3 › Phase 25 dispatch migration and recovery › pw-p25-channel-recover C-P25-CHANNEL-RECOVER OBL-STATE-CHANNEL-RECOVER
+[2/4] [local-google-chrome] › web/test/scripts/dispatch-recovery.spec.ts:126:3 › Phase 25 dispatch migration and recovery › pw-p25-recovery-test C-P25-RECOVERY-TEST OBL-F-4-7-D
+[3/4] [local-google-chrome] › web/test/scripts/dispatch-recovery.spec.ts:117:3 › Phase 25 dispatch migration and recovery › pw-p25-task-migration C-P25-TASK-MIGRATION OBL-F-4-7-C
+[4/4] [local-google-chrome] › web/test/scripts/dispatch-recovery.spec.ts:144:3 › Phase 25 dispatch migration and recovery › pw-p25-upstream-outage C-P25-UPSTREAM-OUTAGE OBL-EDGE-UPSTREAM-OUTAGE
+  4 passed (3.3s)

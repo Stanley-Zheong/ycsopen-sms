@@ -5,19 +5,9 @@
 The only completion signal is an empty verified TODO set for the declared scope.
 No schedule, duration, staffing, velocity, completion-date, or percentage status is created or maintained.
 
-## Bounded review and revision cycle
+## Lean review rule
 
-The same cycle governs the entry verification subagent, UI/design checker, plan checker, GSD goal verifier, GSD code reviewer, and Claude reviewer:
-
-1. Start a cycle with the current artifact/diff, executable evidence, and unresolved-finding inventory.
-2. Run no more than three review attempts in that cycle. Record each attempt, its exact finding IDs and severities, evidence, corrections, and recheck in `ITERATIONS.md` and the review artifact.
-3. After each attempt, count unresolved `BLOCKER` and `HIGH` findings. For checkers that also gate on `WARNING`, record the gated-warning count separately.
-4. Pass only when the applicable unresolved blocking count is zero and every required executable check passes.
-5. If the blocking count does not decrease between consecutive attempts, or the third attempt remains blocked, stop the cycle and escalate to the developer with the exact remaining findings and failed evidence.
-6. Escalation is not approval, implementation authorization, phase completion, or permission to check a TODO. Every affected TODO remains open.
-7. A new cycle may begin only after a new developer decision or new executable evidence is recorded. The new cycle again has no more than three attempts.
-
-There is no “proceed anyway” completion path. The eventual final review must be blocking-free.
+Each phase gets one entry review, one implementation review, and one Claude review. A reviewer reports only actionable BLOCKER/HIGH findings. Fix them and rerun the affected check; do not repeat unrelated checks or manufacture review rounds. A TODO remains open until its executable evidence exists. If a finding needs a product decision, record that decision and keep the related TODO open.
 
 ## Phase selection
 
@@ -96,10 +86,9 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 1. Run the GSD plan workflow with the accepted spec, decisions, design, and current code.
 2. Break work into testable tasks with explicit files, behavior IDs, expected tests, commands, and evidence outputs.
 3. Prefer vertical behavior slices inside the module; do not create backend-only or UI-only completion claims.
-4. Have a plan-checker subagent perform goal-backward verification under the bounded revision cycle, recording exact issue counts on every attempt.
-5. Resolve plan-checker blocking findings within the cycle. Non-decreasing or third-attempt unresolved findings escalate without execution authorization and remain open TODOs.
+4. Have a plan-checker subagent perform one goal-backward verification. Resolve actionable findings before implementation.
 6. Run the roadmap's exact `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb ...` command against the now-populated spec, context, intent, design, plans, TODO, TEST-MATRIX, decisions, iterations, evidence directory, owned atomic trace, schema claims when declared, dependency evidence, and UI artifacts when applicable. At entry, every owned obligation has exactly one open TODO checkbox and no current-phase checkbox may be pre-checked; completed dependencies, by contrast, must have no unchecked TODO.
-7. Spawn an independent entry verification subagent to check completeness, rigor, executability, PRD traceability, and scope focus. Under its own bounded revision cycle, it writes a unique row per criterion in `ENTRY-REVIEW.md` using the exact columns `Criterion ID | Verdict | Evidence | Command or inspection rule`; verdict is exactly `PASS` or `BLOCKER`, and a final `## Verdict` section is exactly `PASS` only when every row passes.
+7. Spawn an independent entry verification subagent to check completeness, executability, PRD traceability, and scope focus. It writes one row per criterion in `ENTRY-REVIEW.md` using the exact columns `Criterion ID | Verdict | Evidence | Command or inspection rule`; verdict is `PASS` or `BLOCKER`, and a final `## Verdict` is `PASS` only when every row passes.
 8. After correction, rerun the same execution-entry command with the completed `ENTRY-REVIEW.md`. Missing artifacts, missing owned IDs, non-runnable checks, contradictions, or any BLOCKER fail closed; only the final zero-exit, blocking-free result authorizes implementation.
 9. Gate D is evaluated against its evidence-bound entry subject and is not a post-wave/current-tree gate. Ordinary implementation changes and Gate-E records, including planned deletion of baseline artifacts and appended iteration/decision evidence, do not trigger current-tree entry revalidation. If an executable plan, dependency, specification or pre-entry acceptance contract changes after authorization, return to Gate D, bind a new clean subject, regenerate entry evidence and obtain a fresh independent review before resuming implementation.
 
@@ -124,11 +113,11 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 
 ## Gate G — independent verification and review
 
-1. Run GSD goal verification against the phase spec and requirement trace under the bounded revision cycle.
-2. Run GSD code review against the complete phase diff under the same bounded cycle.
-3. Resolve blocking findings and rerun affected verification within the active cycle; a non-decreasing count or unresolved third attempt escalates with TODO open.
-4. Invoke Claude as an independent read-only reviewer of the full phase diff, contracts, tests, and evidence under the same bounded cycle.
-5. Record every Claude attempt, finding count, resolution, evidence, and recheck in `CLAUDE-REVIEW.md`. Claude BLOCKER/HIGH fixes must be reviewed again; an escalation cannot substitute for a final clear Claude result.
+1. Run GSD goal verification against the phase spec and requirement trace.
+2. Run GSD code review against the complete phase diff.
+3. Resolve blocking findings and rerun only the affected verification; unresolved findings keep the related TODO open.
+4. Invoke Claude as an independent read-only reviewer of the full phase diff, contracts, tests, and evidence.
+5. Record Claude findings, resolutions, and recheck in `CLAUDE-REVIEW.md`. Claude BLOCKER/HIGH fixes must be reviewed again.
 6. Run the phase TODO query; any unchecked scoped item or escalated unresolved finding fails the gate.
 
 ## Gate H — atomic delivery
@@ -137,9 +126,7 @@ No UI implementation starts with an incomplete element inventory or unresolved d
 2. Confirm the phase directory and implementation diff contain no unrelated work.
 3. Record final commands and evidence in `<NN>-VERIFICATION.md`. Committed evidence binds the canonical target-tree `tested-inputs.json`, `subject_manifest_digest`, and `tested_subject_digest`; it never claims or contains its own final commit identity.
 4. Confirm GSD and Claude have final blocking-free results and no review cycle is left in escalated/unresolved state.
-5. Confirm the scoped TODO query is empty except for the one reserved external-delivery item.
+5. Confirm the scoped TODO query is empty.
 6. Create one atomic phase commit that includes specification, design, decisions, code, tests, and evidence references. Do not create a second implementation commit to record the first commit's identity.
-7. Before that commit, `SUMMARY.md` records only the configured remote name/URL, full branch ref, deterministic `refs/tags/ycsopen-sms/phase-<NN>/delivery` locator, PR locator, and required check name; final commit identity exists exclusively in the later external tag.
-8. Push the one commit, create and push one annotated delivery tag targeting it, and place phase/package/branch/commit/tree, subject-manifest path/digest, tested-subject digest, evidence-manifest path/digest, PR/check locators, tagger identity, external check actor, and `PASS` in the tag payload.
-9. Run the repository delivery-attestation validator. It resolves the configured remote live, requires branch target equality with the peeled annotated-tag target, fetches that target into an isolated object store, safely derives the registry-owned input union without executing target code, recomputes every target-tree path/mode/SHA-256/role plus subject/evidence/review digests, and independently resolves the PR/check result and actor.
-10. Only that live PASS closes the reserved external-delivery TODO in the effective scoped query and permits `STATE.md` to advance. Local branch, tracking ref, commit, tag, status, or fixture state never proves delivery.
+7. Record the branch, commit, PR (when one exists), and verification commands in `SUMMARY.md`.
+8. Push the atomic commit through the normal branch/PR workflow. A remote annotated tag or delivery-attestation payload is optional release evidence, not a phase-entry or phase-completion gate.

@@ -1,0 +1,23 @@
+{
+  "phase": "14-auditable-exemption-policy",
+  "obligation": "OBL-F-3-6-C",
+  "result": "PASS",
+  "evidence": [
+    {
+      "type": "backend-test",
+      "command": "mvn -q -f core/pom.xml -Dtest=ExemptionPolicyServiceTest test",
+      "assertion": "everyPreviewDecisionWritesUsageHistoryWithVersionSubjectActorReasonAndResult verifies usage audit persistence for active and denied decisions."
+    },
+    {
+      "type": "frontend-unit-test",
+      "command": "npm --prefix web test -- exemption-policy.test.tsx",
+      "assertion": "usage history table renders audit rows with actor, subject, reason, result, and version."
+    },
+    {
+      "type": "playwright",
+      "command": "npm --prefix web exec -- playwright test exemption-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+      "case": "C-P14-EXEMPTION-USAGE-HISTORY",
+      "assertion": "element admin-auditable-exemption-exemption-usage-history is verified through local Chrome automation."
+    }
+  ]
+}

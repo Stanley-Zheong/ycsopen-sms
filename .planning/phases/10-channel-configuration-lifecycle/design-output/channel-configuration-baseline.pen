@@ -1,0 +1,26 @@
+{
+  "version": "2.17",
+  "name": "Channel configuration lifecycle",
+  "tokens": {
+    "brand-primary": "#0C85E8",
+    "brand-accent": "#31C9B6",
+    "page-bg": "#F6FAFF",
+    "surface": "#FFFFFF",
+    "text-primary": "#123250",
+    "text-secondary": "#5F7389",
+    "border": "#DBE5EF",
+    "warning": "#FF9C00",
+    "danger": "#E5484D"
+  },
+  "screens": [
+    {
+      "id": "admin-channel-configuration",
+      "route": "/admin/channel/configuration",
+      "viewport": "1440x900",
+      "title": "通道配置",
+      "regions": ["sidebar", "header", "breadcrumb", "toolbar", "configuration-table", "form-dialog", "dependency-drawer", "feedback"],
+      "states": ["loading", "empty", "error", "denied", "editing", "connectivity-failed", "activation-retained-prior", "dependency-blocked", "offline"]
+    }
+  ],
+  "notes": "Phase 10 design source. Production browser boundary is installed desktop Google Chrome at 1440x900; credentials are write-only and masked."
+}

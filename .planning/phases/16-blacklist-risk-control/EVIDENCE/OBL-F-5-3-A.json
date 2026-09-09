@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-3-A",
+  "result": "PASS",
+  "evidence": "Provider config persists URL, protected credential reference, check level, threshold, timeout, fallback and status; Chrome verifies UI controls.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test", "npm --prefix web exec -- playwright test blacklist-risk-control.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json"]
+}

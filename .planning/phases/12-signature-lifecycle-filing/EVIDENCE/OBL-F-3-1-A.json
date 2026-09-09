@@ -1,0 +1,27 @@
+{
+  "obligation_id": "OBL-F-3-1-A",
+  "requirement_ids": ["REQ-F-3-1"],
+  "phase": 12,
+  "package": "signature-lifecycle-filing",
+  "status": "PASS",
+  "evidence": [
+    {
+      "kind": "unit-ui",
+      "command": "npm --prefix web test",
+      "result": "PASS",
+      "summary": "Tenant signature page renders the documented application surface, fields, submit action, status, and history selectors."
+    },
+    {
+      "kind": "chrome-acceptance",
+      "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+      "cwd": "web",
+      "result": "PASS",
+      "case_id": "C-P12-APPLICATION-COMPLETE"
+    }
+  ],
+  "implementation_refs": [
+    "web/src/pages/tenant/signatures/SignatureLifecyclePage.tsx",
+    "web/src/api/signatureLifecycleApi.ts"
+  ],
+  "test_ids": ["tenant-signature-lifecycle-signatures-page"]
+}

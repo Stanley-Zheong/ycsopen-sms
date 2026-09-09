@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-MESSAGE-DELIVERED","status":"covered","evidence":["HttpMessageDeliveryServiceTest.duplicateDeliveredReceiptConfirmsBillingOnceAndStoresOneReport"],"notes":"Task transitions SENT to DELIVERED only from delivered receipt."}

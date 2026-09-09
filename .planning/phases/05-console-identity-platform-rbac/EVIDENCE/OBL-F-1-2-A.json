@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-1-2-A","result":"PASS","backend":{"command":"mvn -f core/pom.xml test","suite":"PlatformRoleControllerAuthorizationTest and RoleAdministrationServiceJdbcTest; independent MENU, BUTTON, API, DATA permissions and bounded delegated grants"},"browser":{"case":"C-P5-PERMISSION-TREE","report":"playwright-report.raw.json","result":"PASS"}}

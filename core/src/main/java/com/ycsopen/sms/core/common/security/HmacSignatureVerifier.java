@@ -1,11 +1,14 @@
 package com.ycsopen.sms.core.common.security;
 
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,14 +18,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * 待签名串 = HTTPMethod + "\n" + URI + "\n" + QueryString + "\n" + CanonicalHeaders + "\n" + Body，
  * 签名 = Base64(HMAC-SHA256(stringToSign, appSecret))。
  * <p>同时校验时间戳 5 分钟有效期与 nonce 唯一性防重放（F-6.4）。</p>
- * <p>nonce 去重这里用内存 Set 仅作演示；生产环境必须换成 Redis + TTL，否则多实例部署下形同虚设——
- * 这是本仓库里明确标记为"仅示例，勿直接上生产"的少数几处之一。</p>
+ * <p>nonce 去重优先使用 Redis + TTL；无 Redis 的窄单元测试场景回退到进程内集合。</p>
  */
 @Component
 public class HmacSignatureVerifier {
 
     private static final long TIMESTAMP_TOLERANCE_SECONDS = 300; // 5 分钟，见 F-6.4
-    private final Set<String> seenNonces = ConcurrentHashMap.newKeySet(); // DEMO ONLY — replace with Redis in prod
+    private final Set<String> seenNonces = ConcurrentHashMap.newKeySet();
+    private final StringRedisTemplate redis;
+
+    public HmacSignatureVerifier() {
+        this.redis = null;
+    }
+
+    public HmacSignatureVerifier(ObjectProvider<StringRedisTemplate> redis) {
+        this.redis = redis.getIfAvailable();
+    }
 
     public String buildStringToSign(String method, String uri, String queryString,
                                      String canonicalHeaders, String body) {
@@ -50,6 +61,14 @@ public class HmacSignatureVerifier {
 
     /** @return true 表示这是第一次见到该 nonce（放行）；false 表示重放攻击，应拒绝。 */
     public boolean checkAndRecordNonce(String nonce) {
+        if (nonce == null || nonce.isBlank()) {
+            return false;
+        }
+        if (redis != null) {
+            Boolean recorded = redis.opsForValue().setIfAbsent(
+                    "hmac-nonce:" + nonce, "1", Duration.ofSeconds(TIMESTAMP_TOLERANCE_SECONDS));
+            return Boolean.TRUE.equals(recorded);
+        }
         return seenNonces.add(nonce);
     }
 

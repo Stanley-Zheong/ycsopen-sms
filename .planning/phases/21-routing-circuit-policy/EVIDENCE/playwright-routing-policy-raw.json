@@ -1,0 +1,121 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "routing-policy.spec.ts",
+      "--config",
+      "web/playwright.config.ts",
+      "--project=local-google-chrome",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 5,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 4173",
+      "url": "http://127.0.0.1:4173/login",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "routing-policy.spec.ts",
+      "file": "routing-policy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pw-p21-author C-P21-ROUTE-AUTHOR OBL-F-5-8-A pw-p21-simulator C-P21-ROUTE-SIMULATOR OBL-F-5-8-B pw-p21-circuit C-P21-CIRCUIT OBL-F-5-9-B pw-p21-retry C-P21-RETRY OBL-F-5-10-A pw-p21-flow C-P21-ROUTING-FLOW OBL-FLOW-12-2-ROUTING",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 756,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T08:03:22.056Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e491eb3f24ea0de51a37-72607d9c58cee3d03e60",
+          "file": "routing-policy.spec.ts",
+          "line": 55,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-09T08:03:21.321Z",
+    "duration": 2328.455,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

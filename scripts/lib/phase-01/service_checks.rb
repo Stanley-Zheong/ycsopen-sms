@@ -580,7 +580,8 @@ module Phase01
                  "--label", OWNER_LABEL, "--label", "com.ycsopen.phase01.run=#{run_id}",
                  "--env-file", env_file.path, "--publish", "127.0.0.1::3306",
                  "--tmpfs", "/var/lib/mysql:rw,nosuid,nodev,noexec,size=1g", reference,
-                 "--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"])
+                 "--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci",
+                 "--log-bin-trust-function-creators=ON"])
       ensure
         env_file.close!
       end

@@ -1,6 +1,8 @@
 package com.ycsopen.sms.core.web.controller;
 
 import com.ycsopen.sms.core.service.message.MessageSubmitService;
+import com.ycsopen.sms.core.service.routing.ApiKeyRateLimitService;
+import com.ycsopen.sms.core.service.routing.ApiKeyRateLimitService.RatePolicy;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
@@ -18,14 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class MessageController {
 
     private final MessageSubmitService messageSubmitService;
+    private final ApiKeyRateLimitService apiKeyRateLimitService;
 
-    public MessageController(MessageSubmitService messageSubmitService) {
+    public MessageController(MessageSubmitService messageSubmitService,
+                             ApiKeyRateLimitService apiKeyRateLimitService) {
         this.messageSubmitService = messageSubmitService;
+        this.apiKeyRateLimitService = apiKeyRateLimitService;
     }
 
     @PostMapping("/send")
     public ApiResponse<SmsSendResponse> send(@Valid @RequestBody SmsSendRequest request, HttpServletRequest httpRequest) {
         Long tenantId = (Long) httpRequest.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID);
-        return ApiResponse.ok(messageSubmitService.submit(tenantId, request, httpRequest.getRemoteAddr()));
+        Long apiKeyId = (Long) httpRequest.getAttribute(HmacAuthInterceptor.ATTR_API_KEY_ID);
+        RatePolicy ratePolicy = (RatePolicy) httpRequest.getAttribute(HmacAuthInterceptor.ATTR_RATE_POLICY);
+        apiKeyRateLimitService.enforce(tenantId, apiKeyId, ratePolicy);
+        return ApiResponse.ok(messageSubmitService.submit(tenantId, apiKeyId, request, httpRequest.getRemoteAddr()));
     }
 }

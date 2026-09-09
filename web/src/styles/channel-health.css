@@ -1,0 +1,135 @@
+.channel-health-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.channel-health-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.channel-health-toolbar,
+.channel-health-row-actions,
+.channel-health-dialog-actions,
+.channel-health-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.channel-health-table {
+  overflow-x: auto;
+}
+
+.channel-health-table table {
+  min-width: 1120px;
+}
+
+.channel-health-alert {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-control);
+}
+
+.channel-health-alert.error {
+  color: var(--color-danger);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-danger);
+}
+
+.channel-health-alert.success {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+}
+
+.channel-health-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  font-weight: 700;
+}
+
+.channel-health-badge.healthy {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.channel-health-badge.failed,
+.channel-health-badge.paused {
+  color: var(--color-danger);
+  background: var(--color-error-bg);
+}
+
+.channel-health-badge.maintenance,
+.channel-health-badge.degraded {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.channel-health-muted {
+  color: var(--color-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.channel-health-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.channel-health-wide {
+  grid-column: 1 / -1;
+}
+
+.channel-health-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.channel-health-dialog-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.channel-health-member-list {
+  display: grid;
+  gap: 10px;
+}
+
+.channel-health-member-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 120px auto auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.channel-health-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  .channel-health-header,
+  .channel-health-section-header,
+  .channel-health-form,
+  .channel-health-member-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

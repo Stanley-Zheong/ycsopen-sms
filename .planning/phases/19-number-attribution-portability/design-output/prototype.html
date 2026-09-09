@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>Phase19 号码归属</title></head>
+  <body>
+    <nav aria-label="Phase19 routes">/admin/number-attribution /admin/number-portability /admin/prefixes</nav>
+    <main data-testid="admin-number-attribution-portability-attribution-page">
+      <section data-testid="admin-number-attribution-portability-prefixes-page">
+        <input data-testid="admin-prefixes-version">
+        <select data-testid="admin-prefixes-update-type"></select>
+        <input data-testid="admin-prefixes-source">
+        <textarea data-testid="admin-prefixes-import-input"></textarea>
+        <button data-testid="admin-prefixes-import">导入号段</button>
+        <table data-testid="admin-prefixes-version-table"><tr data-testid="admin-prefixes-version-row"></tr></table>
+      </section>
+      <section data-testid="admin-number-attribution-lookup-panel">
+        <input data-testid="admin-number-attribution-mobile">
+        <input data-testid="admin-number-attribution-force-provider-failure">
+        <button data-testid="admin-number-attribution-lookup">查询归属</button>
+        <div data-testid="admin-number-attribution-result"><span data-testid="admin-number-attribution-fallback-source"></span></div>
+      </section>
+      <section data-testid="admin-number-attribution-portability-portability-page">
+        <input data-testid="admin-number-portability-mobile">
+        <select data-testid="admin-number-portability-original-carrier"></select>
+        <select data-testid="admin-number-portability-current-carrier"></select>
+        <button data-testid="admin-number-portability-save">保存携转缓存</button>
+        <table data-testid="admin-number-portability-table"><tr data-testid="admin-number-portability-row"></tr></table>
+      </section>
+    </main>
+  </body>
+</html>

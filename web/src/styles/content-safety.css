@@ -1,0 +1,12 @@
+.content-safety-page { display: flex; flex-direction: column; gap: 16px; }
+.content-safety-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.content-safety-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.content-safety-cards span { padding: 12px; border-radius: 10px; background: var(--color-surface-alt); color: var(--color-text); font-weight: 600; }
+.content-safety-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; margin-bottom: 12px; }
+.content-safety-form label, .content-safety-import { display: flex; flex-direction: column; gap: 6px; color: var(--color-text-secondary); font-size: 13px; }
+.content-safety-form input, .content-safety-form select, .content-safety-import textarea, .content-safety-page textarea { min-height: 36px; border: 1px solid var(--color-border); border-radius: 8px; padding: 8px; background: var(--color-surface); color: var(--color-text); }
+.content-safety-import textarea, .content-safety-page textarea { min-height: 90px; }
+.content-safety-actions { display: flex; gap: 8px; margin: 10px 0; }
+.content-safety-alert { padding: 10px 12px; border-radius: 8px; }
+.content-safety-alert.success { background: var(--color-success-bg); color: var(--color-success); }
+.content-safety-alert.error { background: var(--color-error-bg); color: var(--color-danger); }

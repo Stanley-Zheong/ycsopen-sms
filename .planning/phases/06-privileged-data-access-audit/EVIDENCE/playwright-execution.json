@@ -1,0 +1,14 @@
+{
+  "command": "PLAYWRIGHT_JSON_OUTPUT_NAME=../.planning/phases/06-privileged-data-access-audit/EVIDENCE/playwright-report.raw.json npm --prefix web run test:e2e -- privileged-audit.spec.ts --reporter=json --workers=1",
+  "commit": "f613c1cdec290e0c940f6ddebde3e9f47e342073",
+  "config": "web/playwright.config.ts; installed Google Chrome 152.0.7977.76; desktop viewport 1440x900; one worker",
+  "result": "PASS",
+  "cases": [
+    "C-P6-AUDIT-CAPTURE",
+    "C-P6-AUDIT-INTEGRITY",
+    "C-P6-REVEAL",
+    "C-P6-SECURITY-DETECTION",
+    "C-P6-SECURITY-FILTER",
+    "C-P6-MASKING"
+  ]
+}

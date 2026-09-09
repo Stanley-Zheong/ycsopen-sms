@@ -193,8 +193,8 @@ class EnvelopeCodecTest {
     static Stream<Arguments> boundedTargets() {
         return Stream.of(
                 Arguments.of(EnvelopeCodec.Target.BUSINESS_LICENSE, 10_485_760L, 10_485_905L),
-                Arguments.of(EnvelopeCodec.Target.REPRESENTATIVE_ID_FRONT, 5_242_880L, 5_243_025L),
-                Arguments.of(EnvelopeCodec.Target.REPRESENTATIVE_ID_BACK, 5_242_880L, 5_243_025L),
+                Arguments.of(EnvelopeCodec.Target.REPRESENTATIVE_ID_FRONT, 10_485_760L, 10_485_905L),
+                Arguments.of(EnvelopeCodec.Target.REPRESENTATIVE_ID_BACK, 10_485_760L, 10_485_905L),
                 Arguments.of(EnvelopeCodec.Target.SHORT_LINK_DOMAIN_PROOF, 10_485_760L, 10_485_905L),
                 Arguments.of(EnvelopeCodec.Target.TRADEMARK_PROOF, 10_485_760L, 10_485_905L),
                 Arguments.of(EnvelopeCodec.Target.MYSQL_ENCRYPTED_SNAPSHOT_CHUNK, 10_485_760L, 10_485_905L));

@@ -1,0 +1,34 @@
+{
+  "version": "2.17",
+  "name": "Channel health, pools, and candidate pause",
+  "tokens": {
+    "brand-primary": "#0C85E8",
+    "brand-accent": "#31C9B6",
+    "page-bg": "#F6FAFF",
+    "surface": "#FFFFFF",
+    "text-primary": "#123250",
+    "text-secondary": "#5F7389",
+    "border": "#DBE5EF",
+    "warning": "#FF9C00",
+    "danger": "#E5484D"
+  },
+  "screens": [
+    {
+      "id": "admin-channel-monitor",
+      "route": "/admin/channel/health",
+      "viewport": "1440x900",
+      "title": "通道监督",
+      "regions": ["sidebar", "header", "breadcrumb", "summary", "monitor-table", "pause-dialog", "maintenance-dialog", "feedback"],
+      "states": ["loading", "empty", "healthy", "failed", "maintenance", "paused", "candidate-ineligible"]
+    },
+    {
+      "id": "admin-channel-pools",
+      "route": "/admin/channel/pools",
+      "viewport": "1440x900",
+      "title": "通道池",
+      "regions": ["sidebar", "header", "breadcrumb", "pool-table", "pool-editor", "feedback"],
+      "states": ["loading", "empty", "weighted", "primary-backup", "invalid", "stale", "saved"]
+    }
+  ],
+  "notes": "Phase 11 design source. Production verification is installed desktop Google Chrome only; no mobile or browser matrix."
+}

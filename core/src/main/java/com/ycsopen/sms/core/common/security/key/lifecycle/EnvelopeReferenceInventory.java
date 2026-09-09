@@ -219,6 +219,11 @@ public final class EnvelopeReferenceInventory {
         Objects.requireNonNull(jdbc, "jdbc");
         return List.of(
                 jdbcSource(DATABASE_FIELD_SOURCE, () -> databaseFieldReferences(jdbc)),
+                scopedSource("CONTACT_CHALLENGE_ENVELOPES", KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK,
+                        () -> databaseFieldReferences(jdbc, List.of(target(
+                                "tenant_contact_verification_challenges.phone_encrypted",
+                                "tenant_contact_verification_challenges", "phone_encrypted", "challenge_id")),
+                                "CONTACT_CHALLENGE_ENVELOPES")),
                 jdbcSource(OBJECT_RESERVATION_SOURCE, () -> objectFieldReservations(jdbc)),
                 jdbcSource("BLIND_INDEX_METADATA", () -> jdbc.query("""
                         SELECT target_type, legacy_row_id, field_id, key_version,
@@ -391,6 +396,11 @@ public final class EnvelopeReferenceInventory {
     }
 
     private static List<Reference> databaseFieldReferences(JdbcTemplate jdbc) {
+        return databaseFieldReferences(jdbc, DATABASE_FIELD_TARGETS, DATABASE_FIELD_SOURCE);
+    }
+
+    private static List<Reference> databaseFieldReferences(JdbcTemplate jdbc,
+            List<DatabaseFieldTarget> targets, String sourceId) {
         EnvelopeCodec codec = new EnvelopeCodec();
         Map<FieldKeyIdentity, Long> knownKeys = new LinkedHashMap<>();
         jdbc.query("""
@@ -407,7 +417,7 @@ public final class EnvelopeReferenceInventory {
             }
         });
         List<Reference> references = new ArrayList<>();
-        for (DatabaseFieldTarget target : DATABASE_FIELD_TARGETS) {
+        for (DatabaseFieldTarget target : targets) {
             String sql = "SELECT CAST(`" + target.identityColumn() + "` AS BINARY) AS row_identity, `"
                     + target.column() + "` AS encoded FROM `" + target.table() + "` WHERE `"
                     + target.column() + "` IS NOT NULL ORDER BY `" + target.identityColumn() + "`";
@@ -424,7 +434,7 @@ public final class EnvelopeReferenceInventory {
                     if (version == null) {
                         throw new IllegalStateException("key reference inventory invariant failed");
                     }
-                    references.add(new Reference(DATABASE_FIELD_SOURCE, Kind.DATABASE_ENVELOPE,
+                    references.add(new Reference(sourceId, Kind.DATABASE_ENVELOPE,
                             KeyReferenceRepository.Purpose.FIELD_ENCRYPTION_KEK, version,
                             databaseLocatorDigest(target.id(), rowIdentity)));
                 } catch (RuntimeException invalid) {

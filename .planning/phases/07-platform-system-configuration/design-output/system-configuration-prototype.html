@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>系统配置原型</title>
+  <style>
+    body{margin:0;background:#f4f8fc;color:#17212b;font:14px system-ui}.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}.nav{background:#12263a;color:#fff;padding:24px}.nav a{color:#fff}.main{padding:32px}.header,.actions{display:flex;align-items:center;justify-content:space-between;gap:12px}.card{background:#fff;border:1px solid #dce6ef;border-radius:10px;padding:20px;margin:16px 0}button,input,select{border:1px solid #b8c8d8;border-radius:6px;padding:8px 12px}button.primary{background:#0c85e8;color:#fff;border-color:#0c85e8}button:disabled{opacity:.5}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid #e6edf4;padding:10px}.status{padding:10px;border-radius:6px;background:#eaf6ff}.error{background:#fff0f0;color:#9b1c1c}.dialog{border:1px solid #9bb0c4;border-radius:10px;background:#fff;padding:16px;margin-top:12px}.muted{color:#607080}[hidden]{display:none!important}
+  </style>
+</head>
+<body data-route="/admin/system/configuration">
+<div class="shell"><aside class="nav">ycsopen-sms<br><a href="/admin/system/configuration" data-testid="admin-platform-system-configuration-nav-menu">系统配置</a></aside>
+<main class="main" data-testid="admin-platform-system-configuration-page">
+  <nav data-testid="admin-platform-system-configuration-breadcrumb">系统管理 / 系统配置</nav>
+  <div class="header"><h1 data-testid="admin-platform-system-configuration-heading">系统配置</h1><button data-testid="admin-platform-system-configuration-refresh">刷新</button></div>
+  <section class="card" data-testid="admin-platform-system-configuration-active-card"><h2>当前生效版本</h2><strong data-testid="admin-platform-system-configuration-active-version">v12</strong><span data-testid="admin-platform-system-configuration-active-checksum"> 51ac7e9f20d1</span><p>激活人：<span data-testid="admin-platform-system-configuration-active-actor">admin</span>；时间：<time data-testid="admin-platform-system-configuration-active-time">2026-09-08 10:00</time></p><p data-testid="admin-platform-system-configuration-reload-status">运行时已应用</p></section>
+  <p hidden data-testid="admin-platform-system-configuration-loading">正在加载配置…</p>
+  <div hidden class="status error" data-testid="admin-platform-system-configuration-error">配置加载失败 <button data-testid="admin-platform-system-configuration-retry">重试</button></div>
+  <div hidden class="status error" data-testid="admin-platform-system-configuration-stale-alert">配置已被其他管理员更新，请刷新后重试。</div>
+  <div hidden class="status error" data-testid="admin-platform-system-configuration-reload-error">运行时拒绝应用，当前版本保持不变。</div>
+  <div hidden class="status" data-testid="admin-platform-system-configuration-success-status" role="status">草稿已保存。</div>
+  <section class="card"><h2>配置项</h2><table data-testid="admin-platform-system-configuration-settings-table"><caption>已注册的系统配置</caption><thead><tr><th>配置</th><th>类型</th><th>当前值</th><th>校验</th><th>敏感级别</th><th>默认值</th><th>操作</th></tr></thead><tbody><tr data-testid="admin-platform-system-configuration-setting-row" data-setting-key="security.login.max-failures"><td><span data-testid="admin-platform-system-configuration-setting-label">登录失败阈值</span><br><span class="muted" data-testid="admin-platform-system-configuration-setting-key">security.login.max-failures</span></td><td data-testid="admin-platform-system-configuration-setting-type">整数</td><td data-testid="admin-platform-system-configuration-setting-value">5</td><td data-testid="admin-platform-system-configuration-setting-validation">3–20</td><td data-testid="admin-platform-system-configuration-setting-sensitivity">普通</td><td data-testid="admin-platform-system-configuration-setting-default">5</td><td><button data-testid="admin-platform-system-configuration-edit-open">编辑</button></td></tr></tbody></table></section>
+  <section class="card" data-testid="admin-platform-system-configuration-draft-card"><div class="header"><h2>变更草稿</h2><span data-testid="admin-platform-system-configuration-draft-status">无未保存修改</span></div><label>变更原因 <input data-testid="admin-platform-system-configuration-draft-reason"></label><div class="actions"><button disabled data-testid="admin-platform-system-configuration-draft-discard">放弃修改</button><button disabled class="primary" data-testid="admin-platform-system-configuration-draft-save">保存草稿</button><button disabled class="primary" data-testid="admin-platform-system-configuration-activate-open">激活</button></div></section>
+  <section class="card"><h2>版本历史</h2><table data-testid="admin-platform-system-configuration-history-table"><caption>不可变配置版本</caption><tbody><tr data-testid="admin-platform-system-configuration-history-row" data-version-id="11"><td data-testid="admin-platform-system-configuration-history-version">v11</td><td data-testid="admin-platform-system-configuration-history-status">已被替代</td><td data-testid="admin-platform-system-configuration-history-actor">admin</td><td data-testid="admin-platform-system-configuration-history-reason">调整登录保护</td><td data-testid="admin-platform-system-configuration-history-time">2026-09-08 09:00</td><td data-testid="admin-platform-system-configuration-history-changed-keys">security.login.max-failures</td><td><button data-testid="admin-platform-system-configuration-rollback-open">回滚到此版本</button></td></tr></tbody></table><p hidden data-testid="admin-platform-system-configuration-history-empty">暂无配置版本</p></section>
+  <section hidden class="dialog" role="dialog" aria-modal="true" aria-label="编辑配置" data-testid="admin-platform-system-configuration-edit-dialog"><label>配置值 <input data-testid="admin-platform-system-configuration-edit-input" value="5"></label><p hidden class="error" data-testid="admin-platform-system-configuration-validation-error">请输入 3 到 20 之间的整数</p><button data-testid="admin-platform-system-configuration-edit-cancel">取消</button><button class="primary" data-testid="admin-platform-system-configuration-edit-save">应用到草稿</button></section>
+  <section hidden class="dialog" role="dialog" aria-modal="true" aria-label="激活配置" data-testid="admin-platform-system-configuration-activate-dialog"><p>确认激活草稿 v13？再次激活将演示并发冲突。</p><button data-testid="admin-platform-system-configuration-activate-cancel">取消</button><button class="primary" data-testid="admin-platform-system-configuration-activate-confirm">确认激活</button></section>
+  <section hidden class="dialog" role="dialog" aria-modal="true" aria-label="回滚配置" data-testid="admin-platform-system-configuration-rollback-dialog"><p>将根据 v11 创建一个新版本。原因填“触发安全拒绝”可演示 reload 拒绝。</p><label>回滚原因 <input data-testid="admin-platform-system-configuration-rollback-reason"></label><button data-testid="admin-platform-system-configuration-rollback-cancel">取消</button><button disabled class="primary" data-testid="admin-platform-system-configuration-rollback-confirm">确认创建并激活</button></section>
+  <p hidden data-testid="admin-platform-system-configuration-access-loading">正在检查系统配置权限…</p>
+  <p hidden class="error" data-testid="admin-platform-system-configuration-access-error">权限加载失败。</p>
+  <p hidden class="error" data-testid="admin-platform-system-configuration-access-denied">无权查看系统配置。</p>
+  <p hidden class="muted" data-testid="admin-platform-system-configuration-write-denied">当前账号仅可查看，不能编辑或保存草稿。</p>
+  <p hidden class="muted" data-testid="admin-platform-system-configuration-activate-denied">当前账号不能激活或回滚配置。</p>
+</main></div>
+<script>
+  const byTestId = (id) => document.querySelector(`[data-testid="${id}"]`);
+  const show = (id, visible = true) => { byTestId(id).hidden = !visible; };
+  const editDialog = byTestId('admin-platform-system-configuration-edit-dialog');
+  const editInput = byTestId('admin-platform-system-configuration-edit-input');
+  const settingValue = byTestId('admin-platform-system-configuration-setting-value');
+  const draftStatus = byTestId('admin-platform-system-configuration-draft-status');
+  const draftReason = byTestId('admin-platform-system-configuration-draft-reason');
+  const draftSave = byTestId('admin-platform-system-configuration-draft-save');
+  const draftDiscard = byTestId('admin-platform-system-configuration-draft-discard');
+  const activateOpen = byTestId('admin-platform-system-configuration-activate-open');
+  let activationCount = 0;
+
+  byTestId('admin-platform-system-configuration-refresh').addEventListener('click', () => {
+    show('admin-platform-system-configuration-success-status', false);
+    show('admin-platform-system-configuration-loading');
+    setTimeout(() => {
+      show('admin-platform-system-configuration-loading', false);
+      show('admin-platform-system-configuration-error');
+    }, 30);
+  });
+  byTestId('admin-platform-system-configuration-retry').addEventListener('click', () => {
+    show('admin-platform-system-configuration-error', false);
+    byTestId('admin-platform-system-configuration-success-status').textContent = '刷新成功。';
+    show('admin-platform-system-configuration-success-status');
+  });
+  byTestId('admin-platform-system-configuration-edit-open').addEventListener('click', () => {
+    editInput.value = settingValue.textContent.trim();
+    show('admin-platform-system-configuration-validation-error', false);
+    editDialog.hidden = false;
+    editInput.focus();
+  });
+  editInput.addEventListener('input', () => {
+    const valid = Number.isInteger(Number(editInput.value)) && Number(editInput.value) >= 3 && Number(editInput.value) <= 20;
+    show('admin-platform-system-configuration-validation-error', !valid);
+    byTestId('admin-platform-system-configuration-edit-save').disabled = !valid;
+  });
+  byTestId('admin-platform-system-configuration-edit-save').addEventListener('click', () => {
+    settingValue.textContent = editInput.value;
+    draftStatus.textContent = '1 项未保存修改';
+    draftDiscard.disabled = false;
+    editDialog.hidden = true;
+    draftReason.focus();
+  });
+  byTestId('admin-platform-system-configuration-edit-cancel').addEventListener('click', () => { editDialog.hidden = true; });
+  draftReason.addEventListener('input', () => { draftSave.disabled = draftDiscard.disabled || !draftReason.value.trim(); });
+  draftDiscard.addEventListener('click', () => {
+    settingValue.textContent = '5';
+    draftStatus.textContent = '无未保存修改';
+    draftReason.value = '';
+    draftDiscard.disabled = true;
+    draftSave.disabled = true;
+  });
+  draftSave.addEventListener('click', () => {
+    draftStatus.textContent = '草稿 v13 已保存';
+    draftDiscard.disabled = true;
+    draftSave.disabled = true;
+    activateOpen.disabled = false;
+    byTestId('admin-platform-system-configuration-success-status').textContent = '草稿 v13 已保存。';
+    show('admin-platform-system-configuration-success-status');
+  });
+  activateOpen.addEventListener('click', () => { show('admin-platform-system-configuration-activate-dialog'); });
+  byTestId('admin-platform-system-configuration-activate-cancel').addEventListener('click', () => show('admin-platform-system-configuration-activate-dialog', false));
+  byTestId('admin-platform-system-configuration-activate-confirm').addEventListener('click', () => {
+    show('admin-platform-system-configuration-activate-dialog', false);
+    if (activationCount > 0) {
+      show('admin-platform-system-configuration-stale-alert');
+      return;
+    }
+    activationCount += 1;
+    byTestId('admin-platform-system-configuration-active-version').textContent = 'v13';
+    byTestId('admin-platform-system-configuration-success-status').textContent = 'v13 已激活并完成运行时加载。';
+    show('admin-platform-system-configuration-success-status');
+  });
+  byTestId('admin-platform-system-configuration-rollback-open').addEventListener('click', () => {
+    show('admin-platform-system-configuration-rollback-dialog');
+    byTestId('admin-platform-system-configuration-rollback-reason').focus();
+  });
+  byTestId('admin-platform-system-configuration-rollback-cancel').addEventListener('click', () => show('admin-platform-system-configuration-rollback-dialog', false));
+  byTestId('admin-platform-system-configuration-rollback-reason').addEventListener('input', (event) => {
+    byTestId('admin-platform-system-configuration-rollback-confirm').disabled = !event.target.value.trim();
+  });
+  byTestId('admin-platform-system-configuration-rollback-confirm').addEventListener('click', () => {
+    const reason = byTestId('admin-platform-system-configuration-rollback-reason').value.trim();
+    show('admin-platform-system-configuration-rollback-dialog', false);
+    if (reason === '触发安全拒绝') {
+      show('admin-platform-system-configuration-reload-error');
+      return;
+    }
+    byTestId('admin-platform-system-configuration-active-version').textContent = 'v14';
+    byTestId('admin-platform-system-configuration-success-status').textContent = '已按 v11 创建并激活 v14。';
+    show('admin-platform-system-configuration-success-status');
+  });
+</script>
+</body>
+</html>

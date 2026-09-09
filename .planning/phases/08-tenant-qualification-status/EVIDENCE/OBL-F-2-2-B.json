@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-2-B","playwright_id":"pw-p8-review-decision","case_id":"C-P8-REVIEW-DECISION","result":"PASS","evidence":"Human-confirmed approval created initial trial access; the newly enabled tenant administrator then completed a real login and read VERIFIED status.","raw_report":"phase08-playwright-raw.json"}

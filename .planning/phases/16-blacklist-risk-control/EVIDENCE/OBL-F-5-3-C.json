@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-3-C",
+  "result": "PASS",
+  "evidence": "Provider failure simulation applies configured ALLOW/CACHE fallback and records degraded provider logs and degraded decision rows.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

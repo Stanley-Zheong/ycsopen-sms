@@ -43,6 +43,6 @@ export interface Channel {
   channelName: string;
   protocol: 'CMPP' | 'SGIP' | 'SMGP' | 'HTTP';
   operator: 'MOBILE' | 'UNICOM' | 'TELECOM' | 'VIRTUAL' | 'INTERNATIONAL';
-  status: 'NORMAL' | 'MAINTENANCE' | 'ABNORMAL' | 'PAUSED';
+  status: 'NORMAL' | 'MAINTENANCE' | 'ABNORMAL' | 'PAUSED' | 'OFFLINE';
   priority: number;
 }

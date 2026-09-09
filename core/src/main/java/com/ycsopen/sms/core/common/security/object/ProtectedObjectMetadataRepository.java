@@ -8,6 +8,7 @@ import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcFieldReferencePubl
 import com.ycsopen.sms.core.common.security.key.lifecycle.JdbcTokenDigestPublicationFence;
 import com.ycsopen.sms.core.common.security.key.lifecycle.TokenDigestPublicationFence;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -34,6 +35,7 @@ public class ProtectedObjectMetadataRepository implements ObjectCapabilityServic
 
     private final Store store;
 
+    @Autowired
     public ProtectedObjectMetadataRepository(JdbcTemplate jdbcTemplate,
                                              PlatformTransactionManager transactionManager) {
         this(new JdbcStore(jdbcTemplate, transactionManager,

@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-FIELD-TEMPLATE-NAME",
+  "status": "PASS",
+  "evidence": ["TemplateLifecycleService.required(templateName)", "TemplateLifecyclePage data-testid tenant-template-lifecycle-templates-form-name"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Template name is required, capped, displayed, and submitted through the documented field selector."
+}

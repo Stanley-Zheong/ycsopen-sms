@@ -1,0 +1,26 @@
+{
+  "command": "YCSOPEN_CHROME_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome mvn -f core/pom.xml -Pphase01-integration -Dtest=Phase08RealServicePlaywrightTest test",
+  "commit": "f80b853a57766daac633e4bf66cd1c85bc54308f",
+  "config": "web/playwright.config.ts; pinned disposable MySQL and MinIO; real Spring Boot, SoftHSM, notification and inspection sandboxes; installed Google Chrome 152.0.7977.76 at /Applications/Google Chrome.app/Contents/MacOS/Google Chrome; desktop viewport 1440x900 asserted at runtime; one worker; no page.route or project API interception",
+  "result": "PASS",
+  "cases": [
+    "C-P8-QUALIFICATION-FORM",
+    "C-P8-QUALIFICATION-STATUS",
+    "C-P8-QUALIFICATION-SUBMIT",
+    "C-P8-RECERTIFY",
+    "C-P8-REGISTER",
+    "C-P8-REVIEW-DECISION",
+    "C-P8-REVIEW-WORKSPACE",
+    "C-P8-SHORT-NAME",
+    "C-P8-FULL-NAME",
+    "C-P8-CREDIT-CODE",
+    "C-P8-LICENSE",
+    "C-P8-LEGAL-ID",
+    "C-P8-LEGAL-ID-FILES",
+    "C-P8-CONTACT",
+    "C-P8-SHORTLINK-PROOF",
+    "C-P8-TRADEMARK-PROOF",
+    "C-P8-TENANT-EDIT",
+    "C-P8-STATUS-ACTION"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "obligation_id": "OBL-IA-ADMIN-SYSTEM-CONFIG",
+  "result": "PASS",
+  "backend": {
+    "command": "mvn -f core/pom.xml test",
+    "result": "499 tests, 0 failures, 0 errors, 22 conditional skips"
+  },
+  "mysql": {
+    "command": "mvn -f core/pom.xml -Pphase01-integration -Dtest=Phase07ConfigurationMySqlIntegrationTest test",
+    "result": "1 test, 0 failures, 0 errors, 0 skips; MySQL 8.4 migrations, immutability, concurrency, rollback, committed-PENDING restart recovery PASS"
+  },
+  "frontend": {
+    "command": "npm --prefix web test -- --run && npm --prefix web run lint && npm --prefix web run build",
+    "result": "37 tests PASS; lint PASS; production build PASS"
+  },
+  "browser": {
+    "command": "mvn -f core/pom.xml -Pphase01-integration -Dtest=Phase07RealServicePlaywrightTest test",
+    "case": "C-P7-SYSTEM-CONFIG",
+    "report": "playwright-execution.json",
+    "result": "PASS; 1 JUnit harness and 3 installed-Chrome Playwright scenarios, 0 failures, 0 errors, 0 skips; real Spring/Vite/MySQL and no platform request interception"
+  },
+  "contracts": {
+    "obligations": "PASS; selected=1",
+    "production_ui": "PASS; selectors=60, routes=1"
+  },
+  "reviews": {
+    "independent": "PASS; 0 BLOCKER, 0 HIGH, 0 MEDIUM, 0 LOW",
+    "claude": "PASS; 0 BLOCKER, 0 HIGH, 0 MEDIUM, 1 documented informational LOW"
+  }
+}

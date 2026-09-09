@@ -1,0 +1,1 @@
+{"phase":"22","owner":"trial-prepaid-ledger","obligation_id":"OBL-F-8-9-A","status":"PASS","evidence":["core/src/main/resources/db/migration/V3100__trial_prepaid_ledger.sql","web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx","EVIDENCE/mvn-test.log","EVIDENCE/playwright-raw.json"],"case_id":"C-P22-BALANCE-AUDIT"}

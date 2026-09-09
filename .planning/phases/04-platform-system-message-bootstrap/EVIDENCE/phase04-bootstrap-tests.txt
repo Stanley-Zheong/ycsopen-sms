@@ -1,0 +1,3 @@
+Command: mvn -f core/pom.xml -Dtest='*PlatformMessageBootstrap*Test,*PlatformMessage*Test,*PlatformNotification*Test' test
+Result: BUILD SUCCESS; PlatformMessageBootstrapServiceTest: 3 tests, 0 failures, 0 errors.
+Coverage: provider delegation, accepted outcome, recursion blocking, transient retry classification, redacted audit recipient.

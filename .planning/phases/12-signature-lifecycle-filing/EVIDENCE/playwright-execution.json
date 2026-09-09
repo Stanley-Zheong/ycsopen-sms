@@ -1,0 +1,21 @@
+{
+  "command": "npm exec -- playwright test signature-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+  "cwd": "web",
+  "commit": "c2356e3515eb4ba10b14dd17ff7ab599f11338d7",
+  "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900",
+  "result": "PASS",
+  "cases": [
+    "C-P12-APPLICATION-COMPLETE",
+    "C-P12-APPLICATION-PENDING",
+    "C-P12-REVIEW-STATS",
+    "C-P12-REVIEW-FILTERS",
+    "C-P12-REVIEW-DECISION",
+    "C-P12-FILING-MATRIX",
+    "C-P12-FILING-RETRY"
+  ],
+  "stats": {
+    "expected": 4,
+    "unexpected": 0,
+    "skipped": 0
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-4-B",
+  "result": "PASS",
+  "evidence": "Appeal records original_result, appeal_result, reason and actor without updating risk_intercept_decisions.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test", "npm --prefix web test -- blacklist-risk-control.test.tsx"]
+}

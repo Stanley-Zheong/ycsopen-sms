@@ -1,0 +1,23 @@
+{
+  "phase": "14-auditable-exemption-policy",
+  "obligation": "OBL-F-3-6-A",
+  "result": "PASS",
+  "evidence": [
+    {
+      "type": "backend-test",
+      "command": "mvn -q -f core/pom.xml -Dtest=ExemptionPolicyServiceTest test",
+      "assertion": "createStoresBoundedApprovedExemptionWithHistory verifies tenant/resource/product/scope/approval/validity fields and create history."
+    },
+    {
+      "type": "frontend-unit-test",
+      "command": "npm --prefix web test -- exemption-policy.test.tsx",
+      "assertion": "operator can configure a bounded approved exemption through the admin page."
+    },
+    {
+      "type": "playwright",
+      "command": "npm --prefix web exec -- playwright test exemption-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+      "case": "C-P14-EXEMPTION-CONFIG",
+      "assertion": "page admin-exemption-policy creates a bounded exemption via Chrome automation."
+    }
+  ]
+}

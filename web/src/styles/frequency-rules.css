@@ -1,0 +1,10 @@
+.frequency-rules-page { display: flex; flex-direction: column; gap: 16px; }
+.frequency-rules-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.frequency-rules-cards, .frequency-rules-form, .frequency-rules-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.frequency-rules-cards span { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; background: var(--surface-muted); }
+.frequency-rules-form label { display: flex; flex-direction: column; gap: 4px; min-width: 128px; }
+.frequency-rules-import { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+.frequency-rules-import textarea, .frequency-rules-page textarea { min-height: 84px; }
+.frequency-rules-alert { border-radius: 8px; padding: 10px 12px; }
+.frequency-rules-alert.success { background: var(--success-soft); color: var(--success-text); }
+.frequency-rules-alert.error { background: var(--danger-soft); color: var(--danger-text); }

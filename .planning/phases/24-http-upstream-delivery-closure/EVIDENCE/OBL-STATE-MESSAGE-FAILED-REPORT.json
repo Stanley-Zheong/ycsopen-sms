@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-MESSAGE-FAILED-REPORT","status":"covered","evidence":["HttpMessageDeliveryServiceTest.failedReceiptReversesBillingOnceAndWinsOverLaterDuplicates"],"notes":"Failed receipt moves SENT to FAILED and duplicate receipt does not repeat reversal."}

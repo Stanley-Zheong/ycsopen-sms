@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Phase 06 privileged audit prototype</title></head>
+<body>
+  <nav><a href="/admin/system/logs">操作日志</a><a href="/admin/system/security-events">安全事件</a><a href="/admin/system/users">平台账号</a></nav>
+  <main>
+    <section data-route="/admin/system/logs" data-testid="admin-privileged-data-system-logs-page">
+      <h1 data-testid="admin-privileged-data-system-logs-heading">操作日志</h1>
+      <form data-testid="admin-privileged-data-system-logs-filter">
+        <label>操作人<input data-testid="admin-privileged-data-system-logs-actor-input" name="actor"></label>
+        <label>操作<input data-testid="admin-privileged-data-system-logs-operation-input" name="operation"></label>
+        <label>结果<select data-testid="admin-privileged-data-system-logs-result-select"><option>全部</option><option>待终结</option></select></label>
+        <label>开始<input data-testid="admin-privileged-data-system-logs-from-input" type="datetime-local"></label>
+        <label>结束<input data-testid="admin-privileged-data-system-logs-to-input" type="datetime-local"></label>
+        <button data-testid="admin-privileged-data-system-logs-query">查询</button>
+        <button data-testid="admin-privileged-data-system-logs-reset">重置</button>
+      </form>
+      <p data-testid="admin-privileged-data-system-logs-loading">加载操作日志…</p>
+      <div data-testid="admin-privileged-data-system-logs-error"><button data-testid="admin-privileged-data-system-logs-retry">重试</button></div>
+      <table data-testid="admin-privileged-data-system-logs-table"><caption>操作日志</caption><tr><th>时间</th><th>操作人</th><th>操作</th><th>结果</th><th>详情</th></tr><tr data-testid="admin-privileged-data-system-logs-row"><td>2026-09-07 12:00</td><td>admin</td><td>GET</td><td>成功</td><td><button data-testid="admin-privileged-data-system-logs-detail-open">查看详情</button></td></tr><tr data-testid="admin-privileged-data-system-logs-empty"><td>暂无操作日志</td></tr></table>
+      <div><button data-testid="admin-privileged-data-system-logs-previous">上一页</button><span data-testid="admin-privileged-data-system-logs-page-status">第 1 页</span><button data-testid="admin-privileged-data-system-logs-next">下一页</button></div>
+      <aside role="dialog" data-testid="admin-privileged-data-system-logs-detail-drawer"><h2>审计详情</h2><dl data-testid="admin-privileged-data-system-logs-detail-fields"><dt>结果</dt><dd>SUCCESS</dd></dl><button data-testid="admin-privileged-data-system-logs-detail-close">关闭审计详情</button></aside>
+    </section>
+    <section data-route="/admin/system/security-events" data-testid="admin-privileged-data-security-events-page">
+      <h1 data-testid="admin-privileged-data-security-events-heading">安全事件</h1>
+      <form data-testid="admin-privileged-data-security-events-filter"><label>事件类型<select data-testid="admin-privileged-data-security-events-type-select"><option>异常登录</option></select></label><label>操作人<input data-testid="admin-privileged-data-security-events-actor-input"></label><label>结果<select data-testid="admin-privileged-data-security-events-result-select"><option>已检测</option></select></label><label>开始<input data-testid="admin-privileged-data-security-events-from-input" type="datetime-local"></label><label>结束<input data-testid="admin-privileged-data-security-events-to-input" type="datetime-local"></label><button data-testid="admin-privileged-data-security-events-query">查询</button><button data-testid="admin-privileged-data-security-events-reset">重置</button></form>
+      <p data-testid="admin-privileged-data-security-events-loading">加载安全事件…</p><div data-testid="admin-privileged-data-security-events-error"><button data-testid="admin-privileged-data-security-events-retry">重试</button></div>
+      <table data-testid="admin-privileged-data-security-events-table"><caption>安全事件</caption><tr><th>时间</th><th>事件</th><th>操作人</th><th>结果</th></tr><tr data-testid="admin-privileged-data-security-events-row"><td>2026-09-07 12:00</td><td>异常登录</td><td>admin</td><td>已记录</td></tr><tr data-testid="admin-privileged-data-security-events-empty"><td>暂无安全事件</td></tr></table>
+      <div><button data-testid="admin-privileged-data-security-events-previous">上一页</button><span data-testid="admin-privileged-data-security-events-page-status">第 1 页</span><button data-testid="admin-privileged-data-security-events-next">下一页</button></div>
+    </section>
+    <section data-route="/admin/system/users"><h1>平台账号</h1><span data-testid="shared-privileged-data-sensitive-value">138****5678</span><button data-testid="shared-privileged-data-sensitive-value-reveal">查看完整手机号</button>
+      <div role="dialog" data-testid="shared-privileged-data-sensitive-value-dialog"><h2 data-testid="shared-privileged-data-sensitive-value-title">查看完整手机号</h2><p data-testid="shared-privileged-data-sensitive-value-account">账号：admin</p><p data-testid="shared-privileged-data-sensitive-value-warning">本次查看会被审计</p><label>查看用途<select data-testid="shared-privileged-data-sensitive-value-purpose"><option value="CUSTOMER_SUPPORT">客户支持</option><option value="SECURITY_INVESTIGATION">安全调查</option><option value="COMPLIANCE_REVIEW">合规复核</option></select></label><button data-testid="shared-privileged-data-sensitive-value-confirm">确认查看</button><output data-testid="shared-privileged-data-sensitive-value-result">13812345678</output><p data-testid="shared-privileged-data-sensitive-value-error">查看失败</p><button data-testid="shared-privileged-data-sensitive-value-close">关闭并清除</button></div>
+    </section>
+  </main>
+</body>
+</html>

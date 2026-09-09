@@ -1,0 +1,81 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/content-safety"],
+    "test_ids": [
+      "admin-runtime-content-content-safety-page",
+      "admin-runtime-content-content-safety-import",
+      "admin-runtime-content-content-safety-save",
+      "admin-runtime-content-content-safety-export",
+      "admin-runtime-content-content-safety-delete"
+    ],
+    "sources": [
+      { "path": ".planning/phases/17-runtime-content-safety/design-output/prototype.html", "sha256": "6a585676a99ed059e6f047f393ebbc97681a95d210f8ffe74c011eab1a2108cb" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/17-runtime-content-safety/runtime-content-safety.pen", "sha256": "2acbd070db3dfebe69c63ce2888294034b757c80a047d03f97a86b0701260ed8" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/content-safety"],
+    "test_ids": [
+      "admin-runtime-content-content-safety-page",
+      "admin-runtime-content-content-safety-import",
+      "admin-runtime-content-content-safety-save",
+      "admin-runtime-content-content-safety-export",
+      "admin-runtime-content-content-safety-delete"
+    ],
+    "sources": [
+      { "path": ".planning/phases/17-runtime-content-safety/design-output/prototype.html", "sha256": "6a585676a99ed059e6f047f393ebbc97681a95d210f8ffe74c011eab1a2108cb" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-runtime-content-content-safety-page",
+      "admin-runtime-content-content-safety-import",
+      "admin-runtime-content-content-safety-save",
+      "admin-runtime-content-content-safety-export",
+      "admin-runtime-content-content-safety-delete"
+    ],
+    "sources": [
+      { "path": ".planning/phases/17-runtime-content-safety/design-output/prototype.spec.ts", "sha256": "ce3b446ed734d735058992b086947520a0018fe894c8225f5c7880427ca35e25" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/content-safety"],
+    "test_ids": [
+      "admin-runtime-content-content-safety-page",
+      "admin-runtime-content-content-safety-import",
+      "admin-runtime-content-content-safety-save",
+      "admin-runtime-content-content-safety-export",
+      "admin-runtime-content-content-safety-delete"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "573665cd6ef42f8255c0d12476d263ca3dad63764dae176ba610900600c25ac2" },
+      { "path": "web/src/pages/admin/risk/ContentSafetyPage.tsx", "sha256": "c87ab003d3f56704882520f93d4d13d0140eaeabd1572eda779823e089a0120d" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-runtime-content-content-safety-page",
+      "admin-runtime-content-content-safety-import",
+      "admin-runtime-content-content-safety-save",
+      "admin-runtime-content-content-safety-export",
+      "admin-runtime-content-content-safety-delete"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/content-safety.spec.ts", "sha256": "ba04cc1f56b9a05bcac930b8c604974a57aeb6c58e09181974bbcb3c192e1256" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test content-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "2dea136689b9ca0f7fd7ac10d3dab5d26713d2e7",
+    "config": "web/playwright.config.ts#local-google-chrome",
+    "result": "PASS",
+    "report": { "path": ".planning/phases/17-runtime-content-safety/EVIDENCE/playwright-execution.json", "sha256": "2acab126096a91a438ff0a5f2fe15edd50b27ac85073fce0b5d0a971bd7ea703" }
+  }
+}

@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FIELD-TENANT-SHORTLINK-PROOF","playwright_id":"pw-p8-shortlink-proof","case_id":"C-P8-SHORTLINK-PROOF","result":"PASS","evidence":"Chrome rendered the trial-optional contract and completed a real optional protected PDF upload.","raw_report":"phase08-playwright-raw.json"}

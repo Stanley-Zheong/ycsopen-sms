@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-5-B",
+  "result": "PASS",
+  "evidence": "ContentSafetyService and UI support save, soft delete, import with partial-failure evidence, export-request metadata, validation, and hot-update feedback.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=ContentSafetyServiceTest,ContentSafetyControllerSecurityContractTest test", "npm --prefix web test -- content-safety.test.tsx"]
+}
