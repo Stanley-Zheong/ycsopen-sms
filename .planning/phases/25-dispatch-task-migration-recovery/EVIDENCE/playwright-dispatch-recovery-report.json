@@ -1,0 +1,12 @@
+{
+  "command": "npm --prefix web exec -- playwright test dispatch-recovery.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+  "commit": "3325a44f926400f02a2d06659ea7e5d08e4788a5",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "cases": [
+    "C-P25-TASK-MIGRATION",
+    "C-P25-RECOVERY-TEST",
+    "C-P25-CHANNEL-RECOVER",
+    "C-P25-UPSTREAM-OUTAGE"
+  ]
+}

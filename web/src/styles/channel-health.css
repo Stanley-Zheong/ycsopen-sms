@@ -6,6 +6,14 @@
   margin-bottom: 16px;
 }
 
+.channel-health-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
 .channel-health-toolbar,
 .channel-health-row-actions,
 .channel-health-dialog-actions,
@@ -118,6 +126,7 @@
 
 @media (max-width: 900px) {
   .channel-health-header,
+  .channel-health-section-header,
   .channel-health-form,
   .channel-health-member-row {
     display: grid;

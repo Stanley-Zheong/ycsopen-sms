@@ -5,7 +5,7 @@ import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { apiClient } from '@/api/client';
-import type { ChannelHealthMonitorRow, ChannelPool } from '@/api/channelHealthApi';
+import type { ChannelHealthMonitorRow, ChannelPool, DispatchRecoveryInventoryRow } from '@/api/channelHealthApi';
 import ChannelHealthPage from '@/pages/admin/channels/ChannelHealthPage';
 import ChannelPoolsPage from '@/pages/admin/channels/ChannelPoolsPage';
 import { useAuthStore } from '@/store/authStore';
@@ -72,6 +72,7 @@ describe('Phase 11 channel health and pool UI', () => {
   const seen: SeenRequest[] = [];
   let monitorRows: ChannelHealthMonitorRow[];
   let pools: ChannelPool[];
+  let recoveryRows: DispatchRecoveryInventoryRow[];
 
   beforeEach(() => {
     seen.length = 0;
@@ -88,6 +89,44 @@ describe('Phase 11 channel health and pool UI', () => {
       }),
     ];
     pools = [pool()];
+    recoveryRows = [
+      {
+        taskId: 2501,
+        messageId: 'MSG_P25_MIGRATE',
+        tenantId: 17,
+        channelId: 1101,
+        channelName: 'p11-cmpp-main',
+        channelStatus: 'PAUSED',
+        sendStatus: 'PENDING',
+        outboxState: 'READY',
+        outboxErrorCode: null,
+        recoveryState: 'MIGRATABLE',
+      },
+      {
+        taskId: 2502,
+        messageId: 'MSG_P25_RETRY',
+        tenantId: 17,
+        channelId: 1102,
+        channelName: 'p11-cmpp-backup',
+        channelStatus: 'NORMAL',
+        sendStatus: 'FAILED',
+        outboxState: 'FAILED',
+        outboxErrorCode: 'PROVIDER_REJECTED',
+        recoveryState: 'RETRYABLE',
+      },
+      {
+        taskId: 2503,
+        messageId: 'MSG_P25_UNKNOWN',
+        tenantId: 17,
+        channelId: 1101,
+        channelName: 'p11-cmpp-main',
+        channelStatus: 'PAUSED',
+        sendStatus: 'PENDING',
+        outboxState: 'CLAIMED',
+        outboxErrorCode: 'PROVIDER_TIMEOUT',
+        recoveryState: 'UNCERTAIN',
+      },
+    ];
     useAuthStore.setState({
       accessToken: 'test-token',
       userType: 'ADMIN',
@@ -106,6 +145,25 @@ describe('Phase 11 channel health and pool UI', () => {
       }
       if (url === '/console/channel-health/pools' && method === 'GET') {
         return axiosResponse(request, apiResponse(pools));
+      }
+      if (url === '/console/dispatch-recovery/inventory' && method === 'GET') {
+        return axiosResponse(request, apiResponse(recoveryRows));
+      }
+      if (url === '/console/dispatch-recovery/tasks/2501/migrate' && method === 'POST') {
+        recoveryRows = recoveryRows.filter((row) => row.taskId !== 2501);
+        return axiosResponse(request, apiResponse({ originalTaskId: 2501, newTaskId: null, action: 'MIGRATED', channelId: 1102 }));
+      }
+      if (url === '/console/dispatch-recovery/tasks/2502/retry' && method === 'POST') {
+        return axiosResponse(request, apiResponse({ originalTaskId: 2502, newTaskId: 2602, action: 'RETRY_CREATED', channelId: 1101 }));
+      }
+      if (url === '/console/dispatch-recovery/channels/1101/recovery-tests' && method === 'POST') {
+        return axiosResponse(request, apiResponse({ channelId: 1101, success: true, state: 'RECOVERY_TEST_PASSED' }));
+      }
+      if (url === '/console/dispatch-recovery/channels/1101/resume' && method === 'POST') {
+        monitorRows = monitorRows.map((row) => row.channelId === 1101
+          ? { ...row, status: 'NORMAL', healthState: 'HEALTHY', candidateEligible: true, candidateReasonCode: 'ELIGIBLE' }
+          : row);
+        return axiosResponse(request, apiResponse({ channelId: 1101, success: true, state: 'CHANNEL_RECOVERED' }));
       }
       if (url === '/console/channel-health/channels/1101/pause' && method === 'POST') {
         monitorRows = monitorRows.map((row) => row.channelId === 1101
@@ -175,6 +233,25 @@ describe('Phase 11 channel health and pool UI', () => {
     fireEvent.change(screen.getByTestId('admin-channel-health-channel-monitor-action-reason'), { target: { value: 'validation passed' } });
     fireEvent.click(screen.getByTestId('admin-channel-health-channel-monitor-action-submit'));
     await waitFor(() => expect(seen).toContainEqual(expect.objectContaining({ method: 'POST', url: '/console/channel-health/channels/1102/maintenance/end' })));
+  });
+
+  it('renders dispatch migration, retry, uncertain fence, and recovery test controls', async () => {
+    monitorRows = [monitorRow({ status: 'PAUSED', healthState: 'PAUSED', candidateEligible: false, candidateReasonCode: 'STATUS_PAUSED' })];
+    renderWithProviders(<ChannelHealthPage />);
+    await screen.findByTestId('admin-dispatch-task-channel-monitor-task-migration');
+    expect(await screen.findByText('MSG_P25_MIGRATE')).toBeVisible();
+    expect(screen.getByText('UNCERTAIN')).toBeVisible();
+
+    fireEvent.change(screen.getByTestId('admin-dispatch-task-channel-monitor-recovery-evidence'), { target: { value: 'sandbox probe passed' } });
+    fireEvent.click(screen.getAllByTestId('admin-dispatch-task-channel-monitor-migrate')[0]);
+    await screen.findByText('派发恢复动作已记录。');
+    fireEvent.click(screen.getAllByTestId('admin-dispatch-task-channel-monitor-retry')[0]);
+    await waitFor(() => expect(seen).toContainEqual(expect.objectContaining({ method: 'POST', url: '/console/dispatch-recovery/tasks/2502/retry' })));
+
+    fireEvent.click(screen.getByTestId('admin-dispatch-task-channel-monitor-recovery-test-run'));
+    await waitFor(() => expect(seen).toContainEqual(expect.objectContaining({ method: 'POST', url: '/console/dispatch-recovery/channels/1101/recovery-tests' })));
+    fireEvent.click(screen.getByTestId('admin-dispatch-task-channel-monitor-recovery-resume'));
+    await waitFor(() => expect(seen).toContainEqual(expect.objectContaining({ method: 'POST', url: '/console/dispatch-recovery/channels/1101/resume' })));
   });
 
   it('renders pools and validates weighted editor before save', async () => {

@@ -1,0 +1,11 @@
+{
+  "obligation": "OBL-STATE-MESSAGE-RETRY",
+  "owner": "dispatch-task-migration-recovery",
+  "status": "PASS",
+  "evidence": [
+    "DispatchTaskRecoveryServiceTest.retryFailedTaskCreatesNewPendingAttemptWithoutOverwritingOriginal",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/mvn-test.log"
+  ],
+  "verified_behavior": "Eligible failed message retry is modeled as a new PENDING attempt without overwriting prior attempt history."
+}

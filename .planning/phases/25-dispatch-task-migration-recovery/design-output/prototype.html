@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 25 Dispatch Recovery Prototype</title>
+</head>
+<body>
+  <main data-route="/admin/channel/health" data-page-id="admin-channel-health-channel-monitor-page">
+    <section data-testid="admin-dispatch-task-channel-monitor-task-migration">
+      <button data-testid="admin-dispatch-task-channel-monitor-failover">刷新故障库存</button>
+      <input data-testid="admin-dispatch-task-channel-monitor-recovery-evidence" value="operator verified fallback">
+      <table>
+        <tbody>
+          <tr data-testid="admin-dispatch-task-channel-monitor-task-row">
+            <td>MSG_P25_MIGRATE</td>
+            <td><button data-testid="admin-dispatch-task-channel-monitor-migrate">迁移到备用</button></td>
+            <td><button data-testid="admin-dispatch-task-channel-monitor-retry">创建重试</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section data-testid="admin-dispatch-task-channel-monitor-recovery-test">
+      <button data-testid="admin-dispatch-task-channel-monitor-recovery-test-run">记录测试</button>
+      <button data-testid="admin-dispatch-task-channel-monitor-recovery-resume">恢复通道</button>
+    </section>
+  </main>
+</body>
+</html>

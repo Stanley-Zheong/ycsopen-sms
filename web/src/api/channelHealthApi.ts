@@ -66,6 +66,32 @@ export interface ChannelPoolRequest {
   members: ChannelPoolMember[];
 }
 
+export interface DispatchRecoveryInventoryRow {
+  taskId: number;
+  messageId: string;
+  tenantId: number;
+  channelId: number | null;
+  channelName: string | null;
+  channelStatus: string | null;
+  sendStatus: string;
+  outboxState: string | null;
+  outboxErrorCode: string | null;
+  recoveryState: 'MIGRATABLE' | 'RETRYABLE' | 'UNCERTAIN' | 'OBSERVE' | string;
+}
+
+export interface DispatchRecoveryResult {
+  originalTaskId: number;
+  newTaskId: number | null;
+  action: string;
+  channelId: number | null;
+}
+
+export interface ChannelRecoveryTestResult {
+  channelId: number;
+  success: boolean;
+  state: string;
+}
+
 export async function listChannelHealthMonitor(): Promise<ChannelHealthMonitorRow[]> {
   const res = await apiClient.get<ApiResponse<ChannelHealthMonitorRow[]>>('/console/channel-health/monitor');
   return res.data.data;
@@ -129,5 +155,46 @@ export async function saveChannelPool(request: ChannelPoolRequest, id?: number):
   const res = id == null
     ? await apiClient.post<ApiResponse<ChannelPool>>(endpoint, request)
     : await apiClient.put<ApiResponse<ChannelPool>>(endpoint, request);
+  return res.data.data;
+}
+
+export async function listDispatchRecoveryInventory(): Promise<DispatchRecoveryInventoryRow[]> {
+  const res = await apiClient.get<ApiResponse<DispatchRecoveryInventoryRow[]>>('/console/dispatch-recovery/inventory');
+  return res.data.data;
+}
+
+export async function migrateDispatchTask(taskId: number, evidence: string): Promise<DispatchRecoveryResult> {
+  const res = await apiClient.post<ApiResponse<DispatchRecoveryResult>>(
+    `/console/dispatch-recovery/tasks/${taskId}/migrate`,
+    { evidence },
+  );
+  return res.data.data;
+}
+
+export async function retryDispatchTask(taskId: number, evidence: string): Promise<DispatchRecoveryResult> {
+  const res = await apiClient.post<ApiResponse<DispatchRecoveryResult>>(
+    `/console/dispatch-recovery/tasks/${taskId}/retry`,
+    { evidence },
+  );
+  return res.data.data;
+}
+
+export async function recordRecoveryTest(
+  channelId: number,
+  success: boolean,
+  evidence: string,
+): Promise<ChannelRecoveryTestResult> {
+  const res = await apiClient.post<ApiResponse<ChannelRecoveryTestResult>>(
+    `/console/dispatch-recovery/channels/${channelId}/recovery-tests`,
+    { success, evidence },
+  );
+  return res.data.data;
+}
+
+export async function resumeRecoveredChannel(channelId: number, evidence: string): Promise<ChannelRecoveryTestResult> {
+  const res = await apiClient.post<ApiResponse<ChannelRecoveryTestResult>>(
+    `/console/dispatch-recovery/channels/${channelId}/resume`,
+    { evidence },
+  );
   return res.data.data;
 }

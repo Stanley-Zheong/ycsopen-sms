@@ -3,12 +3,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
 import {
   endChannelMaintenance,
+  listDispatchRecoveryInventory,
   listChannelHealthMonitor,
+  migrateDispatchTask,
   pauseChannel,
   recordChannelObservation,
+  recordRecoveryTest,
+  resumeRecoveredChannel,
+  retryDispatchTask,
   startChannelMaintenance,
   type ChannelHealthMonitorRow,
   type ChannelPauseRequest,
+  type DispatchRecoveryInventoryRow,
 } from '@/api/channelHealthApi';
 import { mutationErrorMessage } from '@/api/client';
 import { isPlatformRole, useAuthStore } from '@/store/authStore';
@@ -48,6 +54,7 @@ export default function ChannelHealthPage() {
   const userType = useAuthStore((state) => state.userType);
   const canRead = userType === 'ADMIN' || userType === 'OPERATOR';
   const [dialog, setDialog] = useState<ActionDialog | null>(null);
+  const [recoveryEvidence, setRecoveryEvidence] = useState('operator verified fallback');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,9 +65,17 @@ export default function ChannelHealthPage() {
     enabled: isPlatformRole(userType) && canRead,
   });
   const rows = useMemo(() => monitor.data ?? [], [monitor.data]);
+  const recovery = useQuery({
+    queryKey: ['dispatch-recovery-inventory'],
+    queryFn: listDispatchRecoveryInventory,
+    retry: false,
+    enabled: isPlatformRole(userType) && canRead,
+  });
+  const recoveryRows = useMemo(() => recovery.data ?? [], [recovery.data]);
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['channel-health-monitor'] });
+    await queryClient.invalidateQueries({ queryKey: ['dispatch-recovery-inventory'] });
   };
 
   const healthSample = useMutation({
@@ -104,6 +119,24 @@ export default function ChannelHealthPage() {
     setDialog({ mode, row, trigger: mode === 'pause' ? 'MANUAL' : 'HEALTH', reason: '' });
     setError(null);
   };
+
+  const recoveryAction = useMutation({
+    mutationFn: async (action: { kind: 'migrate' | 'retry' | 'test' | 'resume'; task?: DispatchRecoveryInventoryRow; channelId?: number }) => {
+      const evidence = recoveryEvidence.trim();
+      if (!evidence) throw new Error('恢复证据必填');
+      if (action.kind === 'migrate' && action.task) return migrateDispatchTask(action.task.taskId, evidence);
+      if (action.kind === 'retry' && action.task) return retryDispatchTask(action.task.taskId, evidence);
+      if (action.kind === 'test' && action.channelId) return recordRecoveryTest(action.channelId, true, evidence);
+      if (action.kind === 'resume' && action.channelId) return resumeRecoveredChannel(action.channelId, evidence);
+      throw new Error('恢复动作不完整');
+    },
+    onSuccess: async () => {
+      setMessage('派发恢复动作已记录。');
+      setError(null);
+      await refresh();
+    },
+    onError: (failure) => setError(failure instanceof Error ? failure.message : mutationErrorMessage(failure, '派发恢复失败')),
+  });
 
   if (!isPlatformRole(userType) || !canRead) {
     return <p role="alert" data-testid="admin-channel-health-channel-monitor-access-denied">无权查看通道健康。</p>;
@@ -175,6 +208,105 @@ export default function ChannelHealthPage() {
             </tbody>
           </table>
         )}
+      </section>
+
+      <section className="card channel-health-table" data-testid="admin-dispatch-task-channel-monitor-task-migration">
+        <header className="channel-health-section-header">
+          <div>
+            <h2>派发任务迁移与恢复</h2>
+            <p className="page-description">仅处理 READY/PENDING 迁移、FAILED 重试和 UNKNOWN 隔离证据。</p>
+          </div>
+          <button type="button" className="button-secondary" data-testid="admin-dispatch-task-channel-monitor-failover" onClick={() => void recovery.refetch()} disabled={recovery.isFetching}>刷新故障库存</button>
+        </header>
+        <label className="channel-health-wide">恢复证据
+          <input
+            data-testid="admin-dispatch-task-channel-monitor-recovery-evidence"
+            value={recoveryEvidence}
+            onChange={(event) => setRecoveryEvidence(event.target.value)}
+          />
+        </label>
+        {recovery.isLoading && <p>正在加载派发恢复库存…</p>}
+        {recovery.isError && <p role="alert">派发恢复库存加载失败。</p>}
+        {!recovery.isLoading && !recovery.isError && recoveryRows.length === 0 && <p>暂无需要迁移或恢复的任务。</p>}
+        {recoveryRows.length > 0 && (
+          <table className="ratio-table">
+            <thead>
+              <tr>
+                <th>任务</th>
+                <th>机构</th>
+                <th>通道</th>
+                <th>消息状态</th>
+                <th>Outbox</th>
+                <th>恢复状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recoveryRows.map((task) => (
+                <tr key={task.taskId} data-testid="admin-dispatch-task-channel-monitor-task-row">
+                  <td>{task.messageId}</td>
+                  <td>{task.tenantId}</td>
+                  <td>{task.channelName ?? task.channelId ?? '未绑定'} / {task.channelStatus ?? 'UNKNOWN'}</td>
+                  <td>{task.sendStatus}</td>
+                  <td>{task.outboxState ?? '无'} {task.outboxErrorCode ? `/${task.outboxErrorCode}` : ''}</td>
+                  <td>{task.recoveryState}</td>
+                  <td>
+                    <div className="channel-health-row-actions">
+                      <button
+                        type="button"
+                        data-testid="admin-dispatch-task-channel-monitor-migrate"
+                        onClick={() => recoveryAction.mutate({ kind: 'migrate', task })}
+                        disabled={task.recoveryState !== 'MIGRATABLE' || recoveryAction.isPending}
+                      >
+                        迁移到备用
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="admin-dispatch-task-channel-monitor-retry"
+                        onClick={() => recoveryAction.mutate({ kind: 'retry', task })}
+                        disabled={task.recoveryState !== 'RETRYABLE' || recoveryAction.isPending}
+                      >
+                        创建重试
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section className="card channel-health-table" data-testid="admin-dispatch-task-channel-monitor-recovery-test">
+        <header className="channel-health-section-header">
+          <div>
+            <h2>小流量恢复测试</h2>
+            <p className="page-description">暂停通道恢复前必须先记录成功测试，再恢复为候选通道。</p>
+          </div>
+        </header>
+        <div className="channel-health-row-actions">
+          {rows.filter((row) => row.status === 'PAUSED').map((row) => (
+            <span key={row.channelId}>
+              <button
+                type="button"
+                data-testid="admin-dispatch-task-channel-monitor-recovery-test-run"
+                onClick={() => recoveryAction.mutate({ kind: 'test', channelId: row.channelId })}
+                disabled={recoveryAction.isPending}
+              >
+                记录测试：{row.channelName}
+              </button>
+              <button
+                type="button"
+                data-testid="admin-dispatch-task-channel-monitor-recovery-resume"
+                onClick={() => recoveryAction.mutate({ kind: 'resume', channelId: row.channelId })}
+                disabled={recoveryAction.isPending}
+              >
+                恢复通道
+              </button>
+            </span>
+          ))}
+          {rows.every((row) => row.status !== 'PAUSED') && <p>暂无暂停通道。</p>}
+        </div>
       </section>
 
       {dialog && (

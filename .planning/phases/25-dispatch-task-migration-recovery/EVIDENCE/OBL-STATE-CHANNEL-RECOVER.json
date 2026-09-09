@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-STATE-CHANNEL-RECOVER",
+  "owner": "dispatch-task-migration-recovery",
+  "status": "PASS",
+  "evidence": [
+    "DispatchTaskRecoveryServiceTest.pausedChannelRequiresSuccessfulRecoveryTestBeforeResume",
+    "web/test/scripts/dispatch-recovery.spec.ts: pw-p25-channel-recover",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-dispatch-recovery.log"
+  ],
+  "verified_behavior": "PAUSED channel returns to NORMAL only when the latest recovery test is successful."
+}

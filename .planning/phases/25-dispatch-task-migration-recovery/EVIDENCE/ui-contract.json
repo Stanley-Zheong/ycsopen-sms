@@ -1,0 +1,95 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/channel/health"],
+    "test_ids": [
+      "admin-dispatch-task-channel-monitor-task-migration",
+      "admin-dispatch-task-channel-monitor-recovery-test",
+      "admin-dispatch-task-channel-monitor-failover"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/25-dispatch-task-migration-recovery/UI-ELEMENTS.md",
+        "sha256": "24b1761d6ba759c475e0f27401aaf42f56cdf465c37ec11e3bed38523b55bc1b"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/25-dispatch-task-migration-recovery/design-output/dispatch-recovery-baseline.pen",
+        "sha256": "b156cd445286c3ac69a9cdb98f47c9c85638b0ffef42ad4671245993eed4713d"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/channel/health"],
+    "test_ids": [
+      "admin-dispatch-task-channel-monitor-task-migration",
+      "admin-dispatch-task-channel-monitor-recovery-test",
+      "admin-dispatch-task-channel-monitor-failover"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/25-dispatch-task-migration-recovery/design-output/prototype.html",
+        "sha256": "c8d51e731729d5bc1a8650099746d249635cdee865d2e33bdf5897871147e4e1"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-dispatch-task-channel-monitor-task-migration",
+      "admin-dispatch-task-channel-monitor-recovery-test",
+      "admin-dispatch-task-channel-monitor-failover"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/25-dispatch-task-migration-recovery/design-output/prototype.spec.ts",
+        "sha256": "4a9dc2c11cfdb7121cad87e74a32ab7bff1b80c502cbe51709fc2a4f8d20b0d3"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/channel/health"],
+    "test_ids": [
+      "admin-dispatch-task-channel-monitor-task-migration",
+      "admin-dispatch-task-channel-monitor-recovery-test",
+      "admin-dispatch-task-channel-monitor-failover"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "666ad20c05f9ce39e82ee1a4f542ab44791fd1b7894c89c4135ce3acedb421c9"
+      },
+      {
+        "path": "web/src/pages/admin/channels/ChannelHealthPage.tsx",
+        "sha256": "00ddbb5d6a96d959a3db825c466cee78bf69745ea80ca3c02badf55b8fc03515"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-dispatch-task-channel-monitor-task-migration",
+      "admin-dispatch-task-channel-monitor-recovery-test",
+      "admin-dispatch-task-channel-monitor-failover"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/dispatch-recovery.spec.ts",
+        "sha256": "f8b9aacad931c746fd97c95ffaebc86b0cdf365afd0b0655c3cc51335bea13d9"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test dispatch-recovery.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "3325a44f926400f02a2d06659ea7e5d08e4788a5",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/25-dispatch-task-migration-recovery/EVIDENCE/playwright-dispatch-recovery-report.json",
+      "sha256": "c378e176a786789f4e0fc73df87c07ce3c206d41d0fcd4f58fa79280817488af"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-EDGE-UPSTREAM-OUTAGE",
+  "owner": "dispatch-task-migration-recovery",
+  "status": "PASS",
+  "evidence": [
+    "DispatchTaskRecoveryServiceTest.uncertainClaimedOutcomeCannotBeMigratedOrRetried",
+    "DispatchTaskRecoveryServiceTest.noBackupRecordsEvidenceAndLeavesTaskOnOriginalChannel",
+    "web/test/scripts/dispatch-recovery.spec.ts: pw-p25-upstream-outage",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-dispatch-recovery.log"
+  ],
+  "verified_behavior": "Upstream outage inventory exposes failover, eligible work follows fallback policy, no-backup is audited, and uncertain provider outcomes remain quarantined."
+}
