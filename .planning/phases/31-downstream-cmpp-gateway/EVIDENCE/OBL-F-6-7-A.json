@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-6-7-A","owner":"downstream-cmpp-gateway","status":"PASS","evidence":["CmppDownstreamGatewaySessionTest.permittedClientAuthenticatesAndLifecycleWorks"],"verified_behavior":"Tenant-facing CMPP session executes CONNECT, ACTIVE_TEST, and TERMINATE with sequence-shaped protocol responses."}
