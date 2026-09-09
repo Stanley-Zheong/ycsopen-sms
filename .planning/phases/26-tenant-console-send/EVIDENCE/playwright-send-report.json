@@ -1,0 +1,11 @@
+{
+  "command": "npm --prefix web exec -- playwright test send.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+  "commit": "cf18b02b4ccb1eda8c5741d2329fe16f73e947af",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "cases": [
+    "C-P26-TENANT-SEND-PAGE",
+    "C-P26-TENANT-SEND-SUBMIT",
+    "C-P26-NETWORK-RETRY"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "obligation": "OBL-F-6-10-B",
+  "owner": "tenant-console-send",
+  "status": "PASS",
+  "evidence": [
+    "TenantConsoleSendControllerTest.delegatesJwtTenantSendToAcceptancePipelineWithoutApiKey",
+    "TenantConsoleSendControllerTest.rejectsConsoleSendWithoutTenantContext",
+    "web/test/unit/send-page.test.tsx: previews approved resources and submits console send with a stable request shape",
+    "web/test/scripts/send.spec.ts: pw-p26-tenant-send-submit",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/mvn-test.log",
+    "EVIDENCE/npm-unit-send-page.log",
+    "EVIDENCE/playwright-send.log"
+  ],
+  "verified_behavior": "JWT-authenticated tenant console submit resolves the tenant context from the authenticated user, calls the existing acceptance pipeline without an API key, and keeps the submit button disabled while a submit is pending."
+}

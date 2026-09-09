@@ -109,7 +109,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="overview" replace /> },
       { path: '/tenant/overview', element: <OverviewPage /> },
-      { path: 'send', element: <SendPage /> },
+      { path: '/tenant/send', element: <SendPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },

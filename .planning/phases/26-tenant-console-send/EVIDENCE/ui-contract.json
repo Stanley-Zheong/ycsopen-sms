@@ -1,0 +1,95 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/send"],
+    "test_ids": [
+      "tenant-tenant-console-send-page",
+      "tenant-tenant-console-send-submit",
+      "shared-tenant-console-send-network-error-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/26-tenant-console-send/UI-ELEMENTS.md",
+        "sha256": "7b141603fd1a4ca45eb48e5090d88ccffabe1a1c87f34a6bda2eee7dd117528f"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/26-tenant-console-send/design-output/tenant-console-send-baseline.pen",
+        "sha256": "42b12385c1539913635cdea9a2f9d46d8674cb99704868223e9b05d72b5b974b"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": ["/tenant/send"],
+    "test_ids": [
+      "tenant-tenant-console-send-page",
+      "tenant-tenant-console-send-submit",
+      "shared-tenant-console-send-network-error-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/26-tenant-console-send/design-output/prototype.html",
+        "sha256": "914202502c69cf2ade4d0febea1a0695f9fc8dc712364458b26cda25c0c76c9d"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-tenant-console-send-page",
+      "tenant-tenant-console-send-submit",
+      "shared-tenant-console-send-network-error-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/26-tenant-console-send/design-output/prototype.spec.ts",
+        "sha256": "f00a64ab4dfce51dbcdb90078e2588580b11b53c9ece57997617d654ab3ef792"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": ["/tenant/send"],
+    "test_ids": [
+      "tenant-tenant-console-send-page",
+      "tenant-tenant-console-send-submit",
+      "shared-tenant-console-send-network-error-retry"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "418f624cd2713570281f1f558dd3e8e39dbcaf4636e9db84a3935e88bdd73bea"
+      },
+      {
+        "path": "web/src/pages/tenant/send/SendPage.tsx",
+        "sha256": "da270f1bc5cb04b2bb6128851dfaa2971abeef50c336bd48b71bd72803649393"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-tenant-console-send-page",
+      "tenant-tenant-console-send-submit",
+      "shared-tenant-console-send-network-error-retry"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/send.spec.ts",
+        "sha256": "5679663990de63437a632fc16c3da5a632f0be1c310eb5e55a68d03cc3bf7bb1"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test send.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "cf18b02b4ccb1eda8c5741d2329fe16f73e947af",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/26-tenant-console-send/EVIDENCE/playwright-send-report.json",
+      "sha256": "3cfb0b4263d390e3e2b2af3093eb16c8ed60fbc375cd203cfc3de740887bdbca"
+    }
+  }
+}
