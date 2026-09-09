@@ -1,6 +1,7 @@
 {
   "obligation": "OBL-IA-ADMIN-REVIEW-HISTORY",
   "owner": "resource-review-history",
+  "commit": "48dffd5ef24e48586eaf1244cb08f7805adf4efa",
   "result": "PASS",
   "evidence": [
     "core/src/main/java/com/ycsopen/sms/core/service/review/ResourceReviewHistoryService.java",

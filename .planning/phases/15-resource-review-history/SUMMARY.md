@@ -2,6 +2,7 @@
 
 ## Delivered
 
+- Implementation commit: `48dffd5ef24e48586eaf1244cb08f7805adf4efa`
 - Added read-only unified review-history API for signature, template, and exemption decisions.
 - Added Admin `/admin/review-history` page with filters, bounded pagination, immutable detail drawer, and stable test IDs.
 - Added permission migration for `review-history:menu` and `review-history:read`.

@@ -6,6 +6,7 @@ PASS
 
 ## Evidence
 
+- Implementation commit: `48dffd5ef24e48586eaf1244cb08f7805adf4efa`
 - Backend: `mvn -q -f core/pom.xml test`
 - Frontend unit: `npm --prefix web test`
 - Frontend build: `npm --prefix web run build`
