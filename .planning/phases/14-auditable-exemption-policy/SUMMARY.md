@@ -4,6 +4,8 @@
 
 PASS. The verified TODO set is empty.
 
+Implementation commit: `68a2eddc0e889283774a8ebc2208f62e4f15ec45`
+
 ## Delivered
 
 - Added auditable exemption policy schema, permission catalog entries, service, controller, DTOs, and backend tests.

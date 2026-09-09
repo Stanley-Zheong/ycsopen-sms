@@ -1,6 +1,6 @@
 {
   "command": "npm --prefix web exec -- playwright test exemption-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
-  "commit": "99c898dfd3f4784c5148a26b0b857f7509244ff5",
+  "commit": "68a2eddc0e889283774a8ebc2208f62e4f15ec45",
   "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "result": "PASS",
   "cases": [

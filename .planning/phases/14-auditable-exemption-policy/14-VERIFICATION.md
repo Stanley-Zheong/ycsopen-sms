@@ -4,6 +4,8 @@
 
 Package: `auditable-exemption-policy`
 
+Implementation commit: `68a2eddc0e889283774a8ebc2208f62e4f15ec45`
+
 Scoped obligations:
 
 - `OBL-F-3-6-A`
