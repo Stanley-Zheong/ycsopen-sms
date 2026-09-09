@@ -1,0 +1,118 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/templates", "/admin/templates/review"],
+    "test_ids": [
+      "tenant-template-lifecycle-templates-page",
+      "tenant-template-lifecycle-templates-variable-preview",
+      "admin-template-lifecycle-template-review-page",
+      "admin-template-lifecycle-template-review-decision",
+      "tenant-template-lifecycle-templates-form-name",
+      "tenant-template-lifecycle-templates-form-content",
+      "tenant-template-lifecycle-templates-form-type",
+      "tenant-template-lifecycle-templates-form-signature",
+      "tenant-template-lifecycle-templates-form-param-rule",
+      "admin-template-lifecycle-template-review-approve",
+      "admin-template-lifecycle-template-review-reject",
+      "tenant-template-lifecycle-templates-resubmit"
+    ],
+    "sources": [
+      {"path": ".planning/phases/13-template-lifecycle-compliance/design-output/template-lifecycle-prototype.html", "sha256": "f190dc09100708d881c93438fbee12a4bfbbd0221691539f469b36550c7514e9"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/13-template-lifecycle-compliance/design-output/template-lifecycle-baseline.pen", "sha256": "42b12385c1539913635cdea9a2f9d46d8674cb99704868223e9b05d72b5b974b"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/tenant/templates", "/admin/templates/review"],
+    "test_ids": [
+      "tenant-template-lifecycle-templates-page",
+      "tenant-template-lifecycle-templates-variable-preview",
+      "admin-template-lifecycle-template-review-page",
+      "admin-template-lifecycle-template-review-decision",
+      "tenant-template-lifecycle-templates-form-name",
+      "tenant-template-lifecycle-templates-form-content",
+      "tenant-template-lifecycle-templates-form-type",
+      "tenant-template-lifecycle-templates-form-signature",
+      "tenant-template-lifecycle-templates-form-param-rule",
+      "admin-template-lifecycle-template-review-approve",
+      "admin-template-lifecycle-template-review-reject",
+      "tenant-template-lifecycle-templates-resubmit"
+    ],
+    "sources": [
+      {"path": ".planning/phases/13-template-lifecycle-compliance/design-output/template-lifecycle-prototype.html", "sha256": "f190dc09100708d881c93438fbee12a4bfbbd0221691539f469b36550c7514e9"}
+    ]
+  },
+  "prototype_playwright": {
+    "test_ids": [
+      "tenant-template-lifecycle-templates-page",
+      "tenant-template-lifecycle-templates-variable-preview",
+      "admin-template-lifecycle-template-review-page",
+      "admin-template-lifecycle-template-review-decision",
+      "tenant-template-lifecycle-templates-form-name",
+      "tenant-template-lifecycle-templates-form-content",
+      "tenant-template-lifecycle-templates-form-type",
+      "tenant-template-lifecycle-templates-form-signature",
+      "tenant-template-lifecycle-templates-form-param-rule",
+      "admin-template-lifecycle-template-review-approve",
+      "admin-template-lifecycle-template-review-reject",
+      "tenant-template-lifecycle-templates-resubmit"
+    ],
+    "evidence_kind": "prototype",
+    "sources": [
+      {"path": ".planning/phases/13-template-lifecycle-compliance/design-output/prototype.spec.ts", "sha256": "cf8b3e0772b054e73fca6026530aa8d9fb769b84fba45f37aaf44abbeaf55ba4"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/tenant/templates", "/admin/templates/review"],
+    "test_ids": [
+      "tenant-template-lifecycle-templates-page",
+      "tenant-template-lifecycle-templates-variable-preview",
+      "admin-template-lifecycle-template-review-page",
+      "admin-template-lifecycle-template-review-decision",
+      "tenant-template-lifecycle-templates-form-name",
+      "tenant-template-lifecycle-templates-form-content",
+      "tenant-template-lifecycle-templates-form-type",
+      "tenant-template-lifecycle-templates-form-signature",
+      "tenant-template-lifecycle-templates-form-param-rule",
+      "admin-template-lifecycle-template-review-approve",
+      "admin-template-lifecycle-template-review-reject",
+      "tenant-template-lifecycle-templates-resubmit"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "8c8df3ac00ef03d8f24319ef918e9b28c1220e982354128e0d343b040cd49ebf"},
+      {"path": "web/src/pages/tenant/templates/TemplateLifecyclePage.tsx", "sha256": "c93bab003ce6ebc91b590b278cbc0234fc4110106b71042ba967ab62c6501879"},
+      {"path": "web/src/pages/admin/templates/TemplateReviewPage.tsx", "sha256": "4d425b444694cb47e9fe5b5fdbc315832119c4c28d80be32431b7d93a626d727"}
+    ]
+  },
+  "playwright": {
+    "test_ids": [
+      "tenant-template-lifecycle-templates-page",
+      "tenant-template-lifecycle-templates-variable-preview",
+      "admin-template-lifecycle-template-review-page",
+      "admin-template-lifecycle-template-review-decision",
+      "tenant-template-lifecycle-templates-form-name",
+      "tenant-template-lifecycle-templates-form-content",
+      "tenant-template-lifecycle-templates-form-type",
+      "tenant-template-lifecycle-templates-form-signature",
+      "tenant-template-lifecycle-templates-form-param-rule",
+      "admin-template-lifecycle-template-review-approve",
+      "admin-template-lifecycle-template-review-reject",
+      "tenant-template-lifecycle-templates-resubmit"
+    ],
+    "evidence_kind": "production",
+    "sources": [
+      {"path": "web/test/scripts/template-lifecycle.spec.ts", "sha256": "ff826235825f0511fb2b65bc1eb4f5a0216a225a2f1c6df03a6f1fcc1fe349ed"}
+    ]
+  },
+  "execution": {
+    "command": "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+    "cwd": "web",
+    "commit": "c4eb75b97ff2b64722864ddda3ce5f373cb12c2d",
+    "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900",
+    "result": "PASS",
+    "report": {"path": ".planning/phases/13-template-lifecycle-compliance/EVIDENCE/playwright-execution.json", "sha256": "9924fc6e69255c5efea22c9e148d2ea84f9cf3e8e6a48cd3e6f832796fdb7b5e"}
+  }
+}

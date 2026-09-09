@@ -18,6 +18,7 @@ import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
+import com.ycsopen.sms.core.service.template.TemplateSendComplianceService;
 import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +78,9 @@ class MessageSubmitServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new MessageSubmitService(templateRepository, signatureRepository,
+        TemplateSendComplianceService templateCompliance =
+                new TemplateSendComplianceService(templateRepository, signatureRepository);
+        service = new MessageSubmitService(templateCompliance,
                 routingEngine, billingService, messageTaskProtectionAdapter, eligibilityPolicy);
     }
 
@@ -211,6 +214,7 @@ class MessageSubmitServiceTest {
         template.setAuditStatus(Template.AuditStatus.APPROVED);
         Signature signature = new Signature();
         signature.setId(9L);
+        signature.setTenantId(TENANT_ID);
         signature.setSignContent("安全签名");
         signature.setAuditStatus(Signature.AuditStatus.APPROVED);
         when(templateRepository.findById(8L)).thenReturn(Optional.of(template));

@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-FIELD-TEMPLATE-CONTENT",
+  "status": "PASS",
+  "evidence": ["TemplateLifecycleService.required(content)", "TemplateRuleEngine.variables(content)", "TemplateLifecyclePage data-testid tenant-template-lifecycle-templates-form-content"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Template content is required, capped, parsed for variables, checked for unsafe terms, and submitted through the documented field selector."
+}

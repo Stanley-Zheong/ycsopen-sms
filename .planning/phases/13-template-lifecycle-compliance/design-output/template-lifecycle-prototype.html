@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 13 Template Lifecycle Prototype</title>
+</head>
+<body>
+  <main>
+    <section data-testid="tenant-template-lifecycle-templates-page" data-route="/tenant/templates">
+      <h1>模板管理</h1>
+      <form>
+        <input data-testid="tenant-template-lifecycle-templates-form-name" aria-label="模板名称">
+        <textarea data-testid="tenant-template-lifecycle-templates-form-content" aria-label="模板内容"></textarea>
+        <select data-testid="tenant-template-lifecycle-templates-form-type" aria-label="模板类型"></select>
+        <input data-testid="tenant-template-lifecycle-templates-form-signature" aria-label="绑定签名">
+        <input data-testid="tenant-template-lifecycle-templates-form-param-rule" aria-label="参数规则">
+      </form>
+      <button data-testid="tenant-template-lifecycle-templates-variable-preview">预览</button>
+      <button data-testid="tenant-template-lifecycle-templates-resubmit">重新提交</button>
+    </section>
+    <section data-testid="admin-template-lifecycle-template-review-page" data-route="/admin/templates/review">
+      <h1>模板审核</h1>
+      <button data-testid="admin-template-lifecycle-template-review-decision">保存模板审核</button>
+      <button data-testid="admin-template-lifecycle-template-review-approve">快速通过</button>
+      <button data-testid="admin-template-lifecycle-template-review-reject">快速驳回</button>
+    </section>
+  </main>
+</body>
+</html>

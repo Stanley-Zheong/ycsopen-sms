@@ -25,6 +25,8 @@ import ChannelHealthPage from '@/pages/admin/channels/ChannelHealthPage';
 import ChannelPoolsPage from '@/pages/admin/channels/ChannelPoolsPage';
 import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
 import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
+import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
+import TemplateLifecyclePage from '@/pages/tenant/templates/TemplateLifecyclePage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -56,6 +58,7 @@ export const router = createBrowserRouter([
       { path: '/admin/channel/pools', element: <ChannelPoolsPage /> },
       { path: 'audit', element: <Navigate to="/admin/signatures/review" replace /> },
       { path: '/admin/signatures/review', element: <SignatureReviewPage /> },
+      { path: '/admin/templates/review', element: <TemplateReviewPage /> },
       {
         path: 'riskcontrol',
         element: <PlaceholderPage title="验证规则（黑白名单/内容审核/频次/携号转网）" prdRef="F-5.1~F-5.7" />,
@@ -89,7 +92,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="overview" replace /> },
       { path: 'overview', element: <OverviewPage /> },
       { path: 'send', element: <SendPage /> },
-      { path: 'templates', element: <PlaceholderPage title="模板管理" prdRef="F-3.4" /> },
+      { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },

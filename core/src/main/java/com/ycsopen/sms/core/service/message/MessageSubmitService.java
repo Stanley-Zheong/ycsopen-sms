@@ -7,23 +7,19 @@ import com.ycsopen.sms.core.common.security.persistence.PreparedMessageRouting;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
-import com.ycsopen.sms.core.repository.SignatureRepository;
-import com.ycsopen.sms.core.repository.TemplateRepository;
 import com.ycsopen.sms.core.service.billing.BillingService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
+import com.ycsopen.sms.core.service.template.TemplateSendComplianceService;
 import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * F-6.1 HTTP API 单条发送的编排入口，串联"F-3.7 发送前置校验 -&gt; F-5 路由引擎 -&gt; F-8.1 预扣计费
@@ -34,23 +30,18 @@ import java.util.regex.Pattern;
 @Service
 public class MessageSubmitService {
 
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(\\w+)}");
-
-    private final TemplateRepository templateRepository;
-    private final SignatureRepository signatureRepository;
+    private final TemplateSendComplianceService templateCompliance;
     private final RoutingEngine routingEngine;
     private final BillingService billingService;
     private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     private final TenantEligibilityPolicy tenantEligibilityPolicy;
 
-    public MessageSubmitService(TemplateRepository templateRepository,
-                                 SignatureRepository signatureRepository,
+    public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
                                  TenantEligibilityPolicy tenantEligibilityPolicy) {
-        this.templateRepository = templateRepository;
-        this.signatureRepository = signatureRepository;
+        this.templateCompliance = templateCompliance;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
         this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
@@ -61,26 +52,10 @@ public class MessageSubmitService {
     public SmsSendResponse submit(Long tenantId, SmsSendRequest request, String clientIp) {
         tenantEligibilityPolicy.requireNewWorkAllowed(tenantId);
 
-        Template template = templateRepository.findById(Long.valueOf(request.templateId()))
-                .orElseThrow(() -> new BusinessException("TEMPLATE_NOT_FOUND", "模板不存在"));
-
-        // F-3.7 发送前置校验：必须引用"已通过"的模板；非系统模板还必须属于本机构。
-        if (!template.getIsSystemTemplate() && !template.getTenantId().equals(tenantId)) {
-            throw new BusinessException("TEMPLATE_NOT_OWNED", "模板不属于当前机构");
-        }
-        if (template.getAuditStatus() != Template.AuditStatus.APPROVED) {
-            throw new BusinessException("TEMPLATE_NOT_APPROVED", "模板未通过审核，不可用于发送");
-        }
-
-        Signature signature = signatureRepository.findById(template.getSignatureId())
-                .orElseThrow(() -> new BusinessException("SIGNATURE_NOT_FOUND", "签名不存在"));
-        if (signature.getAuditStatus() != Signature.AuditStatus.APPROVED) {
-            throw new BusinessException("SIGNATURE_NOT_APPROVED", "签名未通过审核，不可用于发送");
-        }
-
-        // 渲染最终文本：签名 + 模板内容替换变量。内容审核必须扫描这个"最终文本"而不是模板原文——
-        // 直接对应 PRD 检视 Finding #2，是本类存在这段渲染逻辑而不是把模板原文丢给路由引擎的原因。
-        String finalContent = renderContent(signature.getSignContent(), template.getContent(), request.templateParams());
+        TemplateSendComplianceService.Result compliance = templateCompliance.validateDomesticSend(
+                tenantId, request.templateId(), request.signId(), request.templateParams());
+        Template template = compliance.template();
+        Signature signature = compliance.signature();
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
                 + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -92,7 +67,7 @@ public class MessageSubmitService {
                 .mobileQueryIndexes(preparedRouting.queryIndexes())
                 .legacyMobileLookupToken(preparedRouting.legacyLookupToken())
                 .clientIp(clientIp)
-                .content(finalContent)
+                .content(compliance.finalContent())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
                 .build();
@@ -130,16 +105,4 @@ public class MessageSubmitService {
         return new SmsSendResponse(messageId, task.getSendStatus().name());
     }
 
-    private String renderContent(String signContent, String templateContent, Map<String, String> params) {
-        String rendered = templateContent;
-        if (params != null) {
-            Matcher matcher = VARIABLE_PATTERN.matcher(templateContent);
-            while (matcher.find()) {
-                String var = matcher.group(1);
-                String value = params.getOrDefault(var, "");
-                rendered = rendered.replace("${" + var + "}", value);
-            }
-        }
-        return "【" + signContent + "】" + rendered;
-    }
 }

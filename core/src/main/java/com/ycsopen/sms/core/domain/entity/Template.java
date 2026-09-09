@@ -22,6 +22,9 @@ public class Template {
     @Column(name = "template_code", nullable = false)
     private String templateCode;
 
+    @Column(name = "template_name", nullable = false)
+    private String templateName;
+
     @Column(nullable = false)
     private String content;
 
@@ -32,9 +35,32 @@ public class Template {
     @Column(name = "signature_id", nullable = false)
     private Long signatureId;
 
+    @Column(name = "param_check_rule")
+    private String paramCheckRule;
+
+    private String description;
+
+    @Column(name = "variable_names")
+    private String variableNames;
+
+    @Column(name = "version_no")
+    private Integer versionNo = 1;
+
+    @Column(name = "previous_template_id")
+    private Long previousTemplateId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "audit_status")
     private AuditStatus auditStatus = AuditStatus.PENDING;
+
+    @Column(name = "audit_time")
+    private LocalDateTime auditTime;
+
+    @Column(name = "audit_comment")
+    private String auditComment;
+
+    @Column(name = "usage_count")
+    private Long usageCount = 0L;
 
     @Column(name = "is_system_template")
     private Boolean isSystemTemplate = false;
@@ -43,5 +69,5 @@ public class Template {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum TemplateType { VERIFY, NOTIFY, MARKETING }
-    public enum AuditStatus { PENDING, APPROVED, REJECTED }
+    public enum AuditStatus { PENDING, APPROVED, REJECTED, AMENDMENT_REQUIRED }
 }

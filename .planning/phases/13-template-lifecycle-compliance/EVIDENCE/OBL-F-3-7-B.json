@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-F-3-7-B",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateSendComplianceService.java",
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateRuleEngine.java",
+    "core/src/test/java/com/ycsopen/sms/core/service/template/TemplateSendComplianceServiceTest.java"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test"
+  ],
+  "result": "Domestic free text, missing template, unapproved template or signature, wrong ownership, wrong binding, missing variables, extra variables, and injection values are rejected before task creation."
+}

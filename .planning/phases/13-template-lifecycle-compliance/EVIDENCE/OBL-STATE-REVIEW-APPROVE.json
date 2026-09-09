@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-STATE-REVIEW-APPROVE",
+  "status": "PASS",
+  "evidence": ["TemplateLifecycleService.decide", "TemplateReviewPage data-testid admin-template-lifecycle-template-review-approve"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Pending templates can transition to APPROVED exactly once with actor/opinion history."
+}

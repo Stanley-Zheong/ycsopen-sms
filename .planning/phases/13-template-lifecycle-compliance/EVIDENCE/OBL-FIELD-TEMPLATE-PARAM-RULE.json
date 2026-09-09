@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-FIELD-TEMPLATE-PARAM-RULE",
+  "status": "PASS",
+  "evidence": ["TemplateRuleEngine.rules", "TemplateRuleEngine.render", "TemplateLifecyclePage data-testid tenant-template-lifecycle-templates-form-param-rule"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Parameter rules validate grammar and exact variable alignment, then enforce value shape during preview and send."
+}

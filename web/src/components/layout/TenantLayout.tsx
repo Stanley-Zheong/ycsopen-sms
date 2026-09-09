@@ -34,6 +34,8 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-tenant-qualification-qualification-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/signatures' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-signature-lifecycle-signatures-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/templates' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-template-lifecycle-templates-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           )

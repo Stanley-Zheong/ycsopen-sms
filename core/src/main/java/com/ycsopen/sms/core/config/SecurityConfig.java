@@ -59,7 +59,8 @@ public class SecurityConfig {
                     .hasRole("TENANT_ADMIN")
                     .requestMatchers("/api/v1/console/tenant/api-keys/**",
                             "/api/v1/console/tenant/cmpp-credentials/**",
-                            "/api/v1/console/tenant/signatures/**")
+                            "/api/v1/console/tenant/signatures/**",
+                            "/api/v1/console/tenant/templates/**")
                     .hasAnyRole("TENANT_ADMIN", "TENANT_DEV")
                     .requestMatchers("/api/v1/console/**")
                     .hasAnyRole("ADMIN", "OPERATOR", "FINANCE")

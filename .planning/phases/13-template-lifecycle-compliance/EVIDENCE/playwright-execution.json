@@ -1,0 +1,21 @@
+{
+  "command": "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json",
+  "cwd": "web",
+  "commit": "c4eb75b97ff2b64722864ddda3ce5f373cb12c2d",
+  "config": "web/playwright.config.ts; local Google Chrome only; executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome; viewport=1440x900",
+  "result": "PASS",
+  "cases": [
+    "C-P13-FIELD-CONTENT",
+    "C-P13-FIELD-NAME",
+    "C-P13-FIELD-PARAM-RULE",
+    "C-P13-FIELD-SIGNATURE",
+    "C-P13-FIELD-TYPE",
+    "C-P13-STATE-APPROVE",
+    "C-P13-STATE-REJECT",
+    "C-P13-STATE-RESUBMIT",
+    "C-P13-TEMPLATE-APPLICATION",
+    "C-P13-TEMPLATE-DECISION",
+    "C-P13-TEMPLATE-PREVIEW",
+    "C-P13-TEMPLATE-REVIEW"
+  ]
+}

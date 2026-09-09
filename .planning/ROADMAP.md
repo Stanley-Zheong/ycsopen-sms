@@ -40,7 +40,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 10: Channel configuration lifecycle** — Protocol/carrier/connectivity/credential/connection/price/priority/availability lifecycle delivered.
 - [x] **Phase 11: Channel health, pools, and candidate pause** — Heartbeat/test health.
 - [x] **Phase 12: Signature lifecycle and channel filing** — Signature application/proof/risk delivered.
-- [ ] **Phase 13: Template lifecycle and send compliance contract** — Template fields/variables/rules/signature binding.
+- [x] **Phase 13: Template lifecycle and send compliance contract** — Template fields/variables/rules/signature binding.
 - [ ] **Phase 14: Auditable exemption policy** — Signature/content/account exemption types.
 - [ ] **Phase 15: Unified resource review history** — Cross-resource immutable review decisions.
 - [ ] **Phase 16: Blacklist and third-party risk control** — System/tenant black/white lists.
@@ -398,7 +398,7 @@ Plans:
 
 **Test layers**: State/risk unit, filing contract integration, authorization, Playwright application/review/filing.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `12-01-PLAN.md`, `12-02-PLAN.md`
 **UI hint**: yes
 
 ### Phase 13: Template lifecycle and send compliance contract
@@ -421,7 +421,7 @@ Plans:
 
 **Test layers**: Parser/render/state unit, persistence, ingress conformance, API authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `13-01-PLAN.md`, `13-02-PLAN.md`
 **UI hint**: yes
 
 ### Phase 14: Auditable exemption policy

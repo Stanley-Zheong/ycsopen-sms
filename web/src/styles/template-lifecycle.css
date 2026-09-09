@@ -1,0 +1,54 @@
+.template-lifecycle-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.template-lifecycle-alert {
+  border-radius: 10px;
+  margin: 12px 0;
+  padding: 10px 12px;
+}
+
+.template-lifecycle-alert.success {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.template-lifecycle-alert.error {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.template-lifecycle-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.template-lifecycle-form label,
+.template-lifecycle-filter,
+.template-lifecycle-row {
+  display: grid;
+  gap: 6px;
+}
+
+.template-lifecycle-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.template-lifecycle-stats span {
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.template-lifecycle-row {
+  border-top: 1px solid #e4e7ec;
+  padding: 12px 0;
+}

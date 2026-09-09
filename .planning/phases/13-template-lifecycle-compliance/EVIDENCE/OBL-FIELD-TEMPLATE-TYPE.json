@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-FIELD-TEMPLATE-TYPE",
+  "status": "PASS",
+  "evidence": ["TemplateLifecycleService.normalizeType", "TemplateLifecyclePage data-testid tenant-template-lifecycle-templates-form-type"],
+  "commands": ["mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test", "npm exec -- playwright test template-lifecycle.spec.ts --project=local-google-chrome --reporter=json"],
+  "result": "Template type accepts only allowed domain values and normalizes UI values for persistence."
+}

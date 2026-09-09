@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-DATA-10-3-TEMPLATE-EXEMPT",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/resources/db/migration/V2200__template_lifecycle_compliance.sql",
+    "core/src/main/java/com/ycsopen/sms/core/domain/entity/Template.java",
+    "core/src/main/java/com/ycsopen/sms/core/service/template/TemplateLifecycleService.java"
+  ],
+  "commands": [
+    "mvn -q -f core/pom.xml -Dtest=TemplateLifecycleServiceTest,TemplateSendComplianceServiceTest,MessageSubmitServiceTest test"
+  ],
+  "result": "Template persistence stores variable names, parameter rules, signature binding, review state, version linkage, and append-only review history; exemptions remain outside Phase 13 mutation scope."
+}
