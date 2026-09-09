@@ -1,0 +1,19 @@
+Phase 22 Pencil source placeholder for trial/prepaid UI.
+
+Routes:
+- /admin/tenant-trial-contracts
+- /admin/balance-audit
+- /tenant/overview
+- /tenant/consumption-ledger
+- /tenant/qualification
+
+Selectors:
+- admin-trial-prepaid-tenant-trial-quota
+- tenant-trial-prepaid-overview-trial-status
+- tenant-trial-prepaid-overview-conversion-request
+- tenant-trial-prepaid-consumption-ledger-page
+- tenant-trial-prepaid-consumption-ledger-filters
+- admin-trial-prepaid-balance-audit-table
+- admin-trial-prepaid-tenant-trial-validity
+- tenant-tenant-qualification-qualification-status
+- tenant-trial-prepaid-overview-page

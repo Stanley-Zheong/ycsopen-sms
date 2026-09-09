@@ -35,6 +35,8 @@ import ContentSafetyPage from '@/pages/admin/risk/ContentSafetyPage';
 import FrequencyRulesPage from '@/pages/admin/risk/FrequencyRulesPage';
 import NumberAttributionPage from '@/pages/admin/tools/NumberAttributionPage';
 import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
+import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
+import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -77,6 +79,8 @@ export const router = createBrowserRouter([
       { path: '/admin/number-portability', element: <NumberAttributionPage /> },
       { path: '/admin/prefixes', element: <NumberAttributionPage /> },
       { path: '/admin/status-codes', element: <ProviderStatusPage /> },
+      { path: '/admin/tenant-trial-contracts', element: <TrialPrepaidAdminPage /> },
+      { path: '/admin/balance-audit', element: <TrialPrepaidAdminPage /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行数据（含退订记录）" prdRef="F-10" /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
@@ -104,11 +108,12 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="overview" replace /> },
-      { path: 'overview', element: <OverviewPage /> },
+      { path: '/tenant/overview', element: <OverviewPage /> },
       { path: 'send', element: <SendPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },
+      { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行消息查询" prdRef="F-7.5/F-7.9" /> },
       { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },

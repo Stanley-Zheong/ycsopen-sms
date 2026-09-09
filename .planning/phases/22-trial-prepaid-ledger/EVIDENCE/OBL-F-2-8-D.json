@@ -1,0 +1,1 @@
+{"phase":"22","owner":"trial-prepaid-ledger","obligation_id":"OBL-F-2-8-D","status":"PASS","evidence":["core/src/main/java/com/ycsopen/sms/core/service/billing/TrialPrepaidLedgerService.java","web/test/scripts/trial-prepaid.spec.ts","EVIDENCE/playwright-raw.json"],"case_id":"C-P22-CONVERSION"}

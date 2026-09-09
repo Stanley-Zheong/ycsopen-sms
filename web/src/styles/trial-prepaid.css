@@ -1,0 +1,86 @@
+.trial-prepaid-page {
+  display: grid;
+  gap: 16px;
+}
+
+.trial-prepaid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.trial-prepaid-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.trial-prepaid-form label {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+}
+
+.trial-prepaid-form input,
+.trial-prepaid-form select {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.trial-prepaid-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.trial-prepaid-metric {
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.trial-prepaid-metric dt {
+  color: #667085;
+  font-size: 13px;
+}
+
+.trial-prepaid-metric dd {
+  margin: 4px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.trial-prepaid-status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-weight: 700;
+}
+
+.trial-prepaid-status.status-trial_frozen,
+.trial-prepaid-status.status-expired {
+  background: #fff6ed;
+  color: #c4320a;
+}
+
+.trial-prepaid-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.trial-prepaid-alert.success {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.trial-prepaid-alert.error {
+  color: #b42318;
+  background: #fef3f2;
+}

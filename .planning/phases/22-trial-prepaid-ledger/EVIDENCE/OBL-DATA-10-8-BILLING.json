@@ -1,0 +1,1 @@
+{"phase":"22","owner":"trial-prepaid-ledger","obligation_id":"OBL-DATA-10-8-BILLING","status":"PASS","evidence":["core/src/main/resources/db/migration/V3100__trial_prepaid_ledger.sql","core/src/main/java/com/ycsopen/sms/core/service/billing/TrialPrepaidLedgerService.java","EVIDENCE/mvn-test.log"],"case_id":"C-P22-BILLING-DATA"}

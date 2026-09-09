@@ -1,0 +1,19 @@
+{
+  "command": "npm --prefix web exec -- playwright test trial-prepaid.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0c1ff113f309197273a6fc6028f559b765531da1",
+  "config": "web/playwright.config.ts --project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P22-TRIAL-CONFIG",
+    "C-P22-TENANT-TRIAL-STATUS",
+    "C-P22-CONVERSION",
+    "C-P22-CONSUMPTION-LEDGER",
+    "C-P22-CONSUMPTION-FILTER",
+    "C-P22-BALANCE-AUDIT",
+    "C-P22-QUOTA-FIELD",
+    "C-P22-VALIDITY-FIELD",
+    "C-P22-QUALIFICATION-TRIAL",
+    "C-P22-TRIAL-FREEZE",
+    "C-P22-TRIAL-FLOW"
+  ]
+}

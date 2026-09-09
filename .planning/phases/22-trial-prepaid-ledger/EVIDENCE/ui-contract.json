@@ -1,0 +1,128 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/tenant-trial-contracts",
+      "/tenant/overview",
+      "/tenant/consumption-ledger",
+      "/admin/balance-audit",
+      "/tenant/qualification"
+    ],
+    "test_ids": [
+      "admin-trial-prepaid-tenant-trial-quota",
+      "tenant-trial-prepaid-overview-trial-status",
+      "tenant-trial-prepaid-overview-conversion-request",
+      "tenant-trial-prepaid-consumption-ledger-page",
+      "tenant-trial-prepaid-consumption-ledger-filters",
+      "admin-trial-prepaid-balance-audit-table",
+      "admin-trial-prepaid-tenant-trial-validity",
+      "tenant-tenant-qualification-qualification-status",
+      "tenant-trial-prepaid-overview-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/22-trial-prepaid-ledger/UI-ELEMENTS.md", "sha256": "8e07a5b06a38599a7b50328b3decd52c449d0425dc7073c84eeadaef724ca319" },
+      { "path": ".planning/phases/22-trial-prepaid-ledger/22-UI-SPEC.md", "sha256": "3957f38066d665a666a806ec78518f2d715075633f4886d310c11b1e05308c5f" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/22-trial-prepaid-ledger/trial-prepaid-ledger.pen", "sha256": "f9e84203f1720d9b0ad061a3fbbc999e4d83c7755b869c199d261cd122b7cd63" }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/tenant-trial-contracts",
+      "/tenant/overview",
+      "/tenant/consumption-ledger",
+      "/admin/balance-audit",
+      "/tenant/qualification"
+    ],
+    "test_ids": [
+      "admin-trial-prepaid-tenant-trial-quota",
+      "tenant-trial-prepaid-overview-trial-status",
+      "tenant-trial-prepaid-overview-conversion-request",
+      "tenant-trial-prepaid-consumption-ledger-page",
+      "tenant-trial-prepaid-consumption-ledger-filters",
+      "admin-trial-prepaid-balance-audit-table",
+      "admin-trial-prepaid-tenant-trial-validity",
+      "tenant-tenant-qualification-qualification-status",
+      "tenant-trial-prepaid-overview-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/22-trial-prepaid-ledger/design-output/prototype.html", "sha256": "87506d49887cc4abb6d2832e63a78b07db81337878bc6e2f48c3dee786e5ea14" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-trial-prepaid-tenant-trial-quota",
+      "tenant-trial-prepaid-overview-trial-status",
+      "tenant-trial-prepaid-overview-conversion-request",
+      "tenant-trial-prepaid-consumption-ledger-page",
+      "tenant-trial-prepaid-consumption-ledger-filters",
+      "admin-trial-prepaid-balance-audit-table",
+      "admin-trial-prepaid-tenant-trial-validity",
+      "tenant-tenant-qualification-qualification-status",
+      "tenant-trial-prepaid-overview-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/22-trial-prepaid-ledger/design-output/prototype.spec.ts", "sha256": "91e09bc06f5a18fdfe5419707e3be09a1712fdd0598151f2dea544f9c3a65236" }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/tenant-trial-contracts",
+      "/tenant/overview",
+      "/tenant/consumption-ledger",
+      "/admin/balance-audit",
+      "/tenant/qualification"
+    ],
+    "test_ids": [
+      "admin-trial-prepaid-tenant-trial-quota",
+      "tenant-trial-prepaid-overview-trial-status",
+      "tenant-trial-prepaid-overview-conversion-request",
+      "tenant-trial-prepaid-consumption-ledger-page",
+      "tenant-trial-prepaid-consumption-ledger-filters",
+      "admin-trial-prepaid-balance-audit-table",
+      "admin-trial-prepaid-tenant-trial-validity",
+      "tenant-tenant-qualification-qualification-status",
+      "tenant-trial-prepaid-overview-page"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "666ad20c05f9ce39e82ee1a4f542ab44791fd1b7894c89c4135ce3acedb421c9" },
+      { "path": "web/src/components/layout/AdminLayout.tsx", "sha256": "bebdffefffde667992b4094f43d4a4495354921f921628a2926a696a42b01b7c" },
+      { "path": "web/src/components/layout/TenantLayout.tsx", "sha256": "ca910fac516353df293ee0842175d013005ffc1df985be0fec2029a9a2e62986" },
+      { "path": "web/src/pages/tenant/overview/OverviewPage.tsx", "sha256": "89f58bc664c320808045801e1ffa5172d28027b7c8f2024f578aa18d9130a1aa" },
+      { "path": "web/src/pages/tenant/ledger/TenantConsumptionLedgerPage.tsx", "sha256": "e1abd8438caf7fc108cfd4e9e351cb67e383abe8e7282b59808fa722fd6dbfe6" },
+      { "path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "ac338183404870933c7eff4b605639a051f01c43eab6129a632ba82b60bfbac9" },
+      { "path": "web/src/pages/tenant/TenantQualificationPage.tsx", "sha256": "b23f2d12c94348b89a6aa81e6d7d3ac2d1e4a7b2cc2fb923334b4daa3b1e16a4" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-trial-prepaid-tenant-trial-quota",
+      "tenant-trial-prepaid-overview-trial-status",
+      "tenant-trial-prepaid-overview-conversion-request",
+      "tenant-trial-prepaid-consumption-ledger-page",
+      "tenant-trial-prepaid-consumption-ledger-filters",
+      "admin-trial-prepaid-balance-audit-table",
+      "admin-trial-prepaid-tenant-trial-validity",
+      "tenant-tenant-qualification-qualification-status",
+      "tenant-trial-prepaid-overview-page"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/trial-prepaid.spec.ts", "sha256": "749ce2b3c3d3bf2fc1578c237d0a12a727846bd7f3980fe24dcee13bc5e8431b" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test trial-prepaid.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0c1ff113f309197273a6fc6028f559b765531da1",
+    "config": "web/playwright.config.ts --project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/22-trial-prepaid-ledger/EVIDENCE/playwright-execution.json",
+      "sha256": "f2fd1edc6c7ce059cd3b4e6a08933fb10af74588d193e46f98c2db9010a6d0b1"
+    }
+  }
+}
