@@ -16,7 +16,12 @@ export default function SendPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      const res = await apiClient.post('/sms/send', { phoneNumber, templateId, templateParams: {} });
+      const res = await apiClient.post('/sms/send', {
+        submitId: `CONSOLE-${Date.now()}`,
+        phoneNumber,
+        templateId,
+        templateParams: {},
+      });
       setResult(`提交成功，消息ID：${res.data.data.messageId}`);
     } catch (err: unknown) {
       const message = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined;

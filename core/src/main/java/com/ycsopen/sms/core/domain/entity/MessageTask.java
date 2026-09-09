@@ -32,6 +32,9 @@ public class MessageTask {
     @Column(name = "tenant_id", nullable = false)
     private Long tenantId;
 
+    @Column(name = "submit_id")
+    private Long submitId;
+
     @Column(name = "template_id")
     private Long templateId;
 

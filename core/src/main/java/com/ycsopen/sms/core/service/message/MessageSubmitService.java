@@ -20,6 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * F-6.1 HTTP API 单条发送的编排入口，串联"F-3.7 发送前置校验 -&gt; F-5 路由引擎 -&gt; F-8.1 预扣计费
@@ -35,17 +40,20 @@ public class MessageSubmitService {
     private final BillingService billingService;
     private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     private final TenantEligibilityPolicy tenantEligibilityPolicy;
+    private final MessageAcceptanceIdempotencyService idempotency;
 
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
-                                 TenantEligibilityPolicy tenantEligibilityPolicy) {
+                                 TenantEligibilityPolicy tenantEligibilityPolicy,
+                                 MessageAcceptanceIdempotencyService idempotency) {
         this.templateCompliance = templateCompliance;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
         this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
         this.tenantEligibilityPolicy = tenantEligibilityPolicy;
+        this.idempotency = idempotency;
     }
 
     @Transactional
@@ -56,11 +64,17 @@ public class MessageSubmitService {
     @Transactional
     public SmsSendResponse submit(Long tenantId, Long apiKeyId, SmsSendRequest request, String clientIp) {
         tenantEligibilityPolicy.requireNewWorkAllowed(tenantId);
+        MessageAcceptanceIdempotencyService.Claim claim = idempotency.claim(
+                tenantId, request.submitId(), requestDigest(request));
+        if (claim.existingResponse().isPresent()) {
+            return claim.existingResponse().get();
+        }
 
         TemplateSendComplianceService.Result compliance = templateCompliance.validateDomesticSend(
                 tenantId, request.templateId(), request.signId(), request.templateParams());
         Template template = compliance.template();
         Signature signature = compliance.signature();
+        idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
                 + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -95,6 +109,7 @@ public class MessageSubmitService {
         MessageTask task = new MessageTask();
         task.setMessageId(messageId);
         task.setTenantId(tenantId);
+        task.setSubmitId(claim.submissionId());
         task.setTemplateId(template.getId());
         task.setSignatureId(signature.getId());
         task.setContent(decision.getFinalContent());
@@ -104,11 +119,32 @@ public class MessageSubmitService {
 
         // F-8.1 预扣：通道单价从 Channel 读取，此处简化为固定演示单价；生产实现应查 Channel.price。
         billingService.reserve(tenantId, savedTask.getId(), new java.math.BigDecimal("0.05"));
+        idempotency.enqueueSendIntent(tenantId, savedTask.getId(), messageId, decision.getSelectedChannelId());
+        idempotency.markAccepted(claim.submissionId());
 
         // TODO(F-6.7/CMPP + 上游 HTTP 连接器): 真正把消息投递给 decision.getSelectedChannelId()
         // 对应的上游通道——这是当前仓库里最大的一块"占位而非实现"，见 core/docs/ROADMAP.md。
 
         return new SmsSendResponse(messageId, task.getSendStatus().name());
+    }
+
+    private static String requestDigest(SmsSendRequest request) {
+        try {
+            StringBuilder canonical = new StringBuilder()
+                    .append(request.submitId()).append('\n')
+                    .append(request.phoneNumber()).append('\n')
+                    .append(request.templateId()).append('\n')
+                    .append(request.signId() == null ? "" : request.signId()).append('\n')
+                    .append(request.callbackUrl() == null ? "" : request.callbackUrl()).append('\n');
+            Map<String, String> params = request.templateParams() == null
+                    ? Map.of() : new TreeMap<>(request.templateParams());
+            params.forEach((key, value) -> canonical.append(key).append('=').append(value).append('\n'));
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(canonical.toString().getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (Exception impossible) {
+            throw new IllegalStateException("REQUEST_DIGEST_UNAVAILABLE", impossible);
+        }
     }
 
 }

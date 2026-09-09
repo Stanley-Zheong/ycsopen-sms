@@ -136,11 +136,12 @@
       "tenant_column": "tenant_id", "identity_column": "id",
       "readers": [
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface SignatureAuthenticationProjection", "apiKey.appSecretEncrypted as appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/security/HmacRequestAuthenticator.java", "tokens": ["findSignatureAuthenticationByAppKey", "secrets.reveal"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] }
       ],
       "writers": [],
-      "reason": "Current incomplete authentication lookup selects only ID, tenant and status; the protected secret is not hydrated before an explicit signature owner exists."
+      "reason": "Phase 23 gives the SMS HMAC filter an explicit protected-secret owner; the legacy interceptor remains a header-only compatibility boundary."
     },
     {
       "id": "tenant_protocol_credentials.account_encrypted", "table": "tenant_protocol_credentials", "column": "account_encrypted",
@@ -364,13 +365,14 @@
       "reason": "Plan 08 maps the protected cell as hidden opaque bytes and proves exact-byte preservation across unrelated authentication writes."
     },
     {
-      "id": "hmac-api-key-hydration", "role": "READER", "disposition": "ADOPTED_SECRET_EXCLUDING_AUTHENTICATION_PROJECTION", "obligation_blocking": false,
+      "id": "hmac-api-key-hydration", "role": "READER", "disposition": "ADOPTED_EXPLICIT_PROTECTED_SECRET_HMAC_AUTHENTICATION", "obligation_blocking": false,
       "sources": [
-        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/security/HmacRequestAuthenticator.java", "tokens": ["findSignatureAuthenticationByAppKey", "secrets.reveal", "canonicalHeaders"] },
         { "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/TenantApiKey.java", "tokens": ["@Column(name = \"app_secret_encrypted\", nullable = false, length = 255)", "private byte[] appSecretEncrypted"] },
-        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface AuthenticationProjection", "apiKey.tenantId as tenantId", "apiKey.status as status"] }
+        { "path": "core/src/main/java/com/ycsopen/sms/core/repository/TenantApiKeyRepository.java", "tokens": ["interface SignatureAuthenticationProjection", "apiKey.appSecretEncrypted as appSecretEncrypted"] },
+        { "path": "core/src/main/java/com/ycsopen/sms/core/web/interceptor/HmacAuthInterceptor.java", "tokens": ["findAuthenticationByAppKey", "apiKey.getStatus()"] }
       ],
-      "reason": "The current incomplete authentication path selects only ID, tenant and status; app_secret_encrypted is absent from the closed query and projection."
+      "reason": "The SMS HMAC authentication filter reads the protected App Secret only through a dedicated projection and reveal context before business processing."
     },
     {
       "id": "blacklist-lookup-hydration", "role": "READER", "disposition": "ADOPTED_METADATA_FIRST_CHECKPOINT_GATED_LOOKUP", "obligation_blocking": false,

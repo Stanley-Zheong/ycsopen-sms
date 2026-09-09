@@ -25,4 +25,16 @@ public class TenantCredentialSecretProtectionService {
                     "tenant:" + tenantId, "id=" + credentialId), EnvelopeCodec.Target.DATABASE_FIELD);
         } finally { java.util.Arrays.fill(plaintext, (byte) 0); }
     }
+
+    public char[] reveal(long tenantId, long credentialId, String field, byte[] envelope) {
+        byte[] plaintext = null;
+        try {
+            plaintext = codec.unprotect(envelope, new ProtectionContext(ProtectionContext.Purpose.DATABASE_FIELD,
+                    "tenant-access-administration", "tenant_credentials", field,
+                    "tenant:" + tenantId, "id=" + credentialId), EnvelopeCodec.Target.DATABASE_FIELD);
+            return new String(plaintext, StandardCharsets.UTF_8).toCharArray();
+        } finally {
+            if (plaintext != null) java.util.Arrays.fill(plaintext, (byte) 0);
+        }
+    }
 }

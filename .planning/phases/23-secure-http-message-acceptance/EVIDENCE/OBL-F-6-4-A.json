@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-F-6-4-A","evidence":["mvn-test.log"],"notes":"HmacRequestAuthenticatorTest proves HMAC covers method, URI, canonical headers, and exact body using protected App Secret reveal."}

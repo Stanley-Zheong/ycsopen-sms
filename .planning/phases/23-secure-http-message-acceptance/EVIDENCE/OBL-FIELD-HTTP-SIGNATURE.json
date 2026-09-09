@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-FIELD-HTTP-SIGNATURE","evidence":["mvn-test.log"],"notes":"TemplateSendComplianceService validates explicit or default approved tenant signature."}

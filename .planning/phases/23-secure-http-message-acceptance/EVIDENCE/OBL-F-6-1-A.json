@@ -1,0 +1,1 @@
+{"status":"PASS","owner":"secure-http-message-acceptance","obligation_id":"OBL-F-6-1-A","evidence":["mvn-test.log","npm-test.log"],"notes":"SmsSendRequest includes submitId, phoneNumber, templateId, signId, templateParams, callbackUrl; controller returns ApiResponse<SmsSendResponse>."}

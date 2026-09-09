@@ -45,6 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
@@ -69,6 +70,7 @@ class MessageSubmitServiceTest {
     @Mock BillingService billingService;
     @Mock MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     @Mock TenantEligibilityPolicy eligibilityPolicy;
+    @Mock MessageAcceptanceIdempotencyService idempotency;
     @Mock MessageTaskRepository legacyMessageTaskRepository;
     @Mock PreparedMessageRouting preparedRouting;
     @Mock PreparedMessageMobile preparedMobile;
@@ -81,7 +83,10 @@ class MessageSubmitServiceTest {
         TemplateSendComplianceService templateCompliance =
                 new TemplateSendComplianceService(templateRepository, signatureRepository);
         service = new MessageSubmitService(templateCompliance,
-                routingEngine, billingService, messageTaskProtectionAdapter, eligibilityPolicy);
+                routingEngine, billingService, messageTaskProtectionAdapter, eligibilityPolicy, idempotency);
+        lenient().when(idempotency.claim(eq(TENANT_ID), eq("SUBMIT-1"), anyString()))
+                .thenReturn(MessageAcceptanceIdempotencyService.Claim.newSubmission(
+                        7101L, "SUBMIT-1", "0".repeat(64)));
     }
 
     @Test
@@ -130,6 +135,7 @@ class MessageSubmitServiceTest {
         assertThat(messageId.getValue()).matches("MSG_[0-9]{1,19}_[A-Z0-9]{8}");
         assertThat(task.getValue().getMessageId()).isEqualTo(messageId.getValue());
         assertThat(task.getValue().getTenantId()).isEqualTo(TENANT_ID);
+        assertThat(task.getValue().getSubmitId()).isEqualTo(7101L);
         assertThat(task.getValue().hasPreparedMobile()).isFalse();
         assertThat(response.messageId()).isEqualTo(messageId.getValue());
         assertThat(response.status()).isEqualTo(MessageTask.SendStatus.PENDING.name());
@@ -141,6 +147,24 @@ class MessageSubmitServiceTest {
                 .extracting(VersionedBlindIndex::canonicalValue)
                 .doesNotContain(MOBILE, rawMobileSha256());
         verifyNoInteractions(legacyMessageTaskRepository);
+        verify(idempotency).attachResources(7101L, 8L, 9L);
+        verify(idempotency).enqueueSendIntent(TENANT_ID, 91L, messageId.getValue(), 42L);
+        verify(idempotency).markAccepted(7101L);
+    }
+
+    @Test
+    void duplicateSubmitIdReturnsOriginalResponseBeforeRoutingBillingOrPersistence() {
+        when(idempotency.claim(eq(TENANT_ID), eq("SUBMIT-1"), anyString()))
+                .thenReturn(MessageAcceptanceIdempotencyService.Claim.duplicate(
+                        7101L, "SUBMIT-1", "0".repeat(64),
+                        new com.ycsopen.sms.core.web.dto.SmsSendResponse("MSG_1700000000000_DUPLICAT", "PENDING")));
+
+        var response = service.submit(TENANT_ID, request(), "127.0.0.1");
+
+        assertThat(response.messageId()).isEqualTo("MSG_1700000000000_DUPLICAT");
+        verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
+        verifyNoInteractions(templateRepository, signatureRepository, routingEngine,
+                billingService, messageTaskProtectionAdapter, legacyMessageTaskRepository);
     }
 
     @ParameterizedTest
@@ -222,7 +246,7 @@ class MessageSubmitServiceTest {
     }
 
     private static SmsSendRequest request() {
-        return new SmsSendRequest(MOBILE, "8", null, Map.of("code", "2468"), null);
+        return new SmsSendRequest("SUBMIT-1", MOBILE, "8", null, Map.of("code", "2468"), null);
     }
 
     private void stubPreparedQueryIndexes() {

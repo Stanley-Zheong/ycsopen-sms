@@ -32,7 +32,7 @@ class MessageControllerRateLimitTest {
         http.setAttribute(HmacAuthInterceptor.ATTR_API_KEY_ID, 19L);
         RatePolicy policy = new RatePolicy(1, 60, 3600, 86400);
         http.setAttribute(HmacAuthInterceptor.ATTR_RATE_POLICY, policy);
-        SmsSendRequest request = new SmsSendRequest("13900000001", "tpl-1", "sign-1", Map.of(), null);
+        SmsSendRequest request = new SmsSendRequest("SUBMIT-1", "13900000001", "tpl-1", "sign-1", Map.of(), null);
         doThrow(new RateLimitExceededException("api-key-SECOND", 1))
                 .when(rateLimitService).enforce(17L, 19L, policy);
 
