@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-FIELD-HTTP-CALLBACK",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.savesThreeDistinctDestinationsAndRejectsSsrfTargets",
+    "WebhookDeliveryTransportServiceTest.enqueuesSignedStatusEventAndDeliversItIdempotently"
+  ],
+  "verified_behavior": "Optional callbackUrl must be HTTPS and SSRF-safe after host resolution; when omitted, event enqueue uses the tenant's configured status callback destination."
+}

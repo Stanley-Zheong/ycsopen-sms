@@ -1,0 +1,3 @@
+This automated finding is the same SSRF-via-redirect issue I already flagged as BLOCKING in my review above (`HttpWebhookDeliveryClient.java` — `SimpleClientHttpRequestFactory` doesn't disable redirects, so `RestTemplate.postForEntity` will silently follow a `3xx` to an internal target and bypass `validateDestination`). No further action needed from me here — this was surfaced to the user as part of the code review, not something I'm implementing right now. My review response stands as given.
+Tokens: input=4 output=5998 cache_read=60529 | Model: unknown
+SESSION_ID:22c76271-e027-4ece-aeaa-15b9c12c25e7

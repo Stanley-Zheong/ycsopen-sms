@@ -1,0 +1,113 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/tenant/webhooks",
+      "/admin/push/failures"
+    ],
+    "test_ids": [
+      "tenant-webhook-delivery-config-form",
+      "admin-webhook-delivery-push-failures-replay",
+      "admin-webhook-delivery-push-failures-page",
+      "admin-webhook-delivery-push-failures-policy"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/28-webhook-delivery-transport/UI-ELEMENTS.md",
+        "sha256": "006d80282519389cc96ba6a7ea7d575fa2a04b244c96280493b1b083c185a629"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/28-webhook-delivery-transport/design-output/webhook-delivery-baseline.pen",
+        "sha256": "42b12385c1539913635cdea9a2f9d46d8674cb99704868223e9b05d72b5b974b"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/tenant/webhooks",
+      "/admin/push/failures"
+    ],
+    "test_ids": [
+      "tenant-webhook-delivery-config-form",
+      "admin-webhook-delivery-push-failures-replay",
+      "admin-webhook-delivery-push-failures-page",
+      "admin-webhook-delivery-push-failures-policy"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/28-webhook-delivery-transport/design-output/prototype.html",
+        "sha256": "ce51b33b6c87d18ba36bc98ecc1c343cd22ee4e5fba014f47404a105c0577a27"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-webhook-delivery-config-form",
+      "admin-webhook-delivery-push-failures-replay",
+      "admin-webhook-delivery-push-failures-page",
+      "admin-webhook-delivery-push-failures-policy"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/28-webhook-delivery-transport/design-output/prototype.spec.ts",
+        "sha256": "ec96823543d84e91bcadadb0337c1a1dd15052cdaadce03711144c63524007a7"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/tenant/webhooks",
+      "/admin/push/failures"
+    ],
+    "test_ids": [
+      "tenant-webhook-delivery-config-form",
+      "admin-webhook-delivery-push-failures-replay",
+      "admin-webhook-delivery-push-failures-page",
+      "admin-webhook-delivery-push-failures-policy"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "b8c321397b737eb82a969261b8fe2d4b3c78317e8c899c3f621a8ed003f226f9"
+      },
+      {
+        "path": "web/src/pages/tenant/webhooks/TenantWebhooksPage.tsx",
+        "sha256": "6aee836d2bf7cbb86dec9250e3e9c5cf75cd3908a26d7ec0c4ea95380903d99d"
+      },
+      {
+        "path": "web/src/pages/admin/webhooks/AdminPushFailuresPage.tsx",
+        "sha256": "16c96ee1242eefab0cc624d80c3892d8ac7823d309abb6aa9d4804a5fdee0a6c"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-webhook-delivery-config-form",
+      "admin-webhook-delivery-push-failures-replay",
+      "admin-webhook-delivery-push-failures-page",
+      "admin-webhook-delivery-push-failures-policy"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/webhook-delivery.spec.ts",
+        "sha256": "ee2bd4398f69c1e608e0e081c513715cb725de832dcbd7b8389aaa28d7076074"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test webhook-delivery.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "b10eb0f5fe15ed02eb37e9b449cfda39cb781f2f",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/28-webhook-delivery-transport/EVIDENCE/playwright-webhook-delivery-report.json",
+      "sha256": "05e9c73d7244f2ada579b23fd13809be35539f73077bc3baa976b7e3c2b8f33a"
+    }
+  }
+}

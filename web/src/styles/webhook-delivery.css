@@ -1,0 +1,76 @@
+.webhook-delivery-page {
+  display: grid;
+  gap: 18px;
+}
+
+.webhook-delivery-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.webhook-delivery-form,
+.webhook-delivery-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.webhook-delivery-form label,
+.webhook-delivery-filters label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.webhook-delivery-form input,
+.webhook-delivery-filters input,
+.webhook-delivery-filters select {
+  min-height: 38px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #fff;
+}
+
+.webhook-delivery-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.webhook-delivery-alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.webhook-delivery-alert.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.webhook-delivery-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.webhook-delivery-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.webhook-delivery-table th,
+.webhook-delivery-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.webhook-delivery-table td:last-child {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -38,6 +38,8 @@ import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
 import MessageOperationsPage from '@/pages/admin/records/MessageOperationsPage';
+import TenantWebhooksPage from '@/pages/tenant/webhooks/TenantWebhooksPage';
+import AdminPushFailuresPage from '@/pages/admin/webhooks/AdminPushFailuresPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -86,6 +88,7 @@ export const router = createBrowserRouter([
       { path: '/admin/send/details', element: <MessageOperationsPage initialSection="sends" /> },
       { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
       { path: '/admin/error/details', element: <MessageOperationsPage initialSection="errors" /> },
+      { path: '/admin/push/failures', element: <AdminPushFailuresPage /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行数据（含退订记录）" prdRef="F-10" /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
@@ -126,6 +129,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/administrators', element: <TenantAdministratorsPage /> },
       { path: '/tenant/api/keys', element: <TenantApiKeysPage /> },
       { path: '/tenant/cmpp/access', element: <TenantCmppAccessPage /> },
+      { path: '/tenant/webhooks', element: <TenantWebhooksPage /> },
     ],
   },
 ]);

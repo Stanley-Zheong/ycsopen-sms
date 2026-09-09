@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-EDGE-WEBHOOK-FAILURE",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.failuresRetryToConfiguredTerminalAttemptAndExposePushFailedState",
+    "web/test/scripts/webhook-delivery.spec.ts: pw-p28-webhook-failure"
+  ],
+  "verified_behavior": "Default five-attempt callback failure enters visible PUSH_FAILED state and remains eligible for authorized replay."
+}

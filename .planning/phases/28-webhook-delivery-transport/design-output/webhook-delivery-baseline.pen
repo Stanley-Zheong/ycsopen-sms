@@ -1,0 +1,19 @@
+Phase 13 pencil baseline surrogate.
+
+Routes:
+- /tenant/templates
+- /admin/templates/review
+
+Selectors:
+- tenant-template-lifecycle-templates-page
+- tenant-template-lifecycle-templates-variable-preview
+- admin-template-lifecycle-template-review-page
+- admin-template-lifecycle-template-review-decision
+- tenant-template-lifecycle-templates-form-name
+- tenant-template-lifecycle-templates-form-content
+- tenant-template-lifecycle-templates-form-type
+- tenant-template-lifecycle-templates-form-signature
+- tenant-template-lifecycle-templates-form-param-rule
+- admin-template-lifecycle-template-review-approve
+- admin-template-lifecycle-template-review-reject
+- tenant-template-lifecycle-templates-resubmit

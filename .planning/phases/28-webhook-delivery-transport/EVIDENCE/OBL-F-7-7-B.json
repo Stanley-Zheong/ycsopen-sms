@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-7-7-B",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.pauseAndResumeKeepExplicitStateAndReasonBoundary",
+    "web/test/scripts/webhook-delivery.spec.ts: pw-p28-push-failure-policy"
+  ],
+  "verified_behavior": "Retry threshold, terminal push-failed state, manual replay, pause, and resume require explicit reasons and produce visible state transitions."
+}
