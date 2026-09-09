@@ -24,4 +24,4 @@ Check items only after named executable evidence exists.
 - [x] Frontend tests/build and Chrome acceptance pass — Evidence: `13-VERIFICATION.md`
 - [x] Independent review has no unresolved BLOCKER/HIGH — Evidence: `13-REVIEW.md`
 - [x] Claude review has no unresolved BLOCKER/HIGH — Evidence: `CLAUDE-REVIEW.md`
-- [ ] Atomic commit is visible on the configured GitHub remote — Evidence: `SUMMARY.md`
+- [x] Atomic commit is visible on the configured GitHub remote — Evidence: `SUMMARY.md`

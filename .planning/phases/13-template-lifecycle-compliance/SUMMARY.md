@@ -1,5 +1,7 @@
 # Phase 13 Summary
 
+Status: complete; verified TODO set is empty.
+
 ## Delivered
 
 - Tenant template application and resubmission API/UI.
@@ -28,4 +30,7 @@
 
 ## Remote
 
-- Pending until the Phase 13 commit is pushed.
+- Branch: `phase/13-template-lifecycle-send-compliance`
+- Remote: `origin`
+- Implementation commit: `49749bdcfeff292bfe6ca2be178caa224b95f9bf`
+- Remote verification: the implementation commit is an ancestor of `origin/phase/13-template-lifecycle-send-compliance`.
