@@ -10,6 +10,7 @@ import { TENANT_PERMISSIONS } from '@/api/tenantQualificationApi';
 import { EXEMPTION_PERMISSIONS } from '@/api/exemptionPolicyApi';
 import { REVIEW_HISTORY_PERMISSIONS } from '@/api/resourceReviewHistoryApi';
 import { BLACKLIST_RISK_PERMISSIONS } from '@/api/blacklistRiskControlApi';
+import { CONTENT_SAFETY_PERMISSIONS } from '@/api/contentSafetyApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -24,6 +25,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/exemption/policy', label: '豁免策略', roles: OPERATIONS, permissions: [EXEMPTION_PERMISSIONS.menu, EXEMPTION_PERMISSIONS.read] },
   { to: '/admin/review-history', label: '审核历史', roles: REVIEW_HISTORY_ROLES, permissions: [REVIEW_HISTORY_PERMISSIONS.menu, REVIEW_HISTORY_PERMISSIONS.read] },
   { to: '/admin/riskcontrol', label: '验证规则', roles: ['ADMIN', 'OPERATOR'], permissions: [BLACKLIST_RISK_PERMISSIONS.menu, BLACKLIST_RISK_PERMISSIONS.read] },
+  { to: '/admin/content-safety', label: '内容审核', roles: ['ADMIN', 'OPERATOR'], permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
@@ -89,6 +91,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/riskcontrol' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-blacklist-risk-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/content-safety' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-runtime-content-content-safety-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

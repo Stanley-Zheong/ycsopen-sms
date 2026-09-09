@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-5-A",
+  "result": "PASS",
+  "evidence": "Admin content-safety page exposes policy rows and metric cards for total, active, hit, intercept, rate, and coverage.",
+  "commands": ["npm --prefix web exec -- playwright test content-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json"]
+}

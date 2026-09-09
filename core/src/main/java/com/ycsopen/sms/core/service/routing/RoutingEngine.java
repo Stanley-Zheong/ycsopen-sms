@@ -57,7 +57,7 @@ public class RoutingEngine {
             return RoutingDecision.reject(RoutingDecision.RejectStage.BLACKLIST, blacklistResult.reason());
         }
 
-        ContentReviewChecker.Result contentResult = contentReviewChecker.check(ctx.getContent(), ctx.getTenantId());
+        ContentReviewChecker.Result contentResult = contentReviewChecker.check(ctx);
         if (contentResult.blocked()) {
             return RoutingDecision.reject(RoutingDecision.RejectStage.CONTENT_REVIEW, contentResult.reason());
         }

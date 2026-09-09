@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /** F-5.5 内容审核词库（区别于 F-3 的资质/资源审核，见 PRD 5.3 节说明）。 */
 @Entity
 @Table(name = "sensitive_words")
@@ -31,11 +33,20 @@ public class SensitiveWord {
     @Enumerated(EnumType.STRING)
     private Scope scope = Scope.GLOBAL;
 
+    @Column(name = "scope_ref_id")
+    private Long scopeRefId;
+
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
     @Column(name = "hit_count")
     private Long hitCount = 0L;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
+    private LocalDateTime updatedAt;
 
     public enum Category { ILLEGAL, FINANCIAL, MARKETING, POLITICAL, ADULT, OTHER }
     public enum Level { HIGH, MEDIUM, LOW }

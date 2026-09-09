@@ -68,7 +68,7 @@ class RoutingEngineTest {
         when(blacklistChecker.check(any())).thenReturn(new BlacklistChecker.Result(false,
                 "第三方风险服务失败，按配置放行并记录降级",
                 "THIRD_PARTY_DEGRADED", "DEGRADED_ALLOW", true));
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
         when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
         when(channelSelector.select(any())).thenReturn(Optional.of(42L));
 
@@ -81,7 +81,7 @@ class RoutingEngineTest {
     @Test
     void contentReviewHit_shouldRejectAfterBlacklistPasses_beforeFrequencyCheck() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.blocked("命中内容审核词库"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.blocked("命中内容审核词库"));
 
         RoutingDecision decision = newEngine().route(sampleContext());
 
@@ -94,7 +94,7 @@ class RoutingEngineTest {
     @Test
     void frequencyLimitHit_shouldRejectAfterEarlierStagesPass() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
         when(frequencyChecker.check(any())).thenReturn(new FrequencyChecker.Result(true, "1分钟内超过10次"));
 
         RoutingDecision decision = newEngine().route(sampleContext());
@@ -107,7 +107,7 @@ class RoutingEngineTest {
     @Test
     void allChecksPass_butNoChannelAvailable_shouldRejectWithNoAvailableChannel() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("最终文本"));
         when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
         when(channelSelector.select(any())).thenReturn(Optional.empty());
 
@@ -120,7 +120,7 @@ class RoutingEngineTest {
     @Test
     void allChecksPass_andChannelAvailable_shouldAllowWithSelectedChannelAndFinalContent() {
         when(blacklistChecker.check(any())).thenReturn(BlacklistChecker.Result.pass());
-        when(contentReviewChecker.check(any(), any())).thenReturn(ContentReviewChecker.Result.pass("敏感词已替换后的文本"));
+        when(contentReviewChecker.check(any())).thenReturn(ContentReviewChecker.Result.pass("敏感词已替换后的文本"));
         when(frequencyChecker.check(any())).thenReturn(FrequencyChecker.Result.pass());
         when(channelSelector.select(any())).thenReturn(Optional.of(42L));
 

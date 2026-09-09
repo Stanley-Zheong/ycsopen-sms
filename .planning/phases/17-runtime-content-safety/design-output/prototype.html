@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Phase17 runtime content safety</title></head>
+<body>
+<main data-route="/admin/content-safety" data-testid="admin-runtime-content-content-safety-page">
+  <section data-testid="admin-runtime-content-content-safety-cards">词库总数 今日拦截 拦截率 覆盖率</section>
+  <section data-testid="admin-runtime-content-content-safety-policy-page">
+    <input data-testid="admin-runtime-content-content-safety-filter-word">
+    <select data-testid="admin-runtime-content-content-safety-filter-category"></select>
+    <select data-testid="admin-runtime-content-content-safety-filter-level"></select>
+    <select data-testid="admin-runtime-content-content-safety-filter-action"></select>
+    <select data-testid="admin-runtime-content-content-safety-filter-status"></select>
+    <input data-testid="admin-runtime-content-content-safety-word">
+    <select data-testid="admin-runtime-content-content-safety-category"></select>
+    <select data-testid="admin-runtime-content-content-safety-level"></select>
+    <input data-testid="admin-runtime-content-content-safety-replacement">
+    <select data-testid="admin-runtime-content-content-safety-action"></select>
+    <select data-testid="admin-runtime-content-content-safety-scope"></select>
+    <input data-testid="admin-runtime-content-content-safety-scope-ref">
+    <button data-testid="admin-runtime-content-content-safety-save">保存并热更新</button>
+    <textarea data-testid="admin-runtime-content-content-safety-import-input"></textarea>
+    <button data-testid="admin-runtime-content-content-safety-import">导入词库</button>
+    <button data-testid="admin-runtime-content-content-safety-export">请求导出</button>
+    <table data-testid="admin-runtime-content-content-safety-table"><tr data-testid="admin-runtime-content-content-safety-row"><td>营销</td><td><button data-testid="admin-runtime-content-content-safety-delete">删除/禁用</button></td></tr></table>
+  </section>
+  <section data-testid="admin-runtime-content-content-safety-scan-panel">
+    <input data-testid="admin-runtime-content-content-safety-scan-tenant">
+    <input data-testid="admin-runtime-content-content-safety-scan-template">
+    <textarea data-testid="admin-runtime-content-content-safety-scan-content"></textarea>
+    <button data-testid="admin-runtime-content-content-safety-scan">试扫最终内容</button>
+    <p data-testid="admin-runtime-content-content-safety-scan-result">放行：替换后内容</p>
+  </section>
+</main>
+</body>
+</html>
