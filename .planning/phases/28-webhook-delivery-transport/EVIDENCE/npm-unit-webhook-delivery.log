@@ -1,0 +1,13 @@
+
+> ycsopen-sms-web@0.1.0 test
+> vitest run webhook-delivery.test.tsx
+
+
+ RUN  v2.1.9 /Users/laosanzheong/Documents/codebases/ycsopen-sms/web
+
+ ✓ test/unit/webhook-delivery.test.tsx (2 tests) 61ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  21:17:44
+   Duration  826ms (transform 54ms, setup 57ms, collect 129ms, tests 61ms, environment 315ms, prepare 50ms)

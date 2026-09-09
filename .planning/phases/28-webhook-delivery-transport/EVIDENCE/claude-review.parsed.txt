@@ -1,0 +1,29 @@
+Reviewed the diff. No skill invocation needed here — this is a direct code-review request, not an implementation task.
+
+## BLOCKING
+
+**1. SSRF filter is trivially bypassable and directly enables the cloud-metadata attack.** `WebhookDeliveryTransportService.validateDestination` (core/.../WebhookDeliveryTransportService.java) does string-prefix matching on `uri.getHost()` against `127.`, `10.`, `192.168.`, `172.16-31.`, `localhost`, `.local`, `::1`. It does **not** cover:
+   - `169.254.169.254` (AWS/GCP/Azure instance metadata) — completely unblocked, since it matches none of the listed prefixes.
+   - Decimal/octal/hex IP literals (e.g. `https://2130706433/` == `127.0.0.1`) — `uri.getHost()` returns the literal string, bypassing every prefix check.
+   - DNS rebinding: validation happens once against the hostname string at save/test time and again per-delivery against the same string — never against the resolved IP. A tenant can point a domain at a public IP during `save`/`test`, then repoint DNS to `169.254.169.254` or a private IP before the next retry/delivery fires.
+   - IPv6 private/link-local ranges (`fc00::/7`, `fe80::/10`), IPv4-mapped IPv6 (`::ffff:127.0.0.1`).
+
+   Combined with `testTenantWebhook` (`POST /tenant/webhooks/test`), this gives any authenticated tenant admin/dev a working "send an arbitrary signed POST to any host of my choosing, on the app server's network" primitive. This needs resolved-IP validation (post-DNS-resolution, re-checked at connect time or via a custom `HttpClient` connect interceptor), not hostname-string matching.
+
+**2. HMAC signing key is derivable from source code — signatures are forgeable for every tenant.** In `sign(...)`:
+```java
+mac.init(new SecretKeySpec((SIGNING_SEED + ":" + tenantId).getBytes(...), SIGNING_ALGORITHM));
+```
+`SIGNING_SEED` is a hardcoded literal (`"ycsopen-sms-webhook-delivery-v1"`) in the source tree, and `tenantId` is a low-entropy, often-enumerable integer. Anyone with source access (contractors, CI, a leaked repo, or just reverse-engineering from one leaked signature) can compute valid signatures for **any** tenant, for all time, with no way to rotate per-tenant. This defeats the entire purpose of the `X-YCS-Webhook-Signature` header — tenants can't trust it distinguishes YCS from a forger. Needs a random per-tenant secret generated at config time, stored (and rotatable) in `tenant_callback_configs`, never derived from a static constant.
+
+**3. Outbound webhook HTTP call executes inside an open DB transaction, with no timeout configured.** `deliverEvent` is invoked from `@Transactional` methods (`deliverNext`, `testDestination`, `replay`), and inside it calls `client.post(...)` → `RestTemplate` with default `SimpleClientHttpRequestFactory` (no connect/read timeout set anywhere in `HttpWebhookDeliveryClient`). A slow or hanging tenant-controlled endpoint will hold a DB connection/transaction open indefinitely. Under concurrent retries or repeated `test` calls this will exhaust the connection pool and take down unrelated request paths. This needs (a) an explicit timeout on the `RestTemplate`/factory, and (b) the HTTP call moved outside the DB transaction boundary (claim row in one tx, deliver, then update result in a second tx).
+
+## HIGH
+
+**4. Hand-rolled JSON payload construction is fragile and signs/ships potentially-invalid JSON.** `enqueueStatusEvent` builds the payload via raw string concatenation with a custom `escape()` that only handles `\` and `"`:
+```java
+"{\"kind\":\"STATUS\",...\"messageId\":\"" + escape(messageId.trim()) + "\",\"status\":\"" + escape(...) + "\"}"
+```
+Any control character (newline, tab, U+0000–U+001F) in `messageId`/`status` produces invalid JSON that is then signed and delivered — tenants' JSON parsers will fail, and the failure will look like a generic delivery error rather than a data bug on our side. This is also the exact payload the signature is computed over, so any future field addition here repeats the risk. Should use the project's existing JSON library (Jackson, already a Spring Boot dependency) instead of manual string building.
+Tokens: input=2 output=6973 cache_read=10862 | Model: unknown
+SESSION_ID:476e92de-e97a-4de6-bd1a-b322b63d5a95

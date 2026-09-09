@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-DATA-10-6-CALLBACK",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportMigrationTest.migrationCreatesWebhookEventAndAttemptEvidenceTables",
+    "WebhookDeliveryTransportServiceTest.savesThreeDistinctDestinationsAndRejectsSsrfTargets"
+  ],
+  "verified_behavior": "Schema preserves distinct callback destinations, retry policy, config version, tenant signing secret, event state, signed destination snapshot, attempt rows, and latest failure evidence."
+}

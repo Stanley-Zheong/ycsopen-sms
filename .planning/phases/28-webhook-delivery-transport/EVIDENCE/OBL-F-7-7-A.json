@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-7-7-A",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.failuresRetryToConfiguredTerminalAttemptAndExposePushFailedState",
+    "web/test/scripts/webhook-delivery.spec.ts: pw-p28-admin-push-failures"
+  ],
+  "verified_behavior": "Push failures expose tenant, event type, source/logical IDs, destination, state, attempt counters, policy, and retry timestamp through a tenant-filterable admin API and page."
+}

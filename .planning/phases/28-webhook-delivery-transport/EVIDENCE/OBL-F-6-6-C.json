@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-6-6-C",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.manualReplayUsesStoredTenantDestinationAndDoesNotAcceptRedirect",
+    "web/test/scripts/webhook-delivery.spec.ts: pw-p28-push-failure-replay"
+  ],
+  "verified_behavior": "Manual replay requires a reason, records an additional attempt, and reuses the stored event destination instead of accepting a redirect target."
+}

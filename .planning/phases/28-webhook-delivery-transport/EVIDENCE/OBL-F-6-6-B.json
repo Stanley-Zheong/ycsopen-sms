@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-6-6-B",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.enqueuesSignedStatusEventAndDeliversItIdempotently",
+    "WebhookDeliveryTransportServiceTest.failuresRetryToConfiguredTerminalAttemptAndExposePushFailedState"
+  ],
+  "verified_behavior": "Callbacks include version, tenant-secret HMAC signature, and logical idempotency headers; duplicate logical events reuse the same row and failures retry to the configured terminal attempt count."
+}

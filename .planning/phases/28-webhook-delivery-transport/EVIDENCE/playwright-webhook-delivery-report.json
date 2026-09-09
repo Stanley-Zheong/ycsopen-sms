@@ -1,0 +1,13 @@
+{
+  "command": "npm --prefix web exec -- playwright test webhook-delivery.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+  "commit": "b10eb0f5fe15ed02eb37e9b449cfda39cb781f2f",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "cases": [
+    "C-P28-ADMIN-PUSH-FAILURES",
+    "C-P28-PUSH-FAILURE-POLICY",
+    "C-P28-PUSH-FAILURE-REPLAY",
+    "C-P28-TENANT-WEBHOOKS",
+    "C-P28-WEBHOOK-FAILURE"
+  ]
+}
