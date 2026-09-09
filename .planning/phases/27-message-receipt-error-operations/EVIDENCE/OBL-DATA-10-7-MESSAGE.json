@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-DATA-10-7-MESSAGE",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsMigrationTest.phase27MigrationAddsOperationEvidenceTableAndPermissions",
+    "MessageReceiptErrorOperationsServiceTest.receiptCorrectionAddsNewReceiptAndUpdatesFinalStateWithoutDeletingOriginal",
+    "MessageReceiptErrorOperationsServiceTest.errorGroupsUseNormalizedTaxonomyAndExportRequestsOnlyCreateHandoffEvidence",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/mvn-test.log"
+  ],
+  "verified_behavior": "Phase27 adds idempotent operation evidence while preserving existing message/task/receipt data, protected recipient boundaries, raw receipt evidence, and version references."
+}

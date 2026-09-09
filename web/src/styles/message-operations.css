@@ -1,0 +1,76 @@
+.message-operations-page {
+  display: grid;
+  gap: 16px;
+}
+
+.message-operations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.message-operations-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.message-operations-filters label {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+}
+
+.message-operations-filters input {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.message-operations-tabs,
+.message-operations-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.message-operations-section-marker {
+  margin: 0;
+  color: #475467;
+  font-size: 14px;
+}
+
+.message-operations-tabs button.active {
+  background: #155eef;
+  color: #fff;
+}
+
+.message-operations-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.message-operations-table th,
+.message-operations-table td {
+  border-bottom: 1px solid #eaecf0;
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.message-operations-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.message-operations-alert.success {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.message-operations-alert.error {
+  color: #b42318;
+  background: #fef3f2;
+}

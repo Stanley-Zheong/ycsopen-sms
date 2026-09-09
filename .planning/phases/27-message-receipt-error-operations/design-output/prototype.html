@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Phase 27 Message Operations Prototype</title>
+  <style>
+    body { margin: 0; font-family: Inter, "PingFang SC", sans-serif; background: #f8fafc; color: #101828; }
+    main { display: grid; gap: 16px; padding: 24px; }
+    .card { background: #fff; border: 1px solid #eaecf0; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+    .filters, .tabs, .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    input, button { border: 1px solid #d0d5dd; border-radius: 8px; padding: 8px 10px; }
+    button.primary { background: #155eef; color: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eaecf0; padding: 10px 8px; text-align: left; }
+  </style>
+</head>
+<body>
+<main>
+  <p hidden>/admin/submission/details /admin/send/details /admin/receipt/details /admin/error/details</p>
+  <section data-testid="admin-message-receipt-submission-details-page" class="card">
+    <h1>提交详情</h1>
+    <div class="filters">
+      <input data-testid="admin-message-receipt-filter-tenant" value="42" />
+      <input data-testid="admin-message-receipt-filter-message" placeholder="MSG_FAILED" />
+      <input data-testid="admin-message-receipt-filter-status" placeholder="FAILED" />
+      <input data-testid="admin-message-receipt-filter-error-code" placeholder="E42" />
+      <input data-testid="admin-message-receipt-action-reason" value="运营复核确认" />
+      <button data-testid="admin-message-receipt-export-request">请求导出</button>
+    </div>
+    <table data-testid="admin-message-receipt-submission-details-trace"><tr><td>SUBMIT-1</td><td>MSG_FAILED</td><td>ACCEPTED</td></tr></table>
+  </section>
+  <section data-testid="admin-message-receipt-send-details-page" class="card">
+    <h2>发送详情</h2>
+    <table><tr><td>MSG_FAILED</td><td>已保护</td><td>FAILED</td><td><button data-testid="admin-message-receipt-send-details-resend">重发</button></td></tr></table>
+  </section>
+  <section data-testid="admin-message-receipt-receipt-details-page" class="card">
+    <h2>回执详情</h2>
+    <table><tr><td>501</td><td>raw payload protected</td><td><button data-testid="admin-message-receipt-receipt-correct">纠正为送达</button></td></tr></table>
+  </section>
+  <section data-testid="admin-message-receipt-error-details-page" class="card">
+    <h2>错误详情</h2>
+    <div class="actions"><button data-testid="admin-message-receipt-error-details-bulk-retry" class="primary">批量重试</button></div>
+    <table><tr><td>E42</td><td>FAILURE</td><td>1</td></tr></table>
+  </section>
+  <p data-testid="admin-message-receipt-operation-message">导出请求已登记</p>
+  <p data-testid="admin-message-receipt-operation-error">错误反馈</p>
+</main>
+</body>
+</html>
