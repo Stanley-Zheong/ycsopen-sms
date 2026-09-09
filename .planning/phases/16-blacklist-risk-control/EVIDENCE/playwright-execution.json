@@ -1,0 +1,14 @@
+{
+  "command": "npm --prefix web exec -- playwright test blacklist-risk-control.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "16702db60510bcb73cbcc7440d231c88b78dbaf4",
+  "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P16-ANALYTICS",
+    "C-P16-APPEAL",
+    "C-P16-LIST",
+    "C-P16-IMPORT-EXPORT",
+    "C-P16-PROVIDER-CONFIG",
+    "C-P16-RISK-OUTAGE"
+  ]
+}

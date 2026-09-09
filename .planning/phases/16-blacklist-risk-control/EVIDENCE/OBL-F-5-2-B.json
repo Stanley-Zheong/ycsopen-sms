@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-2-B",
+  "result": "PASS",
+  "evidence": "Service and UI tests cover add, import partial failure, export request, validation, actor evidence and tenant-scoped list handling.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test", "npm --prefix web test -- blacklist-risk-control.test.tsx"]
+}

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-1-A",
+  "result": "PASS",
+  "evidence": "BlacklistRiskControlService.evaluate checks whitelist, system blacklist, tenant blacklist, then provider before creating any send task evidence.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

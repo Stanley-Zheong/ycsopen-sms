@@ -179,6 +179,27 @@ class BlindIndexLookupServiceTest {
     }
 
     @Test
+    void expiredTenantWhitelistDoesNotBypassActiveSystemBlacklistInMetadataLookup() {
+        jdbc.update("UPDATE ycs_crypto_migration_targets "
+                + "SET target_state='COMPLETE', legacy_fallback_allowed=FALSE");
+        insertBlacklist(931010L, null, "locator-global", "BLACK");
+        insertMetadata(931010L, GLOBAL_RETIRING, "RETIRING", rowDigest(931010L));
+        insertMetadata(931010L, GLOBAL_ACTIVE, "ACTIVE", rowDigest(931010L));
+        insertBlacklist(931011L, TENANT_ID, "locator-expired-whitelist", "WHITE");
+        jdbc.update("UPDATE blacklist_entries SET expires_at=DATEADD('DAY', -1, CURRENT_TIMESTAMP) WHERE id=931011");
+        insertMetadata(931011L, RETIRING, "RETIRING", rowDigest(931011L));
+        insertMetadata(931011L, ACTIVE, "ACTIVE", rowDigest(931011L));
+        BlindIndexLookupService service = service(mock(BlacklistEntryRepository.class));
+
+        BlindIndexLookupService.BlacklistLookupResult result = service.lookupBlacklist(
+                TENANT_ID, token(), BlacklistEntry.Status.ACTIVE);
+
+        assertThat(result.tenantWhitelist()).isFalse();
+        assertThat(result.blockReason()).isEqualTo(
+                BlindIndexLookupService.BlacklistLookupResult.BlockReason.SYSTEM_BLACKLIST);
+    }
+
+    @Test
     void failsClosedForMissingKeyStateOrphanAndConflictingDuplicateBinding() {
         BlacklistEntryRepository legacy = mock(BlacklistEntryRepository.class);
         BlindIndexLookupService service = service(legacy);

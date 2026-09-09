@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-EDGE-RISK-OUTAGE",
+  "result": "PASS",
+  "evidence": "Forced provider outage uses configured fallback only and stores reviewable degradation evidence in provider logs and decision rows.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test", "npm --prefix web test -- blacklist-risk-control.test.tsx"]
+}

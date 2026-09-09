@@ -22,6 +22,8 @@ public interface BlacklistEntryRepository extends JpaRepository<BlacklistEntry, 
              where entry.mobileHash = :legacyIndex
                and entry.tenantId is null
                and entry.status = :status
+               and entry.effectiveAt <= CURRENT_TIMESTAMP
+               and (entry.expiresAt is null or entry.expiresAt > CURRENT_TIMESTAMP)
             """)
     List<LookupProjection> findSystemLegacyCompatibilityMatches(
             @Param("legacyIndex") String legacyIndex,
@@ -38,6 +40,8 @@ public interface BlacklistEntryRepository extends JpaRepository<BlacklistEntry, 
              where entry.mobileHash = :legacyIndex
                and entry.tenantId = :tenantId
                and entry.status = :status
+               and entry.effectiveAt <= CURRENT_TIMESTAMP
+               and (entry.expiresAt is null or entry.expiresAt > CURRENT_TIMESTAMP)
             """)
     List<LookupProjection> findTenantLegacyCompatibilityMatches(
             @Param("legacyIndex") String legacyIndex,

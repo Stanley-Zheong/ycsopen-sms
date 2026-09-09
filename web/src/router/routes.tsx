@@ -29,6 +29,7 @@ import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
 import TemplateLifecyclePage from '@/pages/tenant/templates/TemplateLifecyclePage';
 import ExemptionPolicyPage from '@/pages/admin/exemptions/ExemptionPolicyPage';
 import ResourceReviewHistoryPage from '@/pages/admin/review/ResourceReviewHistoryPage';
+import BlacklistRiskControlPage from '@/pages/admin/risk/BlacklistRiskControlPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -63,10 +64,7 @@ export const router = createBrowserRouter([
       { path: '/admin/templates/review', element: <TemplateReviewPage /> },
       { path: '/admin/exemption/policy', element: <ExemptionPolicyPage /> },
       { path: '/admin/review-history', element: <ResourceReviewHistoryPage /> },
-      {
-        path: 'riskcontrol',
-        element: <PlaceholderPage title="验证规则（黑白名单/内容审核/频次/携号转网）" prdRef="F-5.1~F-5.7" />,
-      },
+      { path: '/admin/riskcontrol', element: <BlacklistRiskControlPage /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行数据（含退订记录）" prdRef="F-10" /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },

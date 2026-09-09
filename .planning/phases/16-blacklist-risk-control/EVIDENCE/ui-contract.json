@@ -1,0 +1,109 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/riskcontrol"],
+    "test_ids": [
+      "admin-blacklist-risk-black-white-lists-page",
+      "admin-blacklist-risk-black-white-lists-import",
+      "admin-blacklist-risk-risk-provider-page",
+      "admin-blacklist-risk-intercept-analytics-page",
+      "admin-blacklist-risk-intercept-appeal",
+      "admin-blacklist-risk-risk-provider-degraded",
+      "admin-blacklist-risk-black-white-lists-save",
+      "admin-blacklist-risk-black-white-lists-export",
+      "admin-blacklist-risk-risk-provider-save",
+      "admin-blacklist-risk-intercept-check-run"
+    ],
+    "sources": [
+      { "path": ".planning/phases/16-blacklist-risk-control/design-output/prototype.html", "sha256": "62ed484fa2637112a83b7fd50f33b94fd6fc1cb8d1a53fb4f2d2293ad7d3bd2c" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/16-blacklist-risk-control/blacklist-risk-control.pen", "sha256": "4ee0b52723aad559fda65f785c8c4c6e258aa4ce2f3ea2f92a28ce7b43ba836e" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/riskcontrol"],
+    "test_ids": [
+      "admin-blacklist-risk-black-white-lists-page",
+      "admin-blacklist-risk-black-white-lists-import",
+      "admin-blacklist-risk-risk-provider-page",
+      "admin-blacklist-risk-intercept-analytics-page",
+      "admin-blacklist-risk-intercept-appeal",
+      "admin-blacklist-risk-risk-provider-degraded",
+      "admin-blacklist-risk-black-white-lists-save",
+      "admin-blacklist-risk-black-white-lists-export",
+      "admin-blacklist-risk-risk-provider-save",
+      "admin-blacklist-risk-intercept-check-run"
+    ],
+    "sources": [
+      { "path": ".planning/phases/16-blacklist-risk-control/design-output/prototype.html", "sha256": "62ed484fa2637112a83b7fd50f33b94fd6fc1cb8d1a53fb4f2d2293ad7d3bd2c" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-blacklist-risk-black-white-lists-page",
+      "admin-blacklist-risk-black-white-lists-import",
+      "admin-blacklist-risk-risk-provider-page",
+      "admin-blacklist-risk-intercept-analytics-page",
+      "admin-blacklist-risk-intercept-appeal",
+      "admin-blacklist-risk-risk-provider-degraded",
+      "admin-blacklist-risk-black-white-lists-save",
+      "admin-blacklist-risk-black-white-lists-export",
+      "admin-blacklist-risk-risk-provider-save",
+      "admin-blacklist-risk-intercept-check-run"
+    ],
+    "sources": [
+      { "path": ".planning/phases/16-blacklist-risk-control/design-output/prototype.spec.ts", "sha256": "b84ac38b9e15408fcb67c35fcec3b366a5e4cb08baadd64c234a4d023306b9e7" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/riskcontrol"],
+    "test_ids": [
+      "admin-blacklist-risk-black-white-lists-page",
+      "admin-blacklist-risk-black-white-lists-import",
+      "admin-blacklist-risk-risk-provider-page",
+      "admin-blacklist-risk-intercept-analytics-page",
+      "admin-blacklist-risk-intercept-appeal",
+      "admin-blacklist-risk-risk-provider-degraded",
+      "admin-blacklist-risk-black-white-lists-save",
+      "admin-blacklist-risk-black-white-lists-export",
+      "admin-blacklist-risk-risk-provider-save",
+      "admin-blacklist-risk-intercept-check-run"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "10ee3b1d45a832a738693c9cfec969659a489e188791a93c53713a537f509ace" },
+      { "path": "web/src/pages/admin/risk/BlacklistRiskControlPage.tsx", "sha256": "9c15289fa35819dae5a8df36e40c6b1ddab90da9fc61225663c5517901f30023" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-blacklist-risk-black-white-lists-page",
+      "admin-blacklist-risk-black-white-lists-import",
+      "admin-blacklist-risk-risk-provider-page",
+      "admin-blacklist-risk-intercept-analytics-page",
+      "admin-blacklist-risk-intercept-appeal",
+      "admin-blacklist-risk-risk-provider-degraded",
+      "admin-blacklist-risk-black-white-lists-save",
+      "admin-blacklist-risk-black-white-lists-export",
+      "admin-blacklist-risk-risk-provider-save",
+      "admin-blacklist-risk-intercept-check-run"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/blacklist-risk-control.spec.ts", "sha256": "a057f912b184c45a826dd55ba35a5f0d20cd491d4032a04b6b55dc0c3969f6bb" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test blacklist-risk-control.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "16702db60510bcb73cbcc7440d231c88b78dbaf4",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/16-blacklist-risk-control/EVIDENCE/playwright-execution.json",
+      "sha256": "20cfa1575cb2045bf55db27cecd73282b1285f369a407514a545281aef77d3d7"
+    }
+  }
+}

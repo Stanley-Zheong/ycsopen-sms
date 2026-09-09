@@ -30,25 +30,42 @@ public class BlacklistChecker {
         }
         if (lookup.blockReason()
                 == BlindIndexLookupService.BlacklistLookupResult.BlockReason.SYSTEM_BLACKLIST) {
-            return Result.blocked("系统级黑名单命中");
+            return Result.blocked("SYSTEM_BLACKLIST", "系统级黑名单命中");
         }
         if (lookup.blockReason()
                 == BlindIndexLookupService.BlacklistLookupResult.BlockReason.TENANT_BLACKLIST) {
-            return Result.blocked("机构级黑名单命中（如历史退订用户）");
+            return Result.blocked("TENANT_BLACKLIST", "机构级黑名单命中（如历史退订用户）");
         }
 
         // ③ 第三方风险名单服务（F-5.3：超时/异常按配置降级，不阻塞主链路）
         ThirdPartyBlacklistClient.CheckResult thirdParty = thirdPartyBlacklistClient.check(
                 ctx.getOpaqueMobileQueryValue());
-        if (thirdParty.hit()) {
-            return Result.blocked("第三方风险名单命中：" + thirdParty.sourceDescription());
+        if (thirdParty.recordable()) {
+            return Result.thirdParty(thirdParty);
         }
 
         return Result.pass();
     }
 
-    public record Result(boolean blocked, String reason) {
-        static Result pass() { return new Result(false, null); }
-        static Result blocked(String reason) { return new Result(true, reason); }
+    public record Result(boolean blocked, String reason, String sourceCategory,
+                         String riskResult, boolean recordable) {
+        public Result(boolean blocked, String reason) {
+            this(blocked, reason, blocked ? "TENANT_BLACKLIST" : "NO_MATCH",
+                    blocked ? "BLOCK" : "ALLOW", blocked);
+        }
+
+        public Result(boolean blocked, String reason, String sourceCategory, String riskResult) {
+            this(blocked, reason, sourceCategory, riskResult, blocked || !"NO_MATCH".equals(sourceCategory));
+        }
+
+        static Result pass() { return new Result(false, null, "NO_MATCH", "ALLOW", false); }
+        static Result blocked(String sourceCategory, String reason) {
+            return new Result(true, reason, sourceCategory, "BLOCK", true);
+        }
+
+        static Result thirdParty(ThirdPartyBlacklistClient.CheckResult thirdParty) {
+            return new Result(thirdParty.hit(), thirdParty.sourceDescription(),
+                    thirdParty.sourceCategory(), thirdParty.riskResult(), true);
+        }
     }
 }

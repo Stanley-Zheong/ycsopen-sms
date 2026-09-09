@@ -170,6 +170,10 @@ public class BlindIndexLookupService {
                   ON kr.purpose = bi.key_purpose AND kr.key_version = bi.key_version
                 LEFT JOIN blacklist_entries entry ON entry.id = bi.legacy_row_id
                 WHERE bi.target_type = ? AND bi.field_id = ?
+                  AND (entry.id IS NULL OR (
+                        entry.effective_at <= CURRENT_TIMESTAMP
+                        AND (entry.expires_at IS NULL OR entry.expires_at > CURRENT_TIMESTAMP)
+                  ))
                 ORDER BY bi.legacy_row_id, bi.key_version
                 """.formatted(requested), (rs, row) -> metadataMatch(rs), parameters.toArray());
     }

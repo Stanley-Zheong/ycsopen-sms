@@ -43,7 +43,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 13: Template lifecycle and send compliance contract** — Template fields/variables/rules/signature binding.
 - [x] **Phase 14: Auditable exemption policy** — Signature/content/account exemption types.
 - [x] **Phase 15: Unified resource review history** — Cross-resource immutable review decisions.
-- [ ] **Phase 16: Blacklist and third-party risk control** — System/tenant black/white lists.
+- [x] **Phase 16: Blacklist and third-party risk control** — System/tenant black/white lists.
 - [ ] **Phase 17: Runtime final-content safety** — Sensitive word/category/level/replacement/action/scope/state.
 - [ ] **Phase 18: Frequency and API rate controls** — Per-key second/minute/hour/day limits.
 - [ ] **Phase 19: Number attribution and portability** — Prefix import/incremental versions.
@@ -444,7 +444,7 @@ Plans:
 
 **Test layers**: Policy/precedence unit, time/persistence integration, authorization, conformance, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `16-01-PLAN.md` single vertical implementation slice.
 **UI hint**: yes
 
 ### Phase 15: Unified resource review history

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-2-C",
+  "result": "PASS",
+  "evidence": "Backend tests cover tenant whitelist precedence over effective blacklist decisions.",
+  "commands": ["mvn -q -f core/pom.xml -Dtest=BlacklistRiskControlServiceTest test"]
+}

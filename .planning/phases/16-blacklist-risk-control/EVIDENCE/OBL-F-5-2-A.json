@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-5-2-A",
+  "result": "PASS",
+  "evidence": "Chrome Playwright verifies the black/white-list page, masked phone row, type, source, status, reason and stable test-id contract.",
+  "commands": ["npm --prefix web exec -- playwright test blacklist-risk-control.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json"]
+}

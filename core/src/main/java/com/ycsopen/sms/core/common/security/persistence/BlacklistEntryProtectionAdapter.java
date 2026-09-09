@@ -117,10 +117,10 @@ public class BlacklistEntryProtectionAdapter {
                 List<ExpectedKey> expectedKeys = lockQueryableKeySet(indexes.values());
                 int inserted = jdbc.update("""
                         INSERT INTO blacklist_entries
-                            (id,tenant_id,mobile_encrypted,mobile_hash,list_type,reason,source,status)
-                        VALUES (?,?,?,?,?,?,?,'ACTIVE')
-                        """, id, tenantId, protectedEnvelope, locator, listType.name(), reason,
-                        source.name());
+                            (id,tenant_id,mobile_encrypted,mobile_hash,masked_mobile,list_type,reason,source,status)
+                        VALUES (?,?,?,?,?,?,?,?,'ACTIVE')
+                        """, id, tenantId, protectedEnvelope, locator, mask(normalizedMobile),
+                        listType.name(), reason, source.name());
                 if (inserted != 1) {
                     throw rejected();
                 }
@@ -293,6 +293,10 @@ public class BlacklistEntryProtectionAdapter {
         } catch (Exception failure) {
             throw rejected();
         }
+    }
+
+    private static String mask(String normalizedMobile) {
+        return normalizedMobile.substring(0, 3) + "****" + normalizedMobile.substring(7);
     }
 
     private static void clear(byte[] value) {

@@ -32,6 +32,9 @@ public class BlacklistEntry {
     @Column(name = "mobile_hash", nullable = false)
     private String mobileHash;
 
+    @Column(name = "masked_mobile", nullable = false, length = 32, columnDefinition = "varchar(32) default '***'")
+    private String maskedMobile = "***";
+
     @Enumerated(EnumType.STRING)
     @Column(name = "list_type", nullable = false)
     private ListType listType = ListType.BLACK;
@@ -46,6 +49,12 @@ public class BlacklistEntry {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "effective_at", columnDefinition = "timestamp default current_timestamp")
+    private LocalDateTime effectiveAt = LocalDateTime.now();
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
 
     public enum ListType { BLACK, WHITE }
     public enum Source { MANUAL, BATCH_IMPORT, UNSUBSCRIBE_AUTO, THIRD_PARTY_RISK, COMPLAINT_LINKED }
