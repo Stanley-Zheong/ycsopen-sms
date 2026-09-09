@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-6-B",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.bulkErrorActionReportsPartialOutcomesAndDoesNotDuplicateMarkedRecords",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-error-bulk-retry",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Bulk retry/problem marking validates every selected record, reports completed/failed counts, and repeated action keys do not duplicate operation records."
+}

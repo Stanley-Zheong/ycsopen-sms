@@ -1,0 +1,16 @@
+{
+  "command": "npm --prefix web exec -- playwright test message-operations.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+  "commit": "f6c69ba38f4db8622d49fb338f913f83e390fa79",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "cases": [
+    "C-P27-SUBMISSION-PAGE",
+    "C-P27-SUBMISSION-TRACE",
+    "C-P27-SEND-PAGE",
+    "C-P27-SEND-RESEND",
+    "C-P27-RECEIPT-PAGE",
+    "C-P27-RECEIPT-CORRECT",
+    "C-P27-ERROR-PAGE",
+    "C-P27-ERROR-BULK-RETRY"
+  ]
+}

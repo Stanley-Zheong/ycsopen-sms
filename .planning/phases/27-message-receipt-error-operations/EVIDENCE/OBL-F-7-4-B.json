@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-4-B",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.receiptCorrectionAddsNewReceiptAndUpdatesFinalStateWithoutDeletingOriginal",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-receipt-correct",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Receipt correction requires reason and taxonomy version, appends correction evidence, preserves original receipt, and updates final task state idempotently by action key."
+}

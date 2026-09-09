@@ -1,0 +1,13 @@
+
+> ycsopen-sms-web@0.1.0 test
+> vitest run message-operations.test.tsx
+
+
+ RUN  v2.1.9 /Users/laosanzheong/Documents/codebases/ycsopen-sms/web
+
+ ✓ test/unit/message-operations.test.tsx (4 tests) 98ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  20:55:09
+   Duration  955ms (transform 109ms, setup 139ms, collect 176ms, tests 98ms, environment 274ms, prepare 62ms)

@@ -1,0 +1,135 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/submission/details",
+      "/admin/send/details",
+      "/admin/receipt/details",
+      "/admin/error/details"
+    ],
+    "test_ids": [
+      "admin-message-receipt-submission-details-page",
+      "admin-message-receipt-submission-details-trace",
+      "admin-message-receipt-send-details-page",
+      "admin-message-receipt-send-details-resend",
+      "admin-message-receipt-receipt-details-page",
+      "admin-message-receipt-receipt-correct",
+      "admin-message-receipt-error-details-page",
+      "admin-message-receipt-error-details-bulk-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/27-message-receipt-error-operations/UI-ELEMENTS.md",
+        "sha256": "ecc9fed05b864dfacba1c7c7668dbb48b4355ed5bcf8a924767fbce1ba3882cc"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/27-message-receipt-error-operations/design-output/message-operations-baseline.pen",
+        "sha256": "42b12385c1539913635cdea9a2f9d46d8674cb99704868223e9b05d72b5b974b"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/submission/details",
+      "/admin/send/details",
+      "/admin/receipt/details",
+      "/admin/error/details"
+    ],
+    "test_ids": [
+      "admin-message-receipt-submission-details-page",
+      "admin-message-receipt-submission-details-trace",
+      "admin-message-receipt-send-details-page",
+      "admin-message-receipt-send-details-resend",
+      "admin-message-receipt-receipt-details-page",
+      "admin-message-receipt-receipt-correct",
+      "admin-message-receipt-error-details-page",
+      "admin-message-receipt-error-details-bulk-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/27-message-receipt-error-operations/design-output/prototype.html",
+        "sha256": "43dde3c10e43dedadab29f9131f64ef5506a6dd0c51a718d1409a3adc948e72b"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-message-receipt-submission-details-page",
+      "admin-message-receipt-submission-details-trace",
+      "admin-message-receipt-send-details-page",
+      "admin-message-receipt-send-details-resend",
+      "admin-message-receipt-receipt-details-page",
+      "admin-message-receipt-receipt-correct",
+      "admin-message-receipt-error-details-page",
+      "admin-message-receipt-error-details-bulk-retry"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/27-message-receipt-error-operations/design-output/prototype.spec.ts",
+        "sha256": "923d8bc6ecc1bc9e5effedc390be04d9056549eeb8f82299b468e3c775fc25ba"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/submission/details",
+      "/admin/send/details",
+      "/admin/receipt/details",
+      "/admin/error/details"
+    ],
+    "test_ids": [
+      "admin-message-receipt-submission-details-page",
+      "admin-message-receipt-submission-details-trace",
+      "admin-message-receipt-send-details-page",
+      "admin-message-receipt-send-details-resend",
+      "admin-message-receipt-receipt-details-page",
+      "admin-message-receipt-receipt-correct",
+      "admin-message-receipt-error-details-page",
+      "admin-message-receipt-error-details-bulk-retry"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "51d9b950a575e76817db650ab900b38698c04f1f154669adeb15416f0b83cd63"
+      },
+      {
+        "path": "web/src/pages/admin/records/MessageOperationsPage.tsx",
+        "sha256": "296fb643f0fdba0c72c934c5201716cfb713379945a06e4bb7102d41984eeed4"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-message-receipt-submission-details-page",
+      "admin-message-receipt-submission-details-trace",
+      "admin-message-receipt-send-details-page",
+      "admin-message-receipt-send-details-resend",
+      "admin-message-receipt-receipt-details-page",
+      "admin-message-receipt-receipt-correct",
+      "admin-message-receipt-error-details-page",
+      "admin-message-receipt-error-details-bulk-retry"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/message-operations.spec.ts",
+        "sha256": "07dc1173b99ea6b295e906d0f46993b99806948d6df6b46c34e63522157aede9"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test message-operations.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "f6c69ba38f4db8622d49fb338f913f83e390fa79",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/27-message-receipt-error-operations/EVIDENCE/playwright-message-operations-report.json",
+      "sha256": "efa4b3b3d601924c13caf775dac3c81fe54aff8cbed5fa0eefb27d422aa5854e"
+    }
+  }
+}

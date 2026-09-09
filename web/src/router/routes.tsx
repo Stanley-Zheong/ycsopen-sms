@@ -37,6 +37,7 @@ import NumberAttributionPage from '@/pages/admin/tools/NumberAttributionPage';
 import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
+import MessageOperationsPage from '@/pages/admin/records/MessageOperationsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
       { path: '/admin/status-codes', element: <ProviderStatusPage /> },
       { path: '/admin/tenant-trial-contracts', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/balance-audit', element: <TrialPrepaidAdminPage /> },
+      { path: '/admin/submission/details', element: <MessageOperationsPage initialSection="submissions" /> },
+      { path: '/admin/send/details', element: <MessageOperationsPage initialSection="sends" /> },
+      { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
+      { path: '/admin/error/details', element: <MessageOperationsPage initialSection="errors" /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: 'uplink', element: <PlaceholderPage title="上行数据（含退订记录）" prdRef="F-10" /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },

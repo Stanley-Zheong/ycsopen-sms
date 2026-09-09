@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-F-7-2-A",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.listViewsExposeTraceColumnsAndDoNotRevealProtectedMobileOrFullContent",
+    "web/test/unit/message-operations.test.tsx: resends and appeals eligible failed messages without exposing plaintext mobile",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-send-page",
+    "EVIDENCE/npm-unit-message-operations.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Send detail filters expose required operational columns while maskedMobile stays protected and content is summarized."
+}

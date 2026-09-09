@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-F-7-1-A",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.listViewsExposeTraceColumnsAndDoNotRevealProtectedMobileOrFullContent",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-submission-page",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log",
+    "EVIDENCE/ui-contract-production.log"
+  ],
+  "verified_behavior": "Submission detail exposes tenant, submitId, messageId, protocol/product, submission/send state, template/signature, and rejection metadata."
+}
