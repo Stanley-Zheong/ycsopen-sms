@@ -27,6 +27,7 @@ import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
 import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
 import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
 import TemplateLifecyclePage from '@/pages/tenant/templates/TemplateLifecyclePage';
+import ExemptionPolicyPage from '@/pages/admin/exemptions/ExemptionPolicyPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       { path: 'audit', element: <Navigate to="/admin/signatures/review" replace /> },
       { path: '/admin/signatures/review', element: <SignatureReviewPage /> },
       { path: '/admin/templates/review', element: <TemplateReviewPage /> },
+      { path: '/admin/exemption/policy', element: <ExemptionPolicyPage /> },
       {
         path: 'riskcontrol',
         element: <PlaceholderPage title="验证规则（黑白名单/内容审核/频次/携号转网）" prdRef="F-5.1~F-5.7" />,

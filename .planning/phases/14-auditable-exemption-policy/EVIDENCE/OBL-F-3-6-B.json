@@ -1,0 +1,23 @@
+{
+  "phase": "14-auditable-exemption-policy",
+  "obligation": "OBL-F-3-6-B",
+  "result": "PASS",
+  "evidence": [
+    {
+      "type": "backend-test",
+      "command": "mvn -q -f core/pom.xml -Dtest=ExemptionPolicyServiceTest test",
+      "assertion": "deterministicPreviewCoversActiveNonExemptableOutOfScopeUnauthorizedRevokedAndExpired and specificPendingRuleTakesPrecedenceOverLaterWildcardApprovedRule cover precedence and denial outcomes."
+    },
+    {
+      "type": "frontend-unit-test",
+      "command": "npm --prefix web test -- exemption-policy.test.tsx",
+      "assertion": "preview panel submits tenant/type/resource/product/scope/control/reason and renders decision result."
+    },
+    {
+      "type": "playwright",
+      "command": "npm --prefix web exec -- playwright test exemption-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+      "case": "C-P14-EXEMPTION-PREVIEW",
+      "assertion": "element admin-auditable-exemption-exemption-effective-preview runs effective preview in local Chrome."
+    }
+  ]
+}

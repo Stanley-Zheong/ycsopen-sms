@@ -1,0 +1,47 @@
+.exemption-policy-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.exemption-policy-alert {
+  border-radius: 10px;
+  margin: 12px 0;
+  padding: 10px 12px;
+}
+
+.exemption-policy-alert.success {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.exemption-policy-alert.error {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.exemption-policy-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.exemption-policy-form.compact {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.exemption-policy-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.exemption-policy-result {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: max-content 1fr;
+}
+
+.exemption-policy-result dt {
+  color: #475467;
+}

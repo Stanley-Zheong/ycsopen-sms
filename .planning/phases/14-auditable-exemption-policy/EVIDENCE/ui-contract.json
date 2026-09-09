@@ -1,0 +1,74 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/exemption/policy"],
+    "test_ids": [
+      "admin-auditable-exemption-exemption-policy-page",
+      "admin-auditable-exemption-exemption-effective-preview",
+      "admin-auditable-exemption-exemption-usage-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/14-auditable-exemption-policy/design-output/prototype.html", "sha256": "ad17abdcf2dd2c9b2af91d6f5a8fd6c041d930a29acefc8bc77c9ca84bd063fb" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/14-auditable-exemption-policy/template-exemption-policy.pen", "sha256": "089bf894572156aaee077b5ce69e9fa5e6917f4b8a53caeaaceb3784bd6f6c0a" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/exemption/policy"],
+    "test_ids": [
+      "admin-auditable-exemption-exemption-policy-page",
+      "admin-auditable-exemption-exemption-effective-preview",
+      "admin-auditable-exemption-exemption-usage-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/14-auditable-exemption-policy/design-output/prototype.html", "sha256": "ad17abdcf2dd2c9b2af91d6f5a8fd6c041d930a29acefc8bc77c9ca84bd063fb" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-auditable-exemption-exemption-policy-page",
+      "admin-auditable-exemption-exemption-effective-preview",
+      "admin-auditable-exemption-exemption-usage-history"
+    ],
+    "sources": [
+      { "path": ".planning/phases/14-auditable-exemption-policy/design-output/prototype.spec.ts", "sha256": "ecfa8f4bef06b8e9daf1692197195b94ffd9a1c7bdc07aa0d8a6b07d81be5998" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/exemption/policy"],
+    "test_ids": [
+      "admin-auditable-exemption-exemption-policy-page",
+      "admin-auditable-exemption-exemption-effective-preview",
+      "admin-auditable-exemption-exemption-usage-history"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "a9b4ffa2bc40b7af6f0dda06aaf537b508d703f7fd8bb9b8d638f62f517e5d98" },
+      { "path": "web/src/pages/admin/exemptions/ExemptionPolicyPage.tsx", "sha256": "f3de1873b4dfdfb9290b878cab5b23f984cee9a22f21f15bdd7a2fe6c8e3a48e" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-auditable-exemption-exemption-policy-page",
+      "admin-auditable-exemption-exemption-effective-preview",
+      "admin-auditable-exemption-exemption-usage-history"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/exemption-policy.spec.ts", "sha256": "aa45836e6e461212152cb1e0b1dc8f101485d67d96c8ca05fa3c1b4114754d37" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test exemption-policy.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "99c898dfd3f4784c5148a26b0b857f7509244ff5",
+    "config": "web/playwright.config.ts project=local-google-chrome executablePath=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/14-auditable-exemption-policy/EVIDENCE/playwright-exemption-policy.json",
+      "sha256": "d1dc9025be7be11e7676879605b5d63eda067b4a94a94fe36091c46b81424137"
+    }
+  }
+}
