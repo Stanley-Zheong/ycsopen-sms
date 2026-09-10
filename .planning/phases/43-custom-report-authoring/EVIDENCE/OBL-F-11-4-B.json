@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-11-4-B",
+  "requirement": "REQ-F-11-4",
+  "owner": "custom-report-authoring",
+  "evidence": [
+    "core/src/test/java/com/ycsopen/sms/core/service/report/CustomReportServiceTest.java",
+    "core/src/main/java/com/ycsopen/sms/core/service/report/CustomReportService.java"
+  ],
+  "status": "verified"
+}
