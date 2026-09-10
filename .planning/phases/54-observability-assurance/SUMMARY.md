@@ -4,7 +4,7 @@
 
 Phase 54 delivers the `observability-assurance` obligation set. It adds a minimal Java event-registry contract, tests, and phase evidence.
 
-Implementation commit: `TBD`.
+Implementation commit: `f3d89912ae2cb0c5878d85c58e6969a08d3b2c27`.
 
 Pull request: `TBD`.
 
