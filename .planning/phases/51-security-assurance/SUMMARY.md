@@ -4,6 +4,8 @@
 
 Phase 51 delivered a security assurance package for the `security-assurance` obligation set. It did not add product features, UI, or schema changes.
 
+Implementation commit: `26ad03a08f7784bcf102a890862154b99d139e74`.
+
 ## Closed TODO set
 
 - OBL-NFR-TLS — closed by `EVIDENCE/OBL-NFR-TLS.json`.
