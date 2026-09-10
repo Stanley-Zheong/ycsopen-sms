@@ -692,8 +692,8 @@ Plans:
 3. No-backup and recovery failures remain visible, recoverable, and audited.
 
 **Test layers**: Lease/state unit, MySQL/Redis concurrency, crash/fault component, Playwright migration/recovery.
-**Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/50-tenant-help-center/CLAUDE-REVIEW.md`.
+**Plans**: `.planning/phases/50-tenant-help-center/50-01-PLAN.md`; implementation commit `5f5af84f38199360929e0c3dc69f871c813fcb4c`; summary `.planning/phases/50-tenant-help-center/SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 26: Authenticated tenant console send

@@ -62,5 +62,16 @@
     "sources": [
       { "path": "web/test/scripts/tenant-help-center.spec.ts", "sha256": "9da65cdbb7868a815417651e79e7cdb0b8d91797dc7a99d6175018bea15f2897" }
     ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test tenant-help-center.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/50-tenant-help-center/EVIDENCE/playwright-tenant-help-center-raw.json",
+    "commit": "5f5af84f38199360929e0c3dc69f871c813fcb4c",
+    "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "cases": ["C-P50-API", "C-P50-GUIDE", "C-P50-SERVICE"],
+    "report": {
+      "path": ".planning/phases/50-tenant-help-center/EVIDENCE/playwright-tenant-help-center-execution.json",
+      "sha256": "ba3901087a98197b9aa12d73969cd1300ce013b4ca72bdfc6fd8765169ec805a"
+    }
   }
 }
