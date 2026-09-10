@@ -1,0 +1,18 @@
+<main data-route="/admin/archive" data-testid="admin-retention-archive-page">
+  <section data-testid="admin-retention-archive-policy-card">
+    <h1>保留归档与恢复</h1>
+    <p>MESSAGE_TASKS / message_tasks / retention 730 days / hot 3 months</p>
+    <button data-testid="admin-retention-archive-policy-save">保存策略</button>
+  </section>
+  <section>
+    <button data-testid="admin-retention-archive-scan">扫描并归档</button>
+    <table data-testid="admin-retention-archive-manifest-table">
+      <tr>
+        <td>2026-01</td>
+        <td>abcdef123456</td>
+        <td data-testid="admin-retention-archive-deletion-eligibility">保留中</td>
+        <td><button data-testid="admin-retention-archive-manifest-restore">恢复</button></td>
+      </tr>
+    </table>
+  </section>
+</main>

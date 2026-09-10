@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-NFR-HOT-COLD",
+  "status": "PASS",
+  "evidence": ["RetentionArchiveService.archiveEligible", "RetentionArchiveServiceTest.scanArchivesEligibleHotRowsFromWhitelistedSourceTables"],
+  "notes": "Eligible rows are selected through code-owned source-table switches and copied into encrypted archive manifests."
+}

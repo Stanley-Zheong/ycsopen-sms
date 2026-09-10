@@ -1,0 +1,6 @@
+{
+  "route": "/admin/archive",
+  "page": "admin-retention-archive-page",
+  "elements": ["admin-retention-archive-policy-card", "admin-retention-archive-manifest-restore"],
+  "style": "ycsan-web aligned admin card/table layout"
+}

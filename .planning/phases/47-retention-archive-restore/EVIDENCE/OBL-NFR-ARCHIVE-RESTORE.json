@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-NFR-ARCHIVE-RESTORE",
+  "status": "PASS",
+  "evidence": ["RetentionArchiveService.restore", "archive_restore_jobs", "admin-retention-archive-manifest-restore"],
+  "notes": "Restore verifies the manifest before returning records and records success/failure as a restore job."
+}
