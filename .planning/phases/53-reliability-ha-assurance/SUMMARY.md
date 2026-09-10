@@ -4,7 +4,7 @@
 
 Phase 53 delivers repository-local reliability assurance for the `reliability-ha-assurance` obligation set. It adds phase evidence/docs only.
 
-Implementation commit: pending.
+Implementation commit: `49b2e14fa233b346e223c50b18cd2d8dd471c8a5`.
 
 Pull request: pending.
 
