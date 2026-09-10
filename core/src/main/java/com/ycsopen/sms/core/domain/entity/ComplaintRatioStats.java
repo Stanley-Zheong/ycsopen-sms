@@ -42,6 +42,15 @@ public class ComplaintRatioStats {
     @Column(name = "over_threshold")
     private Boolean overThreshold = false;
 
+    @Column(name = "threshold_config_version")
+    private String thresholdConfigVersion;
+
+    @Column(name = "data_quality")
+    private String dataQuality = "UNKNOWN";
+
+    @Column(name = "source_registry")
+    private String sourceRegistry = "complaint_ratio_stats:message_tasks:complaints";
+
     @Column(name = "calculated_at")
     private LocalDateTime calculatedAt = LocalDateTime.now();
 

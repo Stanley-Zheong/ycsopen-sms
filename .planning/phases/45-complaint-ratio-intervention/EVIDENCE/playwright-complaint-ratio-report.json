@@ -1,0 +1,14 @@
+{
+  "command": "npm --prefix web exec -- playwright test dashboard.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P45-CHANNEL-FLOW",
+    "C-P45-CHANNEL-RATIO",
+    "C-P45-DRILLDOWN",
+    "C-P45-PERIOD",
+    "C-P45-TENANT-RATIO",
+    "C-P45-THRESHOLD"
+  ]
+}
