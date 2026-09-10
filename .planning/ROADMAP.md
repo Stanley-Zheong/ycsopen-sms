@@ -82,7 +82,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 52: Performance and capacity assurance** — Realistic traffic/data model.
 - [x] **Phase 53: Reliability and HA assurance** — Stateless multi-instance topology.
 - [x] **Phase 54: Observability assurance** — All PRD business events.
-- [ ] **Phase 55: Extension conformance assurance** — Connector, routing condition/action, billing/price, review policy, notification adapter extension contracts.
+- [x] **Phase 55: Extension conformance assurance** — Connector, routing condition/action, billing/price, review policy, notification adapter extension contracts.
 - [ ] **Phase 56: Final cross-protocol release acceptance** — Composition only: verify all 108 groups/all 522 atomic obligations.
 
 ## Phase Details
@@ -1371,7 +1371,7 @@ Plans:
 
 **Test layers**: SPI compatibility, conformance, version migration, fault/security contract tests.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/55-extension-conformance-assurance/55-01-PLAN.md`
 
 ### Phase 56: Final cross-protocol release acceptance
 
