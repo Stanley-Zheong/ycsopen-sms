@@ -53,6 +53,7 @@ import AdminAlertsPage from '@/pages/admin/alerts/AdminAlertsPage';
 import AdminRechargeReviewPage from '@/pages/admin/billing/AdminRechargeReviewPage';
 import AdminReconciliationSettlementPage from '@/pages/admin/billing/AdminReconciliationSettlementPage';
 import TenantStatementsInvoicesPage from '@/pages/tenant/billing/TenantStatementsInvoicesPage';
+import AdminFinancialAnalyticsPage from '@/pages/admin/billing/AdminFinancialAnalyticsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -112,8 +113,8 @@ export const router = createBrowserRouter([
       { path: '/admin/uplink', element: <AdminUplinksPage /> },
       { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
-      { path: 'statistics', element: <PlaceholderPage title="数据统计" prdRef="F-11.1~F-11.4" /> },
-      { path: 'finance', element: <PlaceholderPage title="财务中心" prdRef="F-8" /> },
+      { path: '/admin/statistics', element: <AdminFinancialAnalyticsPage /> },
+      { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },
       { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
       { path: 'system', element: <Navigate to="users" replace /> },
