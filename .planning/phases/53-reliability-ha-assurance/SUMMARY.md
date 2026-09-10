@@ -6,7 +6,7 @@ Phase 53 delivers repository-local reliability assurance for the `reliability-ha
 
 Implementation commit: `49b2e14fa233b346e223c50b18cd2d8dd471c8a5`.
 
-Pull request: pending.
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/45.
 
 ## Closed TODO set
 
