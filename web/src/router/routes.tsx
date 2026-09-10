@@ -64,6 +64,7 @@ import AdminComplaintsPage from '@/pages/admin/complaints/AdminComplaintsPage';
 import AdminComplaintAnalyticsPage from '@/pages/admin/complaints/AdminComplaintAnalyticsPage';
 import AdminTenantRiskPage from '@/pages/admin/risk/AdminTenantRiskPage';
 import AdminCustomReportsPage from '@/pages/admin/reports/AdminCustomReportsPage';
+import AdminExportCenterPage from '@/pages/admin/exports/AdminExportCenterPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -130,6 +131,7 @@ export const router = createBrowserRouter([
       { path: '/admin/statistics', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/statistics/resources', element: <ResourceStatisticsPage /> },
       { path: '/admin/custom/reports', element: <AdminCustomReportsPage /> },
+      { path: '/admin/export-center', element: <AdminExportCenterPage /> },
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },

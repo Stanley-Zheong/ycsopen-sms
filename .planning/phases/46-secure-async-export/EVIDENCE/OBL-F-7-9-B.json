@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-F-7-9-B",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "TenantUnsubscribesPage renders tenant-secure-async-unsubscribes-export.",
+    "UnsubscribeComplianceService creates SecureAsyncExportService UNSUBSCRIBE_EVIDENCE jobs with tenantId scope."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test",
+    "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json"
+  ]
+}

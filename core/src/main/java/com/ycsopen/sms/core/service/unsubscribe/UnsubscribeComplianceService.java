@@ -3,6 +3,8 @@ package com.ycsopen.sms.core.service.unsubscribe;
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.common.security.persistence.BlacklistEntryProtectionAdapter;
 import com.ycsopen.sms.core.domain.entity.BlacklistEntry;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService.ExportCreateCommand;
 import com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -19,9 +21,12 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -31,21 +36,31 @@ public class UnsubscribeComplianceService {
     private final JdbcTemplate jdbc;
     private final TenantBlacklistWriter blacklistWriter;
     private final WebhookDeliveryTransportService webhookTransport;
+    private final SecureAsyncExportService exports;
 
     @Autowired
     public UnsubscribeComplianceService(JdbcTemplate jdbc,
                                         BlacklistEntryProtectionAdapter adapter,
-                                        WebhookDeliveryTransportService webhookTransport) {
+                                        WebhookDeliveryTransportService webhookTransport,
+                                        SecureAsyncExportService exports) {
         this(jdbc, (tenantId, mobile, reason) -> adapter.create(tenantId, mobile,
-                BlacklistEntry.ListType.BLACK, BlacklistEntry.Source.UNSUBSCRIBE_AUTO, reason), webhookTransport);
+                BlacklistEntry.ListType.BLACK, BlacklistEntry.Source.UNSUBSCRIBE_AUTO, reason), webhookTransport, exports);
     }
 
     UnsubscribeComplianceService(JdbcTemplate jdbc,
                                  TenantBlacklistWriter blacklistWriter,
                                  WebhookDeliveryTransportService webhookTransport) {
+        this(jdbc, blacklistWriter, webhookTransport, null);
+    }
+
+    UnsubscribeComplianceService(JdbcTemplate jdbc,
+                                 TenantBlacklistWriter blacklistWriter,
+                                 WebhookDeliveryTransportService webhookTransport,
+                                 SecureAsyncExportService exports) {
         this.jdbc = Objects.requireNonNull(jdbc);
         this.blacklistWriter = Objects.requireNonNull(blacklistWriter);
         this.webhookTransport = Objects.requireNonNull(webhookTransport);
+        this.exports = exports;
     }
 
     @Transactional(readOnly = true)
@@ -140,6 +155,24 @@ public class UnsubscribeComplianceService {
     @Transactional
     public ExportRequestResponse requestTenantExport(long tenantId, SearchFilter filter, String actor) {
         long rows = countSearch(filter, tenantId);
+        if (exports != null) {
+            var job = exports.create(new ExportCreateCommand("UNSUB-" + UUID.randomUUID(), tenantId,
+                    "UNSUBSCRIBE_EVIDENCE", "UNSUBSCRIBE_COMPLIANCE", "退订证据导出", actor(actor), "CSV",
+                    Map.of("tenantId", tenantId), List.of("unsubscribed_at DESC", "id DESC"),
+                    "secure-async-export:create", List.of("mobile"),
+                    search(filter, tenantId).stream().map(row -> {
+                        Map<String, Object> item = new LinkedHashMap<>();
+                        item.put("id", row.id());
+                        item.put("tenant_id", row.tenantId());
+                        item.put("masked_mobile", row.maskedMobile());
+                        item.put("trigger_keyword", row.triggerKeyword());
+                        item.put("handling_state", row.handlingState());
+                        item.put("notification_state", row.notificationState());
+                        item.put("unsubscribed_at", row.unsubscribedAt());
+                        return item;
+                    }).toList()));
+            return new ExportRequestResponse(job.id(), job.status(), job.recordCount(), job.format());
+        }
         jdbc.update("""
                 INSERT INTO export_tasks(export_type, created_by, file_format, status, progress_pct, record_count)
                 VALUES ('UNSUBSCRIBE_EVIDENCE', ?, 'CSV', 'PENDING', 0, ?)

@@ -74,7 +74,7 @@ test.describe('Phase 33 unsubscribe compliance', () => {
     await expect(page.getByTestId('tenant-unsubscribe-compliance-unsubscribes-page')).toBeVisible();
     await expect(page.getByTestId('tenant-unsubscribe-compliance-unsubscribe-row')).toContainText('138****8000');
     await expect(page.getByTestId('tenant-unsubscribe-compliance-unsubscribes-notification-state')).toContainText('PENDING');
-    await page.getByTestId('tenant-unsubscribe-compliance-export-request').click();
+    await page.getByTestId('tenant-secure-async-unsubscribes-export').click();
     await expect(page.getByTestId('tenant-unsubscribe-compliance-message')).toContainText('导出任务已创建');
   });
 
