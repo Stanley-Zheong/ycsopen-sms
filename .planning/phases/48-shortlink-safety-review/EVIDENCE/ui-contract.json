@@ -97,12 +97,12 @@
   },
   "execution": {
     "command": "npm --prefix web exec -- playwright test shortlink-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/48-shortlink-safety-review/EVIDENCE/playwright-shortlink-safety-report.json",
-    "commit": "efb99ee1b22cff4dac48e682a225c6cc13eb16aa",
+    "commit": "a933823f0f784388bde0474b6f34e0e6079dd6a8",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/48-shortlink-safety-review/EVIDENCE/playwright-shortlink-safety-execution.json",
-      "sha256": "62acc7973b0c0306f373c49983ee164a1ba7e9963353426c958a8eedae66a1e6"
+      "sha256": "f387f6056ce75ac747b55ab2e7e90485a6bb605ef2089520682123084829a5ec"
     }
   }
 }

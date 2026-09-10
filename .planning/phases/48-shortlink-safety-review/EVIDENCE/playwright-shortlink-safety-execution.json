@@ -1,6 +1,6 @@
 {
   "command": "npm --prefix web exec -- playwright test shortlink-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/48-shortlink-safety-review/EVIDENCE/playwright-shortlink-safety-report.json",
-  "commit": "efb99ee1b22cff4dac48e682a225c6cc13eb16aa",
+  "commit": "a933823f0f784388bde0474b6f34e0e6079dd6a8",
   "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "result": "PASS",
   "cases": ["C-P48-CREATE", "C-P48-URL", "C-P48-DOMAIN", "C-P48-VALIDITY", "C-P48-LIST", "C-P48-ANALYTICS", "C-P48-REVIEW", "C-P48-APPROVE", "C-P48-REJECT", "C-P48-OFFLINE", "C-P48-SAFE-PENDING", "C-P48-EXPIRE"]

@@ -75,7 +75,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 45: Complaint-ratio dashboard and intervention** — Real send denominator/complaint numerator.
 - [x] **Phase 46: Secure asynchronous export** — Export types/formats.
 - [x] **Phase 47: Retention, archive, and restore** — Hot partition policy.
-- [ ] **Phase 48: Short-link creation and safety review** — URL/domain/validity.
+- [x] **Phase 48: Short-link creation and safety review** — URL/domain/validity.
 - [ ] **Phase 49: Tenant cooperation termination** — Machine-readable participant inventory.
 - [ ] **Phase 50: Tenant help and developer center** — Versioned guide, API docs, and customer-service entry.
 - [ ] **Phase 51: Security assurance** — Full TLS/mTLS boundary.
@@ -671,7 +671,7 @@ Plans:
 
 **Test layers**: Connector/status unit, provider contract, worker concurrency, receipt/billing component, API authorization, real E2E.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/48-shortlink-safety-review/48-01-PLAN.md`; implementation PR: https://github.com/Stanley-Zheong/ycsopen-sms/pull/40
 
 ### Phase 25: Durable dispatch task migration and recovery
 
