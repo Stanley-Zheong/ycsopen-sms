@@ -4,7 +4,7 @@
 
 Phase 52 adds repository-local performance assurance for the `performance-assurance` obligation set. It changes only backend tests and phase evidence/docs.
 
-Implementation commit: pending.
+Implementation commit: `63387648ea33007fcce3bfda0bee8bd24c9897dc`.
 
 Pull request: pending.
 
