@@ -58,12 +58,12 @@
   },
   "execution": {
     "command": "npm --prefix web exec -- playwright test retention-archive.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/47-retention-archive-restore/EVIDENCE/playwright-retention-archive-report.json",
-    "commit": "2e07be86316b5e01368536016485997830028dcd",
+    "commit": "abf51555efe6fee490b818dd3e9be23d02df82a6",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/47-retention-archive-restore/EVIDENCE/playwright-retention-archive-execution.json",
-      "sha256": "ef2c7849b9ef98cc7c2ac1dc223453b5dff8dbf3f9a9a45cd2a42a7070a46d46"
+      "sha256": "3b6f2b31839695ab0caf05b18fdde889a5e0ed40b772fc37e024f93f4e2750e5"
     }
   }
 }

@@ -74,7 +74,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 44: Operational dashboards and account overview** — Platform realtime KPI/trend/activity.
 - [x] **Phase 45: Complaint-ratio dashboard and intervention** — Real send denominator/complaint numerator.
 - [x] **Phase 46: Secure asynchronous export** — Export types/formats.
-- [ ] **Phase 47: Retention, archive, and restore** — Hot partition policy.
+- [x] **Phase 47: Retention, archive, and restore** — Hot partition policy.
 - [ ] **Phase 48: Short-link creation and safety review** — URL/domain/validity.
 - [ ] **Phase 49: Tenant cooperation termination** — Machine-readable participant inventory.
 - [ ] **Phase 50: Tenant help and developer center** — Versioned guide, API docs, and customer-service entry.
