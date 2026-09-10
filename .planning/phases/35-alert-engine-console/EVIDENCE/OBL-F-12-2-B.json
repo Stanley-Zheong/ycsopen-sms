@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-12-2-B","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AlertEngineServiceTest.adapterFailureRecordsAttemptWithoutLosingAlertAndRecoveryResolvesEpisode asserts failed attempts keep alert episode.","alert-engine.spec.ts pw-p35-deliveries verifies delivery table."]}

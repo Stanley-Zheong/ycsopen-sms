@@ -1,0 +1,3 @@
+Phase35 Pencil source placeholder.
+Route: /admin/alerts
+Elements: admin-alert-engine-dashboard-cards, admin-alert-engine-dashboard-alert-tabs, admin-alert-engine-dashboard-alert-action, admin-alert-engine-rules-page, admin-alert-engine-notification-targets, admin-alert-engine-alert-delivery-attempts, admin-alert-engine-alert-history, admin-alert-engine-alert-history-acknowledge, admin-alert-engine-alert-history-mute, admin-alert-engine-alert-acknowledge, admin-alert-engine-alert-resolve, admin-alert-engine-alert-mute.

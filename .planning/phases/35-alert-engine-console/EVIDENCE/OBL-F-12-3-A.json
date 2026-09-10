@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-12-3-A","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["Alert history API supports status/severity filters.","alert-engine.spec.ts pw-p35-history verifies history table in Chrome."]}

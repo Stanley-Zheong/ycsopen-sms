@@ -1,0 +1,29 @@
+{
+  "command": "npm --prefix web exec -- playwright test alert-engine.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P35-DASHBOARD",
+    "C-P35-DASHBOARD-ACTION",
+    "C-P35-DELIVERIES",
+    "C-P35-HISTORY",
+    "C-P35-HISTORY-ACK",
+    "C-P35-HISTORY-MUTE",
+    "C-P35-RULES",
+    "C-P35-STATE-ACK",
+    "C-P35-STATE-MUTE",
+    "C-P35-STATE-RESOLVE",
+    "C-P35-TABS",
+    "C-P35-TARGETS"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T02:19:01.906Z",
+    "duration": 4273.166,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "29bcf860e6c00c5397387312f0cfa46ba0644c6201a66fa0fdc1eba56dc39e88"
+}

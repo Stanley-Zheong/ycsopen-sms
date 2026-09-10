@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-12-3-B","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AlertEngineServiceTest.acknowledgeResolveAndMuteFollowStateContract asserts active-to-acknowledged and invalid repeat rejection."]}

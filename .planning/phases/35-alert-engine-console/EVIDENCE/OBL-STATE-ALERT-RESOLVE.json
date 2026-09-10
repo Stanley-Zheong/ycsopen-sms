@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-STATE-ALERT-RESOLVE","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AlertEngineServiceTest.acknowledgeResolveAndMuteFollowStateContract asserts acknowledged-to-resolved with reason and actor."]}

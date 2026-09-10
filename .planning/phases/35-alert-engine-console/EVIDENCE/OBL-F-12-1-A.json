@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-12-1-A","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AlertEngineServiceTest creates channel/failure/balance/queue/complaint style rules through supported metrics.","alert-engine.spec.ts pw-p35-rules verifies rule form."]}

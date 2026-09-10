@@ -48,6 +48,7 @@ import AdminUplinksPage from '@/pages/admin/uplinks/AdminUplinksPage';
 import TenantUplinksPage from '@/pages/tenant/uplinks/TenantUplinksPage';
 import AdminUnsubscribesPage from '@/pages/admin/unsubscribes/AdminUnsubscribesPage';
 import TenantUnsubscribesPage from '@/pages/tenant/unsubscribes/TenantUnsubscribesPage';
+import AdminAlertsPage from '@/pages/admin/alerts/AdminAlertsPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -105,7 +106,7 @@ export const router = createBrowserRouter([
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
       { path: 'statistics', element: <PlaceholderPage title="数据统计" prdRef="F-11.1~F-11.4" /> },
       { path: 'finance', element: <PlaceholderPage title="财务中心" prdRef="F-8" /> },
-      { path: 'alerts', element: <PlaceholderPage title="告警管理" prdRef="F-12" /> },
+      { path: '/admin/alerts', element: <AdminAlertsPage /> },
       { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
       { path: 'system', element: <Navigate to="users" replace /> },
       { path: '/admin/system/users', element: <UserManagementPage /> },

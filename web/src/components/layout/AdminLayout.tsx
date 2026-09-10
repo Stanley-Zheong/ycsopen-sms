@@ -151,6 +151,10 @@ export default function AdminLayout() {
             <NavLink key={item.to} to={item.to} data-testid="admin-unsubscribe-compliance-unsubscribes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
+          ) : item.to === '/admin/alerts' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-alert-engine-alerts-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
           ) : item.to === '/admin/system/configuration' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-platform-system-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}

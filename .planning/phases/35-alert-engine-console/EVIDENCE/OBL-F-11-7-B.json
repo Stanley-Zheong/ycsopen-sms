@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-11-7-B","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AdminAlertsPage renders all/active/severe tabs and alert row fields.","alert-engine.spec.ts pw-p35-tabs asserts tab region in Chrome."]}

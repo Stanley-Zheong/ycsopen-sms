@@ -1,0 +1,11 @@
+exit=124
+temp_prompt=/tmp/gstack-claude-prompt-y3ZBzR
+temp_response=/tmp/gstack-claude-response-pzRbyz
+temp_error=/tmp/gstack-claude-error-2LnZze
+temp_diff=/tmp/gstack-claude-diff-1weLoM
+stderr_begin
+
+stderr_end
+parsed_begin
+CLAUDE_JSON_PARSE_ERROR: Expecting value: line 1 column 1 (char 0)
+parsed_end
