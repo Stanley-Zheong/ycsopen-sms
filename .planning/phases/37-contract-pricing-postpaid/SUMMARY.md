@@ -5,7 +5,7 @@ Status: complete; scoped TODO set is empty after executable verification.
 Delivery:
 
 - Branch: `phase/37-contract-pricing-postpaid`
-- Commit: `6465aeacc0b3`
+- Commit/SHA source of truth: PR head for `phase/37-contract-pricing-postpaid`; after checkout, run `git rev-parse HEAD`.
 - Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/29
 
 Delivered:
