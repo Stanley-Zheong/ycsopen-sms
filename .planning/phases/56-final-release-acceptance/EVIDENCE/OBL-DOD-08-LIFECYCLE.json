@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-DOD-08-LIFECYCLE",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest verifies registration, trial/prepaid, fee warning, risk pause, and termination surfaces."
+  ]
+}

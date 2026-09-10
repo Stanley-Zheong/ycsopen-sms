@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-FINAL-TODO-EMPTY",
+  "status": "PASS",
+  "evidence": [
+    "Owner validator command: /usr/bin/env ruby .planning/tools/validate-prd-obligations.rb --owner final-release-acceptance --assert-unique --assert-traced",
+    "FinalReleaseAcceptanceTest scans project files and fails on any active '- [ ]' TODO checkbox."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-NFR-TIMEZONE",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest confirms UTC+8 and Asia/Shanghai release references.",
+    "Existing Phase01 timezone verifier remains the executable integration surface for timestamp behavior."
+  ]
+}

@@ -456,18 +456,24 @@ Credentials must be supplied through the CLI's supported secure environment mech
 - **Per wave merge:** run planning validator self-tests, backend/frontend project checks, and every affected integration lane. [VERIFIED: `AGENTS.md`; execution standard]
 - **Phase gate:** run all seven exact Phase 1 TEST-MATRIX rows, evidence schema/checksum validation, plan checker, GSD verification/code review, Claude review, effective TODO-empty query, and post-push delivery attestation. [VERIFIED: `TODO.md`; execution standard; DR-01-008]
 
-### Wave 0 Gaps
+### Historical Wave 0 Findings
 
 - [x] Create executable `01-*-PLAN.md` files with complete task structure. [VERIFIED: plan structure queries]
-- [ ] Create the evidence envelope/matrix schemas and their invalid-schema/checksum fixtures. [VERIFIED: missing files]
-- [ ] Create `scripts/verify-phase-01` and child-result preservation tests. [VERIFIED: missing file]
-- [ ] Create lifecycle exit/delivery validators and a local bare-remote destructive suite. [VERIFIED: TEST-MATRIX names a missing command]
-- [ ] Install/pin Playwright on the current branch and create config/reporters. [VERIFIED: current `web/package.json`]
-- [ ] Create AST UI drift validator, versioned manifest, and all one-mutation fixtures. [VERIFIED: missing files]
-- [ ] Create real MySQL/Redis integration profile/tests and CI service lanes. [VERIFIED: current H2-only tests and CI]
-- [ ] Create copy registry/scanners and timezone integration fixtures. [VERIFIED: missing files]
-- [ ] Implement and independently rerun the repeatable standard-path local-Chrome path/version/brand/1440x900 launch probe. Attempt 3 source artifacts are superseded. [REQUIRED: DR-01-016]
-- [ ] Replace the literal-SHA dependency contract with the approved external attestation protocol and test it. [VERIFIED: current validator contradiction]
+
+These were Wave 0 research findings from the original Phase 1 planning pass.
+They are retained as historical evidence, not as active project TODOs. Current
+release TODO status is governed by `.planning/PRD-OBLIGATIONS.md`,
+phase-local `TODO.md` files, and the final release acceptance query.
+
+- Historical finding: Create the evidence envelope/matrix schemas and their invalid-schema/checksum fixtures. [VERIFIED: missing files at research time]
+- Historical finding: Create `scripts/verify-phase-01` and child-result preservation tests. [VERIFIED: missing file at research time]
+- Historical finding: Create lifecycle exit/delivery validators and a local bare-remote destructive suite. [VERIFIED: TEST-MATRIX named a missing command at research time]
+- Historical finding: Install/pin Playwright on the current branch and create config/reporters. [VERIFIED: current `web/package.json` at research time]
+- Historical finding: Create AST UI drift validator, versioned manifest, and all one-mutation fixtures. [VERIFIED: missing files at research time]
+- Historical finding: Create real MySQL/Redis integration profile/tests and CI service lanes. [VERIFIED: current H2-only tests and CI at research time]
+- Historical finding: Create copy registry/scanners and timezone integration fixtures. [VERIFIED: missing files at research time]
+- Historical finding: Implement and independently rerun the repeatable standard-path local-Chrome path/version/brand/1440x900 launch probe. Attempt 3 source artifacts are superseded. [REQUIRED: DR-01-016 at research time]
+- Historical finding: Replace the literal-SHA dependency contract with the approved external attestation protocol and test it. [VERIFIED: validator contradiction at research time]
 
 ## Entry Decisions and Unsatisfied Conditions
 

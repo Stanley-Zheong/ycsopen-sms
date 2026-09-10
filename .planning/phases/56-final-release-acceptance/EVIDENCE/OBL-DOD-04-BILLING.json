@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-DOD-04-BILLING",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest verifies billing ledger and reconciliation/settlement surfaces."
+  ]
+}

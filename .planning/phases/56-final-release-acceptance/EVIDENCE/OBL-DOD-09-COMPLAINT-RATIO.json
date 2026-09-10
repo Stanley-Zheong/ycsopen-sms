@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-DOD-09-COMPLAINT-RATIO",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest verifies complaint ratio service/controller/UI surfaces."
+  ]
+}
