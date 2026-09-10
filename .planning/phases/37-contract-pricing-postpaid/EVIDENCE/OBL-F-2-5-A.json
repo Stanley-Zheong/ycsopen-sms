@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-5-A","phase":37,"owner":"contract-pricing-postpaid","status":"PASS","evidence":["contract-pricing.spec.ts pw-p37-billing-mode verifies exactly one billing mode selector.","ContractPricingServiceTest.postpaidContractRequiresCreditPeriodAndChangesTenantToContracted validates POSTPAID mode persistence."]}

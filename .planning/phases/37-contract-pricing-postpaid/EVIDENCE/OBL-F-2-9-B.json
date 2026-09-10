@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-9-B","phase":37,"owner":"contract-pricing-postpaid","status":"PASS","evidence":["ContractPricingServiceTest.prepaidContractRejectsPostpaidFieldsAndPostpaidRequiresThem asserts POSTPAID required and PREPAID forbidden fields.","contract-pricing.spec.ts pw-p37-postpaid-fields verifies postpaid field group."]}

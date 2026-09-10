@@ -5,6 +5,7 @@ import {
   listBalanceAudits,
   TRIAL_PREPAID_PERMISSIONS,
 } from '@/api/trialPrepaidApi';
+import { approveContract } from '@/api/contractPricingApi';
 import { mutationErrorMessage } from '@/api/client';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
@@ -28,6 +29,13 @@ export default function TrialPrepaidAdminPage() {
   const [endAt, setEndAt] = useState('2026-09-23T00:00');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [billingMode, setBillingMode] = useState('POSTPAID');
+  const [priceBookVersion, setPriceBookVersion] = useState('SMS_STANDARD_V1');
+  const [contractNo, setContractNo] = useState('HT-2026-0001');
+  const [signedAt, setSignedAt] = useState('2026-09-10');
+  const [attachmentRef, setAttachmentRef] = useState('oss://contracts/HT-2026-0001.pdf');
+  const [creditLimitMil, setCreditLimitMil] = useState('1000000');
+  const [billingPeriod, setBillingPeriod] = useState('MONTHLY');
   const auditKey = protectedQueryKey('trial-prepaid-balance-audits', tenantId);
   const audits = useQuery({
     queryKey: auditKey,
@@ -44,6 +52,25 @@ export default function TrialPrepaidAdminPage() {
     },
     onError: (failure) => {
       setError(mutationErrorMessage(failure, '试用配置保存失败'));
+      setMessage('');
+    },
+  });
+  const contractMutation = useMutation({
+    mutationFn: () => approveContract(Number(tenantId), {
+      billingMode,
+      priceBookVersion,
+      contractNo,
+      signedAt,
+      attachmentRef,
+      creditLimitMil: billingMode === 'POSTPAID' ? Number(creditLimitMil) : null,
+      billingPeriod: billingMode === 'POSTPAID' ? billingPeriod : null,
+    }),
+    onSuccess: (contract) => {
+      setMessage(`签约已生效：${contract.billingMode} / ${contract.priceBookVersion}`);
+      setError('');
+    },
+    onError: (failure) => {
+      setError(mutationErrorMessage(failure, '签约保存失败'));
       setMessage('');
     },
   });
@@ -78,6 +105,32 @@ export default function TrialPrepaidAdminPage() {
             <input data-testid="admin-trial-prepaid-tenant-trial-validity-start" type="datetime-local" value={startAt} onChange={(event) => setStartAt(event.target.value)} />
           </label>
           <button type="button" data-testid="admin-trial-prepaid-activate-trial" disabled={!canWrite} onClick={() => activateMutation.mutate()}>启用/调整试用</button>
+        </div>
+      </section>
+
+      <section className="card" data-testid="admin-contract-pricing-tenant-contract-page">
+        <h2>试用转正式签约</h2>
+        <div className="trial-prepaid-form">
+          <label>计费模式
+            <select data-testid="admin-contract-pricing-tenant-contract-billing-mode" value={billingMode} onChange={(event) => setBillingMode(event.target.value)}>
+              <option value="POSTPAID">后付费</option>
+              <option value="PREPAID">预付费</option>
+            </select>
+          </label>
+          <label>价目表版本<input data-testid="admin-contract-pricing-tenant-contract-price-version" value={priceBookVersion} onChange={(event) => setPriceBookVersion(event.target.value)} /></label>
+          <label>合同编号<input data-testid="admin-contract-pricing-tenant-contract-number" value={contractNo} onChange={(event) => setContractNo(event.target.value)} /></label>
+          <label>签约日期<input data-testid="admin-contract-pricing-tenant-contract-signed-date" type="date" value={signedAt} onChange={(event) => setSignedAt(event.target.value)} /></label>
+          <label>合同附件<input data-testid="admin-contract-pricing-tenant-contract-attachment" value={attachmentRef} onChange={(event) => setAttachmentRef(event.target.value)} /></label>
+          <div data-testid="admin-contract-pricing-tenant-contract-postpaid-fields" className="trial-prepaid-form">
+            <label>授信额度（厘）<input data-testid="admin-contract-pricing-tenant-contract-credit-limit" type="number" value={creditLimitMil} disabled={billingMode !== 'POSTPAID'} onChange={(event) => setCreditLimitMil(event.target.value)} /></label>
+            <label data-testid="admin-contract-pricing-tenant-contract-credit-period">账期
+              <select data-testid="admin-contract-pricing-tenant-contract-billing-period" value={billingPeriod} disabled={billingMode !== 'POSTPAID'} onChange={(event) => setBillingPeriod(event.target.value)}>
+                <option value="MONTHLY">月结</option>
+                <option value="QUARTERLY">季结</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" data-testid="admin-contract-pricing-tenant-contract-approve" disabled={!canWrite} onClick={() => contractMutation.mutate()}>批准转正式签约</button>
         </div>
       </section>
 

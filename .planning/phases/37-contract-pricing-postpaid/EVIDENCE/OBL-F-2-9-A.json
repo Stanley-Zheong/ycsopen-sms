@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-2-9-A","phase":37,"owner":"contract-pricing-postpaid","status":"PASS","evidence":["TrialPrepaidAdminPage renders contract number/date/attachment/price version fields.","contract-pricing.spec.ts pw-p37-admin-contract verifies admin page."]}

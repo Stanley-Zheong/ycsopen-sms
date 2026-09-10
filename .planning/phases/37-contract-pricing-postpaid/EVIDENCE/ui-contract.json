@@ -1,0 +1,120 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/tenant-trial-contracts", "/tenant/overview"],
+    "test_ids": [
+      "admin-contract-pricing-tenant-contract-page",
+      "admin-contract-pricing-tenant-contract-billing-mode",
+      "admin-contract-pricing-tenant-contract-credit-period",
+      "admin-contract-pricing-tenant-contract-postpaid-fields",
+      "tenant-contract-pricing-overview-contract-status",
+      "admin-contract-pricing-tenant-contract-price-version",
+      "admin-contract-pricing-tenant-contract-number",
+      "admin-contract-pricing-tenant-contract-signed-date",
+      "admin-contract-pricing-tenant-contract-attachment",
+      "admin-contract-pricing-tenant-contract-credit-limit",
+      "admin-contract-pricing-tenant-contract-billing-period",
+      "admin-contract-pricing-tenant-contract-approve"
+    ],
+    "sources": [
+      {"path": ".planning/phases/37-contract-pricing-postpaid/UI-ELEMENTS.md", "sha256": "0b3ca915f7a5653ec8909277e256371524d6fac83ed15f4d28280944273dd359"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/contract-pricing-postpaid.pen", "sha256": "2c2e600539f30c3a7131da8c49f1ab82ea6931ca1c8f5ab6a678808f1acabda6"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/tenant-trial-contracts", "/tenant/overview"],
+    "test_ids": [
+      "admin-contract-pricing-tenant-contract-page",
+      "admin-contract-pricing-tenant-contract-billing-mode",
+      "admin-contract-pricing-tenant-contract-credit-period",
+      "admin-contract-pricing-tenant-contract-postpaid-fields",
+      "tenant-contract-pricing-overview-contract-status",
+      "admin-contract-pricing-tenant-contract-price-version",
+      "admin-contract-pricing-tenant-contract-number",
+      "admin-contract-pricing-tenant-contract-signed-date",
+      "admin-contract-pricing-tenant-contract-attachment",
+      "admin-contract-pricing-tenant-contract-credit-limit",
+      "admin-contract-pricing-tenant-contract-billing-period",
+      "admin-contract-pricing-tenant-contract-approve"
+    ],
+    "sources": [
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.html", "sha256": "6b7ca72531674ad53b02fb1d1d87a19c7427cec34dea44444c5b0ae1c87d6459"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-contract-pricing-tenant-contract-page",
+      "admin-contract-pricing-tenant-contract-billing-mode",
+      "admin-contract-pricing-tenant-contract-credit-period",
+      "admin-contract-pricing-tenant-contract-postpaid-fields",
+      "tenant-contract-pricing-overview-contract-status",
+      "admin-contract-pricing-tenant-contract-price-version",
+      "admin-contract-pricing-tenant-contract-number",
+      "admin-contract-pricing-tenant-contract-signed-date",
+      "admin-contract-pricing-tenant-contract-attachment",
+      "admin-contract-pricing-tenant-contract-credit-limit",
+      "admin-contract-pricing-tenant-contract-billing-period",
+      "admin-contract-pricing-tenant-contract-approve"
+    ],
+    "sources": [
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.spec.ts", "sha256": "abc68872bff22f37ef45adbfcee89b09a8b729b4351aa9b48113c3bad4104a5e"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/tenant-trial-contracts", "/tenant/overview"],
+    "test_ids": [
+      "admin-contract-pricing-tenant-contract-page",
+      "admin-contract-pricing-tenant-contract-billing-mode",
+      "admin-contract-pricing-tenant-contract-credit-period",
+      "admin-contract-pricing-tenant-contract-postpaid-fields",
+      "tenant-contract-pricing-overview-contract-status",
+      "admin-contract-pricing-tenant-contract-price-version",
+      "admin-contract-pricing-tenant-contract-number",
+      "admin-contract-pricing-tenant-contract-signed-date",
+      "admin-contract-pricing-tenant-contract-attachment",
+      "admin-contract-pricing-tenant-contract-credit-limit",
+      "admin-contract-pricing-tenant-contract-billing-period",
+      "admin-contract-pricing-tenant-contract-approve"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "d12c725432b4c317765f898cbd4315044d6346daad6be3bfa9c73536161780b2"},
+      {"path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "6927d4ca8b0842e6e9e79e3c98d654bac3624a6398aefe83b8add52add8ab079"},
+      {"path": "web/src/pages/tenant/overview/OverviewPage.tsx", "sha256": "2f0eac14d89739985553eea9426a1578c770ecbc9a3b2567683b34915f5701b9"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-contract-pricing-tenant-contract-page",
+      "admin-contract-pricing-tenant-contract-billing-mode",
+      "admin-contract-pricing-tenant-contract-credit-period",
+      "admin-contract-pricing-tenant-contract-postpaid-fields",
+      "tenant-contract-pricing-overview-contract-status",
+      "admin-contract-pricing-tenant-contract-price-version",
+      "admin-contract-pricing-tenant-contract-number",
+      "admin-contract-pricing-tenant-contract-signed-date",
+      "admin-contract-pricing-tenant-contract-attachment",
+      "admin-contract-pricing-tenant-contract-credit-limit",
+      "admin-contract-pricing-tenant-contract-billing-period",
+      "admin-contract-pricing-tenant-contract-approve"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/contract-pricing.spec.ts", "sha256": "f19e6e8d2cdde915d12a0bbb0307246d152c01c21cb50a2499fd217c8b1d261d"}
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/37-contract-pricing-postpaid/EVIDENCE/playwright-contract-pricing-report.json",
+      "sha256": "16fb2e9b331e3c95bce03e32a7731c2ee9289fd5c922a98c23b2ed8b8bb61219"
+    }
+  }
+}
