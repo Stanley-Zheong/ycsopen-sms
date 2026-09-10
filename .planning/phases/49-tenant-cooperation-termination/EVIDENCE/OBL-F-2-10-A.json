@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-2-10-A",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationService.requestTermination validates reason/evidence and creates a request before approval/effect.",
+    "TenantCooperationTerminationController exposes POST /api/v1/console/tenant-terminations for ADMIN/OPERATOR/FINANCE or tenant-termination:write.",
+    "web/test/scripts/tenant-cooperation-termination.spec.ts case C-P49-REQUEST covers UI request creation."
+  ]
+}

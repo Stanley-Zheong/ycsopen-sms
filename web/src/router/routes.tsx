@@ -69,6 +69,7 @@ import AdminRetentionArchivePage from '@/pages/admin/archive/AdminRetentionArchi
 import TenantShortLinkPage from '@/pages/tenant/shortlinks/TenantShortLinkPage';
 import AdminShortLinkReviewPage from '@/pages/admin/shortlinks/AdminShortLinkReviewPage';
 import PublicShortLinkSafePage from '@/pages/public/PublicShortLinkSafePage';
+import AdminTenantTerminationPage from '@/pages/admin/tenants/AdminTenantTerminationPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -139,6 +140,7 @@ export const router = createBrowserRouter([
       { path: '/admin/export-center', element: <AdminExportCenterPage /> },
       { path: '/admin/archive', element: <AdminRetentionArchivePage /> },
       { path: '/admin/shortlinks/review', element: <AdminShortLinkReviewPage /> },
+      { path: '/admin/tenant/terminations', element: <AdminTenantTerminationPage /> },
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },

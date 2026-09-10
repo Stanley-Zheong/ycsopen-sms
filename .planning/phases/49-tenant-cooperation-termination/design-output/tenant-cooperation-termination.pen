@@ -1,0 +1,11 @@
+Phase 49 Pencil source placeholder.
+
+Canvas: admin-tenant-terminations `/admin/tenant/terminations`
+Style reference: existing ycsan-web-like admin cards, dense tables, muted blue-gray shell.
+Primary selectors:
+- admin-tenant-cooperation-tenant-termination-page
+- admin-tenant-cooperation-tenant-termination-request
+- admin-tenant-cooperation-tenant-termination-clearance
+- admin-tenant-cooperation-tenant-termination-approve
+- admin-tenant-cooperation-tenant-termination-timeline
+- admin-tenant-cooperation-tenant-termination-participants

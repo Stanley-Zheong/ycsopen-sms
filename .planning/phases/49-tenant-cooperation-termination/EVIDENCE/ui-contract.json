@@ -1,0 +1,50 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/tenant/terminations"],
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/UI-ELEMENTS.md", "sha256": "007bca1eb53661aeaffbdf25ab9420abd42cebe3458ce076abeb102dbd908802" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/tenant-cooperation-termination.pen", "sha256": "9a427693629e320b97bfb63afdbc58274181bea44e20769574c8e3cecd06947f" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/tenant/terminations"],
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/prototype.html", "sha256": "2672fce173736ad07b0bb655554bfc76ff90635da40d3758380130a9f4827e42" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/prototype.spec.ts", "sha256": "4bd818973f392874369bd6c3bf33a4bf08e5432df4a47ab6854a653901c54d6a" }
+    ]
+  }
+}
