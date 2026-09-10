@@ -224,6 +224,29 @@ public class TrialPrepaidLedgerService {
         return prepaidAccount(tenantId);
     }
 
+    @Transactional
+    public PrepaidAccount creditRecharge(long tenantId, String businessDocId, long amountMil, String actor) {
+        String docId = text(businessDocId, "RECHARGE_DOC_REQUIRED", 64);
+        if (amountMil <= 0) throw failure("RECHARGE_AMOUNT_INVALID", "充值金额必须为正");
+        ensurePrepaidAccount(tenantId);
+        PrepaidAccount before = prepaidAccountForUpdate(tenantId);
+        Integer existingAudit = jdbc.queryForObject("""
+                SELECT COUNT(*) FROM balance_audit_entries
+                 WHERE tenant_id=? AND business_doc_id=? AND mutation_type='RECHARGE_APPROVE'
+                """, Integer.class, tenantId, docId);
+        if (existingAudit != null && existingAudit > 0) {
+            return prepaidAccount(tenantId);
+        }
+        int updated = jdbc.update("""
+                UPDATE prepaid_accounts
+                   SET balance_mil=balance_mil+?, status='NORMAL', version=version+1, updated_at=CURRENT_TIMESTAMP
+                 WHERE tenant_id=? AND version=?
+                """, amountMil, tenantId, before.version());
+        if (updated != 1) throw failure("PREPAID_ACCOUNT_CONFLICT", "余额账户版本冲突，请重试");
+        audit(tenantId, docId, "RECHARGE_APPROVE", before.balanceMil(), before.frozenMil(), amountMil, actor);
+        return prepaidAccount(tenantId);
+    }
+
     private void ensurePrepaidAccount(long tenantId) {
         Integer existing = jdbc.queryForObject("SELECT COUNT(*) FROM prepaid_accounts WHERE tenant_id=?", Integer.class, tenantId);
         if (existing == null || existing == 0) {

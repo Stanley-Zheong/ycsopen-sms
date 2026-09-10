@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>Phase 36 Tenant Recharge</title></head>
+  <body>
+    <main data-routes="/tenant/recharge /admin/tenant-recharge-review">
+      <section data-testid="tenant-recharge-operations-recharge-form">
+        <h1>账户充值</h1>
+        <input data-testid="tenant-recharge-operations-recharge-amount" value="100000">
+        <select data-testid="tenant-recharge-operations-recharge-method"><option>BANK_TRANSFER</option></select>
+        <input data-testid="tenant-recharge-operations-recharge-transaction" value="BANK-ORDER-001">
+        <input data-testid="tenant-recharge-operations-recharge-evidence" value="银行回单">
+        <button data-testid="tenant-recharge-operations-recharge-submit">提交充值申请</button>
+        <span data-testid="tenant-recharge-operations-recharge-state">PENDING</span>
+      </section>
+      <section data-testid="admin-tenant-recharge-operations-review-table">
+        <h1>账户充值审核</h1>
+        <input data-testid="admin-tenant-recharge-operations-review-reason" value="到账一致">
+        <button data-testid="admin-tenant-recharge-operations-review-approve">通过</button>
+        <button data-testid="admin-tenant-recharge-operations-review-reject">拒绝</button>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-8-3-A","phase":36,"owner":"tenant-recharge-operations","status":"PASS","evidence":["TenantRechargeServiceTest.tenantSubmitsProtectedRechargeAndSeesPendingState asserts amount/method/hash-mask/evidence/PENDING state.","tenant-recharge.spec.ts pw-p36-tenant-recharge verifies /tenant/recharge in local Chrome."]}

@@ -1,0 +1,3 @@
+Phase36 Pencil placeholder: tenant recharge request and finance review console.
+Routes: /tenant/recharge, /admin/tenant-recharge-review.
+Selectors: tenant-recharge-operations-recharge-form, admin-tenant-recharge-operations-review-table.
