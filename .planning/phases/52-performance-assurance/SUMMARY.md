@@ -6,7 +6,7 @@ Phase 52 adds repository-local performance assurance for the `performance-assura
 
 Implementation commit: `63387648ea33007fcce3bfda0bee8bd24c9897dc`.
 
-Pull request: pending.
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/44.
 
 ## Closed TODO set
 
