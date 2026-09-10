@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Phase38 Reconciliation Settlement Invoices</title></head>
+<body>
+  <main>
+    <section data-route="/admin/reconciliation" data-testid="admin-reconciliation-settlement-reconciliation-page">
+      <button data-testid="admin-reconciliation-settlement-reconciliation-generate">生成来源对账单</button>
+      <button data-testid="admin-reconciliation-settlement-reconciliation-resolve">处理差异</button>
+      <section data-testid="admin-reconciliation-settlement-settlements-page">
+        <button data-testid="admin-reconciliation-settlement-settlements-start">发起结算</button>
+        <button data-testid="admin-reconciliation-settlement-settlements-complete">完成结算</button>
+        <button data-testid="admin-reconciliation-settlement-settlements-received">确认收款</button>
+      </section>
+      <button data-testid="admin-reconciliation-settlement-invoices-issue">开具发票</button>
+    </section>
+    <section data-route="/admin/settlements">admin-settlements alias</section>
+    <section data-route="/admin/invoices">admin-invoices alias</section>
+    <section data-route="/tenant/statements" data-testid="tenant-reconciliation-settlement-statements-page">
+      <button data-testid="tenant-reconciliation-settlement-statements-confirm">确认一致</button>
+      <button data-testid="tenant-reconciliation-settlement-statements-difference">提交差异</button>
+      <section data-testid="tenant-reconciliation-settlement-invoices-page">
+        <button data-testid="tenant-reconciliation-settlement-invoices-request">申请发票</button>
+      </section>
+    </section>
+    <section data-route="/tenant/invoices">tenant-invoices alias</section>
+  </main>
+</body>
+</html>

@@ -51,6 +51,8 @@ import AdminUnsubscribesPage from '@/pages/admin/unsubscribes/AdminUnsubscribesP
 import TenantUnsubscribesPage from '@/pages/tenant/unsubscribes/TenantUnsubscribesPage';
 import AdminAlertsPage from '@/pages/admin/alerts/AdminAlertsPage';
 import AdminRechargeReviewPage from '@/pages/admin/billing/AdminRechargeReviewPage';
+import AdminReconciliationSettlementPage from '@/pages/admin/billing/AdminReconciliationSettlementPage';
+import TenantStatementsInvoicesPage from '@/pages/tenant/billing/TenantStatementsInvoicesPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -96,6 +98,9 @@ export const router = createBrowserRouter([
       { path: '/admin/tenant-trial-contracts', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/balance-audit', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/tenant-recharge-review', element: <AdminRechargeReviewPage /> },
+      { path: '/admin/reconciliation', element: <AdminReconciliationSettlementPage /> },
+      { path: '/admin/settlements', element: <AdminReconciliationSettlementPage /> },
+      { path: '/admin/invoices', element: <AdminReconciliationSettlementPage /> },
       { path: '/admin/submission/details', element: <MessageOperationsPage initialSection="submissions" /> },
       { path: '/admin/send/details', element: <MessageOperationsPage initialSection="sends" /> },
       { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
@@ -138,6 +143,8 @@ export const router = createBrowserRouter([
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: '/tenant/recharge', element: <TenantRechargePage /> },
+      { path: '/tenant/statements', element: <TenantStatementsInvoicesPage /> },
+      { path: '/tenant/invoices', element: <TenantStatementsInvoicesPage /> },
       { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
