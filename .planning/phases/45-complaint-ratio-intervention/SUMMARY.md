@@ -1,6 +1,11 @@
 # Phase 45 Summary
 
-Status: implementation verified; delivery commit/PR pending.
+Status: complete.
+
+Delivery:
+
+- Commit: `8267471 feat: complete phase 45 complaint ratio intervention`
+- PR: https://github.com/Stanley-Zheong/ycsopen-sms/pull/37
 
 Implemented:
 
