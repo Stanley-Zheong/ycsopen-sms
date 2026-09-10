@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 50 Tenant Help Center Prototype</title>
+</head>
+<body>
+  <main>
+    <section data-route="/tenant/help/guide" data-testid="tenant-tenant-help-guide-page">
+      <h1>帮助与开发者中心</h1>
+      <span data-testid="tenant-tenant-help-content-version">version:2026.09</span>
+      <input data-testid="tenant-tenant-help-guide-search-input" value="短链">
+      <div data-testid="tenant-tenant-help-guide-results">
+        <article data-testid="tenant-tenant-help-guide-article">短链管理</article>
+      </div>
+      <a data-testid="tenant-tenant-help-guide-tab" href="/tenant/help/guide">使用指南</a>
+      <a data-testid="tenant-tenant-help-api-docs-tab" href="/tenant/help/api">API 文档</a>
+      <a data-testid="tenant-tenant-help-customer-service-tab" href="/tenant/help/customer-service">联系客服</a>
+    </section>
+    <section data-route="/tenant/help/api" data-testid="tenant-tenant-help-api-docs-page">
+      <span data-testid="tenant-tenant-help-api-docs-endpoint">/api/v1/sms/send</span>
+      <ul data-testid="tenant-tenant-help-api-docs-auth-headers"><li>X-Signature</li></ul>
+      <table data-testid="tenant-tenant-help-api-docs-request-table"><tr><td>submitId</td></tr></table>
+      <table data-testid="tenant-tenant-help-api-docs-error-table"><tr><td>TENANT_LIFECYCLE_INELIGIBLE</td></tr></table>
+      <pre data-testid="tenant-tenant-help-api-docs-example">{"callbackUrl":"https://tenant.example.com/sms/callback"}</pre>
+    </section>
+    <section data-route="/tenant/help/customer-service" data-testid="tenant-tenant-help-customer-service-page">
+      <p data-testid="tenant-tenant-help-customer-service-availability">工作日 09:00-18:00</p>
+      <p data-testid="tenant-tenant-help-customer-service-destination">support@ycsopen.example</p>
+      <button data-testid="tenant-tenant-help-customer-service-fallback-action">显示 fallback</button>
+      <p data-testid="tenant-tenant-help-customer-service-fallback">traceId、机构 ID、提交流水号</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-IA-TENANT-HELP-SERVICE",
+  "result": "PASS",
+  "evidence": [
+    "TenantHelpCenterPage customer-service section renders availability, destination and fallback action.",
+    "Chrome Playwright case C-P50-SERVICE verifies availability, destination and fallback visibility."
+  ]
+}

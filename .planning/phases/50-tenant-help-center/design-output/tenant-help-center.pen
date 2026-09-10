@@ -1,0 +1,11 @@
+Phase 50 Pencil source placeholder.
+
+Routes:
+- tenant-help-guide `/tenant/help/guide`
+- tenant-help-api-docs `/tenant/help/api`
+- tenant-help-customer-service `/tenant/help/customer-service`
+
+Owned selectors:
+- tenant-tenant-help-guide-page
+- tenant-tenant-help-api-docs-page
+- tenant-tenant-help-customer-service-page

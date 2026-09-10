@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-IA-TENANT-HELP-API",
+  "result": "PASS",
+  "evidence": [
+    "tenantHelpContent.ts documents implemented POST /api/v1/sms/send with HMAC headers, request fields, response semantics, errors and example.",
+    "Chrome Playwright case C-P50-API verifies endpoint, auth header, request fields, error table and example."
+  ]
+}
