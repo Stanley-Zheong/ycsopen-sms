@@ -1,0 +1,21 @@
+{
+  "obligation": "OBL-NFR-API-SECURITY",
+  "requirement": "REQ-NFR-SECURITY",
+  "result": "PASS",
+  "case": "C-P51-API",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "HmacRequestAuthenticatorTest",
+        "HmacSignatureVerifierTest",
+        "ApiKeyRateLimitServiceTest",
+        "MessageControllerRateLimitTest",
+        "JwtSecurityBoundaryTest"
+      ],
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/security-targeted.log",
+      "sha256": "80d9e75aa865ed3d4028178c9532619bab77f047ddcf3b8727ad181a32bbf46e"
+    }
+  ],
+  "covered_controls": ["body tamper rejection", "nonce replay rejection", "timestamp window", "IP allow-list", "API key rate limits", "JWT and HMAC separation"]
+}
