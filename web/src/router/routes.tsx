@@ -46,6 +46,8 @@ import AdminBulkDetailsPage from '@/pages/admin/bulk/AdminBulkDetailsPage';
 import AdminSendJobsPage from '@/pages/admin/bulk/AdminSendJobsPage';
 import AdminUplinksPage from '@/pages/admin/uplinks/AdminUplinksPage';
 import TenantUplinksPage from '@/pages/tenant/uplinks/TenantUplinksPage';
+import AdminUnsubscribesPage from '@/pages/admin/unsubscribes/AdminUnsubscribesPage';
+import TenantUnsubscribesPage from '@/pages/tenant/unsubscribes/TenantUnsubscribesPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -99,6 +101,7 @@ export const router = createBrowserRouter([
       { path: '/admin/send/jobs', element: <AdminSendJobsPage /> },
       { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
       { path: '/admin/uplink', element: <AdminUplinksPage /> },
+      { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
       { path: 'statistics', element: <PlaceholderPage title="数据统计" prdRef="F-11.1~F-11.4" /> },
       { path: 'finance', element: <PlaceholderPage title="财务中心" prdRef="F-8" /> },
@@ -134,6 +137,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },
+      { path: '/tenant/unsubscribes', element: <TenantUnsubscribesPage /> },
       { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },
       { path: '/tenant/qualification', element: <TenantQualificationPage /> },
       { path: '/tenant/administrators', element: <TenantAdministratorsPage /> },

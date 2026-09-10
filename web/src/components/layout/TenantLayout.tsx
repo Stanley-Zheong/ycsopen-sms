@@ -11,6 +11,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/consumption-ledger', label: '消费账本' },
   { to: '/tenant/config', label: '配置管理' },
   { to: '/tenant/uplink', label: '上行消息查询' },
+  { to: '/tenant/unsubscribes', label: '退订合规' },
   { to: '/tenant/shortlink', label: '短链管理' },
   { to: '/tenant/qualification', label: '资质认证', adminOnly: true },
   { to: '/tenant/administrators', label: '子账号管理', adminOnly: true },
@@ -41,6 +42,8 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-trial-prepaid-consumption-ledger-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/uplink' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-uplink-normalization-uplinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/unsubscribes' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-unsubscribe-compliance-unsubscribes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           )

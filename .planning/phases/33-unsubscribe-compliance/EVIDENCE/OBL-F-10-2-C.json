@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-10-2-C",
+  "status": "PASS",
+  "command": "mvn -f core/pom.xml -Dtest=UnsubscribeComplianceServiceTest test",
+  "notes": "Matched uplink creates one tenant blacklist call and one linked unsubscribe evidence row, idempotent by uplink_record_id."
+}

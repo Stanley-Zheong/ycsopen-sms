@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-10-3-A",
+  "status": "PASS",
+  "command": "mvn -f core/pom.xml -Dtest=UnsubscribeComplianceServiceTest test",
+  "notes": "Statistics reconcile unsubscribe evidence numerator with final SENT/DELIVERED message denominator."
+}

@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-10-2-A",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/resources/db/migration/V4200__unsubscribe_compliance.sql",
+    "web/test/scripts/unsubscribe-compliance.spec.ts"
+  ],
+  "notes": "Global defaults TD, 退订, QUIT, and UNSUBSCRIBE are inserted by migration; admin/tenant keyword save APIs are implemented."
+}

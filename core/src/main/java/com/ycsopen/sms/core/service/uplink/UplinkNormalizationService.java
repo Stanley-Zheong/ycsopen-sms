@@ -2,8 +2,11 @@ package com.ycsopen.sms.core.service.uplink;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.cmpp.CmppClientSession;
+import com.ycsopen.sms.core.service.unsubscribe.UnsubscribeComplianceService;
 import com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportService;
 import com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportService.DeliveryResult;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -25,10 +28,20 @@ import java.util.Locale;
 public class UplinkNormalizationService {
     private final JdbcTemplate jdbc;
     private final WebhookDeliveryTransportService webhookTransport;
+    private final ObjectProvider<UnsubscribeComplianceService> unsubscribeService;
+
+    @Autowired
+    public UplinkNormalizationService(JdbcTemplate jdbc, WebhookDeliveryTransportService webhookTransport,
+                                      ObjectProvider<UnsubscribeComplianceService> unsubscribeService) {
+        this.jdbc = jdbc;
+        this.webhookTransport = webhookTransport;
+        this.unsubscribeService = unsubscribeService;
+    }
 
     public UplinkNormalizationService(JdbcTemplate jdbc, WebhookDeliveryTransportService webhookTransport) {
         this.jdbc = jdbc;
         this.webhookTransport = webhookTransport;
+        this.unsubscribeService = null;
     }
 
     @Transactional
@@ -77,6 +90,7 @@ public class UplinkNormalizationService {
             return bySource(checked.tenantId(), checked.sourceProtocol(), checked.sourceConnector(), checked.sourceEventId());
         }
         UplinkRecord record = bySource(checked.tenantId(), checked.sourceProtocol(), checked.sourceConnector(), checked.sourceEventId());
+        handleUnsubscribeIfMatched(record, checked.phoneNumber());
         if (checked.pushRequested()) {
             enqueuePush(record);
             return detail(record.id(), record.tenantId());
@@ -266,6 +280,16 @@ public class UplinkNormalizationService {
                      WHERE id=?
                     """, record.id());
         }
+    }
+
+    private void handleUnsubscribeIfMatched(UplinkRecord record, String phoneNumber) {
+        if (unsubscribeService == null) {
+            return;
+        }
+        unsubscribeService.ifAvailable(service -> service.handleMatchedUplink(
+                new UnsubscribeComplianceService.HandleUplinkCommand(record.tenantId(), record.id(), phoneNumber,
+                        record.content(), record.messageId(), record.signatureId(), record.productCode()),
+                "uplink-normalization"));
     }
 
     private AutoReplyDecision recordAutoReplyDecision(long tenantId, String phoneHash, Long uplinkRecordId,

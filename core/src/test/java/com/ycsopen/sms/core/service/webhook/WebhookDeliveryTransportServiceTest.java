@@ -164,6 +164,28 @@ class WebhookDeliveryTransportServiceTest {
     }
 
     @Test
+    void unsubscribeEventUsesConfiguredTenantDestinationAndValidatesRequiredFields() {
+        service.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
+                null, null, "https://example.com/unsubscribe", 5, 10));
+
+        var result = service.enqueueUnsubscribeEvent(7, "UNSUB-1", 901L, "MSG-1",
+                "138****8000", "TD", "TENANT_BLACKLISTED");
+
+        assertThat(result.destinationUrl()).isEqualTo("https://example.com/unsubscribe");
+        assertThat(result.logicalId()).isEqualTo("UNSUBSCRIBE:UNSUB-1");
+        assertThat(jdbc.queryForObject("SELECT payload_json FROM webhook_delivery_events WHERE id=?",
+                String.class, result.eventId())).contains("\"kind\":\"UNSUBSCRIBE\"");
+        assertThatThrownBy(() -> service.enqueueUnsubscribeEvent(7, " ", 901L, "MSG",
+                "138****8000", "TD", "TENANT_BLACKLISTED"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("字段不完整");
+        assertThatThrownBy(() -> service.enqueueUnsubscribeEvent(8, "UNSUB-2", 902L, "MSG",
+                "138****8000", "TD", "TENANT_BLACKLISTED"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("未配置");
+    }
+
+    @Test
     void failuresRetryToConfiguredTerminalAttemptAndExposePushFailedState() {
         service.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
                 "https://example.com/status", null, null, 5, 1));

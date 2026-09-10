@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Phase33 Unsubscribe Compliance Prototype</title></head>
+<body>
+  <main>
+    <section data-route="/admin/unsubscribes" data-testid="admin-unsubscribe-compliance-keywords-page">
+      <input aria-label="关键词">
+      <section data-testid="admin-unsubscribe-compliance-statistics-page">
+        <button data-testid="admin-unsubscribe-compliance-alert-evaluate">评估告警</button>
+      </section>
+    </section>
+    <section data-route="/tenant/unsubscribes" data-testid="tenant-unsubscribe-compliance-unsubscribes-page">
+      <button data-testid="tenant-unsubscribe-compliance-export-request">请求导出</button>
+      <table>
+        <tr><td data-testid="tenant-unsubscribe-compliance-unsubscribes-notification-state">PENDING</td></tr>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

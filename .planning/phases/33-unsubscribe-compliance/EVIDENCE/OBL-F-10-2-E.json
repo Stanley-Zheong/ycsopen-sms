@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-10-2-E",
+  "status": "PASS",
+  "evidence": [
+    "core/src/main/java/com/ycsopen/sms/core/service/webhook/WebhookDeliveryTransportService.java",
+    "web/test/scripts/unsubscribe-compliance.spec.ts"
+  ],
+  "notes": "UNSUBSCRIBE notification uses configured tenant destination and exposes notification_state on tenant UI."
+}

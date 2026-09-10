@@ -139,6 +139,30 @@ public class WebhookDeliveryTransportService {
         return new EnqueueResult(eventId, logicalId, destination);
     }
 
+    @Transactional
+    public EnqueueResult enqueueUnsubscribeEvent(long tenantId, String unsubscribeId, long uplinkRecordId,
+                                                 String messageId, String phone, String keyword,
+                                                 String handlingState) {
+        if (unsubscribeId == null || unsubscribeId.isBlank() || uplinkRecordId < 1
+                || phone == null || phone.isBlank() || keyword == null || keyword.isBlank()) {
+            throw new BusinessException("WEBHOOK_EVENT_INVALID", "退订通知事件字段不完整");
+        }
+        String destination = configuredDestination(tenantId, CallbackType.UNSUBSCRIBE);
+        validateDestination("UNSUBSCRIBE", destination);
+        String logicalId = "UNSUBSCRIBE:" + unsubscribeId.trim();
+        String payload = payload(Map.of(
+                "kind", "UNSUBSCRIBE",
+                "tenantId", tenantId,
+                "unsubscribeId", unsubscribeId.trim(),
+                "uplinkRecordId", uplinkRecordId,
+                "messageId", messageId == null ? "" : messageId.trim(),
+                "phone", phone.trim(),
+                "keyword", keyword.trim(),
+                "handlingState", handlingState == null ? "" : handlingState.trim()));
+        long eventId = enqueue(tenantId, "UNSUBSCRIBE", logicalId, destination, payload);
+        return new EnqueueResult(eventId, logicalId, destination);
+    }
+
     public Optional<DeliveryResult> deliverNext() {
         List<Long> ids = jdbc.queryForList("""
                 SELECT id FROM webhook_delivery_events

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-10-3-B",
+  "status": "PASS",
+  "command": "mvn -f core/pom.xml -Dtest=UnsubscribeComplianceServiceTest test",
+  "notes": "Abnormal unsubscribe rate creates UNSUBSCRIBE_RATE_ABNORMAL source event with formula, period, and freshness."
+}

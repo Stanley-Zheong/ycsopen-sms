@@ -1,0 +1,125 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/tenant/unsubscribes",
+      "/admin/unsubscribes"
+    ],
+    "test_ids": [
+      "tenant-unsubscribe-compliance-unsubscribes-page",
+      "admin-unsubscribe-compliance-keywords-page",
+      "tenant-unsubscribe-compliance-unsubscribes-notification-state",
+      "admin-unsubscribe-compliance-statistics-page"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/33-unsubscribe-compliance/UI-ELEMENTS.md",
+        "sha256": "387940155e4cf508f2cd28d7d621a8d35066846251291a135b98a43c8b3e28dc"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/33-unsubscribe-compliance/design-output/unsubscribe-compliance.pen",
+        "sha256": "14c9959cc637ad2d79c788c7b0c5b07552b79079495a2a76e4e0b0a7fab70655"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/tenant/unsubscribes",
+      "/admin/unsubscribes"
+    ],
+    "test_ids": [
+      "tenant-unsubscribe-compliance-unsubscribes-page",
+      "admin-unsubscribe-compliance-keywords-page",
+      "tenant-unsubscribe-compliance-unsubscribes-notification-state",
+      "admin-unsubscribe-compliance-statistics-page"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/33-unsubscribe-compliance/design-output/prototype.html",
+        "sha256": "7cb03a908a08beb8b45fcf8828596aefd247d1c2c868cd2567e10606e9ec96a8"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-unsubscribe-compliance-unsubscribes-page",
+      "admin-unsubscribe-compliance-keywords-page",
+      "tenant-unsubscribe-compliance-unsubscribes-notification-state",
+      "admin-unsubscribe-compliance-statistics-page"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/33-unsubscribe-compliance/design-output/prototype.spec.ts",
+        "sha256": "a023a2dad627bc7c78bea7f5218527ea27161de5009f96bb3f91fb7080b148fa"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/tenant/unsubscribes",
+      "/admin/unsubscribes"
+    ],
+    "test_ids": [
+      "tenant-unsubscribe-compliance-unsubscribes-page",
+      "admin-unsubscribe-compliance-keywords-page",
+      "tenant-unsubscribe-compliance-unsubscribes-notification-state",
+      "admin-unsubscribe-compliance-statistics-page"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "6d21902fcad63d4330a715bd79d29b9d21c23745be090499430175a198f07352"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "5069cc01607e6e9ae7523b345d0d2a581ff282f064b756521d5827bec05b2218"
+      },
+      {
+        "path": "web/src/components/layout/TenantLayout.tsx",
+        "sha256": "26c3882d4592b8e50dbb30e42a0482bfd9ee9fa3ec3b16acaef8212abe03d94b"
+      },
+      {
+        "path": "web/src/api/unsubscribeComplianceApi.ts",
+        "sha256": "b578522faca8f3d5aff60ff2c33c8329132da406128054911c1723de6d7eab73"
+      },
+      {
+        "path": "web/src/pages/admin/unsubscribes/AdminUnsubscribesPage.tsx",
+        "sha256": "e9037969969ae255e58ec05a73c06fd394c7d243fe18f6258507683cee78005e"
+      },
+      {
+        "path": "web/src/pages/tenant/unsubscribes/TenantUnsubscribesPage.tsx",
+        "sha256": "f39a98db6fd98491e4ac4e73520b88ffba1d764b001cd4aea7f5188ca24ab575"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-unsubscribe-compliance-unsubscribes-page",
+      "admin-unsubscribe-compliance-keywords-page",
+      "tenant-unsubscribe-compliance-unsubscribes-notification-state",
+      "admin-unsubscribe-compliance-statistics-page"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/unsubscribe-compliance.spec.ts",
+        "sha256": "94a502c37a6ed51586b3e533148fc68b12b16b31dff84fe168a6e2da8cf9c580"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test unsubscribe-compliance.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "24f4cecf9a9e2217c6847dd09c03ef09c2d5e3b1",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/33-unsubscribe-compliance/EVIDENCE/playwright-unsubscribe-compliance-report.json",
+      "sha256": "831f6dd01c0b4229d49a76144aa607c4ac2bd4482cf458f5ddd1a0e2af728120"
+    }
+  }
+}

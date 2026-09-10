@@ -60,7 +60,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [ ] **Phase 30: Upstream CMPP connector** — CMPP client codec.
 - [ ] **Phase 31: Downstream CMPP gateway** — CMPP server.
 - [x] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
-- [ ] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
+- [x] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
 - [ ] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
 - [ ] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.
 - [ ] **Phase 36: Tenant recharge operations** — Recharge request fields/proof.
@@ -467,7 +467,7 @@ Plans:
 
 **Test layers**: Normalization/database, cross-resource integration, authorization/masking, API, accessibility, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/33-unsubscribe-compliance/33-01-PLAN.md`
 **UI hint**: yes
 
 ### Phase 16: Blacklist and third-party risk control
