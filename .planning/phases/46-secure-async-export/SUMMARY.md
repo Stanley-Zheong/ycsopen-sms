@@ -1,11 +1,11 @@
 # Phase 46 Summary
 
-Status: delivery in progress.
+Status: complete.
 
 Delivery:
 
-- Commit: pending.
-- PR: pending.
+- Implementation commit: `907c782158ff17dac8078fa33f98dbc2d8a42a08 feat: complete phase 46 secure async export`
+- PR: https://github.com/Stanley-Zheong/ycsopen-sms/pull/38
 
 Implemented:
 
