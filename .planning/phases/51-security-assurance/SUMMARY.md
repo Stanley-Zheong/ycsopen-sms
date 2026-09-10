@@ -6,6 +6,8 @@ Phase 51 delivered a security assurance package for the `security-assurance` obl
 
 Implementation commit: `26ad03a08f7784bcf102a890862154b99d139e74`.
 
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/43.
+
 ## Closed TODO set
 
 - OBL-NFR-TLS — closed by `EVIDENCE/OBL-NFR-TLS.json`.

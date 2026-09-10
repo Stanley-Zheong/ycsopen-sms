@@ -717,7 +717,7 @@ Plans:
 
 **Test layers**: Form/component, adapter parity integration, idempotent timeout/retry integration, authorization, Playwright browser-to-final-status.
 **Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/51-security-assurance/CLAUDE-REVIEW.md`.
-**Plans**: `.planning/phases/51-security-assurance/51-01-PLAN.md`; implementation commit `26ad03a08f7784bcf102a890862154b99d139e74`; summary `.planning/phases/51-security-assurance/SUMMARY.md`.
+**Plans**: `.planning/phases/51-security-assurance/51-01-PLAN.md`; implementation commit `26ad03a08f7784bcf102a890862154b99d139e74`; summary `.planning/phases/51-security-assurance/SUMMARY.md`; PR https://github.com/Stanley-Zheong/ycsopen-sms/pull/43.
 **UI hint**: yes
 
 ### Phase 27: Message, receipt, and error operations
