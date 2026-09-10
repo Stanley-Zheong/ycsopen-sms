@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-STATE-SHORTLINK-OFFLINE","result":"PASS","evidence":["ShortLinkSafetyServiceTest","public-shortlink-offline-page"],"summary":"Inspection drift/private-network risk transitions approved links to OFFLINE and blocks redirect."}

@@ -1,0 +1,62 @@
+.shortlink-page {
+  display: grid;
+  gap: 16px;
+}
+
+.shortlink-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shortlink-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.shortlink-form label {
+  display: grid;
+  gap: 4px;
+}
+
+.shortlink-message {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.shortlink-message.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.shortlink-message.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.shortlink-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortlink-table th,
+.shortlink-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.shortlink-table button {
+  margin-right: 6px;
+}
+
+.shortlink-safe-page {
+  max-width: 720px;
+  margin: 80px auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  background: #fff;
+}

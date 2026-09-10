@@ -1,0 +1,108 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/shortlink", "/admin/shortlinks/review", "/s/:code"],
+    "test_ids": [
+      "tenant-shortlink-safety-shortlinks-page",
+      "tenant-shortlink-safety-shortlinks-form-url",
+      "tenant-shortlink-safety-shortlinks-form-domain",
+      "tenant-shortlink-safety-shortlinks-form-validity",
+      "tenant-shortlink-safety-shortlinks-list",
+      "admin-shortlink-safety-shortlinks-review-page",
+      "admin-shortlink-safety-shortlinks-approve",
+      "admin-shortlink-safety-shortlinks-reject",
+      "tenant-shortlink-safety-analytics-page",
+      "public-shortlink-safety-expired-page",
+      "public-shortlink-safety-offline-page",
+      "public-shortlink-safety-pending-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/48-shortlink-safety-review/UI-ELEMENTS.md", "sha256": "4f7914b581387d6119ec097faaa9e13c44874ec2b8bb5866907d39a194bab285" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/48-shortlink-safety-review/design-output/shortlink-safety-review.pen", "sha256": "d57fde199b0cd0f61c6a41e94603439c1f4933bade137fbb340a292fd7ca8a3d" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/tenant/shortlink", "/admin/shortlinks/review", "/s/:code"],
+    "test_ids": [
+      "tenant-shortlink-safety-shortlinks-form-url",
+      "tenant-shortlink-safety-shortlinks-page",
+      "admin-shortlink-safety-shortlinks-approve",
+      "tenant-shortlink-safety-shortlinks-form-domain",
+      "tenant-shortlink-safety-shortlinks-form-validity",
+      "tenant-shortlink-safety-shortlinks-list",
+      "tenant-shortlink-safety-analytics-page",
+      "admin-shortlink-safety-shortlinks-review-page",
+      "admin-shortlink-safety-shortlinks-reject",
+      "public-shortlink-safety-expired-page",
+      "public-shortlink-safety-offline-page",
+      "public-shortlink-safety-pending-page"
+    ],
+    "sources": [
+      { "path": ".planning/phases/48-shortlink-safety-review/design-output/prototype.html", "sha256": "1e49f02134e3babc4c60402abe0992d6b24447b931063358b5810b08642ce2f7" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": ["tenant-shortlink-safety-shortlinks-page", "tenant-shortlink-safety-shortlinks-form-url", "tenant-shortlink-safety-shortlinks-form-domain", "tenant-shortlink-safety-shortlinks-form-validity", "tenant-shortlink-safety-shortlinks-list", "tenant-shortlink-safety-analytics-page", "admin-shortlink-safety-shortlinks-review-page", "admin-shortlink-safety-shortlinks-approve", "admin-shortlink-safety-shortlinks-reject", "public-shortlink-safety-pending-page", "public-shortlink-safety-expired-page", "public-shortlink-safety-offline-page"],
+    "sources": [
+      { "path": ".planning/phases/48-shortlink-safety-review/design-output/prototype.spec.ts", "sha256": "6f65ff5cf71011fe4ebe8ffa71f1148843a180d0208e78e83bf0c1a8a0948c0e" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/tenant/shortlink", "/admin/shortlinks/review", "/s/:code"],
+    "test_ids": [
+      "tenant-shortlink-safety-shortlinks-page",
+      "tenant-shortlink-safety-shortlinks-form-url",
+      "tenant-shortlink-safety-shortlinks-form-domain",
+      "tenant-shortlink-safety-shortlinks-form-validity",
+      "tenant-shortlink-safety-shortlinks-list",
+      "admin-shortlink-safety-shortlinks-review-page",
+      "admin-shortlink-safety-shortlinks-approve",
+      "admin-shortlink-safety-shortlinks-reject",
+      "tenant-shortlink-safety-analytics-page",
+      "public-shortlink-safety-expired-page",
+      "public-shortlink-safety-offline-page",
+      "public-shortlink-safety-pending-page"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "c8a2c069d72be952bffd8c7894877a7e6b164f1d519cd079b8e75a23abb60f4a" },
+      { "path": "web/src/pages/tenant/shortlinks/TenantShortLinkPage.tsx", "sha256": "42be3639a97099019c1e0fb7ad54bfa623f907431323f5843c03c6ea4a68b728" },
+      { "path": "web/src/pages/admin/shortlinks/AdminShortLinkReviewPage.tsx", "sha256": "de584198f94705e22048ab77dbd5b53b1f64d091e072d9dd7084609ed46d6e18" },
+      { "path": "web/src/pages/public/PublicShortLinkSafePage.tsx", "sha256": "5f9cf1798cd53f71d51a13a8a92f1a160877d8bbc76163e9d0ff427a2bdc7114" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-shortlink-safety-shortlinks-page",
+      "tenant-shortlink-safety-shortlinks-form-url",
+      "tenant-shortlink-safety-shortlinks-form-domain",
+      "tenant-shortlink-safety-shortlinks-form-validity",
+      "tenant-shortlink-safety-shortlinks-list",
+      "tenant-shortlink-safety-analytics-page",
+      "admin-shortlink-safety-shortlinks-review-page",
+      "admin-shortlink-safety-shortlinks-approve",
+      "admin-shortlink-safety-shortlinks-reject",
+      "public-shortlink-safety-pending-page",
+      "public-shortlink-safety-offline-page",
+      "public-shortlink-safety-expired-page"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/shortlink-safety.spec.ts", "sha256": "f68ba1a7736ac43c0fd765751b610f70b029b5a84cc8b28901682ec4ff56d125" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test shortlink-safety.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/48-shortlink-safety-review/EVIDENCE/playwright-shortlink-safety-report.json",
+    "commit": "efb99ee1b22cff4dac48e682a225c6cc13eb16aa",
+    "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/48-shortlink-safety-review/EVIDENCE/playwright-shortlink-safety-execution.json",
+      "sha256": "62acc7973b0c0306f373c49983ee164a1ba7e9963353426c958a8eedae66a1e6"
+    }
+  }
+}

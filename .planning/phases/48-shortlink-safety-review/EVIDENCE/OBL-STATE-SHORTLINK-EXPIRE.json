@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-STATE-SHORTLINK-EXPIRE","result":"PASS","evidence":["ShortLinkSafetyServiceTest","public-shortlink-expired-page"],"summary":"Approved links past valid_until transition to EXPIRED and return a safe page."}

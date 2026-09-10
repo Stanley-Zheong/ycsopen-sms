@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-STATE-SHORTLINK-REJECT","result":"PASS","evidence":["ShortLinkSafetyServiceTest","admin-shortlink-safety-shortlinks-reject"],"summary":"Rejected links persist the rejection opinion and never redirect."}
