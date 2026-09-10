@@ -693,7 +693,7 @@ Plans:
 
 **Test layers**: Lease/state unit, MySQL/Redis concurrency, crash/fault component, Playwright migration/recovery.
 **Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/50-tenant-help-center/CLAUDE-REVIEW.md`.
-**Plans**: `.planning/phases/50-tenant-help-center/50-01-PLAN.md`; implementation commit `5f5af84f38199360929e0c3dc69f871c813fcb4c`; summary `.planning/phases/50-tenant-help-center/SUMMARY.md`.
+**Plans**: `.planning/phases/50-tenant-help-center/50-01-PLAN.md`; implementation commit `5f5af84f38199360929e0c3dc69f871c813fcb4c`; summary `.planning/phases/50-tenant-help-center/SUMMARY.md`; PR https://github.com/Stanley-Zheong/ycsopen-sms/pull/42.
 **UI hint**: yes
 
 ### Phase 26: Authenticated tenant console send

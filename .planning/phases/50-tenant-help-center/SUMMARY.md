@@ -28,6 +28,8 @@ No backend code or database schema was changed.
 
 Implementation commit: `5f5af84f38199360929e0c3dc69f871c813fcb4c`.
 
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/42.
+
 ## Verification evidence
 
 - `npm --prefix web test`: PASS, 41 files / 123 tests.
