@@ -6,7 +6,7 @@ Phase 54 delivers the `observability-assurance` obligation set. It adds a minima
 
 Implementation commit: `f3d89912ae2cb0c5878d85c58e6969a08d3b2c27`.
 
-Pull request: `TBD`.
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/46.
 
 ## Closed TODO set
 
