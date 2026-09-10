@@ -6,6 +6,10 @@ Phase 49 is complete. TODO.md is empty for the scoped obligation set.
 
 Implementation commit: `a9f48bfa3e76ac4752df853c35580022e4dce8ca`
 
+Delivery docs commit: `50bd87c`
+
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/41
+
 ## Delivered
 
 - Added `V5800__tenant_cooperation_termination.sql` for termination requests, participant snapshots, audits and permissions.
