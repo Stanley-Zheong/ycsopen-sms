@@ -58,6 +58,7 @@ import AdminFeeWarningPage from '@/pages/admin/billing/AdminFeeWarningPage';
 import TenantFeeWarningPage from '@/pages/tenant/billing/TenantFeeWarningPage';
 import AdminComplaintsPage from '@/pages/admin/complaints/AdminComplaintsPage';
 import AdminComplaintAnalyticsPage from '@/pages/admin/complaints/AdminComplaintAnalyticsPage';
+import AdminTenantRiskPage from '@/pages/admin/risk/AdminTenantRiskPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -115,6 +116,7 @@ export const router = createBrowserRouter([
       { path: '/admin/send/jobs', element: <AdminSendJobsPage /> },
       { path: '/admin/complaints', element: <AdminComplaintsPage /> },
       { path: '/admin/complaint/analytics', element: <AdminComplaintAnalyticsPage /> },
+      { path: '/admin/tenant-risk', element: <AdminTenantRiskPage /> },
       { path: '/admin/uplink', element: <AdminUplinksPage /> },
       { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },

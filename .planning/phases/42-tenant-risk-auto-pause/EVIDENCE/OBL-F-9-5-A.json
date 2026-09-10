@@ -1,0 +1,1 @@
+{"status":"PASS","phase":42,"obligation":"OBL-F-9-5-A","evidence":["web/test/scripts/tenant-risk-auto-pause.spec.ts","web/src/pages/admin/risk/AdminTenantRiskPage.tsx","EVIDENCE/playwright-tenant-risk-auto-pause-report.json"]}

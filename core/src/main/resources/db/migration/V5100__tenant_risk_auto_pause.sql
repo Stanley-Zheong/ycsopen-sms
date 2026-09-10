@@ -1,0 +1,38 @@
+ALTER TABLE tenant_alert_rules
+    ADD COLUMN tenant_id BIGINT UNSIGNED NULL,
+    ADD COLUMN metric_source VARCHAR(128) NOT NULL DEFAULT 'statistics_aggregates',
+    ADD COLUMN status ENUM('ACTIVE','DISABLED') NOT NULL DEFAULT 'ACTIVE',
+    ADD COLUMN created_by VARCHAR(64) NULL,
+    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ADD KEY idx_tenant_alert_rule_tenant_metric (tenant_id, metric, status);
+
+CREATE TABLE tenant_risk_episodes (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    rule_id BIGINT UNSIGNED NOT NULL,
+    alert_record_id BIGINT UNSIGNED NULL,
+    metric ENUM('COMPLAINT_RATE','FAILURE_RATE','UNSUBSCRIBE_RATE') NOT NULL,
+    source_key VARCHAR(128) NOT NULL,
+    source_registry VARCHAR(128) NOT NULL,
+    numerator BIGINT NOT NULL,
+    denominator BIGINT NOT NULL,
+    rate DECIMAL(12,6) NULL,
+    threshold_value DECIMAL(12,6) NOT NULL,
+    window_minutes INT NOT NULL,
+    data_quality ENUM('COMPLETE','UNKNOWN') NOT NULL,
+    action ENUM('NOTIFY','AUTO_SUSPEND') NOT NULL,
+    status ENUM('ACTIVE','PAUSED','RESOLVED','UNKNOWN') NOT NULL,
+    before_lifecycle_status VARCHAR(32) NULL,
+    source_snapshot VARCHAR(1000) NOT NULL,
+    paused_by VARCHAR(64) NULL,
+    paused_at DATETIME NULL,
+    recovery_review_id VARCHAR(128) NULL,
+    recovery_note VARCHAR(255) NULL,
+    recovered_by VARCHAR(64) NULL,
+    recovered_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_tenant_risk_source (source_key),
+    KEY idx_tenant_risk_tenant_status (tenant_id, status),
+    KEY idx_tenant_risk_rule_metric (rule_id, metric)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Phase 42 tenant risk warning and auto-pause episodes';

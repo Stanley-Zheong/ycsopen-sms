@@ -69,7 +69,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 39: Financial source analytics** — Actual upstream cost.
 - [x] **Phase 40: Fee warning and credit enforcement** — Prepaid amount/estimated-use warnings.
 - [x] **Phase 41: Complaint case management** — Complaint source/intake.
-- [ ] **Phase 42: Tenant risk warning and auto-pause** — Complaint/failure/unsubscribe rates from source registry.
+- [x] **Phase 42: Tenant risk warning and auto-pause** — Complaint/failure/unsubscribe rates from source registry.
 - [ ] **Phase 43: Custom report authoring** — Supported dimension/measure registry.
 - [ ] **Phase 44: Operational dashboards and account overview** — Platform realtime KPI/trend/activity.
 - [ ] **Phase 45: Complaint-ratio dashboard and intervention** — Real send denominator/complaint numerator.
@@ -650,7 +650,7 @@ Plans:
 
 **Test layers**: Canonicalization/idempotency unit, MySQL/Redis integration, checker conformance, API security/concurrency.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/42-tenant-risk-auto-pause/42-01-PLAN.md`
 
 ### Phase 24: HTTP upstream delivery, receipt, and final status
 

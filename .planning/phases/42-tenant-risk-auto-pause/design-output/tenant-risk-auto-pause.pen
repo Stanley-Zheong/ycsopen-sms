@@ -1,0 +1,4 @@
+PENCIL_SOURCE phase=42 package=tenant-risk-auto-pause route=/admin/tenant-risk
+Page: 1440px desktop console, ycsan-web style.
+Regions: header, threshold rule card, source snapshot evaluation card, current rules table, episode/pause detail, recovery form.
+Chrome-only validation.
