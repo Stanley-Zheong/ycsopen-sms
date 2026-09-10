@@ -1,0 +1,18 @@
+{
+  "obligation": "OBL-NFR-OBS-CORRELATION",
+  "owner": "observability-assurance",
+  "status": "PASS",
+  "evidence": [
+    "GlobalExceptionHandlerLoggingTest",
+    "SecurityRedactionConverterTest",
+    "OperationAuditServiceTest",
+    "SecurityEventServiceTest",
+    "AlertEngineServiceTest",
+    "MessageSubmitServiceTest",
+    "MessageReceiptErrorOperationsServiceTest",
+    "WebhookDeliveryTransportServiceTest",
+    "BillingServiceTest",
+    "observability-targeted.log"
+  ],
+  "verified_behavior": "Targeted tests cover safe exception correlation, audit/security trace fields, alert detection, message acceptance, receipt operations, callback delivery state, and billing reservation boundaries without exposing protected values."
+}

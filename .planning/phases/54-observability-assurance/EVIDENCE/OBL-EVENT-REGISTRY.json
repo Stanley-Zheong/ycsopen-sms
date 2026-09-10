@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-EVENT-REGISTRY",
+  "owner": "observability-assurance",
+  "status": "PASS",
+  "evidence": [
+    "BusinessEventRegistry.java",
+    "BusinessEventDefinition.java",
+    "BusinessEventRegistryTest",
+    "EVENT-REGISTRY.md"
+  ],
+  "verified_behavior": "The registry covers submit, intercept, sent, delivered, failed, signature submit, template submit, review result, tenant register/sign/terminate, complaint create/close, unsubscribe, alert trigger, short-link click, and dashboard view exactly once."
+}
