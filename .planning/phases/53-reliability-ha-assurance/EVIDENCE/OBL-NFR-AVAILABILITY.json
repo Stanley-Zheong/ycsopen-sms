@@ -1,0 +1,34 @@
+{
+  "obligation": "OBL-NFR-AVAILABILITY",
+  "requirement": "REQ-NFR-RELIABILITY",
+  "result": "PASS",
+  "case": "C-P53-AVAILABILITY",
+  "evidence": [
+    {
+      "kind": "junit-targeted",
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-targeted.log",
+      "sha256": "8d6a7c8f7178160bf72aa0a48550faab57fc7d280734e58ed5e85791fdcb58f9",
+      "tests_run": 78,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "kind": "junit-full",
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/full-backend.log",
+      "sha256": "38c90c4f99ef002063ed50043fccd52b3049718315c90f8924bd03db3514c1b3",
+      "tests_run": 952,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 33
+    }
+  ],
+  "covered_controls": [
+    "dependency fallback",
+    "channel health exclusion",
+    "dispatch recovery",
+    "idempotent submit ownership",
+    "financial reconciliation"
+  ],
+  "boundary": "Does not prove annual production uptime; covers repository-level no-silent-loss invariants."
+}
