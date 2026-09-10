@@ -6,7 +6,7 @@ Phase 55 delivers the `extension-conformance-assurance` obligation set. It adds 
 
 Implementation commit: `bac5ad1afa637f2019fbdf7fd6ff0ffdd50e4ac7`.
 
-Pull request: `TBD`.
+Pull request: https://github.com/Stanley-Zheong/ycsopen-sms/pull/47.
 
 ## Closed TODO set
 
