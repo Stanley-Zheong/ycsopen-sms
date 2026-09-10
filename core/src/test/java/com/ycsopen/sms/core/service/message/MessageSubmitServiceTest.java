@@ -14,6 +14,7 @@ import com.ycsopen.sms.core.repository.MessageTaskRepository;
 import com.ycsopen.sms.core.repository.SignatureRepository;
 import com.ycsopen.sms.core.repository.TemplateRepository;
 import com.ycsopen.sms.core.service.billing.BillingService;
+import com.ycsopen.sms.core.service.billing.FeeWarningCreditService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
@@ -42,6 +43,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -68,6 +70,7 @@ class MessageSubmitServiceTest {
     @Mock SignatureRepository signatureRepository;
     @Mock RoutingEngine routingEngine;
     @Mock BillingService billingService;
+    @Mock FeeWarningCreditService feeWarningCreditService;
     @Mock MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     @Mock TenantEligibilityPolicy eligibilityPolicy;
     @Mock MessageAcceptanceIdempotencyService idempotency;
@@ -83,7 +86,7 @@ class MessageSubmitServiceTest {
         TemplateSendComplianceService templateCompliance =
                 new TemplateSendComplianceService(templateRepository, signatureRepository);
         service = new MessageSubmitService(templateCompliance,
-                routingEngine, billingService, messageTaskProtectionAdapter, eligibilityPolicy, idempotency);
+                routingEngine, billingService, feeWarningCreditService, messageTaskProtectionAdapter, eligibilityPolicy, idempotency);
         lenient().when(idempotency.claim(eq(TENANT_ID), eq("SUBMIT-1"), anyString()))
                 .thenReturn(MessageAcceptanceIdempotencyService.Claim.newSubmission(
                         7101L, "SUBMIT-1", "0".repeat(64)));
@@ -122,11 +125,12 @@ class MessageSubmitServiceTest {
         ArgumentCaptor<String> messageId = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<RoutingContext> routing = ArgumentCaptor.forClass(RoutingContext.class);
         ArgumentCaptor<MessageTask> task = ArgumentCaptor.forClass(MessageTask.class);
-        InOrder order = inOrder(eligibilityPolicy, messageTaskProtectionAdapter, routingEngine, billingService);
+        InOrder order = inOrder(eligibilityPolicy, messageTaskProtectionAdapter, routingEngine, feeWarningCreditService, billingService);
         order.verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
         order.verify(messageTaskProtectionAdapter).prepareForRouting(
                 eq(TENANT_ID), messageId.capture(), eq(MOBILE));
         order.verify(routingEngine).route(routing.capture());
+        order.verify(feeWarningCreditService).enforceSubmission(TENANT_ID, 50, "message-submit");
         order.verify(messageTaskProtectionAdapter).protectForPersistence(
                 same(preparedRouting), eq(MOBILE));
         order.verify(messageTaskProtectionAdapter).save(task.capture(), same(preparedMobile));
@@ -164,7 +168,7 @@ class MessageSubmitServiceTest {
         assertThat(response.messageId()).isEqualTo("MSG_1700000000000_DUPLICAT");
         verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
         verifyNoInteractions(templateRepository, signatureRepository, routingEngine,
-                billingService, messageTaskProtectionAdapter, legacyMessageTaskRepository);
+                billingService, feeWarningCreditService, messageTaskProtectionAdapter, legacyMessageTaskRepository);
     }
 
     @ParameterizedTest
@@ -190,9 +194,32 @@ class MessageSubmitServiceTest {
                     .isEqualTo(FrequencyChecker.MOBILE_IDENTITY_NOT_READY);
         }
 
+        verifyNoInteractions(feeWarningCreditService);
         verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
         verifyNoInteractions(billingService, legacyMessageTaskRepository);
+    }
+
+    @Test
+    void feeWarningDenialStopsBeforePersistenceBillingAndAcceptedMark() {
+        approvedTemplateAndSignature();
+        stubPreparedQueryIndexes();
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
+                .thenReturn(preparedRouting);
+        when(routingEngine.route(any())).thenReturn(RoutingDecision.allow(42L, "safe content"));
+        var denial = new BusinessException("FEE_WARNING_CREDIT_BLOCKED", "费用授信已阻断");
+        org.mockito.Mockito.doThrow(denial).when(feeWarningCreditService)
+                .enforceSubmission(TENANT_ID, 50, "message-submit");
+
+        assertThatThrownBy(() -> service.submit(TENANT_ID, request(), "127.0.0.1"))
+                .isSameAs(denial);
+
+        verify(feeWarningCreditService).enforceSubmission(TENANT_ID, 50, "message-submit");
+        verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
+        verify(messageTaskProtectionAdapter, never()).save(any(), any());
+        verifyNoInteractions(billingService, legacyMessageTaskRepository);
+        verify(idempotency, never()).markAccepted(7101L);
+        verify(idempotency, never()).enqueueSendIntent(anyLong(), anyLong(), anyString(), anyLong());
     }
 
     @Test
@@ -205,7 +232,7 @@ class MessageSubmitServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
-        verifyNoInteractions(routingEngine, billingService, legacyMessageTaskRepository);
+        verifyNoInteractions(routingEngine, billingService, feeWarningCreditService, legacyMessageTaskRepository);
         verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
     }
@@ -225,6 +252,7 @@ class MessageSubmitServiceTest {
                 .hasMessage(MessageTaskProtectionAdapter.SANITIZED_FAILURE);
 
         verifyNoInteractions(billingService, legacyMessageTaskRepository);
+        verify(feeWarningCreditService).enforceSubmission(TENANT_ID, 50, "message-submit");
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
     }
 

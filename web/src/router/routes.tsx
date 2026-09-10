@@ -54,6 +54,8 @@ import AdminRechargeReviewPage from '@/pages/admin/billing/AdminRechargeReviewPa
 import AdminReconciliationSettlementPage from '@/pages/admin/billing/AdminReconciliationSettlementPage';
 import TenantStatementsInvoicesPage from '@/pages/tenant/billing/TenantStatementsInvoicesPage';
 import AdminFinancialAnalyticsPage from '@/pages/admin/billing/AdminFinancialAnalyticsPage';
+import AdminFeeWarningPage from '@/pages/admin/billing/AdminFeeWarningPage';
+import TenantFeeWarningPage from '@/pages/tenant/billing/TenantFeeWarningPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -115,6 +117,7 @@ export const router = createBrowserRouter([
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
       { path: '/admin/statistics', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
+      { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },
       { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
       { path: 'system', element: <Navigate to="users" replace /> },
@@ -144,6 +147,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: '/tenant/recharge', element: <TenantRechargePage /> },
+      { path: '/tenant/balance', element: <TenantFeeWarningPage /> },
       { path: '/tenant/statements', element: <TenantStatementsInvoicesPage /> },
       { path: '/tenant/invoices', element: <TenantStatementsInvoicesPage /> },
       { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },

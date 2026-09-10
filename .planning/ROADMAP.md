@@ -67,7 +67,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 37: Contract pricing and postpaid credit** — Trial conversion.
 - [x] **Phase 38: Reconciliation, settlement, and invoices** — Source-backed statements.
 - [x] **Phase 39: Financial source analytics** — Actual upstream cost.
-- [ ] **Phase 40: Fee warning and credit enforcement** — Prepaid amount/estimated-use warnings.
+- [x] **Phase 40: Fee warning and credit enforcement** — Prepaid amount/estimated-use warnings.
 - [ ] **Phase 41: Complaint case management** — Complaint source/intake.
 - [ ] **Phase 42: Tenant risk warning and auto-pause** — Complaint/failure/unsubscribe rates from source registry.
 - [ ] **Phase 43: Custom report authoring** — Supported dimension/measure registry.
@@ -605,7 +605,7 @@ Plans:
 
 **Test layers**: Rule/weight/circuit/retry unit, Redis/MySQL concurrency, conformance, authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/40-fee-warning-credit-enforcement/40-01-PLAN.md`; summary `.planning/phases/40-fee-warning-credit-enforcement/SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 22: Trial and prepaid ledger
