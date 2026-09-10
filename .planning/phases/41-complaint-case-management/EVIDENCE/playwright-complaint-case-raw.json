@@ -1,0 +1,232 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "complaint-case.spec.ts",
+      "--config",
+      "web/playwright.config.ts",
+      "--project=local-google-chrome",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 4
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 4
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 5,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 4173",
+      "url": "http://127.0.0.1:4173/login",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "complaint-case.spec.ts",
+      "file": "complaint-case.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Phase 41 complaint case management",
+          "file": "complaint-case.spec.ts",
+          "line": 67,
+          "column": 6,
+          "specs": [
+            {
+              "title": "pw-p41-intake C-P41-INTAKE OBL-F-9-1-A pw-p41-attribution C-P41-ATTRIBUTION OBL-F-9-1-B",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4372,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-10T06:33:10.846Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8b1f8c795bbbee8c53fe-56c7fc7e9d7a074733b0",
+              "file": "complaint-case.spec.ts",
+              "line": 68,
+              "column": 3
+            },
+            {
+              "title": "pw-p41-state C-P41-STATE OBL-F-9-2-A pw-p41-accept C-P41-ACCEPT OBL-STATE-COMPLAINT-PROCESS pw-p41-handle C-P41-HANDLE OBL-STATE-COMPLAINT-HANDLED pw-p41-close C-P41-CLOSE OBL-STATE-COMPLAINT-CLOSE",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4622,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-10T06:33:10.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8b1f8c795bbbee8c53fe-7413ae0d006fbe7fe50d",
+              "file": "complaint-case.spec.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "pw-p41-remediation C-P41-REMEDIATION OBL-F-9-3-A pw-p41-recovery C-P41-RECOVERY OBL-F-9-3-B pw-p41-resource C-P41-RESOURCE-DISABLE OBL-STATE-RESOURCE-DISABLE",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4506,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-10T06:33:10.846Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8b1f8c795bbbee8c53fe-2696305925726eb5e15e",
+              "file": "complaint-case.spec.ts",
+              "line": 91,
+              "column": 3
+            },
+            {
+              "title": "pw-p41-analytics C-P41-ANALYTICS OBL-F-9-4-A",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "local-google-chrome",
+                  "projectName": "local-google-chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4212,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-10T06:33:10.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8b1f8c795bbbee8c53fe-f84d3990e8cee80b767a",
+              "file": "complaint-case.spec.ts",
+              "line": 104,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-10T06:33:09.872Z",
+    "duration": 12683.343,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

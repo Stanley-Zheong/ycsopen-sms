@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 41 Complaint Case Management Prototype</title>
+</head>
+<body>
+  <main>
+    <section data-route="/admin/complaints" data-testid="admin-complaint-case-complaints-page">
+      <h1>投诉闭环管理</h1>
+      <div data-testid="admin-complaint-case-complaints-attribution-quality">COMPLETE / UNKNOWN</div>
+      <div data-testid="admin-complaint-case-complaints-state-action">PENDING → PROCESSING → PROCESSED → CLOSED</div>
+      <button data-testid="admin-complaint-case-complaints-remediation">资源处置</button>
+      <button data-testid="admin-complaint-case-complaints-remediation-recovery">恢复</button>
+      <div data-testid="admin-complaint-case-complaints-remediation-resource">mobile / tenant / signature / template / channel</div>
+      <button data-testid="admin-complaint-case-complaints-accept">接单</button>
+      <button data-testid="admin-complaint-case-complaints-handle">处理</button>
+      <button data-testid="admin-complaint-case-complaints-close">关闭</button>
+    </section>
+    <section data-route="/admin/complaint/analytics" data-testid="admin-complaint-case-analytics-page">
+      <h1>投诉趋势与分布</h1>
+    </section>
+  </main>
+</body>
+</html>

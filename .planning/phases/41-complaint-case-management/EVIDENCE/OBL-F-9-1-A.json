@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-9-1-A","phase":41,"owner":"complaint-case-management","status":"implemented","evidence":["ComplaintCaseService.create","ComplaintCaseController.create","AdminComplaintsPage.tsx","complaint-case.spec.ts","UI-ELEMENTS.md"]}
