@@ -118,6 +118,27 @@ public class WebhookDeliveryTransportService {
         return new EnqueueResult(eventId, logicalId, destination);
     }
 
+    @Transactional
+    public EnqueueResult enqueueUplinkEvent(long tenantId, String uplinkId, String messageId, String phone,
+                                            String content) {
+        if (uplinkId == null || uplinkId.isBlank() || phone == null || phone.isBlank()
+                || content == null || content.isBlank()) {
+            throw new BusinessException("WEBHOOK_EVENT_INVALID", "上行回调事件字段不完整");
+        }
+        String destination = configuredDestination(tenantId, CallbackType.UPLINK);
+        validateDestination("UPLINK", destination);
+        String logicalId = "UPLINK:" + uplinkId.trim();
+        String payload = payload(Map.of(
+                "kind", "UPLINK",
+                "tenantId", tenantId,
+                "uplinkId", uplinkId.trim(),
+                "messageId", messageId == null ? "" : messageId.trim(),
+                "phone", phone.trim(),
+                "content", content.trim()));
+        long eventId = enqueue(tenantId, "UPLINK", logicalId, destination, payload);
+        return new EnqueueResult(eventId, logicalId, destination);
+    }
+
     public Optional<DeliveryResult> deliverNext() {
         List<Long> ids = jdbc.queryForList("""
                 SELECT id FROM webhook_delivery_events

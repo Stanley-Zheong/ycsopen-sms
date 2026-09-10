@@ -1,0 +1,12 @@
+{
+  "obligations": ["OBL-F-7-5-B"],
+  "requirement_ids": ["REQ-F-7-5"],
+  "evidence": [
+    "UplinkNormalizationService exposes HTTP and CMPP connector normalization boundaries into uplink_records.",
+    "WebhookDeliveryTransportService.enqueueUplinkEvent creates UPLINK delivery events for replay/retry using the configured tenant destination."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest,WebhookDeliveryTransportServiceTest test"
+  ],
+  "result": "PASS"
+}

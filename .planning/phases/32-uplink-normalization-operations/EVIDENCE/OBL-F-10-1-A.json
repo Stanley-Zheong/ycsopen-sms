@@ -1,0 +1,13 @@
+{
+  "obligations": ["OBL-F-10-1-A"],
+  "requirement_ids": ["REQ-F-10-1"],
+  "evidence": [
+    "AdminUplinksPage exposes full-platform filters for tenant, number, period, keyword, carrier, and push state.",
+    "UplinkNormalizationService.adminSearch filters by protected phone hash and tenant."
+  ],
+  "commands": [
+    "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test"
+  ],
+  "result": "PASS"
+}

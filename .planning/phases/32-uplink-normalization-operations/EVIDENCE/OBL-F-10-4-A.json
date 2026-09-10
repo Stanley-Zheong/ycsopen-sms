@@ -1,0 +1,13 @@
+{
+  "obligations": ["OBL-F-10-4-A"],
+  "requirement_ids": ["REQ-F-10-4"],
+  "evidence": [
+    "pushMonitor reads UPLINK rows from webhook_delivery_events and webhook_delivery_attempts.",
+    "AdminUplinksPage exposes state, attempts, latency, destination, and updated time."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test",
+    "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome"
+  ],
+  "result": "PASS"
+}

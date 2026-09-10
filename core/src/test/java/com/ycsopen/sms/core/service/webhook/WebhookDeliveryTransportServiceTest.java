@@ -147,6 +147,23 @@ class WebhookDeliveryTransportServiceTest {
     }
 
     @Test
+    void uplinkEventUsesConfiguredTenantDestinationAndValidatesRequiredFields() {
+        service.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
+                null, "https://example.com/uplink", null, 5, 10));
+
+        var result = service.enqueueUplinkEvent(7, "UP-1", null, "138****8000", "回复帮助");
+
+        assertThat(result.destinationUrl()).isEqualTo("https://example.com/uplink");
+        assertThat(result.logicalId()).isEqualTo("UPLINK:UP-1");
+        assertThatThrownBy(() -> service.enqueueUplinkEvent(7, " ", "MSG", "138****8000", "回复帮助"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("字段不完整");
+        assertThatThrownBy(() -> service.enqueueUplinkEvent(8, "UP-2", "MSG", "138****8000", "回复帮助"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("未配置");
+    }
+
+    @Test
     void failuresRetryToConfiguredTerminalAttemptAndExposePushFailedState() {
         service.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
                 "https://example.com/status", null, null, 5, 1));

@@ -59,7 +59,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [ ] **Phase 29: Bulk, scheduled, and task operations** — Bulk API.
 - [ ] **Phase 30: Upstream CMPP connector** — CMPP client codec.
 - [ ] **Phase 31: Downstream CMPP gateway** — CMPP server.
-- [ ] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
+- [x] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
 - [ ] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
 - [ ] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
 - [ ] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.

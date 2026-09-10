@@ -1,0 +1,13 @@
+{
+  "obligations": ["OBL-F-10-4-B"],
+  "requirement_ids": ["REQ-F-10-4"],
+  "evidence": [
+    "pausePushEvent, resumePushEvent, and replayPushEvent delegate exact event IDs to WebhookDeliveryTransportService.",
+    "The UI action region admin-uplink-normalization-uplink-push-destination-action does not accept replacement destination URLs."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test",
+    "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome"
+  ],
+  "result": "PASS"
+}

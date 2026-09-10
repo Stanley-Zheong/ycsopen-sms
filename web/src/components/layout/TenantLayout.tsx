@@ -39,6 +39,8 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-template-lifecycle-templates-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/consumption-ledger' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-trial-prepaid-consumption-ledger-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/uplink' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-uplink-normalization-uplinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           )
