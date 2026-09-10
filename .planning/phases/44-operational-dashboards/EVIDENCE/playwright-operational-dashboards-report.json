@@ -1,0 +1,26 @@
+{
+  "command": "npm --prefix web exec -- playwright test operational-dashboards.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P44-API-STATUS-MONITOR",
+    "C-P44-CHANNEL-COMPARISON",
+    "C-P44-CHANNEL-PERIOD-COMPARE",
+    "C-P44-CONFIGURATION-ROLE",
+    "C-P44-DASHBOARD-CONFIGURATION",
+    "C-P44-FINANCE-WARNING-CARD",
+    "C-P44-KPI-CHANNEL-HEALTH",
+    "C-P44-KPI-DASHBOARD",
+    "C-P44-KPI-HOURLY-TREND",
+    "C-P44-KPI-TENANT-RANK",
+    "C-P44-REALTIME-DASHBOARD",
+    "C-P44-REALTIME-REFRESH",
+    "C-P44-REALTIME-TREND",
+    "C-P44-RESOURCE-STATISTICS",
+    "C-P44-SHARED-METRIC-SOURCE",
+    "C-P44-TENANT-OVERVIEW-BALANCE",
+    "C-P44-TENANT-OVERVIEW-SCOPE",
+    "C-P44-TENANT-TEMPLATE-STATS"
+  ]
+}

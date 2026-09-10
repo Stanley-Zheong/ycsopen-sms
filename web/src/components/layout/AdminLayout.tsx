@@ -18,11 +18,14 @@ import { ROUTING_POLICY_PERMISSIONS } from '@/api/routingPolicyApi';
 import { TRIAL_PREPAID_PERMISSIONS } from '@/api/trialPrepaidApi';
 import { TENANT_RISK_PERMISSIONS } from '@/api/tenantRiskAutoPauseApi';
 import { CUSTOM_REPORT_PERMISSIONS } from '@/api/customReportApi';
+import { OPERATIONAL_DASHBOARD_PERMISSIONS } from '@/api/operationalDashboardApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
 const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; roles?: PlatformUserType[] }> = [
-  { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
+  { to: '/admin/dashboard', label: '数据概览（仪表盘）', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [OPERATIONAL_DASHBOARD_PERMISSIONS.menu, OPERATIONAL_DASHBOARD_PERMISSIONS.read] },
+  { to: '/admin/dashboard/configuration', label: '仪表盘配置', roles: ['ADMIN', 'OPERATOR'], permissions: [OPERATIONAL_DASHBOARD_PERMISSIONS.menu, OPERATIONAL_DASHBOARD_PERMISSIONS.write] },
+  { to: '/admin/api/status', label: 'API 状态', roles: ['ADMIN', 'OPERATOR'], permissions: [OPERATIONAL_DASHBOARD_PERMISSIONS.menu, OPERATIONAL_DASHBOARD_PERMISSIONS.read] },
   { to: '/admin/tenants', label: '机构管理', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read] },
   { to: '/admin/channel/configuration', label: '通道管理', roles: ['ADMIN', 'OPERATOR'] },
   { to: '/admin/channel/health', label: '通道健康', roles: ['ADMIN', 'OPERATOR'] },
@@ -51,6 +54,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
   { to: '/admin/statistics', label: '数据统计', roles: ['ADMIN', 'FINANCE'] },
+  { to: '/admin/statistics/resources', label: '资源统计', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [OPERATIONAL_DASHBOARD_PERMISSIONS.menu, OPERATIONAL_DASHBOARD_PERMISSIONS.read] },
   { to: '/admin/custom/reports', label: '自定义报表', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [CUSTOM_REPORT_PERMISSIONS.menu, CUSTOM_REPORT_PERMISSIONS.read] },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/fee/warning', label: '费用预警', roles: ['ADMIN', 'FINANCE'] },
@@ -80,7 +84,19 @@ export default function AdminLayout() {
         <div style={{ fontWeight: 700, marginBottom: 16 }}>YCSAN-SMS 平台管理后台</div>
         {NAV_ITEMS.filter((item) => (!item.roles || item.roles.includes(userType as PlatformUserType))
           && (!item.permissions || item.permissions.every(access.can))).map((item) => (
-          item.to === '/admin/tenants' ? (
+          item.to === '/admin/dashboard' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-operational-dashboards-dashboard-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/dashboard/configuration' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-operational-dashboards-dashboard-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/api/status' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-operational-dashboards-api-status-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/tenants' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-tenant-qualification-tenants-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
@@ -178,6 +194,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/statistics' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-financial-source-channel-statistics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/statistics/resources' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-operational-dashboards-statistics-resources-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/custom/reports' ? (

@@ -1,0 +1,14 @@
+{
+  "phase": "44",
+  "package": "operational-dashboards",
+  "obligation": "OBL-F-11-2-B",
+  "result": "PASS",
+  "claim": "Tenant analytics are pinned to authenticated tenant actor and reject cross-tenant access.",
+  "evidence": [
+    "core/src/test/java/com/ycsopen/sms/core/service/dashboard/OperationalDashboardServiceTest.java",
+    "core/src/test/java/com/ycsopen/sms/core/web/controller/OperationalDashboardControllerTest.java",
+    "web/test/unit/operational-dashboards.test.tsx",
+    "web/test/scripts/operational-dashboards.spec.ts",
+    ".planning/phases/44-operational-dashboards/EVIDENCE/playwright-operational-dashboards-report.json"
+  ]
+}

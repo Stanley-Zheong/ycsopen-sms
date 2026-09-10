@@ -6,6 +6,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/overview', label: '概览 / 账户总览' },
   { to: '/tenant/send', label: '发送管理' },
   { to: '/tenant/templates', label: '模板管理' },
+  { to: '/tenant/templates/statistics', label: '模板统计' },
   { to: '/tenant/signatures', label: '签名管理' },
   { to: '/tenant/recharge', label: '账户充值' },
   { to: '/tenant/balance', label: '余额与费用预警' },
@@ -41,6 +42,8 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-signature-lifecycle-signatures-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/templates' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-template-lifecycle-templates-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/templates/statistics' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-operational-dashboards-templates-statistics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/consumption-ledger' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-trial-prepaid-consumption-ledger-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/recharge' ? (

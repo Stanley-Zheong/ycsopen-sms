@@ -4,6 +4,9 @@ import TenantLayout from '@/components/layout/TenantLayout';
 import PlaceholderPage from '@/components/common/PlaceholderPage';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/admin/dashboard/DashboardPage';
+import ApiStatusPage from '@/pages/admin/dashboard/ApiStatusPage';
+import DashboardConfigurationPage from '@/pages/admin/dashboard/DashboardConfigurationPage';
+import ResourceStatisticsPage from '@/pages/admin/dashboard/ResourceStatisticsPage';
 import TenantListPage from '@/pages/admin/tenants/TenantListPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
 import SendPage from '@/pages/tenant/send/SendPage';
@@ -28,6 +31,7 @@ import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
 import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
 import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
 import TemplateLifecyclePage from '@/pages/tenant/templates/TemplateLifecyclePage';
+import TenantTemplateStatisticsPage from '@/pages/tenant/templates/TenantTemplateStatisticsPage';
 import ExemptionPolicyPage from '@/pages/admin/exemptions/ExemptionPolicyPage';
 import ResourceReviewHistoryPage from '@/pages/admin/review/ResourceReviewHistoryPage';
 import BlacklistRiskControlPage from '@/pages/admin/risk/BlacklistRiskControlPage';
@@ -82,8 +86,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+      { path: '/admin/dashboard', element: <DashboardPage /> },
+      { path: '/admin/dashboard/configuration', element: <DashboardConfigurationPage /> },
+      { path: '/admin/api/status', element: <ApiStatusPage /> },
       { path: '/admin/tenants', element: <TenantListPage /> },
       { path: 'channels', element: <Navigate to="/admin/channel/configuration" replace /> },
       { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
@@ -122,6 +128,7 @@ export const router = createBrowserRouter([
       { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
       { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
       { path: '/admin/statistics', element: <AdminFinancialAnalyticsPage /> },
+      { path: '/admin/statistics/resources', element: <ResourceStatisticsPage /> },
       { path: '/admin/custom/reports', element: <AdminCustomReportsPage /> },
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
@@ -152,6 +159,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/bulk/send', element: <TenantBulkSendPage /> },
       { path: '/tenant/scheduled/tasks', element: <TenantScheduledTasksPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
+      { path: '/tenant/templates/statistics', element: <TenantTemplateStatisticsPage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: '/tenant/recharge', element: <TenantRechargePage /> },
       { path: '/tenant/balance', element: <TenantFeeWarningPage /> },
