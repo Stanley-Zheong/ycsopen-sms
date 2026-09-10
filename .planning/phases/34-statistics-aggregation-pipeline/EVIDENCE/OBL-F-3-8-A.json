@@ -1,0 +1,16 @@
+{
+  "obligation_id": "OBL-F-3-8-A",
+  "phase": 34,
+  "owner": "statistics-aggregation-pipeline",
+  "status": "PASS",
+  "evidence": [
+    {
+      "command": "mvn -f core/pom.xml -Dtest=StatisticsAggregationServiceTest,StatisticsAggregationMigrationTest test",
+      "result": "PASS: 4 tests, 0 failures, 0 errors"
+    },
+    {
+      "test": "StatisticsAggregationServiceTest.rebuildAggregatesResourceChannelAndTenantMetricsFromFinalSources",
+      "result": "PASS: RESOURCE_USAGE aggregates include signature/template accepted, rejected, success, and failure counts without duplicate rejected task records."
+    }
+  ]
+}

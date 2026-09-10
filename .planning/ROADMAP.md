@@ -61,7 +61,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [ ] **Phase 31: Downstream CMPP gateway** — CMPP server.
 - [x] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
 - [x] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
-- [ ] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
+- [x] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
 - [ ] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.
 - [ ] **Phase 36: Tenant recharge operations** — Recharge request fields/proof.
 - [ ] **Phase 37: Contract pricing and postpaid credit** — Trial conversion.
@@ -490,7 +490,7 @@ Plans:
 
 **Test layers**: Precedence unit, Redis/provider integration, no-task route component, import/API authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/34-statistics-aggregation-pipeline/34-01-PLAN.md`, `.planning/phases/34-statistics-aggregation-pipeline/34-SPEC.md`, `.planning/phases/34-statistics-aggregation-pipeline/DESIGN.md`
 **UI hint**: yes
 
 ### Phase 17: Runtime final-content safety

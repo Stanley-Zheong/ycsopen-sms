@@ -1,0 +1,20 @@
+{
+  "obligation_id": "OBL-DATA-10-11-AGGREGATES",
+  "phase": 34,
+  "owner": "statistics-aggregation-pipeline",
+  "status": "PASS",
+  "evidence": [
+    {
+      "command": "mvn -f core/pom.xml -Dtest=StatisticsAggregationServiceTest,StatisticsAggregationMigrationTest test",
+      "result": "PASS: 4 tests, 0 failures, 0 errors"
+    },
+    {
+      "test": "StatisticsAggregationMigrationTest.phase34MigrationCreatesMetricRegistryAggregateAndCorrectionTables",
+      "result": "PASS: migration creates metric registry, aggregate, and correction tables with bucket, source version, correction identity, and drilldown columns."
+    },
+    {
+      "test": "StatisticsAggregationServiceTest.rebuildAggregatesResourceChannelAndTenantMetricsFromFinalSources",
+      "result": "PASS: aggregate rows preserve bucket date/hour, tenant, channel, carrier, message type, province/city, counts, fee, latency, source version, and correction identity."
+    }
+  ]
+}

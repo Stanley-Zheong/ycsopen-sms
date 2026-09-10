@@ -1,0 +1,16 @@
+{
+  "obligation_id": "OBL-F-11-2-A",
+  "phase": 34,
+  "owner": "statistics-aggregation-pipeline",
+  "status": "PASS",
+  "evidence": [
+    {
+      "command": "mvn -f core/pom.xml -Dtest=StatisticsAggregationServiceTest,StatisticsAggregationMigrationTest test",
+      "result": "PASS: 4 tests, 0 failures, 0 errors"
+    },
+    {
+      "test": "StatisticsAggregationServiceTest.rebuildAggregatesResourceChannelAndTenantMetricsFromFinalSources",
+      "result": "PASS: TENANT_BEHAVIOR aggregates tenant-scoped submits, accepted, rejected, send, success, failure, and fee consumption."
+    }
+  ]
+}
