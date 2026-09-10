@@ -4,7 +4,7 @@
 
 Phase 55 delivers the `extension-conformance-assurance` obligation set. It adds a minimal Java extension-point registry, tests, and phase evidence.
 
-Implementation commit: `TBD`.
+Implementation commit: `bac5ad1afa637f2019fbdf7fd6ff0ffdd50e4ac7`.
 
 Pull request: `TBD`.
 
