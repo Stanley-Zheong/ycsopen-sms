@@ -37,6 +37,7 @@ public class SecureAsyncExportService {
     private static final List<String> FORMATS = List.of("EXCEL", "CSV", "JSON", "PDF");
     private static final List<String> TYPES = List.of(
             "SEND_DETAIL", "RECEIPT_DETAIL", "UNSUBSCRIBE_EVIDENCE", "BALANCE_AUDIT", "CUSTOM_REPORT",
+            "ARCHIVE_RESTORE",
             "MESSAGE_OPERATIONS", "BLACKLIST", "CONTENT_SAFETY", "FREQUENCY_RULE", "PROVIDER_STATUS");
     private static final int SYNC_COMPLETION_LIMIT = 1_000;
     private static final byte[] KEY_CONTEXT = "ycsopen-sms-secure-async-export-v1".getBytes(StandardCharsets.UTF_8);

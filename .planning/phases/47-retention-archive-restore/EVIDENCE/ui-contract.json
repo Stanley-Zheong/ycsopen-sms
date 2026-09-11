@@ -1,0 +1,69 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/archive"],
+    "test_ids": [
+      "admin-retention-archive-policy-card",
+      "admin-retention-archive-manifest-restore"
+    ],
+    "sources": [
+      { "path": ".planning/phases/47-retention-archive-restore/UI-ELEMENTS.md", "sha256": "ad2a8f55374e61f7c4a49f3d69f5259b65ea42c0acb27e17318d289c4427a620" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/47-retention-archive-restore/design-output/retention-archive-restore.pen", "sha256": "b227d494806e8b60ec6a3a508f37b8f656c075e9a3afa58744bc087528143eca" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/archive"],
+    "test_ids": [
+      "admin-retention-archive-policy-card",
+      "admin-retention-archive-manifest-restore"
+    ],
+    "sources": [
+      { "path": ".planning/phases/47-retention-archive-restore/design-output/prototype.html", "sha256": "aa4a9e890f77395ef42b2f8baaab6993b9f002d296afb16e4b2200d7519954db" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-retention-archive-policy-card",
+      "admin-retention-archive-manifest-restore"
+    ],
+    "sources": [
+      { "path": ".planning/phases/47-retention-archive-restore/design-output/prototype.spec.ts", "sha256": "ca83c26703683161bd01961a088115b7577cbe6d719764dd4dbfdad2f14eff65" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/archive"],
+    "test_ids": [
+      "admin-retention-archive-policy-card",
+      "admin-retention-archive-manifest-restore"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "e0e4b132700fc92a890bb5246b18ed345ee8627a9ff9cc23c9bb31ba304a160c" },
+      { "path": "web/src/pages/admin/archive/AdminRetentionArchivePage.tsx", "sha256": "9099dea6701acb0bf149f6ffc53df5dbe58e8f104e943ceb021d8fe66555c67c" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-retention-archive-policy-card",
+      "admin-retention-archive-manifest-restore"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/retention-archive.spec.ts", "sha256": "c73e9b74e1c546a83a0af5b693b232ff13bc5144a508df4436a339f0e3b7a4af" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test retention-archive.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/47-retention-archive-restore/EVIDENCE/playwright-retention-archive-report.json",
+    "commit": "abf51555efe6fee490b818dd3e9be23d02df82a6",
+    "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/47-retention-archive-restore/EVIDENCE/playwright-retention-archive-execution.json",
+      "sha256": "3b6f2b31839695ab0caf05b18fdde889a5e0ed40b772fc37e024f93f4e2750e5"
+    }
+  }
+}

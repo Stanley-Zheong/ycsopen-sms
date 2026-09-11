@@ -20,6 +20,7 @@ import { TENANT_RISK_PERMISSIONS } from '@/api/tenantRiskAutoPauseApi';
 import { CUSTOM_REPORT_PERMISSIONS } from '@/api/customReportApi';
 import { OPERATIONAL_DASHBOARD_PERMISSIONS } from '@/api/operationalDashboardApi';
 import { SECURE_ASYNC_EXPORT_PERMISSIONS } from '@/api/secureAsyncExportApi';
+import { RETENTION_ARCHIVE_PERMISSIONS } from '@/api/retentionArchiveApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -58,6 +59,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/statistics/resources', label: '资源统计', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [OPERATIONAL_DASHBOARD_PERMISSIONS.menu, OPERATIONAL_DASHBOARD_PERMISSIONS.read] },
   { to: '/admin/custom/reports', label: '自定义报表', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [CUSTOM_REPORT_PERMISSIONS.menu, CUSTOM_REPORT_PERMISSIONS.read] },
   { to: '/admin/export-center', label: '导出中心', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [SECURE_ASYNC_EXPORT_PERMISSIONS.menu, SECURE_ASYNC_EXPORT_PERMISSIONS.read] },
+  { to: '/admin/archive', label: '保留归档', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [RETENTION_ARCHIVE_PERMISSIONS.menu, RETENTION_ARCHIVE_PERMISSIONS.read] },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/fee/warning', label: '费用预警', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/alerts', label: '告警管理', roles: OPERATIONS },
@@ -204,6 +206,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/custom/reports' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-custom-report-custom-reports-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/archive' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-retention-archive-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/finance' ? (
