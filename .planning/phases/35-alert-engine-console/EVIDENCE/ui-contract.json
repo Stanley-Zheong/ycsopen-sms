@@ -1,0 +1,140 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/alerts"],
+    "test_ids": [
+      "admin-alert-engine-dashboard-cards",
+      "admin-alert-engine-dashboard-alert-tabs",
+      "admin-alert-engine-dashboard-alert-action",
+      "admin-alert-engine-rules-page",
+      "admin-alert-engine-notification-targets",
+      "admin-alert-engine-alert-delivery-attempts",
+      "admin-alert-engine-alert-history",
+      "admin-alert-engine-alert-history-acknowledge",
+      "admin-alert-engine-alert-history-mute",
+      "admin-alert-engine-alert-acknowledge",
+      "admin-alert-engine-alert-resolve",
+      "admin-alert-engine-alert-mute"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/35-alert-engine-console/UI-ELEMENTS.md",
+        "sha256": "fb0c44c1a6fa03899f2cb814716ee139c097f197350f1c7effb5a28b9cef0da3"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/35-alert-engine-console/design-output/alert-engine-console.pen",
+        "sha256": "e13b81fd1d467efdfd8f65ecf80648af1e7c93326fbef2e73c1044db2ba9d80f"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/alerts"],
+    "test_ids": [
+      "admin-alert-engine-dashboard-cards",
+      "admin-alert-engine-dashboard-alert-tabs",
+      "admin-alert-engine-dashboard-alert-action",
+      "admin-alert-engine-rules-page",
+      "admin-alert-engine-notification-targets",
+      "admin-alert-engine-alert-delivery-attempts",
+      "admin-alert-engine-alert-history",
+      "admin-alert-engine-alert-history-acknowledge",
+      "admin-alert-engine-alert-history-mute",
+      "admin-alert-engine-alert-acknowledge",
+      "admin-alert-engine-alert-resolve",
+      "admin-alert-engine-alert-mute"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/35-alert-engine-console/design-output/prototype.html",
+        "sha256": "aa160471c9571b8ce4616c9c321c0a40df8a991598c42fe174297af9df7cf428"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-alert-engine-dashboard-cards",
+      "admin-alert-engine-dashboard-alert-tabs",
+      "admin-alert-engine-dashboard-alert-action",
+      "admin-alert-engine-rules-page",
+      "admin-alert-engine-notification-targets",
+      "admin-alert-engine-alert-delivery-attempts",
+      "admin-alert-engine-alert-history",
+      "admin-alert-engine-alert-history-acknowledge",
+      "admin-alert-engine-alert-history-mute",
+      "admin-alert-engine-alert-acknowledge",
+      "admin-alert-engine-alert-resolve",
+      "admin-alert-engine-alert-mute"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/35-alert-engine-console/design-output/prototype.spec.ts",
+        "sha256": "20818b1140812db08e8851b5092599dbe34a7cdbdb9483415a01d672c2a3808c"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/alerts"],
+    "test_ids": [
+      "admin-alert-engine-dashboard-cards",
+      "admin-alert-engine-dashboard-alert-tabs",
+      "admin-alert-engine-dashboard-alert-action",
+      "admin-alert-engine-rules-page",
+      "admin-alert-engine-notification-targets",
+      "admin-alert-engine-alert-delivery-attempts",
+      "admin-alert-engine-alert-history",
+      "admin-alert-engine-alert-history-acknowledge",
+      "admin-alert-engine-alert-history-mute",
+      "admin-alert-engine-alert-acknowledge",
+      "admin-alert-engine-alert-resolve",
+      "admin-alert-engine-alert-mute"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "572bd74d6992aad2666c848891b559edd8e065782c014878d329e0e9b86bb2d9"
+      },
+      {
+        "path": "web/src/pages/admin/alerts/AdminAlertsPage.tsx",
+        "sha256": "3c2dfe3064ac524a5276eb3bb4e9770b356f359aa685d4d248b7f638ab92ad70"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-alert-engine-dashboard-cards",
+      "admin-alert-engine-dashboard-alert-tabs",
+      "admin-alert-engine-dashboard-alert-action",
+      "admin-alert-engine-rules-page",
+      "admin-alert-engine-notification-targets",
+      "admin-alert-engine-alert-delivery-attempts",
+      "admin-alert-engine-alert-history",
+      "admin-alert-engine-alert-history-acknowledge",
+      "admin-alert-engine-alert-history-mute",
+      "admin-alert-engine-alert-acknowledge",
+      "admin-alert-engine-alert-resolve",
+      "admin-alert-engine-alert-mute"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/alert-engine.spec.ts",
+        "sha256": "282eecb93f72719d005e609271f03c64e324a1182a7a028a812884f94d1c3cb6"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test alert-engine.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/35-alert-engine-console/EVIDENCE/playwright-alert-engine-report.json",
+      "sha256": "2fffceaf7a81f8c4e66a95779bd20d515384e2450efc78aedec1b7f7a5bd753c"
+    }
+  }
+}

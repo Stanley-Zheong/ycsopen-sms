@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-11-7-A","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["AlertEngineServiceTest.ruleConfigurationCreatesOneEpisodeAndDeliveryAttemptForSustainedBreach asserts dashboard counts.","alert-engine.spec.ts pw-p35-dashboard asserts dashboard cards in Chrome."]}

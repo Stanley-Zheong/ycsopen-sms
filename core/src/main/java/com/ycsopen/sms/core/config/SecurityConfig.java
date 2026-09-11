@@ -62,6 +62,8 @@ public class SecurityConfig {
                             "/api/v1/console/tenant/signatures/**",
                             "/api/v1/console/tenant/templates/**")
                     .hasAnyRole("TENANT_ADMIN", "TENANT_DEV")
+                    .requestMatchers("/api/v1/console/tenant/send")
+                    .hasAnyRole("TENANT_ADMIN", "TENANT_USER", "TENANT_DEV")
                     .requestMatchers("/api/v1/console/**")
                     .hasAnyRole("ADMIN", "OPERATOR", "FINANCE")
                     .anyRequest().permitAll())

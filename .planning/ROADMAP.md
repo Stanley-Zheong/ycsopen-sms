@@ -62,7 +62,7 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
 - [x] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
 - [x] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
-- [ ] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.
+- [x] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.
 - [ ] **Phase 36: Tenant recharge operations** — Recharge request fields/proof.
 - [ ] **Phase 37: Contract pricing and postpaid credit** — Trial conversion.
 - [ ] **Phase 38: Reconciliation, settlement, and invoices** — Source-backed statements.
@@ -513,7 +513,7 @@ Plans:
 
 **Test layers**: Matcher/normalization unit, Redis/MySQL integration, routing component, import/API, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/35-alert-engine-console/35-01-PLAN.md`, `.planning/phases/35-alert-engine-console/35-SPEC.md`, `.planning/phases/35-alert-engine-console/35-UI-SPEC.md`, `.planning/phases/35-alert-engine-console/UI-ELEMENTS.md`, `.planning/phases/35-alert-engine-console/TEST-MATRIX.md`, `.planning/phases/35-alert-engine-console/SUMMARY.md`
 **UI hint**: yes
 
 ### Phase 18: Frequency and API rate controls

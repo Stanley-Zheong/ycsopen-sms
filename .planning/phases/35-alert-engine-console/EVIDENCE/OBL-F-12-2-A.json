@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-12-2-A","phase":35,"owner":"alert-engine-console","status":"PASS","evidence":["Rule command stores SMS, EMAIL, DINGTALK, WECOM and target snapshots.","alert-engine.spec.ts pw-p35-targets verifies notification target UI."]}

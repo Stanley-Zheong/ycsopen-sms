@@ -1,0 +1,82 @@
+.alert-engine-page {
+  display: grid;
+  gap: 16px;
+}
+
+.alert-engine-header,
+.alert-engine-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.alert-engine-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.alert-engine-cards article {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+}
+
+.alert-engine-cards span {
+  display: block;
+  color: #64748b;
+}
+
+.alert-engine-cards strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+}
+
+.alert-engine-rule-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.alert-engine-rule-grid label,
+.alert-engine-page label {
+  display: inline-grid;
+  gap: 4px;
+  margin: 6px 10px 6px 0;
+}
+
+.alert-engine-message {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.alert-engine-message.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.alert-engine-message.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.alert-engine-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.alert-engine-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.alert-engine-table th,
+.alert-engine-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 8px;
+  text-align: left;
+}
