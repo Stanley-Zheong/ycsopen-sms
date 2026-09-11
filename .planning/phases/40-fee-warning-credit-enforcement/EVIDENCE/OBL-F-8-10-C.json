@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-8-10-C","phase":40,"owner":"fee-warning-credit-enforcement","status":"implemented","evidence":["FeeWarningCreditService.enforceSubmission","MessageSubmitService.submit","FeeWarningCreditServiceTest","UI-ELEMENTS.md"]}

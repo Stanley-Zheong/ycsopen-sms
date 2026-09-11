@@ -48,6 +48,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
   { to: '/admin/statistics', label: '数据统计', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
+  { to: '/admin/fee/warning', label: '费用预警', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/alerts', label: '告警管理', roles: OPERATIONS },
   { to: '/admin/tools', label: '工具管理', roles: OPERATIONS },
   { to: '/admin/system/users', label: '系统账号', permissions: [IDENTITY_PERMISSIONS.identityMenu, IDENTITY_PERMISSIONS.usersRead] },
@@ -164,6 +165,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/finance' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-financial-source-financial-analytics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/fee/warning' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-fee-warning-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/uplink' ? (
