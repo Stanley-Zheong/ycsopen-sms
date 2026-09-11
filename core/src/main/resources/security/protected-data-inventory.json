@@ -93,7 +93,8 @@
       "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
       "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
       "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
-      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "tenant_column": null, "identity_column": "id",
+      "readers": [{ "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Channel.java", "tokens": ["@Column(name = \"account_encrypted\")"] }], "writers": [],
       "reason": "Credential cells use the canonical 110-byte in-place ceiling; the current Channel entity omits them."
     },
     {
@@ -101,7 +102,8 @@
       "kind": "DATABASE_FIELD", "classification": "PROTECTED", "storage_representation": "INLINE_ENVELOPE",
       "source_bound_bytes": 110, "maximum_complete_envelope_bytes": 255, "storage_capacity_bytes": 255,
       "capacity_result": "FITS", "migration_state": "MIGRATABLE_SCHEMA_ONLY", "blind_index": "NOT_APPLICABLE",
-      "tenant_column": null, "identity_column": "id", "readers": [], "writers": [],
+      "tenant_column": null, "identity_column": "id",
+      "readers": [{ "path": "core/src/main/java/com/ycsopen/sms/core/domain/entity/Channel.java", "tokens": ["@Column(name = \"password_encrypted\")"] }], "writers": [],
       "reason": "Credential cells use the canonical 110-byte in-place ceiling; the current Channel entity omits them."
     },
     {
