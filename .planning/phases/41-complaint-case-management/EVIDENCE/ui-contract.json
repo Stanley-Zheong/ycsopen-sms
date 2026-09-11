@@ -1,0 +1,151 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/complaints",
+      "/admin/complaint/analytics"
+    ],
+    "test_ids": [
+      "admin-complaint-case-complaints-page",
+      "admin-complaint-case-complaints-attribution-quality",
+      "admin-complaint-case-complaints-state-action",
+      "admin-complaint-case-complaints-remediation",
+      "admin-complaint-case-complaints-remediation-recovery",
+      "admin-complaint-case-analytics-page",
+      "admin-complaint-case-complaints-remediation-resource",
+      "admin-complaint-case-complaints-accept",
+      "admin-complaint-case-complaints-handle",
+      "admin-complaint-case-complaints-close"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/41-complaint-case-management/UI-ELEMENTS.md",
+        "sha256": "d9038ed96404f6393396b8d356c4e7c1de9b007053afb7f3f90bd1219adbfd83"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/41-complaint-case-management/design-output/complaint-case-management.pen",
+        "sha256": "754d213bc47c3e46d819b6e58b791a69c245e4a7fd5e17712e86a11f4064f2ab"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/complaints",
+      "/admin/complaint/analytics"
+    ],
+    "test_ids": [
+      "admin-complaint-case-complaints-page",
+      "admin-complaint-case-complaints-attribution-quality",
+      "admin-complaint-case-complaints-state-action",
+      "admin-complaint-case-complaints-remediation",
+      "admin-complaint-case-complaints-remediation-recovery",
+      "admin-complaint-case-analytics-page",
+      "admin-complaint-case-complaints-remediation-resource",
+      "admin-complaint-case-complaints-accept",
+      "admin-complaint-case-complaints-handle",
+      "admin-complaint-case-complaints-close"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/41-complaint-case-management/design-output/prototype.html",
+        "sha256": "977a16b6818b202d4d702d29d3a927dfa533d45f55be9b8da08bd2881a8f6540"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-complaint-case-complaints-page",
+      "admin-complaint-case-complaints-attribution-quality",
+      "admin-complaint-case-complaints-state-action",
+      "admin-complaint-case-complaints-remediation",
+      "admin-complaint-case-complaints-remediation-recovery",
+      "admin-complaint-case-analytics-page",
+      "admin-complaint-case-complaints-remediation-resource",
+      "admin-complaint-case-complaints-accept",
+      "admin-complaint-case-complaints-handle",
+      "admin-complaint-case-complaints-close"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/41-complaint-case-management/design-output/prototype.spec.ts",
+        "sha256": "062d1124a67939032a41a180d23e09540dd29341749d4789341ea50c51e0dca8"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/complaints",
+      "/admin/complaint/analytics"
+    ],
+    "test_ids": [
+      "admin-complaint-case-complaints-page",
+      "admin-complaint-case-complaints-attribution-quality",
+      "admin-complaint-case-complaints-state-action",
+      "admin-complaint-case-complaints-remediation",
+      "admin-complaint-case-complaints-remediation-recovery",
+      "admin-complaint-case-analytics-page",
+      "admin-complaint-case-complaints-remediation-resource",
+      "admin-complaint-case-complaints-accept",
+      "admin-complaint-case-complaints-handle",
+      "admin-complaint-case-complaints-close"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "e4c7617af7e3680d6908032e87e70a790621b726e90ba36c25e4dceff83a9b0f"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "3370910ef042669b8d60395123e94454eeb01585067b48154ad87851194f4648"
+      },
+      {
+        "path": "web/src/pages/admin/complaints/AdminComplaintsPage.tsx",
+        "sha256": "a68ede36bf1bb4408ae6da235378a3c8e66bf01f19f5734cc4e4ad8faee9499f"
+      },
+      {
+        "path": "web/src/pages/admin/complaints/AdminComplaintAnalyticsPage.tsx",
+        "sha256": "23b2e396eb52adbfae1827d11cb649f6fb8bffaabda4a4506f4e6351fb22be7f"
+      },
+      {
+        "path": "web/src/api/complaintCaseApi.ts",
+        "sha256": "b2eac65817b8ba0d67cd135907d7786f01d763a357e4739a422b796c208982d9"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-complaint-case-complaints-page",
+      "admin-complaint-case-complaints-attribution-quality",
+      "admin-complaint-case-complaints-state-action",
+      "admin-complaint-case-complaints-remediation",
+      "admin-complaint-case-complaints-remediation-recovery",
+      "admin-complaint-case-analytics-page",
+      "admin-complaint-case-complaints-remediation-resource",
+      "admin-complaint-case-complaints-accept",
+      "admin-complaint-case-complaints-handle",
+      "admin-complaint-case-complaints-close"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/complaint-case.spec.ts",
+        "sha256": "834cead61584f87a71204f463299573d76f4c7bd3f9841421ec9afa92f047674"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/41-complaint-case-management/EVIDENCE/playwright-complaint-case-report.json",
+      "sha256": "47c72a67344c4de1bf883a0ccae4bbb6f69be23eb322a3c3a662aa357fb7b946"
+    }
+  }
+}

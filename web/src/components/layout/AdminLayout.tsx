@@ -43,6 +43,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/reconciliation', label: '对账结算', roles: ['ADMIN', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/invoices', label: '发票管理', roles: ['ADMIN', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
+  { to: '/admin/complaint/analytics', label: '投诉分析', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
@@ -157,6 +158,14 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/invoices' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-reconciliation-settlement-invoices-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/complaints' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-complaint-case-complaints-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/complaint/analytics' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-complaint-case-analytics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/statistics' ? (

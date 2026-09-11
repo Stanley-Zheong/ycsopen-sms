@@ -1,0 +1,17 @@
+Pencil source placeholder for Phase 41 complaint-case-management.
+
+Routes:
+- /admin/complaints
+- /admin/complaint/analytics
+
+Primary elements:
+- admin-complaint-case-complaints-page
+- admin-complaint-case-complaints-attribution-quality
+- admin-complaint-case-complaints-state-action
+- admin-complaint-case-complaints-remediation
+- admin-complaint-case-complaints-remediation-recovery
+- admin-complaint-case-analytics-page
+- admin-complaint-case-complaints-remediation-resource
+- admin-complaint-case-complaints-accept
+- admin-complaint-case-complaints-handle
+- admin-complaint-case-complaints-close

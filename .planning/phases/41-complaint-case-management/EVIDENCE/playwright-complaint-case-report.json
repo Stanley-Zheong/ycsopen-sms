@@ -1,0 +1,27 @@
+{
+  "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P41-ACCEPT",
+    "C-P41-ANALYTICS",
+    "C-P41-ATTRIBUTION",
+    "C-P41-CLOSE",
+    "C-P41-HANDLE",
+    "C-P41-INTAKE",
+    "C-P41-RECOVERY",
+    "C-P41-REMEDIATION",
+    "C-P41-RESOURCE-DISABLE",
+    "C-P41-STATE"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T06:33:09.872Z",
+    "duration": 12683.343,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "a22228a12edbcaa79fdc74a35df3dcd63c86bbabc782c76819ff89e3524eedb9"
+}
