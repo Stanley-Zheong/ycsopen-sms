@@ -1,0 +1,105 @@
+.uplink-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.uplink-header,
+.uplink-subheader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.uplink-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.uplink-summary-grid strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+}
+
+.uplink-filters,
+.uplink-auto-reply {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.uplink-filters.compact {
+  margin-bottom: 12px;
+}
+
+.uplink-filters label,
+.uplink-auto-reply label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #374151;
+  font-size: 13px;
+}
+
+.uplink-auto-reply label.inline {
+  flex-direction: row;
+  align-items: center;
+  align-self: center;
+}
+
+.uplink-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.uplink-table th,
+.uplink-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.uplink-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 700;
+}
+
+.uplink-table button + button {
+  margin-left: 6px;
+}
+
+.uplink-alert {
+  margin: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.uplink-alert.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.uplink-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.uplink-detail {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 90vw);
+  overflow: auto;
+  background: #fff;
+  box-shadow: -18px 0 40px rgba(15, 23, 42, 0.18);
+  padding: 24px;
+  z-index: 20;
+}

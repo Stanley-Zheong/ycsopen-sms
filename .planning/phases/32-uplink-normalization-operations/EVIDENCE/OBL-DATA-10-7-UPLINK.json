@@ -1,0 +1,12 @@
+{
+  "obligations": ["OBL-DATA-10-7-UPLINK"],
+  "requirement_ids": ["PROJECT-DATA-MODEL"],
+  "evidence": [
+    "V4100__uplink_normalization_operations.sql extends legacy uplink_records without dropping mobile_encrypted, and creates tenant_uplink_auto_reply_configs plus tenant_uplink_auto_reply_attempts.",
+    "uplink_records preserves tenant, protected phone, content, destination, location, channel, receive time, push state, and push event linkage."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest,UplinkNormalizationOperationsMigrationTest test"
+  ],
+  "result": "PASS"
+}

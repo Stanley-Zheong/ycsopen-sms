@@ -142,6 +142,10 @@ export default function AdminLayout() {
             <NavLink key={item.to} to={item.to} data-testid="admin-trial-prepaid-balance-audit-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
+          ) : item.to === '/admin/uplink' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-uplink-normalization-uplinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
           ) : item.to === '/admin/system/configuration' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-platform-system-configuration-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}

@@ -1,0 +1,12 @@
+{
+  "obligations": ["OBL-F-7-5-A"],
+  "requirement_ids": ["REQ-F-7-5"],
+  "evidence": [
+    "web/src/pages/admin/uplinks/AdminUplinksPage.tsx exposes admin uplink filters, summary card, row data, and detail drawer.",
+    "web/test/scripts/uplink-normalization.spec.ts case C-P32-ADMIN-UPLINK-DETAILS verifies the local Chrome UI path."
+  ],
+  "commands": [
+    "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome"
+  ],
+  "result": "PASS"
+}

@@ -1,0 +1,4 @@
+Phase32 Pencil source placeholder for uplink normalization operations.
+
+Routes: /admin/uplink, /tenant/uplink
+Test IDs: admin-uplink-normalization-uplink-detail, admin-uplink-normalization-uplink-replay, tenant-uplink-normalization-uplinks-auto-reply-config, admin-uplink-normalization-uplinks-page, admin-uplink-normalization-push-monitor-page, admin-uplink-normalization-uplink-push-destination-action

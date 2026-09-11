@@ -1,0 +1,14 @@
+{
+  "obligations": ["OBL-F-7-5-C"],
+  "requirement_ids": ["REQ-F-7-5"],
+  "evidence": [
+    "tenant_uplink_auto_reply_configs stores tenant-scoped config with loop_guard_minutes and audit_reason.",
+    "tenant_uplink_auto_reply_attempts records SHOULD_REPLY decisions so planAutoReply suppresses repeated replies inside the loop guard window.",
+    "TenantUplinksPage exposes tenant-uplink-normalization-uplinks-auto-reply-config."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test",
+    "npm --prefix web test -- uplink-normalization.test.tsx"
+  ],
+  "result": "PASS"
+}
