@@ -1,0 +1,115 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/tenant/recharge", "/admin/tenant-recharge-review"],
+    "test_ids": [
+      "tenant-recharge-operations-recharge-form",
+      "admin-tenant-recharge-operations-review-table",
+      "tenant-recharge-operations-recharge-amount",
+      "tenant-recharge-operations-recharge-method",
+      "tenant-recharge-operations-recharge-transaction",
+      "tenant-recharge-operations-recharge-evidence",
+      "tenant-recharge-operations-recharge-submit",
+      "tenant-recharge-operations-recharge-state",
+      "admin-tenant-recharge-operations-review-reason",
+      "admin-tenant-recharge-operations-review-approve",
+      "admin-tenant-recharge-operations-review-reject"
+    ],
+    "sources": [
+      {"path": ".planning/phases/36-tenant-recharge-operations/UI-ELEMENTS.md", "sha256": "f7986b82fbc73e7b304941a4cd9c27b78d29aef5932d11e29cb43d4d8659787f"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/36-tenant-recharge-operations/design-output/tenant-recharge-operations.pen", "sha256": "d4cd9bd809da4b2e614b2a58944711cad208caa20a902ac68d21d37b4df326d6"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/tenant/recharge", "/admin/tenant-recharge-review"],
+    "test_ids": [
+      "tenant-recharge-operations-recharge-form",
+      "admin-tenant-recharge-operations-review-table",
+      "tenant-recharge-operations-recharge-amount",
+      "tenant-recharge-operations-recharge-method",
+      "tenant-recharge-operations-recharge-transaction",
+      "tenant-recharge-operations-recharge-evidence",
+      "tenant-recharge-operations-recharge-submit",
+      "tenant-recharge-operations-recharge-state",
+      "admin-tenant-recharge-operations-review-reason",
+      "admin-tenant-recharge-operations-review-approve",
+      "admin-tenant-recharge-operations-review-reject"
+    ],
+    "sources": [
+      {"path": ".planning/phases/36-tenant-recharge-operations/design-output/prototype.html", "sha256": "d9580f759e0c9273539738e8b50f939ebdc6d24375164abf8bedf48473c2388e"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-recharge-operations-recharge-form",
+      "admin-tenant-recharge-operations-review-table",
+      "tenant-recharge-operations-recharge-amount",
+      "tenant-recharge-operations-recharge-method",
+      "tenant-recharge-operations-recharge-transaction",
+      "tenant-recharge-operations-recharge-evidence",
+      "tenant-recharge-operations-recharge-submit",
+      "tenant-recharge-operations-recharge-state",
+      "admin-tenant-recharge-operations-review-reason",
+      "admin-tenant-recharge-operations-review-approve",
+      "admin-tenant-recharge-operations-review-reject"
+    ],
+    "sources": [
+      {"path": ".planning/phases/36-tenant-recharge-operations/design-output/prototype.spec.ts", "sha256": "5751c5b49b86944abe17aa4fda860d9e106c8676e456141e296cf6bb577203a9"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/tenant/recharge", "/admin/tenant-recharge-review"],
+    "test_ids": [
+      "tenant-recharge-operations-recharge-form",
+      "admin-tenant-recharge-operations-review-table",
+      "tenant-recharge-operations-recharge-amount",
+      "tenant-recharge-operations-recharge-method",
+      "tenant-recharge-operations-recharge-transaction",
+      "tenant-recharge-operations-recharge-evidence",
+      "tenant-recharge-operations-recharge-submit",
+      "tenant-recharge-operations-recharge-state",
+      "admin-tenant-recharge-operations-review-reason",
+      "admin-tenant-recharge-operations-review-approve",
+      "admin-tenant-recharge-operations-review-reject"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "d12c725432b4c317765f898cbd4315044d6346daad6be3bfa9c73536161780b2"},
+      {"path": "web/src/pages/tenant/recharge/TenantRechargePage.tsx", "sha256": "349b1a0aa0a6a4fbaeab71b8a13c61b8a7b0bfec2a6f1483cd856b146dc529d0"},
+      {"path": "web/src/pages/admin/billing/AdminRechargeReviewPage.tsx", "sha256": "12e1a8efc8b2b6ad083ea109298f908b9a4e9916e5c8b4a10f1e404ac982ef37"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-recharge-operations-recharge-form",
+      "admin-tenant-recharge-operations-review-table",
+      "tenant-recharge-operations-recharge-amount",
+      "tenant-recharge-operations-recharge-method",
+      "tenant-recharge-operations-recharge-transaction",
+      "tenant-recharge-operations-recharge-evidence",
+      "tenant-recharge-operations-recharge-submit",
+      "tenant-recharge-operations-recharge-state",
+      "admin-tenant-recharge-operations-review-reason",
+      "admin-tenant-recharge-operations-review-approve",
+      "admin-tenant-recharge-operations-review-reject"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/tenant-recharge.spec.ts", "sha256": "ec8ffbb7a23ef47b5ef9927c55018e5797a8d29ce9821d4bb273025719c840f3"}
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test tenant-recharge.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/36-tenant-recharge-operations/EVIDENCE/playwright-tenant-recharge-report.json",
+      "sha256": "593312eda07c97458292383a6e3bafda6cb95f1d141c4517f54a894ebc9aa2a5"
+    }
+  }
+}

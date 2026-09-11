@@ -37,6 +37,7 @@ import NumberAttributionPage from '@/pages/admin/tools/NumberAttributionPage';
 import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
+import TenantRechargePage from '@/pages/tenant/recharge/TenantRechargePage';
 import MessageOperationsPage from '@/pages/admin/records/MessageOperationsPage';
 import TenantWebhooksPage from '@/pages/tenant/webhooks/TenantWebhooksPage';
 import AdminPushFailuresPage from '@/pages/admin/webhooks/AdminPushFailuresPage';
@@ -49,6 +50,7 @@ import TenantUplinksPage from '@/pages/tenant/uplinks/TenantUplinksPage';
 import AdminUnsubscribesPage from '@/pages/admin/unsubscribes/AdminUnsubscribesPage';
 import TenantUnsubscribesPage from '@/pages/tenant/unsubscribes/TenantUnsubscribesPage';
 import AdminAlertsPage from '@/pages/admin/alerts/AdminAlertsPage';
+import AdminRechargeReviewPage from '@/pages/admin/billing/AdminRechargeReviewPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -93,6 +95,7 @@ export const router = createBrowserRouter([
       { path: '/admin/status-codes', element: <ProviderStatusPage /> },
       { path: '/admin/tenant-trial-contracts', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/balance-audit', element: <TrialPrepaidAdminPage /> },
+      { path: '/admin/tenant-recharge-review', element: <AdminRechargeReviewPage /> },
       { path: '/admin/submission/details', element: <MessageOperationsPage initialSection="submissions" /> },
       { path: '/admin/send/details', element: <MessageOperationsPage initialSection="sends" /> },
       { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
@@ -134,7 +137,8 @@ export const router = createBrowserRouter([
       { path: '/tenant/scheduled/tasks', element: <TenantScheduledTasksPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
-      { path: 'account', element: <PlaceholderPage title="账户管理" prdRef="F-8" /> },
+      { path: '/tenant/recharge', element: <TenantRechargePage /> },
+      { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },

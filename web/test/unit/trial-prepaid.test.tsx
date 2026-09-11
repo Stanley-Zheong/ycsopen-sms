@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as identityApi from '@/api/identity';
+import * as contractApi from '@/api/contractPricingApi';
 import * as trialPrepaidApi from '@/api/trialPrepaidApi';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
@@ -26,6 +27,11 @@ vi.mock('@/api/trialPrepaidApi', async (importOriginal) => {
     listConsumption: vi.fn(),
     listBalanceAudits: vi.fn(),
   };
+});
+
+vi.mock('@/api/contractPricingApi', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/contractPricingApi')>();
+  return { ...actual, getContractOverview: vi.fn() };
 });
 
 function renderWithProviders(ui: ReactElement) {
@@ -113,6 +119,19 @@ describe('Phase 22 trial prepaid ledger UI', () => {
         createdAt: '2026-09-09T01:00:00',
       },
     ]);
+    vi.mocked(contractApi.getContractOverview).mockResolvedValue({
+      tenantId: 42,
+      tenantState: 'NOT_CONTRACTED',
+      billingMode: null,
+      priceBookVersion: null,
+      contractNo: null,
+      signedAt: null,
+      attachmentRef: null,
+      creditLimitMil: null,
+      billingPeriod: null,
+      contractStatus: 'NONE',
+      approvedBy: null,
+    });
     useAuthStore.setState({
       accessToken: 'test-token',
       userType: 'TENANT_ADMIN',

@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-F-8-3-B","phase":36,"owner":"tenant-recharge-operations","status":"PASS","evidence":["TenantRechargeServiceTest.financeApprovalCreditsBalanceExactlyOnceAndWritesAudit asserts one approved transaction credits balance once and writes one audit entry.","tenant-recharge.spec.ts pw-p36-finance-review verifies /admin/tenant-recharge-review in local Chrome."]}

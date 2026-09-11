@@ -1,0 +1,46 @@
+.tenant-recharge-page {
+  display: grid;
+  gap: 16px;
+}
+
+.tenant-recharge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tenant-recharge-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.tenant-recharge-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.tenant-recharge-form input,
+.tenant-recharge-form select {
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.tenant-recharge-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.tenant-recharge-alert.success {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.tenant-recharge-alert.error {
+  background: #fef3f2;
+  color: #b42318;
+}

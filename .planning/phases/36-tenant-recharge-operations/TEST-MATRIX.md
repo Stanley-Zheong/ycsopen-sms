@@ -1,0 +1,6 @@
+# Phase 36 Test Matrix
+
+| Obligation ID | Requirement IDs | Behavior ID | Catalog test/layer | Playwright ID | Page ID/route | data-testid | Case ID | Case | Command | Evidence |
+|---|---|---|---|---|---|---|---|---|---|---|
+| OBL-F-8-3-A | REQ-F-8-3 | tenant-recharge-operations-01 | T-F-8-3-A:playwright | pw-p36-tenant-recharge | tenant-recharge `/tenant/recharge` | tenant-recharge-operations-recharge-form | C-P36-TENANT-RECHARGE | Tenant submits amount, method, protected transaction reference, and evidence and sees PENDING state. | `npm --prefix web exec -- playwright test tenant-recharge.spec.ts --config web/playwright.config.ts --project=local-google-chrome` | EVIDENCE/playwright-tenant-recharge-report.json |
+| OBL-F-8-3-B | REQ-F-8-3 | tenant-recharge-operations-01 | T-F-8-3-B:playwright | pw-p36-finance-review | admin-tenant-recharge-review `/admin/tenant-recharge-review` | admin-tenant-recharge-operations-review-table | C-P36-FINANCE-REVIEW | Finance approves/rejects with reason; approved unique transaction credits available balance exactly once. | `npm --prefix web exec -- playwright test tenant-recharge.spec.ts --config web/playwright.config.ts --project=local-google-chrome` | EVIDENCE/playwright-tenant-recharge-report.json |

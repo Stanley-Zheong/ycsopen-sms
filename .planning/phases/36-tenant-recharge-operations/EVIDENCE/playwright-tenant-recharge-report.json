@@ -1,0 +1,19 @@
+{
+  "command": "npm --prefix web exec -- playwright test tenant-recharge.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P36-FINANCE-REVIEW",
+    "C-P36-TENANT-RECHARGE"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T02:43:26.935Z",
+    "duration": 2956.085,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "109e35eeda878c268da8b8cb2c62ee5599abf8dac27d67d1f388d78d0940a51e"
+}

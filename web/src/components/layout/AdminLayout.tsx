@@ -39,6 +39,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/status-codes', label: '状态码映射', roles: ['ADMIN', 'OPERATOR'], permissions: [PROVIDER_STATUS_PERMISSIONS.menu, PROVIDER_STATUS_PERMISSIONS.read] },
   { to: '/admin/tenant-trial-contracts', label: '试用配置', roles: ['ADMIN', 'OPERATOR'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/balance-audit', label: '余额审计', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
+  { to: '/admin/tenant-recharge-review', label: '充值审核', roles: ['ADMIN', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
@@ -141,6 +142,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/balance-audit' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-trial-prepaid-balance-audit-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/tenant-recharge-review' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-tenant-recharge-operations-review-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/uplink' ? (

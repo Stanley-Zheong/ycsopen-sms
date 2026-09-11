@@ -1,0 +1,3 @@
+Phase37 Pencil placeholder: contract pricing and postpaid credit.
+Routes: /admin/tenant-trial-contracts, /tenant/overview.
+Selectors: admin-contract-pricing-tenant-contract-page, admin-contract-pricing-tenant-contract-billing-mode, admin-contract-pricing-tenant-contract-credit-period, admin-contract-pricing-tenant-contract-postpaid-fields, tenant-contract-pricing-overview-contract-status.
