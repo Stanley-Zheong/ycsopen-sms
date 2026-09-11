@@ -1,0 +1,27 @@
+{
+  "obligation": "OBL-NFR-PERF-TPS",
+  "requirement": "REQ-NFR-PERFORMANCE",
+  "result": "PASS",
+  "case": "C-P52-TPS",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "MessageSubmitServiceTest.syntheticPeakLoadAcceptsOneThousandSubmissionsWithLatencyBoundaryAndNoInvariantLoss"
+      ],
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-targeted.log",
+      "sha256": "a5fe47eaa5ed4233f0589386891590070d8356c7d77ed968e75ff881a5fd52b4"
+    },
+    {
+      "kind": "junit-full",
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/full-backend.log",
+      "sha256": "19d07f0f110d43f4a3ae076f0a7203361c8cf3e287abe4cee2a1cb0ac5c9a863"
+    }
+  ],
+  "observed": {
+    "targeted_total": 1000,
+    "targeted_accepted_per_second": 6620.19,
+    "targeted_p95_millis": 0
+  },
+  "boundary": "Local in-process submit orchestration, excluding external provider/network latency."
+}

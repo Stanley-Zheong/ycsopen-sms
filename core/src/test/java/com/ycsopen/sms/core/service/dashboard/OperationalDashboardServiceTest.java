@@ -172,6 +172,7 @@ class OperationalDashboardServiceTest {
     }
 
     private void seedData() {
+        LocalDate today = LocalDate.now();
         jdbc.update("INSERT INTO users VALUES (1,'ADMIN','ACTIVE'),(2,'TENANT_ADMIN','ACTIVE'),(3,'OPERATOR','DISABLED')");
         jdbc.update("INSERT INTO tenants VALUES (7,'TRIAL'),(8,'FROZEN')");
         jdbc.update("INSERT INTO prepaid_accounts VALUES (7,120000,0,'NORMAL',1,?)", LocalDateTime.of(2026, 9, 10, 9, 2));
@@ -197,13 +198,13 @@ class OperationalDashboardServiceTest {
                 ('CHANNEL_DELIVERY',?,?,8,12,'UNICOM','VERIFY','北京','北京',55,66,50,50,0,50,45,5,0.2300,40,1,'c2','channel|12|09','v1',?,'FRESH'),
                 ('TENANT_BEHAVIOR',?,?,7,NULL,NULL,'VERIFY',NULL,NULL,NULL,NULL,100,100,0,100,90,10,1.0000,30,1,'t1','tenant|7|09','v1',?,'FRESH'),
                 ('RESOURCE_USAGE',?,?,7,NULL,NULL,'VERIFY',NULL,NULL,55,66,100,95,5,100,90,10,1.0000,30,1,'r1','resource|55|66','v1',?,'FRESH')
-                """, LocalDateTime.of(2026, 9, 10, 9, 0), LocalDate.of(2026, 9, 10),
+                """, LocalDateTime.of(2026, 9, 10, 9, 0), today,
                 LocalDateTime.of(2026, 9, 10, 9, 5),
-                LocalDateTime.of(2026, 9, 10, 8, 0), LocalDate.of(2026, 9, 10),
+                LocalDateTime.of(2026, 9, 10, 8, 0), today,
                 LocalDateTime.of(2026, 9, 10, 8, 5),
-                LocalDateTime.of(2026, 9, 10, 9, 0), LocalDate.of(2026, 9, 10),
+                LocalDateTime.of(2026, 9, 10, 9, 0), today,
                 LocalDateTime.of(2026, 9, 10, 9, 4),
-                LocalDateTime.of(2026, 9, 10, 9, 0), LocalDate.of(2026, 9, 10),
+                LocalDateTime.of(2026, 9, 10, 9, 0), today,
                 LocalDateTime.of(2026, 9, 10, 9, 4));
     }
 }

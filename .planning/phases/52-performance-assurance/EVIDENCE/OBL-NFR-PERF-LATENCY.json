@@ -1,0 +1,21 @@
+{
+  "obligation": "OBL-NFR-PERF-LATENCY",
+  "requirement": "REQ-NFR-PERFORMANCE",
+  "result": "PASS",
+  "case": "C-P52-LATENCY",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "MessageSubmitServiceTest.syntheticPeakLoadAcceptsOneThousandSubmissionsWithLatencyBoundaryAndNoInvariantLoss"
+      ],
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-targeted.log",
+      "sha256": "a5fe47eaa5ed4233f0589386891590070d8356c7d77ed968e75ff881a5fd52b4"
+    }
+  ],
+  "observed": {
+    "targeted_p95_millis": 0,
+    "threshold_p95_millis": 200
+  },
+  "boundary": "Measured around service submit orchestration in the local test process; provider-side latency is excluded."
+}

@@ -35,10 +35,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,6 +55,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -256,6 +262,53 @@ class MessageSubmitServiceTest {
         verify(messageTaskProtectionAdapter, never()).save(any(), any());
     }
 
+    @Test
+    void syntheticPeakLoadAcceptsOneThousandSubmissionsWithLatencyBoundaryAndNoInvariantLoss() {
+        approvedTemplateAndSignature();
+        stubPreparedQueryIndexes();
+        AtomicLong submissionIds = new AtomicLong(8_000L);
+        AtomicLong taskIds = new AtomicLong(9_000L);
+        when(idempotency.claim(eq(TENANT_ID), anyString(), anyString())).thenAnswer(invocation ->
+                MessageAcceptanceIdempotencyService.Claim.newSubmission(
+                        submissionIds.incrementAndGet(), invocation.getArgument(1), invocation.getArgument(2)));
+        when(messageTaskProtectionAdapter.prepareForRouting(eq(TENANT_ID), anyString(), eq(MOBILE)))
+                .thenReturn(preparedRouting);
+        when(routingEngine.route(any()))
+                .thenReturn(RoutingDecision.allow(42L, "【安全签名】你的验证码是 2468"));
+        when(messageTaskProtectionAdapter.protectForPersistence(same(preparedRouting), eq(MOBILE)))
+                .thenReturn(preparedMobile);
+        when(messageTaskProtectionAdapter.save(any(), same(preparedMobile))).thenAnswer(invocation -> {
+            MessageTask task = invocation.getArgument(0);
+            task.setId(taskIds.incrementAndGet());
+            return task;
+        });
+
+        int total = 1_000;
+        long[] latencies = new long[total];
+        Set<String> messageIds = new HashSet<>();
+        long started = System.nanoTime();
+        for (int index = 0; index < total; index++) {
+            long before = System.nanoTime();
+            var response = service.submit(TENANT_ID, request("PERF-" + index), "127.0.0.1");
+            latencies[index] = System.nanoTime() - before;
+            assertThat(response.status()).isEqualTo(MessageTask.SendStatus.PENDING.name());
+            messageIds.add(response.messageId());
+        }
+        long elapsed = System.nanoTime() - started;
+        Arrays.sort(latencies);
+        long p95Millis = TimeUnit.NANOSECONDS.toMillis(latencies[(int) Math.ceil(total * 0.95) - 1]);
+        double acceptedPerSecond = total * 1_000_000_000.0 / Math.max(elapsed, 1L);
+        System.out.printf("PERFORMANCE_ASSURANCE total=%d acceptedPerSecond=%.2f p95Millis=%d%n",
+                total, acceptedPerSecond, p95Millis);
+
+        assertThat(messageIds).hasSize(total);
+        assertThat(p95Millis).isLessThan(200);
+        assertThat(acceptedPerSecond).isGreaterThanOrEqualTo(1_000.0);
+        verify(billingService, times(total)).reserve(eq(TENANT_ID), anyLong(), eq(new BigDecimal("0.05")));
+        verify(idempotency, times(total)).enqueueSendIntent(eq(TENANT_ID), anyLong(), anyString(), eq(42L));
+        verify(idempotency, times(total)).markAccepted(anyLong());
+    }
+
     private void approvedTemplateAndSignature() {
         Template template = new Template();
         template.setId(8L);
@@ -274,7 +327,11 @@ class MessageSubmitServiceTest {
     }
 
     private static SmsSendRequest request() {
-        return new SmsSendRequest("SUBMIT-1", MOBILE, "8", null, Map.of("code", "2468"), null);
+        return request("SUBMIT-1");
+    }
+
+    private static SmsSendRequest request(String submitId) {
+        return new SmsSendRequest(submitId, MOBILE, "8", null, Map.of("code", "2468"), null);
     }
 
     private void stubPreparedQueryIndexes() {
