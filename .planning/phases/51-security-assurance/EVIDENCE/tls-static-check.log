@@ -1,0 +1,10 @@
+docs/使用手册.md:8:> IP 白名单和业务幂等接入边界。部署前请先读
+docs/使用手册.md:644:正式环境应在 Nginx 配置 TLS 证书，只开放 80/443，并让 MySQL、Redis、8080 仅在受控网络可达。
+docs/使用手册.md:938:- [ ] Nginx 已启用 TLS，并限制后端直接访问。
+docs/PRD.md:232:3. 网关校验签名、时间戳、nonce、IP 白名单、限流阈值 → 通过则进入路由引擎。
+docs/PRD.md:304:| F-2.6 | API Key / CMPP 凭证管理 | 机构开发人员可自助生成/吊销 HTTP API Key（含 IP 白名单、限流值），或申请开通 CMPP 下游接入（分配账号/密码/SPID/IP白名单/连接数/窗口大小） |
+docs/PRD.md:434:| F-6.4 | HTTP API 鉴权与安全 | 采用 App Key + App Secret 的 HMAC-SHA256 签名机制；请求需包含时间戳与随机数防重放（时间差 ≤5 分钟，nonce 唯一性校验）；支持 IP 白名单 |
+docs/PRD.md:437:| F-6.7 | CMPP 下游网关 | 支持机构申请开通 CMPP 接入，平台分配接入 IP/端口/账号/密码/SPID/窗口大小/IP 白名单；支持 CONNECT/SUBMIT/DELIVER/ACTIVE_TEST/TERMINATE 标准报文流程 |
+docs/PRD.md:630:- 全链路 HTTPS/TLS 加密传输；CMPP 长连接层面做 IP 白名单与账号鉴权。
+docs/PRD.md:644:| 传输层 | 全部内外部接口 | 强制 TLS 1.2+；内部服务间调用建议 mTLS；CMPP 明文协议本身不可加密，须叠加 IP 白名单 + VPC/专线隔离弥补协议层缺陷 |
+docs/PRD.md:648:- 加密范围覆盖"在途"（传输层 TLS/mTLS）与"静态"（数据库字段级加密、对象存储加密、归档加密）两个维度，缺一不可。
