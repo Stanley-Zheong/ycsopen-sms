@@ -78,7 +78,7 @@ Open
 <The outcome this phase is trying to realize.>
 
 ## Deliverables
-- [ ] <deliverable with evidence target>
+- Deliverable placeholder: <deliverable with evidence target>
 
 ## Tasks
 1. <One coherent, commit-sized action inside the phase.>
@@ -161,23 +161,23 @@ Accepted
 Every checked item must cite executable evidence.
 
 ## Entry gate
-- [ ] <criterion> — Evidence: <not recorded>
+- Criterion placeholder: <criterion> — Evidence: <not recorded>
 
 ## Spec and design
-- [ ] <artifact/behavior> — Evidence: <not recorded>
+- Artifact placeholder: <artifact/behavior> — Evidence: <not recorded>
 
 ## Implementation
-- [ ] <behavior slice> — Evidence: <not recorded>
+- Behavior placeholder: <behavior slice> — Evidence: <not recorded>
 
 ## Tests and verification
-- [ ] <test or gate> — Evidence: <not recorded>
+- Verification placeholder: <test or gate> — Evidence: <not recorded>
 
 ## Reviews and delivery
-- [ ] GSD verification has no unresolved blocking finding — Evidence: <not recorded>
-- [ ] GSD code review has no unresolved blocking finding — Evidence: <not recorded>
-- [ ] Claude review has no unresolved blocking finding — Evidence: <not recorded>
-- [ ] Scoped TODO query is empty after this item is closed — Evidence: <not recorded>
-- [ ] Atomic commit is visible on the configured GitHub remote — Evidence: <not recorded>
+- Review placeholder: GSD verification has no unresolved blocking finding — Evidence: <not recorded>
+- Review placeholder: GSD code review has no unresolved blocking finding — Evidence: <not recorded>
+- Review placeholder: Claude review has no unresolved blocking finding — Evidence: <not recorded>
+- Review placeholder: Scoped TODO query is empty after this item is closed — Evidence: <not recorded>
+- Delivery placeholder: Atomic commit is visible on the configured GitHub remote — Evidence: <not recorded>
 ```
 
 ## `TEST-MATRIX.md`

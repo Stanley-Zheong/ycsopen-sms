@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-NFR-NO-MOBILE-APP",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest scans for native mobile application directories and expects none.",
+    "docs/PRD.md and README keep native mobile outside first-release acceptance."
+  ]
+}

@@ -73,6 +73,13 @@ describe('Phase 39 financial source analytics UI', () => {
     expect(screen.getByTestId('admin-financial-source-financial-analytics-row')).toHaveTextContent('-0.020');
     expect(screen.getByTestId('admin-financial-source-channel-statistics-row')).toHaveTextContent('2');
 
+    fireEvent.change(screen.getByTestId('admin-financial-source-financial-analytics-start-date'), {
+      target: { value: '2026-09-01' },
+    });
+    fireEvent.change(screen.getByTestId('admin-financial-source-financial-analytics-end-date'), {
+      target: { value: '2026-09-10' },
+    });
+    fireEvent.click(screen.getByTestId('admin-financial-source-financial-analytics-apply'));
     fireEvent.click(screen.getByTestId('admin-financial-source-financial-analytics-drilldown'));
 
     await waitFor(() => expect(financialApi.listFinancialDrilldown).toHaveBeenCalledWith({

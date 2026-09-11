@@ -7,13 +7,23 @@ import {
 } from '@/api/financialSourceAnalyticsApi';
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return shanghaiDateParts().join('-');
 }
 
 function firstDayOfMonth() {
-  const date = new Date();
-  date.setDate(1);
-  return date.toISOString().slice(0, 10);
+  const [year, month] = shanghaiDateParts();
+  return `${year}-${month}-01`;
+}
+
+function shanghaiDateParts() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const value = (type: 'year' | 'month' | 'day') => parts.find((part) => part.type === type)?.value ?? '';
+  return [value('year'), value('month'), value('day')];
 }
 
 function moneyMil(value: number) {

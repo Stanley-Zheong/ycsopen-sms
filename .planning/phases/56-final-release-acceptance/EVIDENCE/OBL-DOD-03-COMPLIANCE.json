@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-DOD-03-COMPLIANCE",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest verifies compliance, blacklist, unsubscribe, risk, and short-link safety surfaces."
+  ]
+}
