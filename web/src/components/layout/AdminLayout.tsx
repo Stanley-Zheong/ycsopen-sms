@@ -22,6 +22,7 @@ import { OPERATIONAL_DASHBOARD_PERMISSIONS } from '@/api/operationalDashboardApi
 import { SECURE_ASYNC_EXPORT_PERMISSIONS } from '@/api/secureAsyncExportApi';
 import { RETENTION_ARCHIVE_PERMISSIONS } from '@/api/retentionArchiveApi';
 import { SHORTLINK_PERMISSIONS } from '@/api/shortLinkApi';
+import { TENANT_TERMINATION_PERMISSIONS } from '@/api/tenantTerminationApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -62,6 +63,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/export-center', label: '导出中心', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [SECURE_ASYNC_EXPORT_PERMISSIONS.menu, SECURE_ASYNC_EXPORT_PERMISSIONS.read] },
   { to: '/admin/archive', label: '保留归档', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [RETENTION_ARCHIVE_PERMISSIONS.menu, RETENTION_ARCHIVE_PERMISSIONS.read] },
   { to: '/admin/shortlinks/review', label: '短链审核', roles: ['ADMIN', 'OPERATOR'], permissions: [SHORTLINK_PERMISSIONS.reviewMenu, SHORTLINK_PERMISSIONS.reviewRead] },
+  { to: '/admin/tenant/terminations', label: '合作终止', roles: OPERATIONS, permissions: [TENANT_TERMINATION_PERMISSIONS.menu, TENANT_TERMINATION_PERMISSIONS.read] },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/fee/warning', label: '费用预警', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/alerts', label: '告警管理', roles: OPERATIONS },
@@ -216,6 +218,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/shortlinks/review' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-shortlink-safety-review-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/tenant/terminations' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-tenant-cooperation-tenant-termination-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/finance' ? (

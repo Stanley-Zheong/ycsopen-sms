@@ -1,0 +1,91 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/tenant/terminations"],
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/UI-ELEMENTS.md", "sha256": "007bca1eb53661aeaffbdf25ab9420abd42cebe3458ce076abeb102dbd908802" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/tenant-cooperation-termination.pen", "sha256": "9a427693629e320b97bfb63afdbc58274181bea44e20769574c8e3cecd06947f" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/tenant/terminations"],
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/prototype.html", "sha256": "2672fce173736ad07b0bb655554bfc76ff90635da40d3758380130a9f4827e42" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": ".planning/phases/49-tenant-cooperation-termination/design-output/prototype.spec.ts", "sha256": "4bd818973f392874369bd6c3bf33a4bf08e5432df4a47ab6854a653901c54d6a" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/tenant/terminations"],
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "6da704a8579cac1bdcf16f53f74bd55fff44d19236639130940c0f8a74b30c2e" },
+      { "path": "web/src/pages/admin/tenants/AdminTenantTerminationPage.tsx", "sha256": "e55168cce21468de30b5b744bf3238c00175c2d97a3c21f8b3690ca09a60418f" },
+      { "path": "web/src/api/tenantTerminationApi.ts", "sha256": "9d851f123c6c79eb5adf0505d3c0ec0e7876a212da74c788b2f74459182c70a4" },
+      { "path": "web/src/components/layout/AdminLayout.tsx", "sha256": "760ebb5d2c882401f7eb3a140639b85170a6308bc686dc71eda29db825b0d67c" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-tenant-cooperation-tenant-termination-request",
+      "admin-tenant-cooperation-tenant-termination-clearance",
+      "admin-tenant-cooperation-tenant-termination-timeline",
+      "admin-tenant-cooperation-tenant-termination-approve",
+      "admin-tenant-cooperation-tenant-termination-page",
+      "admin-tenant-cooperation-tenant-termination-participants"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/tenant-cooperation-termination.spec.ts", "sha256": "62f036f38c6bf93e8ef4afb632cd899b83a4204f3017b0fe6ecf0fb983fee675" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test tenant-cooperation-termination.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/49-tenant-cooperation-termination/EVIDENCE/playwright-tenant-cooperation-termination-raw.json",
+    "commit": "a9f48bfa3e76ac4752df853c35580022e4dce8ca",
+    "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/49-tenant-cooperation-termination/EVIDENCE/playwright-tenant-cooperation-termination-execution.json",
+      "sha256": "bfc5e6d5a175178916ccb83621288a77b22e6aa3b8bb0ffdb7a4f942632e8373"
+    }
+  }
+}

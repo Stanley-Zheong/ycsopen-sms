@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-STATE-TENANT-TERMINATE",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationService.requestTermination only accepts SIGNED or FROZEN tenants.",
+    "TenantCooperationTerminationService.approve requires PENDING_ADMIN_APPROVAL.",
+    "TenantCooperationTerminationService.effect requires APPROVED and writes lifecycle_status='TERMINATED'."
+  ]
+}

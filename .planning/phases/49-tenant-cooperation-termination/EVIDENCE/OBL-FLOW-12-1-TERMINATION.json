@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-FLOW-12-1-TERMINATION",
+  "result": "PASS",
+  "evidence": [
+    "Termination reasons include voluntary, violation, arrears and qualification-expiry mapped to existing EXPIRED_CREDENTIALS.",
+    "Backend service tests cover clearance, approval, effect, resource revocation and retained history.",
+    "Chrome Playwright covers the admin page flow from request through effect."
+  ]
+}
