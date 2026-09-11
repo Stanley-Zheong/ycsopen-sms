@@ -83,6 +83,13 @@ async function mockTenantSendApis(page: Page, options: { networkFirst?: boolean 
       contentType: 'application/json',
       body: JSON.stringify(apiResponse({ messageId: `MSG-${payload.submitId}`, status: 'PENDING' })),
     });
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({
+      phoneNumber: '13800138000',
+      templateId: '1001',
+      templateParams: {},
+    }));
+    expect(route.request().postDataJSON().submitId).toMatch(/^CONSOLE-\d+$/);
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify(apiResponse({ messageId: 'msg-001' })) });
   });
 }
 
@@ -117,5 +124,16 @@ test.describe('Phase 26 tenant console send', () => {
     await expect(page.getByText('网络异常，请检查网络后重试')).toBeVisible();
     await page.getByTestId('shared-tenant-console-send-network-error-retry').click();
     await expect(page.getByRole('status')).toContainText('已提交 1 条');
+test('WEB-SEND-002 rejected manual send displays the backend message', async ({ page }) => {
+  await page.route('**/api/v1/sms/send', async (route) => {
+    expect(route.request().method()).toBe('POST');
+    expect(new URL(route.request().url()).pathname).toBe('/api/v1/sms/send');
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({
+      phoneNumber: '13800138000',
+      templateId: '1001',
+      templateParams: {},
+    }));
+    expect(route.request().postDataJSON().submitId).toMatch(/^CONSOLE-\d+$/);
+    await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify(apiResponse(null, '余额不足')) });
   });
 });
