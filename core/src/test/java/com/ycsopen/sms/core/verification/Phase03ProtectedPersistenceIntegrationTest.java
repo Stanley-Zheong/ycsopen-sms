@@ -297,6 +297,10 @@ class Phase03ProtectedPersistenceIntegrationTest {
         properties.put("spring.datasource.url", mysqlJdbcUrl());
         properties.put("spring.datasource.username", requiredEnvironment("PHASE03_MYSQL_USER"));
         properties.put("spring.datasource.password", requiredEnvironment("PHASE03_MYSQL_PASSWORD"));
+        // The fixture provisions one ephemeral account. Keep Flyway on that same
+        // account instead of application-dev.yml's local-only ycsopen_migrator.
+        properties.put("spring.flyway.user", requiredEnvironment("PHASE03_MYSQL_USER"));
+        properties.put("spring.flyway.password", requiredEnvironment("PHASE03_MYSQL_PASSWORD"));
         // Flyway owns and validates the real schema. Hibernate validation is intentionally disabled
         // here because the legacy CHAR(64) columns are represented as opaque String projections.
         properties.put("spring.jpa.hibernate.ddl-auto", "none");
@@ -502,7 +506,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
 
     private static void seedPortability(JdbcTemplate jdbc, byte[] envelope, String rawMobileSha) {
         jdbc.update("INSERT INTO mobile_portability "
-                        + "(mobile_encrypted,mobile_hash,original_operator,current_operator) "
+                        + "(mobile_encrypted,mobile_hash,original_carrier,current_carrier) "
                         + "VALUES (?,?,'MOBILE','UNICOM')",
                 envelope, rawMobileSha);
     }
