@@ -42,6 +42,7 @@ public class ComplaintRatioService {
     private final BigDecimal threshold;
 
     private static final String THRESHOLD_CONFIG_VERSION = "default-v1";
+    private static final String SOURCE_REGISTRY = "complaint_ratio_stats:message_tasks:complaints";
 
     public ComplaintRatioService(TenantRepository tenantRepository,
                                   ChannelRepository channelRepository,
@@ -95,9 +96,23 @@ public class ComplaintRatioService {
         stats.setSendCount(sendCount);
         stats.setComplaintCount(complaintCount);
         stats.setRatio(ratio);
-        stats.setOverThreshold(ratio.compareTo(threshold) >= 0);
+        String dataQuality = dataQuality(sendCount, complaintCount);
+        stats.setDataQuality(dataQuality);
+        stats.setSourceRegistry(SOURCE_REGISTRY);
+        stats.setThresholdConfigVersion(THRESHOLD_CONFIG_VERSION);
+        stats.setOverThreshold("COMPLETE".equals(dataQuality) && ratio.compareTo(threshold) >= 0);
         stats.setCalculatedAt(LocalDateTime.now());
         complaintRatioStatsRepository.save(stats);
+    }
+
+    private static String dataQuality(long sendCount, long complaintCount) {
+        if (sendCount == 0 && complaintCount > 0) {
+            return "UNKNOWN";
+        }
+        if (sendCount == 0) {
+            return "ZERO_DENOMINATOR";
+        }
+        return "COMPLETE";
     }
 
     private Optional<ComplaintRatioStats> findExisting(String statMonth, ComplaintRatioStats.DimensionType type, Long dimensionId) {

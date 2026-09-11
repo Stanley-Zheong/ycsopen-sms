@@ -1,0 +1,4 @@
+PENCIL_SOURCE phase=45 package=complaint-ratio-intervention route=/admin/dashboard
+surface=complaint-ratio-dashboard
+tokens=reuse-phase-02-ycsan-console
+elements=admin-complaint-ratio-dashboard-complaint-ratio-channel,admin-complaint-ratio-dashboard-complaint-ratio-tenant,admin-complaint-ratio-dashboard-complaint-ratio-threshold,admin-complaint-ratio-dashboard-complaint-ratio-period,admin-complaint-ratio-dashboard-complaint-ratio-drilldown

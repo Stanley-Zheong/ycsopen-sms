@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { consumeTrial, getTrialOverview, requestConversion } from '@/api/trialPrepaidApi';
 import { getContractOverview } from '@/api/contractPricingApi';
+import { getTenantOperationalOverview } from '@/api/operationalDashboardApi';
 import { mutationErrorMessage } from '@/api/client';
 import { protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/trial-prepaid.css';
@@ -15,8 +16,10 @@ export default function OverviewPage() {
   const queryClient = useQueryClient();
   const overviewKey = protectedQueryKey('trial-prepaid-overview', tenantId);
   const contractKey = protectedQueryKey('contract-pricing-overview', tenantId);
+  const operationalKey = protectedQueryKey('operational-dashboard-tenant-overview', tenantId);
   const overview = useQuery({ queryKey: overviewKey, queryFn: () => getTrialOverview(tenantId), retry: false });
   const contract = useQuery({ queryKey: contractKey, queryFn: () => getContractOverview(tenantId), retry: false });
+  const operational = useQuery({ queryKey: operationalKey, queryFn: () => getTenantOperationalOverview(tenantId), retry: false });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const consumeMutation = useMutation({
@@ -54,6 +57,27 @@ export default function OverviewPage() {
       </header>
       {message && <p role="status" data-testid="tenant-trial-prepaid-overview-message" className="trial-prepaid-alert success">{message}</p>}
       {error && <p role="alert" data-testid="tenant-trial-prepaid-overview-error" className="trial-prepaid-alert error">{error}</p>}
+      <section className="card" data-testid="tenant-operational-dashboards-tenant-overview-page">
+        <h2>运营概览</h2>
+        {operational.isLoading && <p>正在加载运营概览…</p>}
+        {operational.isError && <p role="alert">运营概览加载失败。</p>}
+        {operational.data && (
+          <>
+            <dl className="trial-prepaid-metrics">
+              <div className="trial-prepaid-metric"><dt>余额</dt><dd>{operational.data.balanceMil}</dd></div>
+              <div className="trial-prepaid-metric"><dt>今日消息</dt><dd>{operational.data.todayMessages}</dd></div>
+              <div className="trial-prepaid-metric"><dt>成功率</dt><dd>{Number(operational.data.successRate).toFixed(4)}</dd></div>
+              <div className="trial-prepaid-metric"><dt>服务状态</dt><dd>{operational.data.serviceStatus}</dd></div>
+            </dl>
+            <p data-testid="tenant-operational-dashboards-tenant-overview-scope">
+              租户隔离范围：当前机构
+            </p>
+            <div data-testid="shared-operational-dashboards-metric-source">
+              来源：{operational.data.source.registry} / 公式：{operational.data.source.formula} / 新鲜度：{operational.data.source.freshnessAt || '-'} / 权限：{operational.data.source.permissionScope}
+            </div>
+          </>
+        )}
+      </section>
       <section className="card" data-testid="tenant-trial-prepaid-overview-trial-status">
         <h2>试用状态</h2>
         {overview.isLoading && <p data-testid="tenant-trial-prepaid-overview-loading">正在加载试用状态…</p>}

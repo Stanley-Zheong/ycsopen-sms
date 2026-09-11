@@ -1,0 +1,189 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
+      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "test",
+      "operational-dashboards.spec.ts",
+      "--config",
+      "web/playwright.config.ts",
+      "--project=local-google-chrome",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
+    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 3
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "local-google-chrome",
+        "name": "local-google-chrome",
+        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 5,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 4173",
+      "url": "http://127.0.0.1:4173/login",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "operational-dashboards.spec.ts",
+      "file": "operational-dashboards.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pw-p44-realtime-dashboard C-P44-REALTIME-DASHBOARD OBL-F-11-5-A pw-p44-realtime-trend C-P44-REALTIME-TREND OBL-F-11-5-B pw-p44-realtime-refresh C-P44-REALTIME-REFRESH OBL-F-11-5-C pw-p44-kpi-dashboard C-P44-KPI-DASHBOARD OBL-F-11-6-A pw-p44-kpi-hourly-trend C-P44-KPI-HOURLY-TREND OBL-F-11-6-B pw-p44-kpi-tenant-rank C-P44-KPI-TENANT-RANK OBL-F-11-6-C pw-p44-kpi-channel-health C-P44-KPI-CHANNEL-HEALTH OBL-F-11-6-D pw-p44-finance-warning-card C-P44-FINANCE-WARNING-CARD OBL-F-8-10-D pw-p44-shared-metric-source C-P44-SHARED-METRIC-SOURCE OBL-DISPLAY-DASH-SOURCE",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1667,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-10T09:22:09.379Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e54501a1ce7e442889f4-274e913583f57797c8a1",
+          "file": "operational-dashboards.spec.ts",
+          "line": 105,
+          "column": 1
+        },
+        {
+          "title": "pw-p44-resource-statistics C-P44-RESOURCE-STATISTICS OBL-F-11-3-A pw-p44-channel-statistics-comparison C-P44-CHANNEL-COMPARISON OBL-F-4-5-B pw-p44-channel-period-compare C-P44-CHANNEL-PERIOD-COMPARE OBL-F-11-1-B pw-p44-api-status-monitor C-P44-API-STATUS-MONITOR OBL-NFR-OBS-HEALTH pw-p44-dashboard-configuration C-P44-DASHBOARD-CONFIGURATION OBL-F-11-10-A pw-p44-configuration-role C-P44-CONFIGURATION-ROLE OBL-F-11-10-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2242,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-10T09:22:09.368Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e54501a1ce7e442889f4-d41d5ca3976970fd94fe",
+          "file": "operational-dashboards.spec.ts",
+          "line": 121,
+          "column": 1
+        },
+        {
+          "title": "pw-p44-tenant-overview-balance C-P44-TENANT-OVERVIEW-BALANCE OBL-F-1-5-B pw-p44-tenant-overview-scope C-P44-TENANT-OVERVIEW-SCOPE OBL-F-11-2-B pw-p44-tenant-template-stats C-P44-TENANT-TEMPLATE-STATS OBL-F-3-8-B",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "local-google-chrome",
+              "projectName": "local-google-chrome",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 1966,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-10T09:22:09.383Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e54501a1ce7e442889f4-630c79ad6eda8598d67e",
+          "file": "operational-dashboards.spec.ts",
+          "line": 138,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-10T09:22:08.529Z",
+    "duration": 4453.9259999999995,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
