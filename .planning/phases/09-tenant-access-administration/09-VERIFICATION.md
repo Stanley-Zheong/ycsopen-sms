@@ -1,12 +1,8 @@
 # Phase 09 Verification
 
-## Verdict
+## Current verdict
 
-PASS
-
-## Current verdict detail
-
-The Phase09 tenant access administration scope has executable backend,
+PASS — the Phase09 tenant access administration scope has executable backend,
 MySQL, production UI contract, and installed local Chrome evidence. The earlier
 credential-flow boundary was closed by `Phase09RealServicePlaywrightTest` and
 the normalized evidence files under `EVIDENCE/`.

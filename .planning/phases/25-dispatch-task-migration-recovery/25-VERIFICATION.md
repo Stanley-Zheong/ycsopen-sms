@@ -1,9 +1,5 @@
 # Phase 25 Verification
 
-## Verdict
-
-PASS
-
 Verification evidence is stored under `EVIDENCE/`.
 
 Required checks:
