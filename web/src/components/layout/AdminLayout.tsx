@@ -41,6 +41,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/balance-audit', label: '余额审计', roles: ['ADMIN', 'OPERATOR', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
+  { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
   { to: '/admin/statistics', label: '数据统计', roles: OPERATIONS },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
@@ -140,6 +141,14 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/balance-audit' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-trial-prepaid-balance-audit-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/uplink' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-uplink-normalization-uplinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/unsubscribes' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-unsubscribe-compliance-unsubscribes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/system/configuration' ? (

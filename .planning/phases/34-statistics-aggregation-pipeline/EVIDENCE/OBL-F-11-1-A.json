@@ -1,0 +1,20 @@
+{
+  "obligation_id": "OBL-F-11-1-A",
+  "phase": 34,
+  "owner": "statistics-aggregation-pipeline",
+  "status": "PASS",
+  "evidence": [
+    {
+      "command": "mvn -f core/pom.xml -Dtest=StatisticsAggregationServiceTest,StatisticsAggregationMigrationTest test",
+      "result": "PASS: 4 tests, 0 failures, 0 errors"
+    },
+    {
+      "test": "StatisticsAggregationServiceTest.rebuildAggregatesResourceChannelAndTenantMetricsFromFinalSources",
+      "result": "PASS: CHANNEL_DELIVERY uses latest delivery report final state, confirmed billing amount, latency, channel, carrier, and geography dimensions."
+    },
+    {
+      "test": "StatisticsAggregationServiceTest.rebuildIsIdempotentAndLateCorrectionReplacesFinalState",
+      "result": "PASS: repeated rebuilds replace existing bucket rows and corrected source version changes the final success/failure state without double counting."
+    }
+  ]
+}
