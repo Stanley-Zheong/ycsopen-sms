@@ -1,0 +1,24 @@
+{
+  "command": "npm --prefix web exec -- playwright test tenant-risk-auto-pause.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P42-COMPLAINT-TENANT",
+    "C-P42-FREEZE",
+    "C-P42-PAUSE",
+    "C-P42-RECOVERY",
+    "C-P42-RESTORE",
+    "C-P42-RISK-FLOW",
+    "C-P42-RULES"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T07:09:55.594Z",
+    "duration": 2304.519,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "93695a7f6fd49c27d7227a68a529343393b53dcc91abac47c02dbf41fe285d22"
+}

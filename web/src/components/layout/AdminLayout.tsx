@@ -16,6 +16,7 @@ import { NUMBER_ATTRIBUTION_PERMISSIONS } from '@/api/numberAttributionApi';
 import { PROVIDER_STATUS_PERMISSIONS } from '@/api/providerStatusApi';
 import { ROUTING_POLICY_PERMISSIONS } from '@/api/routingPolicyApi';
 import { TRIAL_PREPAID_PERMISSIONS } from '@/api/trialPrepaidApi';
+import { TENANT_RISK_PERMISSIONS } from '@/api/tenantRiskAutoPauseApi';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -44,6 +45,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/invoices', label: '发票管理', roles: ['ADMIN', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
   { to: '/admin/complaints', label: '投诉管理', roles: OPERATIONS },
   { to: '/admin/complaint/analytics', label: '投诉分析', roles: OPERATIONS },
+  { to: '/admin/tenant-risk', label: '机构风险', roles: OPERATIONS, permissions: [TENANT_RISK_PERMISSIONS.menu, TENANT_RISK_PERMISSIONS.read] },
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
@@ -166,6 +168,10 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/complaint/analytics' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-complaint-case-analytics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/tenant-risk' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-tenant-risk-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/statistics' ? (
