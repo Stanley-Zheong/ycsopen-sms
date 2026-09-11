@@ -1,0 +1,56 @@
+docs/PRD.md:85:| 系统可用性 | ≥ 99.9% | 全年不可用时长统计 |
+docs/PRD.md:86:| 通道故障自动切换时间 | ≤ 30 秒（从熔断触发到备用通道生效） | 通道监控日志 |
+docs/PRD.md:123:- 接入更多运营商/通道商，完善分流、权重路由、失败重发与熔断策略；通道暂停/恢复能力（F-4.7）。
+docs/PRD.md:251:5. 问题解决后，运营对通道做小流量测试（F-4.3），确认无误后手工恢复通道。
+docs/PRD.md:382:| **F-4.7** | **通道暂停/恢复（通道监督）** | 运营人员可对单个通道执行"暂停"操作（人工触发，或由 F-4.3 健康检查/投诉联动 F-9.3/投诉占比超标 F-11.9 自动触发），暂停后该通道立即从路由候选中移除，进行中的任务自动切换至备用通道（见 F-5.9）；暂停记录含暂停原因、操作人、暂停时间；问题解决后运营人员手工"恢复"，恢复前建议先做小流量测试（见 F-4.3 通道测试） |
+docs/PRD.md:399:正常 ──(健康检查失败/投诉集中/投诉占比超标)──▶ 已暂停 ──(运营手工恢复+测试通过)──▶ 正常
+docs/PRD.md:418:| F-5.3 | 第三方黑名单服务配置 | 支持配置对接的第三方风险名单服务地址、鉴权凭证、检测等级（基础/中级/高级）、命中阈值分值、超时降级策略（第三方接口超时/异常时，按配置决定"放行"或"按最近缓存结果判断"，避免因外部依赖故障导致发送链路整体不可用） |
+docs/PRD.md:436:| F-6.6 | Webhook 回调 | 支持配置状态报告回调地址与上行消息回调地址；回调失败自动重试（指数退避），支持手工重推 |
+docs/PRD.md:442:| F-6.12 | 定时/周期任务 | 支持设置定时发送时间、任务优先级；任务执行中可暂停/恢复/取消；异常任务支持重启 |
+docs/PRD.md:481:执行中 ──(人工暂停)──▶ 已暂停 ──(人工恢复)──▶ 执行中
+docs/PRD.md:515:| **F-9.5** | **机构级投诉预警与自动暂停（日常运营监督）** | 运营可为机构维度配置预警规则，监控指标含投诉率、发送失败率、退订率（见 F-10.3），设置阈值与持续时长；超过阈值先触发预警通知运营/机构，若配置为"自动暂停"则联动 F-2.4 机构状态管理暂停该机构的发送权限（保留查询与对账能力）；人工复核处理完毕后由运营手工恢复；所有预警与暂停/恢复动作记录处置日志（对应第 10.9 节机构级预警规则数据项） |
+docs/PRD.md:571:| F-13.5 | 发送任务管理 | 集中查看/暂停/恢复/取消所有发送任务（含定时与批量任务），监控执行进度 |
+docs/PRD.md:601:| 网络中断 / 请求超时 | Web 端统一提示"网络异常，请检查网络后重试"，提供"重试"按钮；HTTP API 调用方超时后应按幂等设计（同一 `业务流水号` 重复提交不重复计费/重复发送），网关侧对超时请求记录日志便于排查 |
+docs/PRD.md:606:| 第三方风控/黑名单服务异常 | 按 F-5.3 配置的降级策略处理（放行或按缓存结果判断），避免因外部依赖故障导致发送链路整体不可用，并记录降级事件供事后复核 |
+docs/PRD.md:609:| Webhook 回调失败 | 按指数退避策略自动重试（默认 5 次），全部失败后记录为"推送失败"（F-7.7），支持机构侧或运营手工重推 |
+docs/PRD.md:623:| 系统可用性 | ≥ 99.9% |
+docs/PRD.md:661:- 关键服务（接入层、路由服务、通道连接器）无状态化部署，支持多副本水平扩展。
+docs/PRD.md:662:- 上游通道具备主备/多通道容灾能力，单通道故障不影响整体发送能力，故障自动切换时间窗 ≤ 30 秒（见 2.3 节 KPI）。
+docs/PRD.md:663:- 数据库主从/读写分离，缓存与消息队列采用云托管高可用实例。
+docs/PRD.md:664:- 部署跨可用区，支持灰度发布与快速回滚。
+docs/PRD.md:733:│   ├─ 通道监控 / 通道暂停与恢复
+docs/PRD.md:825:- **Webhook 回调**：状态报告回调、上行消息回调，失败自动退避重试，控制台可查看失败记录并手工重推。
+docs/PRD.md:878:| 通道（sms_channel） | 通道ID、通道名称、协议类型（CMPP/SGIP/SMGP/HTTP）、运营商归属（移动/联通/电信/虚拟运营商/国际）、接入地址、端口、账号🔒、密码🔒、SP企业代码、业务代码、源号码、最大连接数/窗口大小、单价（支持阶梯价/分省定价）、优先级、可用时段、扩展配置（JSON）、状态（正常/维护/异常/**[新增] 已暂停**）、**[新增] 暂停原因、暂停人、暂停时间、恢复时间** |
+docs/PRD.md:934:| 处置记录 | 处置ID、关联投诉工单、处置类型（号码入黑名单/暂停机构发送权限/暂停签名或模板/**[新增] 暂停通道**）、处置对象、处置人、处置时间、恢复时间、恢复条件 |
+docs/PRD.md:963:| 发送详单 / 提交详单 / 回执详单 | 建议热数据 3-6 个月（数据库分区表，按月分区） | 超期数据归档至低成本对象存储（如按月导出为压缩文件），保留至满 2 年以上；归档数据支持按需检索恢复，检索时效可适当放宽（如 T+1） |
+docs/PRD.md:983:5. **性能达标**：压测验证峰值 1000 条/秒的处理能力，且日处理量不低于 10 万条基线；核心 API 响应时间与系统可用性达到 6.1 节指标。
+docs/PRD.md:1044:| 预警与处置 | 超过阈值先预警，屡教不改或严重违规可联动暂停该机构发送权限（保留查询/对账能力），恢复需人工复核 |
+docs/PRD.md:1061:- 当投诉集中指向某一上游通道（如某通道商号码被大量举报为诈骗/骚扰），或该通道在"通道投诉占比看板"（F-11.9）中被标红超标时，运营可直接暂停该通道（F-4.7），触发路由引擎自动切换备用通道（F-5.9），问题解决后手工恢复。
+docs/PRD.md:1074:- 通道异常（健康检查失败、投诉集中、投诉占比超标、成本异常）时执行暂停/恢复（F-4.7），并结合告警规则（F-12.1）做到问题早发现、早处置。
+docs/PRD.md:1085:| 第三方黑名单服务可用性 | 路由前置依赖外部接口，若不可用可能影响发送链路 | 按 F-5.3 设计超时降级策略，避免单点故障拖垮主链路 |
+core/src/test/java/com/ycsopen/sms/core/service/uplink/UplinkNormalizationServiceTest.java:150:        var resumed = service.resumePushEvent(normalized.pushEventId(), "operator", "目的地恢复");
+core/src/test/java/com/ycsopen/sms/core/verification/Phase08TenantQualificationMySqlTest.java:142:                tenantId, disabled.revision(), TenantAccount.Status.NORMAL, "运营恢复", "103");
+core/src/main/java/com/ycsopen/sms/core/service/tool/ProviderStatusTaxonomyService.java:98:                "未知状态码，进入人工映射队列，不确认最终态、不计费、不自动重试", "UNKNOWN_SAFE_FALLBACK")
+core/src/main/java/com/ycsopen/sms/core/service/billing/BillingService.java:64:            return; // 幂等：已确认/已冲正的记录不重复处理
+core/src/main/java/com/ycsopen/sms/core/service/tenant/TenantCooperationTerminationService.java:163:            throw new BusinessException("TENANT_TERMINATION_IRREVERSIBLE", "机构终止后不可恢复或重复生效");
+core/src/main/java/com/ycsopen/sms/core/service/archive/RetentionArchiveService.java:223:            return restoreJob(id, "RESTORE", "FAILED", command.actor(), "归档不可恢复: " + verified.failureReason(),
+core/src/main/java/com/ycsopen/sms/core/service/archive/RetentionArchiveService.java:229:        return restoreJob(id, "RESTORE", "COMPLETED", command.actor(), "已校验并恢复归档记录", rows.size(), null);
+core/src/main/java/com/ycsopen/sms/core/service/archive/RetentionArchiveService.java:244:                    "RETENTION_ARCHIVE", "归档恢复导出", command.actor(), "CSV",
+core/src/main/java/com/ycsopen/sms/core/service/routing/ThirdPartyBlacklistClient.java:21: * 避免第三方服务故障拖垮整条发送链路（PRD 5.15 节"第三方风控/黑名单服务异常"处理规范）。</p>
+core/src/main/java/com/ycsopen/sms/core/service/risk/TenantRiskAutoPauseService.java:121:            throw denied("TENANT_RISK_RECOVERY_REVIEW_REQUIRED", "机构风险恢复需要授权复核编号");
+core/src/main/java/com/ycsopen/sms/core/service/risk/TenantRiskAutoPauseService.java:128:                """, command.reviewId().trim(), text(command.note(), "恢复复核通过"), actor(actor), episodeId);
+core/src/test/java/com/ycsopen/sms/core/service/archive/RetentionArchiveServiceTest.java:88:        assertThat(restore.resultMessage()).contains("不可恢复");
+core/src/main/java/com/ycsopen/sms/core/service/complaint/ComplaintCaseService.java:153:            throw failure("COMPLAINT_RECOVERY_CASE_MISMATCH", "恢复记录必须引用原投诉案件");
+core/src/main/java/com/ycsopen/sms/core/service/complaint/ComplaintCaseService.java:156:            throw failure("COMPLAINT_RECOVERY_STATE_INVALID", "只有失败处置可以记录恢复");
+core/src/test/java/com/ycsopen/sms/core/service/bulk/BulkScheduledTaskServiceTest.java:219:        assertThat(service.control(created.bulkId(), "RESUME", "operator", "恢复").state()).isEqualTo("RUNNING");
+core/src/test/java/com/ycsopen/sms/core/service/alert/AlertEngineServiceTest.java:76:                "QUEUE", "queue:main", "主队列恢复", "主队列已恢复", "影响主队列", false);
+core/src/test/java/com/ycsopen/sms/core/service/alert/AlertEngineServiceTest.java:104:        var resolved = service.resolve(alertId, new AlertEngineService.ResolveCommand("确认恢复"), "operator");
+core/src/main/java/com/ycsopen/sms/core/service/channel/package-info.java:3: * 当前通道的新增/查询/暂停/恢复直接在 web.controller.ChannelController 里用
+core/src/main/java/com/ycsopen/sms/core/service/delivery/DispatchTaskRecoveryService.java:150:            throw failure("CHANNEL_NOT_PAUSED", "只有暂停通道可以恢复");
+core/src/main/java/com/ycsopen/sms/core/service/delivery/DispatchTaskRecoveryService.java:157:            throw failure("RECOVERY_TEST_REQUIRED", "恢复前必须有成功的小流量测试证据");
+core/src/main/java/com/ycsopen/sms/core/service/delivery/DispatchTaskRecoveryService.java:261:            throw failure("RECOVERY_EVIDENCE_REQUIRED", "恢复证据不能为空");
+core/src/test/java/com/ycsopen/sms/core/service/channel/health/ChannelHealthServiceTest.java:167:                """, String.class)).isEqualTo("恢复通道");
+core/src/test/java/com/ycsopen/sms/core/service/webhook/WebhookDeliveryTransportServiceTest.java:237:        assertThat(service.resume(eventId, "operator", "下游恢复").state()).isEqualTo("RETRY");
+core/src/main/java/com/ycsopen/sms/core/service/channel/health/ChannelHealthService.java:133:        String resolvedActor = required(actor, "CHANNEL_RESUME_ACTOR_REQUIRED", "恢复操作人不能为空");
+core/src/main/java/com/ycsopen/sms/core/service/channel/health/ChannelHealthService.java:143:        insertPauseEvent(channelId, "RESUME", "MANUAL", resolvedActor, "恢复通道",
+core/src/main/java/com/ycsopen/sms/core/web/controller/ChannelController.java:14:/** F-4.1/F-4.7 通道管理（新增/查询/暂停/恢复）。CRUD 主体走 Spring Data 默认方法，暂停/恢复是唯一的业务动作。 */
