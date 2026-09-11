@@ -93,7 +93,7 @@ describe('Phase 33 unsubscribe compliance UI', () => {
     expect(await screen.findByTestId('tenant-unsubscribe-compliance-unsubscribes-page')).toBeVisible();
     expect(await screen.findByTestId('tenant-unsubscribe-compliance-unsubscribe-row')).toHaveTextContent('TD');
     expect(screen.getByTestId('tenant-unsubscribe-compliance-unsubscribes-notification-state')).toHaveTextContent('PENDING');
-    fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-export-request'));
+    fireEvent.click(screen.getByTestId('tenant-secure-async-unsubscribes-export'));
     await waitFor(() => expect(api.requestTenantUnsubscribeExport).toHaveBeenCalled());
     fireEvent.change(screen.getByTestId('tenant-unsubscribe-compliance-keyword-input'), { target: { value: 'STOP' } });
     fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-keyword-save'));

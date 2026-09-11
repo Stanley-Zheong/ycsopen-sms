@@ -9,6 +9,7 @@ import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService.Consumptio
 import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService.ConversionRequest;
 import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService.PrepaidResult;
 import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService.TrialOverview;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService.ExportJob;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -99,6 +100,14 @@ public class TrialPrepaidLedgerController {
                                                        Authentication authentication) {
         requirePlatform(authentication);
         return ApiResponse.ok(service.audits(tenantId));
+    }
+
+    @PostMapping("/balance-audits/export-request")
+    @PreAuthorize("hasAnyRole('ADMIN','OPERATOR','FINANCE') or hasAuthority('secure-async-export:create')")
+    public ApiResponse<ExportJob> exportBalanceAudits(@RequestParam(required = false) Long tenantId,
+                                                      Authentication authentication) {
+        requirePlatform(authentication);
+        return ApiResponse.ok(service.requestBalanceAuditExport(tenantId, actor(authentication)));
     }
 
     private String actor(Authentication authentication) {

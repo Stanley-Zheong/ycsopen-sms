@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   activateTrial,
   listBalanceAudits,
+  requestBalanceAuditExport,
   TRIAL_PREPAID_PERMISSIONS,
 } from '@/api/trialPrepaidApi';
 import { approveContract } from '@/api/contractPricingApi';
@@ -74,6 +75,17 @@ export default function TrialPrepaidAdminPage() {
       setMessage('');
     },
   });
+  const balanceAuditExportMutation = useMutation({
+    mutationFn: () => requestBalanceAuditExport(tenantId ? Number(tenantId) : null),
+    onSuccess: (job) => {
+      setMessage(`余额审计导出任务已创建：${job.id}`);
+      setError('');
+    },
+    onError: (failure) => {
+      setError(mutationErrorMessage(failure, '余额审计导出请求失败'));
+      setMessage('');
+    },
+  });
 
   if (!platformRole || (!canRead && !access.isLoading)) {
     return <p role="alert" data-testid="admin-trial-prepaid-access-denied">无权查看试用和余额账本。</p>;
@@ -136,6 +148,7 @@ export default function TrialPrepaidAdminPage() {
 
       <section className="card" data-testid="admin-balance-audit">
         <h2>余额审计</h2>
+        <button type="button" data-testid="admin-secure-async-balance-audit-export" disabled={!canRead} onClick={() => balanceAuditExportMutation.mutate()}>请求安全异步导出</button>
         {audits.isError && <p role="alert" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}
         <table className="ratio-table" data-testid="admin-trial-prepaid-balance-audit-table">
           <thead>

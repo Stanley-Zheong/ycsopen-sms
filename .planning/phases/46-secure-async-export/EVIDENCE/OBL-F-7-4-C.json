@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-F-7-4-C",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "MessageOperationsPage renders admin-secure-async-receipt-export on /admin/receipt/details.",
+    "requestMessageExport sends exportType=RECEIPT_DETAIL.",
+    "MessageReceiptErrorOperationsService creates SecureAsyncExportService job with immutable receipt rows."
+  ],
+  "commands": [
+    "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json",
+    "mvn -f core/pom.xml test"
+  ]
+}

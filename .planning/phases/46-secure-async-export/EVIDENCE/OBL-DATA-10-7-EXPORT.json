@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-DATA-10-7-EXPORT",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "V5500 extends export_tasks with request_id, tenant_id, producer, job_name, authorization_snapshot, source_snapshot, artifact_manifest, artifact_ciphertext, file_sha256, encryption_state, retry_count, split_count, partial_failure_count, failure_reason, download_token_hash, expires_at, completed_at and updated_at.",
+    "SecureAsyncExportMigrationTest verifies migration columns and permissions.",
+    "SecureAsyncExportServiceTest verifies stored job metadata and artifact identity."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test"
+  ]
+}

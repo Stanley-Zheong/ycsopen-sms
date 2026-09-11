@@ -99,7 +99,8 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     onError: (failure) => fail(failure, '问题标记失败'),
   });
   const exportRequest = useMutation({
-    mutationFn: () => requestMessageExport(filter, newActionId('EXPORT'), reason),
+    mutationFn: () => requestMessageExport(filter, newActionId('EXPORT'), reason,
+      section === 'sends' ? 'SEND_DETAIL' : section === 'receipts' ? 'RECEIPT_DETAIL' : 'MESSAGE_OPERATIONS'),
     onSuccess: (result) => ok(`导出请求已登记：${result.resultMessage}`),
     onError: (failure) => fail(failure, '导出请求失败'),
   });
@@ -116,7 +117,9 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           <h1>消息、回执与错误运营</h1>
           <p className="page-description">按租户、状态、消息和错误码追踪提交、发送、回执、错误聚合，并执行有原因、有幂等键的运营动作。</p>
         </div>
-        <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => exportRequest.mutate()}>请求导出</button>
+        {section === 'sends' && <button type="button" data-testid="admin-secure-async-send-details-export" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
+        {section === 'receipts' && <button type="button" data-testid="admin-secure-async-receipt-export" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
+        {section !== 'sends' && section !== 'receipts' && <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
       </header>
 
       {message && <p role="status" className="message-operations-alert success" data-testid="admin-message-receipt-operation-message">{message}</p>}

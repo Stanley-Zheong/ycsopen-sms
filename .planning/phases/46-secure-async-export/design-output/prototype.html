@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<body>
+  <main>
+    <section data-route="/admin/export-center" data-testid="admin-secure-async-export-center-page">
+      <section data-testid="admin-secure-async-export-center-cards">总任务 2 / 运行中 0 / 已完成 1 / 失败 1 / 记录数 3 / EXCEL/CSV/JSON/PDF</section>
+      <table data-testid="admin-secure-async-export-center-table">
+        <tr><th>任务ID</th><th>名称</th><th>类型</th><th>格式</th><th>状态</th><th>进度</th><th>记录数</th><th>大小</th><th>创建时间</th><th>失败原因</th><th>动作</th></tr>
+        <tr><td>46</td><td>发送详单导出</td><td>SEND_DETAIL</td><td>CSV</td><td>已完成</td><td>100%</td><td>2</td><td>128</td><td>2026-09-10</td><td>-</td><td><button data-testid="admin-secure-async-export-center-download">下载加密包</button></td></tr>
+        <tr><td>47</td><td>回执详单导出</td><td>RECEIPT_DETAIL</td><td>JSON</td><td>失败</td><td>40%</td><td>1</td><td>64</td><td>2026-09-10</td><td>测试失败</td><td><button data-testid="admin-secure-async-export-center-retry">重试</button></td></tr>
+      </table>
+    </section>
+    <section data-route="/admin/send/details"><button data-testid="admin-secure-async-send-details-export">请求安全异步导出</button></section>
+    <section data-route="/admin/receipt/details"><button data-testid="admin-secure-async-receipt-export">请求安全异步导出</button></section>
+    <section data-route="/tenant/unsubscribes"><button data-testid="tenant-secure-async-unsubscribes-export">请求安全异步导出</button></section>
+    <section data-route="/admin/balance-audit"><button data-testid="admin-secure-async-balance-audit-export">请求安全异步导出</button></section>
+  </main>
+</body>
+</html>

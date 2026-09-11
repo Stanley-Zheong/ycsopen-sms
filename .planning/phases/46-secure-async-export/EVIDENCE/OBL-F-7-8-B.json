@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-8-B",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "SecureAsyncExportServiceTest creates an injected failed job with partial_failure_count and failure_reason.",
+    "Retry is accepted only for FAILED jobs and preserves snapshot/authorization while incrementing retry_count."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test"
+  ]
+}

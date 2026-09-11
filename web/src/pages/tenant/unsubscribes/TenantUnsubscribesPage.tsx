@@ -65,7 +65,7 @@ export default function TenantUnsubscribesPage() {
         <label>产品<input data-testid="tenant-unsubscribe-compliance-filter-product" value={draft.productCode} onChange={(event) => setField('productCode', event.target.value)} /></label>
         <label>通知状态<input data-testid="tenant-unsubscribe-compliance-filter-notification" value={draft.notificationState} onChange={(event) => setField('notificationState', event.target.value)} /></label>
         <button type="button" data-testid="tenant-unsubscribe-compliance-search" onClick={() => setFilters(draft)}>查询</button>
-        <button type="button" data-testid="tenant-unsubscribe-compliance-export-request" onClick={() => exportRequest.mutate()}>请求导出</button>
+        <button type="button" data-testid="tenant-secure-async-unsubscribes-export" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>
       </section>
 
       <section className="card" data-testid="tenant-unsubscribe-compliance-keywords-card">

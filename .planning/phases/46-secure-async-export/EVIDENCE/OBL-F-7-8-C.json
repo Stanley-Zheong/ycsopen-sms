@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-F-7-8-C",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "SecureAsyncExportServiceTest covers EXCEL, CSV, JSON and PDF render paths.",
+    "Artifacts are AES-GCM encrypted, decrypted in verification, and checked for headers/rows/masked mobile/source snapshot.",
+    "Download rejects unfinished, expired and cross-tenant requests."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test",
+    "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json"
+  ]
+}

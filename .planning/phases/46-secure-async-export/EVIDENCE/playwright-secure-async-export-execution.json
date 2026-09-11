@@ -1,0 +1,15 @@
+{
+  "command": "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json",
+  "commit": "907c782158ff17dac8078fa33f98dbc2d8a42a08",
+  "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P46-SEND-EXPORT",
+    "C-P46-RECEIPT-EXPORT",
+    "C-P46-CENTER",
+    "C-P46-DOWNLOAD",
+    "C-P46-UNSUBSCRIBE-EXPORT",
+    "C-P46-BALANCE-EXPORT",
+    "C-P46-RETRY"
+  ]
+}
