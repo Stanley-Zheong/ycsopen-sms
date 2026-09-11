@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-IA-TENANT-HELP-GUIDE",
+  "result": "PASS",
+  "evidence": [
+    "TenantHelpCenterPage guide section renders TENANT_HELP_VERSION, search input and filtered guide articles.",
+    "Chrome Playwright case C-P50-GUIDE verifies guide page, version and search results."
+  ]
+}

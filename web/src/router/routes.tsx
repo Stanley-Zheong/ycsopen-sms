@@ -70,6 +70,7 @@ import TenantShortLinkPage from '@/pages/tenant/shortlinks/TenantShortLinkPage';
 import AdminShortLinkReviewPage from '@/pages/admin/shortlinks/AdminShortLinkReviewPage';
 import PublicShortLinkSafePage from '@/pages/public/PublicShortLinkSafePage';
 import AdminTenantTerminationPage from '@/pages/admin/tenants/AdminTenantTerminationPage';
+import TenantHelpCenterPage from '@/pages/tenant/help/TenantHelpCenterPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -187,6 +188,10 @@ export const router = createBrowserRouter([
       { path: '/tenant/api/keys', element: <TenantApiKeysPage /> },
       { path: '/tenant/cmpp/access', element: <TenantCmppAccessPage /> },
       { path: '/tenant/webhooks', element: <TenantWebhooksPage /> },
+      { path: '/tenant/help', element: <Navigate to="/tenant/help/guide" replace /> },
+      { path: '/tenant/help/guide', element: <TenantHelpCenterPage section="guide" /> },
+      { path: '/tenant/help/api', element: <TenantHelpCenterPage section="api" /> },
+      { path: '/tenant/help/customer-service', element: <TenantHelpCenterPage section="service" /> },
     ],
   },
 ]);

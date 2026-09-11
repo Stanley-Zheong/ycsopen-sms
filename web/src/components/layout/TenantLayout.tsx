@@ -21,6 +21,9 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/administrators', label: '子账号管理', adminOnly: true },
   { to: '/tenant/api/keys', label: 'API 密钥' },
   { to: '/tenant/cmpp/access', label: 'CMPP 接入' },
+  { to: '/tenant/help/guide', label: '使用指南' },
+  { to: '/tenant/help/api', label: 'API 文档' },
+  { to: '/tenant/help/customer-service', label: '联系客服' },
 ];
 
 /** 机构端整体布局，导航结构与 ycsansms.md 8.2 节一一对应。 */
@@ -60,6 +63,12 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-unsubscribe-compliance-unsubscribes-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/shortlink' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-shortlink-safety-shortlinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/help/guide' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-tenant-help-guide-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/help/api' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-tenant-help-api-docs-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/help/customer-service' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-tenant-help-customer-service-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : (
             <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           )
