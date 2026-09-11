@@ -1,0 +1,135 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/dashboard"
+    ],
+    "test_ids": [
+      "admin-complaint-ratio-dashboard-complaint-ratio-channel",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-drilldown",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/45-complaint-ratio-intervention/UI-ELEMENTS.md",
+        "sha256": "b1cc7f4468d0443ee0f9409a0e6c6c15b5013a9214132f346bb9d8d2a1c0e575"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/45-complaint-ratio-intervention/design-output/complaint-ratio-intervention.pen",
+        "sha256": "dcc5a69fe191cde54d50405ad7dccabc648a7004a8224ce244488bafc4b60e49"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/dashboard"
+    ],
+    "test_ids": [
+      "admin-complaint-ratio-dashboard-complaint-ratio-channel",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-drilldown",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/45-complaint-ratio-intervention/design-output/prototype.html",
+        "sha256": "d80357737ae28070bc937b70911fa2d6c110701d648858addc435e65dea08145"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-complaint-ratio-dashboard-complaint-ratio-channel",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-drilldown",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/45-complaint-ratio-intervention/design-output/prototype.spec.ts",
+        "sha256": "b618a36d700af7a68d1775fe2d0b74f18e653ec44c2202f5e788ed0596c2f638"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/dashboard"
+    ],
+    "test_ids": [
+      "admin-complaint-ratio-dashboard-complaint-ratio-channel",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-drilldown",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "034f61af74b614c9a04ae5b0d49c8fe3ad8c46a273e37305c98524bbf42850d7"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/DashboardPage.tsx",
+        "sha256": "f5c6a478f4c262921c68d1b704150619512ecc630d207cf2e1f1ee3189685e72"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/ComplaintRatioPanel.tsx",
+        "sha256": "fd3af6abe21c06da444e9fbe4e7582207528bcb74a6726637261017985815f64"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-complaint-ratio-dashboard-complaint-ratio-channel",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold",
+      "admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period",
+      "admin-complaint-ratio-dashboard-complaint-ratio-period-tenant",
+      "admin-complaint-ratio-dashboard-complaint-ratio-drilldown",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm",
+      "admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/dashboard.spec.ts",
+        "sha256": "b08edf0ccfb7fd8d60c8bde986c7ee0987f75efa35057be089fef4139338622d"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test dashboard.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/45-complaint-ratio-intervention/EVIDENCE/playwright-complaint-ratio-report.json",
+      "sha256": "3c7feed85d9b069662357152869dabc1e33615901415429a9c8a07c4af39a8a4"
+    }
+  }
+}
