@@ -1,0 +1,27 @@
+[WebServer] (node:76076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 4 tests using 4 workers
+
+(node:76081) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:76082) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:76080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:76083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] [local-google-chrome] › web/test/scripts/webhook-delivery.spec.ts:89:3 › Phase 28 webhook delivery transport › pw-p28-push-failure-replay C-P28-PUSH-FAILURE-REPLAY OBL-F-6-6-C pw-p28-webhook-failure C-P28-WEBHOOK-FAILURE OBL-EDGE-WEBHOOK-FAILURE
+[2/4] [local-google-chrome] › web/test/scripts/webhook-delivery.spec.ts:69:3 › Phase 28 webhook delivery transport › pw-p28-tenant-webhooks C-P28-TENANT-WEBHOOKS OBL-F-6-6-A
+[3/4] [local-google-chrome] › web/test/scripts/webhook-delivery.spec.ts:81:3 › Phase 28 webhook delivery transport › pw-p28-admin-push-failures C-P28-ADMIN-PUSH-FAILURES OBL-F-7-7-A
+[4/4] [local-google-chrome] › web/test/scripts/webhook-delivery.spec.ts:97:3 › Phase 28 webhook delivery transport › pw-p28-push-failure-policy C-P28-PUSH-FAILURE-POLICY OBL-F-7-7-B
+  4 passed (8.3s)

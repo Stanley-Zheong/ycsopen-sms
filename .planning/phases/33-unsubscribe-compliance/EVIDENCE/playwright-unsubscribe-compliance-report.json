@@ -1,0 +1,17 @@
+{
+  "command": "npm --prefix web exec -- playwright test unsubscribe-compliance.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "24f4cecf9a9e2217c6847dd09c03ef09c2d5e3b1",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "project": "local-google-chrome",
+  "expected": 3,
+  "unexpected": 0,
+  "skipped": 0,
+  "cases": [
+    "C-P33-TENANT-UNSUBSCRIBES",
+    "C-P33-ADMIN-KEYWORDS",
+    "C-P33-TENANT-NOTIFICATION",
+    "C-P33-ADMIN-STATISTICS"
+  ],
+  "raw": "EVIDENCE/playwright-unsubscribe-compliance-raw.json"
+}

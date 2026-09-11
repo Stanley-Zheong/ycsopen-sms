@@ -1,0 +1,1 @@
+phase_entry=PASS phase=30 package=upstream-cmpp-connector obligations=5 plans=1 dependencies=6 dependency_delivery=summary-verification ui_stage=not-applicable schema_claims=none

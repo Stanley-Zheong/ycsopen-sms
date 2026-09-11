@@ -1,0 +1,27 @@
+[WebServer] (node:63956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 4 tests using 4 workers
+
+(node:63963) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:63960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:63962) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:63961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] [local-google-chrome] › web/test/scripts/message-operations.spec.ts:42:3 › Phase 27 message receipt error operations › pw-p27-submission-page C-P27-SUBMISSION-PAGE OBL-F-7-1-A pw-p27-submission-trace C-P27-SUBMISSION-TRACE OBL-F-7-1-B
+[2/4] [local-google-chrome] › web/test/scripts/message-operations.spec.ts:76:3 › Phase 27 message receipt error operations › pw-p27-error-page C-P27-ERROR-PAGE OBL-F-7-6-A pw-p27-error-bulk-retry C-P27-ERROR-BULK-RETRY OBL-F-7-6-B
+[3/4] [local-google-chrome] › web/test/scripts/message-operations.spec.ts:52:3 › Phase 27 message receipt error operations › pw-p27-send-page C-P27-SEND-PAGE OBL-F-7-2-A pw-p27-send-resend C-P27-SEND-RESEND OBL-F-7-2-B
+[4/4] [local-google-chrome] › web/test/scripts/message-operations.spec.ts:64:3 › Phase 27 message receipt error operations › pw-p27-receipt-page C-P27-RECEIPT-PAGE OBL-F-7-4-A pw-p27-receipt-correct C-P27-RECEIPT-CORRECT OBL-F-7-4-B
+  4 passed (4.8s)

@@ -1,0 +1,18 @@
+
+> ycsopen-sms-web@0.1.0 build
+> tsc -b && vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 246 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:   0.33 kB
+dist/assets/index-C2J5pRvy.css   28.26 kB │ gzip:   4.95 kB
+dist/assets/index-D3uHV-23.js   611.17 kB │ gzip: 170.21 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 686ms

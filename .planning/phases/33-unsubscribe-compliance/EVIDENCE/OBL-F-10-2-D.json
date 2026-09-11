@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-F-10-2-D",
+  "status": "PASS",
+  "command": "mvn -f core/pom.xml -Dtest=UnsubscribeComplianceServiceTest test",
+  "notes": "Suppression write uses the matched tenant id and does not write another tenant."
+}

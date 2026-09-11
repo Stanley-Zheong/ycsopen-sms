@@ -1,8 +1,9 @@
 /**
  * CMPP 协议编解码与连接管理（F-6.7/F-6.8/F-6.9，上游连接器见 PRD 4.2 节"通道层"）。
- * <p><b>当前为空包，是本仓库里最大的一块"设计已定、代码未写"的模块</b>——不假装用一个
- * 简化的 socket demo 冒充真实的 CMPP 长连接实现（窗口控制、心跳、断线重连、Codec）。
- * 详细的实现计划（分几步做、每一步的验收标准）见 ../../../../../../../docs/ROADMAP.md
- * "CMPP 协议实现"一节。</p>
+ * <p>Phase 30 provides the protocol core and authoritative simulator used by the upstream connector.
+ * The socket transport adapter is intentionally outside this package; the protocol contract is verified
+ * through binary PDU header round-trips, window/sequence/reconnect state, simulator interoperability, and the
+ * existing upstream provider SPI adapter. The simulator body codec is a test contract, not the final carrier
+ * CMPP 2.0/3.0 body mapping.</p>
  */
 package com.ycsopen.sms.core.cmpp;

@@ -11,6 +11,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/consumption-ledger', label: '消费账本' },
   { to: '/tenant/config', label: '配置管理' },
   { to: '/tenant/uplink', label: '上行消息查询' },
+  { to: '/tenant/unsubscribes', label: '退订合规' },
   { to: '/tenant/shortlink', label: '短链管理' },
   { to: '/tenant/qualification', label: '资质认证', adminOnly: true },
   { to: '/tenant/administrators', label: '子账号管理', adminOnly: true },

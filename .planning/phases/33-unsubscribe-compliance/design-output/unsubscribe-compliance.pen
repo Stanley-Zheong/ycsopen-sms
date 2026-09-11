@@ -1,0 +1,11 @@
+Phase33 Pencil source placeholder for local pencil handoff.
+
+Routes:
+- /admin/unsubscribes
+- /tenant/unsubscribes
+
+Test IDs:
+- tenant-unsubscribe-compliance-unsubscribes-page
+- admin-unsubscribe-compliance-keywords-page
+- tenant-unsubscribe-compliance-unsubscribes-notification-state
+- admin-unsubscribe-compliance-statistics-page

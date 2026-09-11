@@ -1,0 +1,16 @@
+{
+  "command": "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+  "commit": "1ff8b90778054210588d95dfea408409ce7a80f8",
+  "config": "web/playwright.config.ts",
+  "result": "PASS",
+  "cases": [
+    "C-P32-ADMIN-UPLINK-DETAILS",
+    "C-P32-UPLINK-REPLAY",
+    "C-P32-TENANT-AUTO-REPLY",
+    "C-P32-ADMIN-UPLINKS",
+    "C-P32-PUSH-MONITOR",
+    "C-P32-PUSH-DESTINATION-ACTION"
+  ],
+  "raw_report": ".planning/phases/32-uplink-normalization-operations/EVIDENCE/playwright-uplink-normalization-raw.json",
+  "raw_report_sha256": "97b4f6c843413f2082515557c7cf02c47a0fb7def13f8fa7479eb09452270e90"
+}

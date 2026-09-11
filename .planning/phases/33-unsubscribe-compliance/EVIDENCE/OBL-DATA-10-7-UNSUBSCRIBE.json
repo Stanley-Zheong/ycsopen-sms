@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-DATA-10-7-UNSUBSCRIBE",
+  "status": "PASS",
+  "command": "mvn -f core/pom.xml -Dtest=UnsubscribeComplianceMigrationTest test",
+  "notes": "V4200 extends legacy unsubscribe tables, preserves mobile_encrypted/mobile_hash, and adds evidence/search/statistics fields."
+}

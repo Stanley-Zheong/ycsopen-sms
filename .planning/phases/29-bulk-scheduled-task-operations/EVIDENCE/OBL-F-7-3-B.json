@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-7-3-B","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.controlsStateBoundariesAndReconcilesTerminalItems","bulk-scheduled.test.tsx"],"verified_behavior":"Task rows expose task ID, batch key, tenant, total, progress, state, priority, and cost, with detail rows linked to recipient item states."}

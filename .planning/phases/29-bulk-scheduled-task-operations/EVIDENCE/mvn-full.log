@@ -1,0 +1,2648 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< com.ycsopen:ycsopen-sms-core >--------------------
+[INFO] Building ycsopen-sms-core 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ ycsopen-sms-core ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 44 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ycsopen-sms-core ---
+[INFO] Copying 5 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ ycsopen-sms-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.ycsopen.sms.core.config.RuntimeDatabaseGrantCallbackTest
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/laosanzheong/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.19/byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.700 s -- in com.ycsopen.sms.core.config.RuntimeDatabaseGrantCallbackTest
+[INFO] Running com.ycsopen.sms.core.notification.provider.HttpPlatformNotificationSpiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.247 s -- in com.ycsopen.sms.core.notification.provider.HttpPlatformNotificationSpiTest
+[INFO] Running com.ycsopen.sms.core.notification.provider.PlatformMessageBootstrapServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in com.ycsopen.sms.core.notification.provider.PlatformMessageBootstrapServiceTest
+[INFO] Running com.ycsopen.sms.core.web.dto.LoginRequestValidationTest
+22:43:10.485 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.143 s -- in com.ycsopen.sms.core.web.dto.LoginRequestValidationTest
+[INFO] Running com.ycsopen.sms.core.web.security.HmacRequestAuthenticatorTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.118 s -- in com.ycsopen.sms.core.web.security.HmacRequestAuthenticatorTest
+[INFO] Running com.ycsopen.sms.core.web.TenantAccessAdministrationControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.281 s -- in com.ycsopen.sms.core.web.TenantAccessAdministrationControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.MessageControllerRateLimitTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.ycsopen.sms.core.web.controller.MessageControllerRateLimitTest
+[INFO] Running com.ycsopen.sms.core.web.controller.BlacklistRiskControlControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.web.controller.BlacklistRiskControlControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ContentSafetyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.web.controller.ContentSafetyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.PlatformRoleControllerAuthorizationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.ycsopen.sms.core.web.controller.PlatformRoleControllerAuthorizationTest
+[INFO] Running com.ycsopen.sms.core.web.controller.TenantRegistrationControllerTest
+22:43:11.244 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.244 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.245 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.304 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.304 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.304 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.332 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.332 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.332 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.349 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.349 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.349 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.361 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.361 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.361 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.370 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.370 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.370 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.377 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.377 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.377 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.289 s -- in com.ycsopen.sms.core.web.controller.TenantRegistrationControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.FrequencyRuleControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.web.controller.FrequencyRuleControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.TenantConsoleSendControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in com.ycsopen.sms.core.web.controller.TenantConsoleSendControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.SecurityEventControllerTest
+22:43:11.476 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.476 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.476 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.ycsopen.sms.core.web.controller.SecurityEventControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.RoutingCircuitPolicyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.web.controller.RoutingCircuitPolicyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.LoginHistoryControllerTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in com.ycsopen.sms.core.web.controller.LoginHistoryControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.TenantControllerCompatibilityTest
+22:43:11.530 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.531 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.531 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.537 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.537 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.537 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.541 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.542 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.542 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.549 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.549 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.550 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.049 s -- in com.ycsopen.sms.core.web.controller.TenantControllerCompatibilityTest
+[INFO] Running com.ycsopen.sms.core.web.controller.PlatformConfigurationControllerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in com.ycsopen.sms.core.web.controller.PlatformConfigurationControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ProviderStatusTaxonomyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.web.controller.ProviderStatusTaxonomyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.PlatformAccountControllerAuthorizationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.052 s -- in com.ycsopen.sms.core.web.controller.PlatformAccountControllerAuthorizationTest
+[INFO] Running com.ycsopen.sms.core.web.controller.PrivilegedDataControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.ycsopen.sms.core.web.controller.PrivilegedDataControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.NumberAttributionControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.web.controller.NumberAttributionControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.TrialPrepaidLedgerControllerSecurityContractTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.ycsopen.sms.core.web.controller.TrialPrepaidLedgerControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.SignatureLifecycleControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.ycsopen.sms.core.web.controller.SignatureLifecycleControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ChannelHealthControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.073 s -- in com.ycsopen.sms.core.web.controller.ChannelHealthControllerTest
+[INFO] Running com.ycsopen.sms.core.web.TenantRegistrationObjectApiTest
+22:43:11.874 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.874 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.874 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.919 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.919 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.919 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.095 s -- in com.ycsopen.sms.core.web.TenantRegistrationObjectApiTest
+[INFO] Running com.ycsopen.sms.core.web.ProtectedObjectAccessControllerTest
+22:43:11.928 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.928 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.928 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.941 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.941 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.941 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+22:43:11.945 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.945 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.946 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+22:43:11.951 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+22:43:11.952 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+22:43:11.952 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.ycsopen.sms.core.web.ProtectedObjectAccessControllerTest
+[INFO] Running com.ycsopen.sms.core.web.HmacSignatureVerifierTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.web.HmacSignatureVerifierTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase10ChannelDataMySqlTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase10ChannelDataMySqlTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03ObjectStorageIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03ObjectStorageIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase08TenantQualificationMySqlTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase08TenantQualificationMySqlTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase01ServiceHarnessProcessTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.754 s -- in com.ycsopen.sms.core.verification.Phase01ServiceHarnessProcessTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03ProtectedPersistenceIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03ProtectedPersistenceIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase05IdentityMySqlIntegrationTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase05IdentityMySqlIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase07RealServicePlaywrightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase07RealServicePlaywrightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03LeakScanIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03LeakScanIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03FixturePreflightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03FixturePreflightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase07ConfigurationMySqlIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.verification.Phase07ConfigurationMySqlIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase01RedisIntegrationTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase01RedisIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase11RealServicePlaywrightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase11RealServicePlaywrightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase08OwnedProcessTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.154 s -- in com.ycsopen.sms.core.verification.Phase08OwnedProcessTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase01MySqlIntegrationTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase01MySqlIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.TenantQualificationMySqlMigrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.TenantQualificationMySqlMigrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase06AuditMySqlIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase06AuditMySqlIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase08RealServicePlaywrightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.verification.Phase08RealServicePlaywrightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03RotationRecoveryIntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03RotationRecoveryIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03MigrationIntegrationTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03MigrationIntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase01TimezoneContractTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.verification.Phase01TimezoneContractTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase09TenantCredentialMySqlTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase09TenantCredentialMySqlTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase10RealServicePlaywrightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase10RealServicePlaywrightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase09RealServicePlaywrightTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase09RealServicePlaywrightTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase03Pkcs11IntegrationTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase03Pkcs11IntegrationTest
+[INFO] Running com.ycsopen.sms.core.verification.Phase11ChannelHealthMySqlTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.ycsopen.sms.core.verification.Phase11ChannelHealthMySqlTest
+[INFO] Running com.ycsopen.sms.core.common.security.TenantReviewSecurityTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:22.064+08:00 INFO  c.y.s.c.common.security.TenantReviewSecurityTest - Starting TenantReviewSecurityTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:22.066+08:00 DEBUG c.y.s.c.common.security.TenantReviewSecurityTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:22.066+08:00 INFO  c.y.s.c.common.security.TenantReviewSecurityTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:22.252+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:22.253+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-09-09T22:43:22.327+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 62 ms. Found 0 Redis repository interfaces.
+2026-09-09T22:43:22.428+08:00 WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration -   Using generated security [redacted]  This generated password is for development use only. Your security configuration must be updated before running your application in production.
+2026-09-09T22:43:22.430+08:00 INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-09T22:43:22.878+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Using default implementation for ThreadExecutor
+2026-09-09T22:43:22.883+08:00 INFO  org.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v.2.3.2 created.
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.3.2) 'quartzScheduler' with instanceId 'NON_CLUSTERED'   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.   NOT STARTED.   Currently in standby mode.   Number of jobs executed: 0   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler 'quartzScheduler' initialized from an externally provided properties instance.
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler version: 2.3.2
+2026-09-09T22:43:22.884+08:00 INFO  org.quartz.core.QuartzScheduler - JobFactory set to: org.springframework.scheduling.quartz.SpringBeanJobFactory@1e5bc4e7
+2026-09-09T22:43:22.901+08:00 INFO  o.s.b.test.mock.web.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:22.901+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:22.901+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:22.903+08:00 INFO  o.s.scheduling.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-09-09T22:43:22.904+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler quartzScheduler_$_NON_CLUSTERED started.
+2026-09-09T22:43:22.907+08:00 INFO  c.y.s.c.common.security.TenantReviewSecurityTest - Started TenantReviewSecurityTest in 0.985 seconds (process running for 14.169)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.105 s -- in com.ycsopen.sms.core.common.security.TenantReviewSecurityTest
+[INFO] Running com.ycsopen.sms.core.common.security.config.CryptoStorageStartupVerifierTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.common.security.config.CryptoStorageStartupVerifierTest
+[INFO] Running com.ycsopen.sms.core.common.security.config.CryptoStorageConfigurationWiringTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.085 s -- in com.ycsopen.sms.core.common.security.config.CryptoStorageConfigurationWiringTest
+[INFO] Running com.ycsopen.sms.core.common.security.config.ObjectStorageConfigurationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.262 s -- in com.ycsopen.sms.core.common.security.config.ObjectStorageConfigurationTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.lifecycle.SnapshotEnvelopeInventoryTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.249 s -- in com.ycsopen.sms.core.common.security.key.lifecycle.SnapshotEnvelopeInventoryTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeRewrapServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeRewrapServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.lifecycle.KeyLifecycleServiceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.257 s -- in com.ycsopen.sms.core.common.security.key.lifecycle.KeyLifecycleServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.lifecycle.TokenDigestPublicationFenceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.ycsopen.sms.core.common.security.key.lifecycle.TokenDigestPublicationFenceTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeReferenceInventoryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeReferenceInventoryTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.VersionedBlindIndexTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.common.security.key.VersionedBlindIndexTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactoryTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.282 s -- in com.ycsopen.sms.core.common.security.key.pkcs11.Pkcs11ProviderFactoryTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapterTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.556 s -- in com.ycsopen.sms.core.common.security.key.pkcs11.SunPkcs11KeyAdapterTest
+[INFO] Running com.ycsopen.sms.core.common.security.key.pkcs11.VersionedKeyDescriptorRegistryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.common.security.key.pkcs11.VersionedKeyDescriptorRegistryTest
+[INFO] Running com.ycsopen.sms.core.common.security.JwtAccessVerifierTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.ycsopen.sms.core.common.security.JwtAccessVerifierTest
+[INFO] Running com.ycsopen.sms.core.common.security.TenantQualificationSecurityTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:24.813+08:00 INFO  c.y.s.c.c.s.TenantQualificationSecurityTest - Starting TenantQualificationSecurityTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:24.813+08:00 DEBUG c.y.s.c.c.s.TenantQualificationSecurityTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:24.814+08:00 INFO  c.y.s.c.c.s.TenantQualificationSecurityTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:24.882+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:24.882+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-09-09T22:43:24.911+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 29 ms. Found 0 Redis repository interfaces.
+2026-09-09T22:43:24.953+08:00 WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration -   Using generated security [redacted]  This generated password is for development use only. Your security configuration must be updated before running your application in production.
+2026-09-09T22:43:24.953+08:00 INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-09T22:43:25.019+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Using default implementation for ThreadExecutor
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v.2.3.2 created.
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.3.2) 'quartzScheduler' with instanceId 'NON_CLUSTERED'   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.   NOT STARTED.   Currently in standby mode.   Number of jobs executed: 0   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler 'quartzScheduler' initialized from an externally provided properties instance.
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler version: 2.3.2
+2026-09-09T22:43:25.021+08:00 INFO  org.quartz.core.QuartzScheduler - JobFactory set to: org.springframework.scheduling.quartz.SpringBeanJobFactory@4611a950
+2026-09-09T22:43:25.028+08:00 INFO  o.s.b.test.mock.web.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:25.028+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:25.028+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:25.029+08:00 INFO  o.s.scheduling.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-09-09T22:43:25.029+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler quartzScheduler_$_NON_CLUSTERED started.
+2026-09-09T22:43:25.030+08:00 INFO  c.y.s.c.c.s.TenantQualificationSecurityTest - Started TenantQualificationSecurityTest in 0.24 seconds (process running for 16.292)
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.260 s -- in com.ycsopen.sms.core.common.security.TenantQualificationSecurityTest
+[INFO] Running com.ycsopen.sms.core.common.security.envelope.ProtectionContextTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.common.security.envelope.ProtectionContextTest
+[INFO] Running com.ycsopen.sms.core.common.security.envelope.EnvelopeCodecTest
+[INFO] Tests run: 38, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.ycsopen.sms.core.common.security.envelope.EnvelopeCodecTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.S3PrivateObjectStoreAdapterTest
+[WARNING] Tests run: 24, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.287 s -- in com.ycsopen.sms.core.common.security.object.S3PrivateObjectStoreAdapterTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.QualificationEvidenceCompositionTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.ycsopen.sms.core.common.security.object.QualificationEvidenceCompositionTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.ObjectCapabilityServiceTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.ycsopen.sms.core.common.security.object.ObjectCapabilityServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.TokenDigestPublicationRaceTest
+[WARNING] Tests run: 3, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.439 s -- in com.ycsopen.sms.core.common.security.object.TokenDigestPublicationRaceTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.ProtectedObjectServiceTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.474 s -- in com.ycsopen.sms.core.common.security.object.ProtectedObjectServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.object.ProtectedObjectMetadataRepositoryJdbcTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.ycsopen.sms.core.common.security.object.ProtectedObjectMetadataRepositoryJdbcTest
+[INFO] Running com.ycsopen.sms.core.common.security.JwtSecurityBoundaryTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:26.358+08:00 INFO  c.y.s.c.common.security.JwtSecurityBoundaryTest - Starting JwtSecurityBoundaryTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:26.358+08:00 DEBUG c.y.s.c.common.security.JwtSecurityBoundaryTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:26.358+08:00 INFO  c.y.s.c.common.security.JwtSecurityBoundaryTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:26.395+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:26.395+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-09-09T22:43:26.415+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 18 ms. Found 0 Redis repository interfaces.
+2026-09-09T22:43:26.432+08:00 WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration -   Using generated security [redacted]  This generated password is for development use only. Your security configuration must be updated before running your application in production.
+2026-09-09T22:43:26.432+08:00 INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-09T22:43:26.485+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Using default implementation for ThreadExecutor
+2026-09-09T22:43:26.485+08:00 INFO  org.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v.2.3.2 created.
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.simpl.RAMJobStore - RAMJobStore initialized.
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.3.2) 'quartzScheduler' with instanceId 'NON_CLUSTERED'   Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.   NOT STARTED.   Currently in standby mode.   Number of jobs executed: 0   Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.   Using job-store 'org.quartz.simpl.RAMJobStore' - which does not support persistence. and is not clustered.
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler 'quartzScheduler' initialized from an externally provided properties instance.
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler version: 2.3.2
+2026-09-09T22:43:26.486+08:00 INFO  org.quartz.core.QuartzScheduler - JobFactory set to: org.springframework.scheduling.quartz.SpringBeanJobFactory@31ccc439
+2026-09-09T22:43:26.490+08:00 INFO  o.s.b.test.mock.web.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:26.490+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:26.490+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:26.491+08:00 INFO  o.s.scheduling.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2026-09-09T22:43:26.491+08:00 INFO  org.quartz.core.QuartzScheduler - Scheduler quartzScheduler_$_NON_CLUSTERED started.
+2026-09-09T22:43:26.492+08:00 INFO  c.y.s.c.common.security.JwtSecurityBoundaryTest - Started JwtSecurityBoundaryTest in 0.142 seconds (process running for 17.754)
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.164 s -- in com.ycsopen.sms.core.common.security.JwtSecurityBoundaryTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.CurrentProtectedReaderFenceTest
+2026-09-09T22:43:26.513+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.common.security.persistence.CurrentProtectedReaderFenceTest]: CurrentProtectedReaderFenceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:26.535+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.common.security.persistence.CurrentProtectedReaderFenceTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:26.543+08:00 INFO  c.y.s.c.c.s.p.CurrentProtectedReaderFenceTest - Starting CurrentProtectedReaderFenceTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:26.544+08:00 DEBUG c.y.s.c.c.s.p.CurrentProtectedReaderFenceTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:26.544+08:00 INFO  c.y.s.c.c.s.p.CurrentProtectedReaderFenceTest - The following 1 profile is active: "test"
+2026-09-09T22:43:26.702+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:26.702+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-09T22:43:26.740+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 36 ms. Found 16 JPA repository interfaces.
+2026-09-09T22:43:26.751+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:26.763+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:093512c4-2b63-491b-ba59-d57467bf43e2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:26.797+08:00 INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-09-09T22:43:26.823+08:00 INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-09-09T22:43:26.836+08:00 INFO  o.h.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-09-09T22:43:26.885+08:00 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-09T22:43:27.249+08:00 INFO  o.h.e.t.j.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate:
+    drop table if exists billing_records cascade
+Hibernate:
+    drop table if exists blacklist_entries cascade
+Hibernate:
+    drop table if exists channels cascade
+Hibernate:
+    drop table if exists complaint_ratio_stats cascade
+Hibernate:
+    drop table if exists complaints cascade
+Hibernate:
+    drop table if exists frequency_rules cascade
+Hibernate:
+    drop table if exists message_tasks cascade
+Hibernate:
+    drop table if exists route_rules cascade
+Hibernate:
+    drop table if exists sensitive_words cascade
+Hibernate:
+    drop table if exists signatures cascade
+Hibernate:
+    drop table if exists templates cascade
+Hibernate:
+    drop table if exists tenant_accounts cascade
+Hibernate:
+    drop table if exists tenant_api_keys cascade
+Hibernate:
+    drop table if exists tenant_protocol_credentials cascade
+Hibernate:
+    drop table if exists tenants cascade
+Hibernate:
+    drop table if exists users cascade
+Hibernate:
+    create table billing_records (
+        billing_date date not null,
+        quantity integer not null,
+        unit_price numeric(38,2) not null,
+        amount bigint not null,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        task_ref_id bigint not null,
+        tenant_id bigint not null,
+        billing_status enum ('CONFIRMED','RESERVED','REVERSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table blacklist_entries (
+        created_at timestamp(6),
+        effective_at timestamp default current_timestamp,
+        expires_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        masked_mobile varchar(32) default '***' not null,
+        mobile_encrypted varbinary(255) not null,
+        mobile_hash varchar(255) not null,
+        reason varchar(255),
+        list_type enum ('BLACK','WHITE') not null,
+        source enum ('BATCH_IMPORT','COMPLAINT_LINKED','MANUAL','THIRD_PARTY_RISK','UNSUBSCRIBE_AUTO'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table channels (
+        max_connections integer not null,
+        port integer,
+        price numeric(38,2) not null,
+        priority integer not null,
+        tps_limit integer not null,
+        window_size integer not null,
+        configuration_version bigint not null,
+        effective_version_id bigint,
+        id bigint generated by default as identity,
+        offline_at timestamp(6),
+        paused_at timestamp(6),
+        account_encrypted varbinary(255),
+        active_window varchar(255),
+        availability varchar(255) not null,
+        channel_name varchar(255) not null,
+        extra_config varchar(255),
+        host varchar(255),
+        offline_by varchar(255),
+        password_encrypted varbinary(255),
+        pause_reason varchar(255),
+        paused_by varchar(255),
+        service_id varchar(255),
+        sp_id varchar(255),
+        src_id varchar(255),
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        protocol enum ('CMPP','HTTP','SGIP','SMGP'),
+        status enum ('ABNORMAL','MAINTENANCE','NORMAL','OFFLINE','PAUSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table complaint_ratio_stats (
+        over_threshold boolean,
+        ratio numeric(38,2),
+        calculated_at timestamp(6),
+        complaint_count bigint,
+        dimension_id bigint not null,
+        id bigint generated by default as identity,
+        send_count bigint,
+        stat_month varchar(255) not null,
+        dimension_type enum ('CHANNEL','TENANT') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table complaints (
+        channel_id bigint,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        message_id varchar(255),
+        summary varchar(255),
+        source enum ('OPERATOR','REGULATOR','USER_REPORT'),
+        status enum ('CLOSED','PENDING','PROCESSED','PROCESSING'),
+        primary key (id)
+    )
+Hibernate:
+    create table frequency_rules (
+        limit_count integer not null,
+        limit_window_seconds integer not null,
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        rule_name varchar(255) not null,
+        action enum ('ALERT','BLOCK','DELAY'),
+        limit_type enum ('CONTENT_SIMILARITY','IP','MOBILE','TENANT_LEVEL') not null,
+        scope enum ('API_KEY','GLOBAL','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table message_tasks (
+        cost numeric(38,2),
+        retry_count integer,
+        version integer,
+        channel_id bigint,
+        created_at timestamp(6),
+        deliver_time timestamp(6),
+        id bigint generated by default as identity,
+        send_time timestamp(6),
+        signature_id bigint,
+        submit_id bigint,
+        template_id bigint,
+        tenant_id bigint not null,
+        mobile_hash varchar(64) not null,
+        channel_msg_id varchar(255),
+        content varchar(255) not null,
+        error_code varchar(255),
+        error_message varchar(255),
+        message_id varchar(255) not null unique,
+        mobile_encrypted varbinary(255) not null,
+        send_status enum ('DELIVERED','FAILED','PENDING','SENT'),
+        primary key (id)
+    )
+Hibernate:
+    create table route_rules (
+        priority integer not null,
+        id bigint generated by default as identity,
+        target_channel_id bigint,
+        tenant_id bigint,
+        phone_prefix varchar(255),
+        rule_name varchar(255) not null,
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table sensitive_words (
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        replacement varchar(255),
+        word varchar(255) not null,
+        action enum ('ALERT','BLOCK','REPLACE'),
+        category enum ('ADULT','FINANCIAL','ILLEGAL','MARKETING','OTHER','POLITICAL'),
+        level enum ('HIGH','LOW','MEDIUM'),
+        scope enum ('GLOBAL','PRODUCT','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table signatures (
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint not null,
+        audit_comment varchar(255),
+        sign_code varchar(255) not null,
+        sign_content varchar(255) not null,
+        audit_status enum ('APPROVED','PENDING','REJECTED','SUPPLEMENT_REQUIRED'),
+        risk_level enum ('HIGH','LOW','MEDIUM'),
+        sign_type enum ('APP','ENTERPRISE','GOVERNMENT','INSTITUTION','TRADEMARK') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table templates (
+        is_system_template boolean,
+        version_no integer,
+        audit_time timestamp(6),
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        previous_template_id bigint,
+        signature_id bigint not null,
+        tenant_id bigint not null,
+        usage_count bigint,
+        audit_comment varchar(255),
+        content varchar(255) not null,
+        description varchar(255),
+        param_check_rule varchar(255),
+        template_code varchar(255) not null,
+        template_name varchar(255) not null,
+        variable_names varchar(255),
+        audit_status enum ('AMENDMENT_REQUIRED','APPROVED','PENDING','REJECTED'),
+        template_type enum ('MARKETING','NOTIFY','VERIFY') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_accounts (
+        version integer,
+        balance bigint not null,
+        frozen_amount bigint not null,
+        id bigint generated by default as identity,
+        tenant_id bigint not null unique,
+        status enum ('ARREARS_FROZEN','DISABLED','NORMAL'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_api_keys (
+        rate_limit_per_day integer,
+        rate_limit_per_hour integer,
+        rate_limit_per_min integer,
+        rate_limit_per_sec integer,
+        expire_time timestamp(6),
+        id bigint generated by default as identity,
+        last_used_time timestamp(6),
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        app_key varchar(255) not null unique,
+        app_secret_encrypted varbinary(255) not null,
+        description varchar(255),
+        ip_whitelist varchar(255),
+        key_name varchar(255),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_protocol_credentials (
+        endpoint_port integer,
+        max_connections integer,
+        tps_limit integer,
+        window_size integer,
+        id bigint generated by default as identity,
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        endpoint_host varchar(255),
+        ip_whitelist varchar(255),
+        protocol varchar(255),
+        spid varchar(255),
+        status varchar(255),
+        primary key (id)
+    )
+Hibernate:
+    create table tenants (
+        contract_signed_at date,
+        customer_level integer,
+        inspection_confidence float(53),
+        license_valid_until date,
+        trademark_use boolean default false not null,
+        trial_quota integer,
+        trial_quota_used integer,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        initial_admin_user_id bigint,
+        inspection_completed_at timestamp(6),
+        qualification_revision bigint default 0 not null,
+        qualification_submitted_at timestamp(6),
+        trial_end_at timestamp(6),
+        trial_start_at timestamp(6),
+        verification_time timestamp(6),
+        verification_updated_at timestamp(6),
+        inspection_credit_code varchar(18),
+        registered_capital varchar(50),
+        biz_manager varchar(64),
+        industry varchar(64),
+        inspection_company_name varchar(100),
+        inspection_provider_request_id varchar(100),
+        qualification_reason varchar(500),
+        business_address varchar(255),
+        business_license_url varchar(255),
+        business_scope TEXT,
+        contact_id_no_encrypted varbinary(255),
+        contact_name varchar(255),
+        contact_phone_encrypted varbinary(255),
+        full_name varchar(255) not null,
+        legal_rep_id_back_url varchar(255),
+        legal_rep_id_front_url varchar(255),
+        legal_rep_id_no_encrypted varbinary(255),
+        legal_rep_name varchar(255),
+        registered_address varchar(255),
+        short_name varchar(255) not null,
+        shortlink_domain_proof_url varchar(255),
+        tenant_no varchar(255) not null unique,
+        trademark_proof_url varchar(255),
+        unified_social_credit_code varchar(255) not null unique,
+        billing_mode enum ('POSTPAID','PREPAID'),
+        inspection_status enum ('COMPLETED','FAILED','NOT_STARTED') default 'NOT_STARTED' not null,
+        lifecycle_status enum ('FROZEN','SIGNED','SUBMITTED','TERMINATED','TRIAL','TRIAL_FROZEN'),
+        verification_status enum ('PENDING','REJECTED','SUPPLEMENT_REQUIRED','UNVERIFIED','VERIFIED'),
+        primary key (id)
+    )
+Hibernate:
+    create table users (
+        failed_login_count integer,
+        valid_until date,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        last_login_time timestamp(6),
+        password_expire_time timestamp(6),
+        tenant_id bigint,
+        created_by varchar(255),
+        email varchar(255),
+        last_login_ip varchar(255),
+        password_hash varchar(255) not null,
+        phone_encrypted varbinary(255),
+        real_name varchar(255),
+        username varchar(255) not null unique,
+        status enum ('ACTIVE','DISABLED','LOCKED'),
+        user_type enum ('ADMIN','FINANCE','OPERATOR','TENANT_ADMIN','TENANT_DEV','TENANT_USER') not null,
+        primary key (id)
+    )
+2026-09-09T22:43:27.267+08:00 INFO  o.s.o.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-09T22:43:27.361+08:00 INFO  o.s.d.jpa.repository.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-09T22:43:27.650+08:00 INFO  c.y.s.c.c.s.p.CurrentProtectedReaderFenceTest - Started CurrentProtectedReaderFenceTest in 1.114 seconds (process running for 18.912)
+Hibernate:
+    select
+        tak1_0.id,
+        tak1_0.tenant_id,
+        tak1_0.status,
+        tak1_0.rate_limit_per_sec,
+        tak1_0.rate_limit_per_min,
+        tak1_0.rate_limit_per_hour,
+        tak1_0.rate_limit_per_day
+    from
+        tenant_api_keys tak1_0
+    where
+        tak1_0.app_key=?
+        and tak1_0.status='ACTIVE'
+        and (
+            tak1_0.expire_time is null
+            or tak1_0.expire_time>localtimestamp
+        )
+Hibernate:
+    select
+        be1_0.id,
+        be1_0.status,
+        be1_0.list_type,
+        be1_0.tenant_id,
+        be1_0.mobile_hash
+    from
+        blacklist_entries be1_0
+    where
+        be1_0.mobile_hash=?
+        and be1_0.tenant_id=?
+        and be1_0.status=?
+        and be1_0.effective_at<=localtimestamp
+        and (
+            be1_0.expires_at is null
+            or be1_0.expires_at>localtimestamp
+        )
+Hibernate:
+    select
+        t1_0.id
+    from
+        tenants t1_0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.474 s -- in com.ycsopen.sms.core.common.security.persistence.CurrentProtectedReaderFenceTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.BlacklistEntryProtectionAdapterTest
+2026-09-09T22:43:27.988+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.common.security.persistence.BlacklistEntryProtectionAdapterTest]: BlacklistEntryProtectionAdapterTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:27.990+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.common.security.persistence.BlacklistEntryProtectionAdapterTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s -- in com.ycsopen.sms.core.common.security.persistence.BlacklistEntryProtectionAdapterTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodecTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.common.security.persistence.ProtectedFieldCodecTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.ProtectedEntityMappingTest
+2026-09-09T22:43:28.028+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.common.security.persistence.ProtectedEntityMappingTest]: ProtectedEntityMappingTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:28.030+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.common.security.persistence.ProtectedEntityMappingTest
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.id=?
+Hibernate:
+    select
+        t1_0.id,
+        t1_0.billing_mode,
+        t1_0.biz_manager,
+        t1_0.business_address,
+        t1_0.business_license_url,
+        t1_0.business_scope,
+        t1_0.contact_id_no_encrypted,
+        t1_0.contact_name,
+        t1_0.contact_phone_encrypted,
+        t1_0.contract_signed_at,
+        t1_0.created_at,
+        t1_0.customer_level,
+        t1_0.full_name,
+        t1_0.industry,
+        t1_0.initial_admin_user_id,
+        t1_0.inspection_company_name,
+        t1_0.inspection_completed_at,
+        t1_0.inspection_confidence,
+        t1_0.inspection_credit_code,
+        t1_0.inspection_provider_request_id,
+        t1_0.inspection_status,
+        t1_0.legal_rep_id_back_url,
+        t1_0.legal_rep_id_front_url,
+        t1_0.legal_rep_id_no_encrypted,
+        t1_0.legal_rep_name,
+        t1_0.license_valid_until,
+        t1_0.lifecycle_status,
+        t1_0.qualification_reason,
+        t1_0.qualification_revision,
+        t1_0.qualification_submitted_at,
+        t1_0.registered_address,
+        t1_0.registered_capital,
+        t1_0.short_name,
+        t1_0.shortlink_domain_proof_url,
+        t1_0.tenant_no,
+        t1_0.trademark_proof_url,
+        t1_0.trademark_use,
+        t1_0.trial_end_at,
+        t1_0.trial_quota,
+        t1_0.trial_quota_used,
+        t1_0.trial_start_at,
+        t1_0.unified_social_credit_code,
+        t1_0.verification_status,
+        t1_0.verification_time,
+        t1_0.verification_updated_at
+    from
+        tenants t1_0
+    where
+        t1_0.id=?
+Hibernate:
+    select
+        be1_0.id,
+        be1_0.created_at,
+        be1_0.effective_at,
+        be1_0.expires_at,
+        be1_0.list_type,
+        be1_0.masked_mobile,
+        be1_0.mobile_encrypted,
+        be1_0.mobile_hash,
+        be1_0.reason,
+        be1_0.source,
+        be1_0.status,
+        be1_0.tenant_id
+    from
+        blacklist_entries be1_0
+    where
+        be1_0.id=?
+Hibernate:
+    select
+        tak1_0.id,
+        tak1_0.app_key,
+        tak1_0.app_secret_encrypted,
+        tak1_0.description,
+        tak1_0.expire_time,
+        tak1_0.ip_whitelist,
+        tak1_0.key_name,
+        tak1_0.last_used_time,
+        tak1_0.rate_limit_per_day,
+        tak1_0.rate_limit_per_hour,
+        tak1_0.rate_limit_per_min,
+        tak1_0.rate_limit_per_sec,
+        tak1_0.revoked_at,
+        tak1_0.status,
+        tak1_0.tenant_id
+    from
+        tenant_api_keys tak1_0
+    where
+        tak1_0.id=?
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    update
+        tenants
+    set
+        billing_mode=?,
+        biz_manager=?,
+        business_address=?,
+        business_license_url=?,
+        business_scope=?,
+        contact_id_no_encrypted=?,
+        contact_name=?,
+        contact_phone_encrypted=?,
+        contract_signed_at=?,
+        created_at=?,
+        customer_level=?,
+        full_name=?,
+        industry=?,
+        initial_admin_user_id=?,
+        inspection_company_name=?,
+        inspection_completed_at=?,
+        inspection_confidence=?,
+        inspection_credit_code=?,
+        inspection_provider_request_id=?,
+        inspection_status=?,
+        legal_rep_id_back_url=?,
+        legal_rep_id_front_url=?,
+        legal_rep_id_no_encrypted=?,
+        legal_rep_name=?,
+        license_valid_until=?,
+        lifecycle_status=?,
+        qualification_reason=?,
+        qualification_revision=?,
+        qualification_submitted_at=?,
+        registered_address=?,
+        registered_capital=?,
+        short_name=?,
+        shortlink_domain_proof_url=?,
+        tenant_no=?,
+        trademark_proof_url=?,
+        trademark_use=?,
+        trial_end_at=?,
+        trial_quota=?,
+        trial_quota_used=?,
+        trial_start_at=?,
+        unified_social_credit_code=?,
+        verification_status=?,
+        verification_time=?,
+        verification_updated_at=?
+    where
+        id=?
+        and qualification_revision=?
+Hibernate:
+    update
+        blacklist_entries
+    set
+        created_at=?,
+        effective_at=?,
+        expires_at=?,
+        list_type=?,
+        masked_mobile=?,
+        mobile_encrypted=?,
+        mobile_hash=?,
+        reason=?,
+        source=?,
+        status=?,
+        tenant_id=?
+    where
+        id=?
+Hibernate:
+    update
+        tenant_api_keys
+    set
+        app_key=?,
+        app_secret_encrypted=?,
+        description=?,
+        expire_time=?,
+        ip_whitelist=?,
+        key_name=?,
+        last_used_time=?,
+        rate_limit_per_day=?,
+        rate_limit_per_hour=?,
+        rate_limit_per_min=?,
+        rate_limit_per_sec=?,
+        revoked_at=?,
+        status=?,
+        tenant_id=?
+    where
+        id=?
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in com.ycsopen.sms.core.common.security.persistence.ProtectedEntityMappingTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.ProtectedFieldContextsTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.common.security.persistence.ProtectedFieldContextsTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupServiceTest
+2026-09-09T22:43:28.076+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupServiceTest]: BlindIndexLookupServiceTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:28.078+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 s -- in com.ycsopen.sms.core.common.security.persistence.BlindIndexLookupServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapterTest
+2026-09-09T22:43:28.214+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapterTest]: MessageTaskProtectionAdapterTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:28.216+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapterTest
+Hibernate:
+    insert
+    into
+        message_tasks
+        (channel_id, channel_msg_id, content, cost, created_at, deliver_time, error_code, error_message, message_id, mobile_encrypted, mobile_hash, retry_count, send_status, send_time, signature_id, submit_id, template_id, tenant_id, version, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    insert
+    into
+        message_tasks
+        (channel_id, channel_msg_id, content, cost, created_at, deliver_time, error_code, error_message, message_id, mobile_encrypted, mobile_hash, retry_count, send_status, send_time, signature_id, submit_id, template_id, tenant_id, version, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    insert
+    into
+        message_tasks
+        (channel_id, channel_msg_id, content, cost, created_at, deliver_time, error_code, error_message, message_id, mobile_encrypted, mobile_hash, retry_count, send_status, send_time, signature_id, submit_id, template_id, tenant_id, version, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    insert
+    into
+        message_tasks
+        (channel_id, channel_msg_id, content, cost, created_at, deliver_time, error_code, error_message, message_id, mobile_encrypted, mobile_hash, retry_count, send_status, send_time, signature_id, submit_id, template_id, tenant_id, version, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    insert
+    into
+        message_tasks
+        (channel_id, channel_msg_id, content, cost, created_at, deliver_time, error_code, error_message, message_id, mobile_encrypted, mobile_hash, retry_count, send_status, send_time, signature_id, submit_id, template_id, tenant_id, version, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.485 s -- in com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAdapterTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.snapshot.MySqlSnapshotProcessTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.157 s -- in com.ycsopen.sms.core.common.security.migration.snapshot.MySqlSnapshotProcessTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotServiceTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.869 s -- in com.ycsopen.sms.core.common.security.migration.snapshot.EncryptedMySqlSnapshotServiceTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.MigrationBlindIndexPublicationRaceTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.common.security.migration.MigrationBlindIndexPublicationRaceTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.MigrationPreflightTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.common.security.migration.MigrationPreflightTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommandTest
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationCommandTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifierTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.980 s -- in com.ycsopen.sms.core.common.security.migration.SignedMigrationManifestVerifierTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunnerTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in com.ycsopen.sms.core.common.security.migration.ProtectedDataMigrationRunnerTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.ProtectedDataManifestTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.ycsopen.sms.core.common.security.migration.ProtectedDataManifestTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.LegacyValueClassifierTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.common.security.migration.LegacyValueClassifierTest
+[INFO] Running com.ycsopen.sms.core.common.security.migration.ProductionMigrationCommandServicesFactoryTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.552 s -- in com.ycsopen.sms.core.common.security.migration.ProductionMigrationCommandServicesFactoryTest
+[INFO] Running com.ycsopen.sms.core.common.security.logging.SecurityRedactionConverterTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.common.security.logging.SecurityRedactionConverterTest
+[INFO] Running com.ycsopen.sms.core.common.security.logging.SensitiveDataLeakScannerTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.229 s -- in com.ycsopen.sms.core.common.security.logging.SensitiveDataLeakScannerTest
+[INFO] Running com.ycsopen.sms.core.common.security.logging.SafeLogValueTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.common.security.logging.SafeLogValueTest
+[INFO] Running com.ycsopen.sms.core.common.web.TrustedProxyClientIpResolverTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.ycsopen.sms.core.common.web.TrustedProxyClientIpResolverTest
+[INFO] Running com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerLoggingTest
+2026-09-09T22:43:34.575+08:00 ERROR security - security_event event=UNEXPECTED_FAILURE category=UNEXPECTED correlation=invalid
+2026-09-09T22:43:34.576+08:00 WARN  security - security_event event=BUSINESS_REJECTION category=BUSINESS correlation=trace-business-1
+2026-09-09T22:43:34.576+08:00 ERROR security - security_event event=UNEXPECTED_FAILURE category=UNEXPECTED correlation=trace-unexpected-2
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerLoggingTest
+[INFO] Running com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerTest
+2026-09-09T22:43:34.580+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:34.580+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:34.580+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:34.586+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:34.586+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:34.586+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:34.589+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:34.589+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:34.589+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:34.592+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:34.592+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:34.592+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:34.595+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:34.595+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:34.595+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerTest
+[INFO] Running com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.242 s -- in com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantRegistrationServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.205 s -- in com.ycsopen.sms.core.service.tenant.TenantRegistrationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.JdbcContactChallengeStoreTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.723 s -- in com.ycsopen.sms.core.service.tenant.JdbcContactChallengeStoreTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.AdminTenantStatusWorkflowTest
+2026-09-09T22:43:35.805+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:35.805+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:35.805+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.ycsopen.sms.core.service.tenant.AdminTenantStatusWorkflowTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantQualificationSafeAggregateTest
+2026-09-09T22:43:35.814+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:35.814+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:35.814+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:35.822+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:35.822+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:35.822+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:35.827+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:35.827+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:35.827+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+2026-09-09T22:43:35.831+08:00 INFO  org.springframework.mock.web.MockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-09-09T22:43:35.831+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Initializing Servlet ''
+2026-09-09T22:43:35.831+08:00 INFO  o.s.test.web.servlet.TestDispatcherServlet - Completed initialization in 0 ms
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.ycsopen.sms.core.service.tenant.TenantQualificationSafeAggregateTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantMaintenanceServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.tenant.TenantMaintenanceServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantQualificationFieldsTest
+2026-09-09T22:43:35.879+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.service.tenant.TenantQualificationFieldsTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:35.892+08:00 INFO  c.y.s.c.s.tenant.TenantQualificationFieldsTest - Starting TenantQualificationFieldsTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:35.892+08:00 DEBUG c.y.s.c.s.tenant.TenantQualificationFieldsTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:35.892+08:00 INFO  c.y.s.c.s.tenant.TenantQualificationFieldsTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:36.054+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:36.055+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-09T22:43:36.082+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 27 ms. Found 16 JPA repository interfaces.
+2026-09-09T22:43:36.087+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:36.092+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:d056be05-c15c-4268-990f-a861883c2ace;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:36.108+08:00 INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-09-09T22:43:36.109+08:00 INFO  o.h.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-09-09T22:43:36.115+08:00 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-09T22:43:36.199+08:00 INFO  o.h.e.t.j.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-09T22:43:36.203+08:00 INFO  o.s.o.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-09T22:43:36.263+08:00 INFO  c.y.s.c.s.tenant.TenantQualificationFieldsTest - Started TenantQualificationFieldsTest in 0.381 seconds (process running for 27.525)
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.701 s -- in com.ycsopen.sms.core.service.tenant.TenantQualificationFieldsTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantReviewServiceTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.tenant.TenantReviewServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantAccessAdministrationServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.tenant.TenantAccessAdministrationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantQualificationPermissionMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.service.tenant.TenantQualificationPermissionMigrationTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantRegistrationProtectionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.tenant.TenantRegistrationProtectionTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.QualificationObjectAuthorizationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.service.tenant.QualificationObjectAuthorizationTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.ContactVerificationServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.356 s -- in com.ycsopen.sms.core.service.tenant.ContactVerificationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantQualificationMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.ycsopen.sms.core.service.tenant.TenantQualificationMigrationTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.QualificationInspectionServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.099 s -- in com.ycsopen.sms.core.service.tenant.QualificationInspectionServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantApiKeyServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.tenant.TenantApiKeyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantProtocolCredentialServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.ycsopen.sms.core.service.tenant.TenantProtocolCredentialServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicyTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicyTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.TenantQualificationValidatorTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.tenant.TenantQualificationValidatorTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.HttpQualificationInspectionSpiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in com.ycsopen.sms.core.service.tenant.HttpQualificationInspectionSpiTest
+[INFO] Running com.ycsopen.sms.core.service.configuration.PlatformConfigurationServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.configuration.PlatformConfigurationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.configuration.PlatformConfigurationRegistryTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.configuration.PlatformConfigurationRegistryTest
+[INFO] Running com.ycsopen.sms.core.service.bulk.BulkScheduledTaskServiceTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.ycsopen.sms.core.service.bulk.BulkScheduledTaskServiceTest
+[INFO] Running com.ycsopen.sms.core.service.signature.SignatureLifecycleServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 s -- in com.ycsopen.sms.core.service.signature.SignatureLifecycleServiceTest
+[INFO] Running com.ycsopen.sms.core.service.exemption.ExemptionPolicyServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.ycsopen.sms.core.service.exemption.ExemptionPolicyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.template.TemplateLifecycleServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.ycsopen.sms.core.service.template.TemplateLifecycleServiceTest
+[INFO] Running com.ycsopen.sms.core.service.template.TemplateSendComplianceServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.077 s -- in com.ycsopen.sms.core.service.template.TemplateSendComplianceServiceTest
+[INFO] Running com.ycsopen.sms.core.service.message.MessageAcceptanceIdempotencyServiceTest
+2026-09-09T22:43:37.343+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:phase23-993232926199250;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.345+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Shutting down embedded database: url='jdbc:h2:mem:phase23-993232926199250;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+2026-09-09T22:43:37.346+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:phase23-993232929740291;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.347+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Shutting down embedded database: url='jdbc:h2:mem:phase23-993232929740291;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+2026-09-09T22:43:37.347+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:phase23-993232931033875;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.348+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Shutting down embedded database: url='jdbc:h2:mem:phase23-993232931033875;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+2026-09-09T22:43:37.348+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:phase23-993232931845583;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.349+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Shutting down embedded database: url='jdbc:h2:mem:phase23-993232931845583;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.ycsopen.sms.core.service.message.MessageAcceptanceIdempotencyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.message.MessageSubmitServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.232 s -- in com.ycsopen.sms.core.service.message.MessageSubmitServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.health.ChannelPoolServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.ycsopen.sms.core.service.channel.health.ChannelPoolServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.health.ChannelHealthServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.ycsopen.sms.core.service.channel.health.ChannelHealthServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.health.ChannelCandidateEligibilityServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.ycsopen.sms.core.service.channel.health.ChannelCandidateEligibilityServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelConnectivityConformanceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.channel.ChannelConnectivityConformanceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelOfflineTransitionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.ycsopen.sms.core.service.channel.ChannelOfflineTransitionTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelDependencyMigrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.channel.ChannelDependencyMigrationTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelConfigurationHotReloadTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.ycsopen.sms.core.service.channel.ChannelConfigurationHotReloadTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelConfigurationServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.ycsopen.sms.core.service.channel.ChannelConfigurationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelDependencyInventoryTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.service.channel.ChannelDependencyInventoryTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelConfigurationActivationFaultTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.service.channel.ChannelConfigurationActivationFaultTest
+[INFO] Running com.ycsopen.sms.core.service.complaint.ComplaintRatioServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.service.complaint.ComplaintRatioServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.SecurityEventServiceTest
+2026-09-09T22:43:37.656+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:42abcb22-dc7b-44a3-9c56-708faecba7c2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.660+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:df753f40-7559-436e-9e68-cd65ef0345fa;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.662+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:fe1fb534-e336-457f-8017-c7d8c5683f5c;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.audit.SecurityEventServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditInterceptorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.ycsopen.sms.core.service.audit.OperationAuditInterceptorTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditServiceTest
+2026-09-09T22:43:37.701+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:be81863e-75f7-4c10-aa7c-1a477da60d9e;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.703+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:3b564b6a-90f0-4854-b2cc-121cc2ed6c92;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:37.704+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:0834522c-bfc3-47ac-b1cf-75f46d35838f;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.audit.OperationAuditServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditSecurityTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.ycsopen.sms.core.service.audit.OperationAuditSecurityTest
+[INFO] Running com.ycsopen.sms.core.service.review.ResourceReviewHistoryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.service.review.ResourceReviewHistoryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.HttpMessageDeliveryServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in com.ycsopen.sms.core.service.delivery.HttpMessageDeliveryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.MessageStatusQueryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.delivery.MessageStatusQueryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.HttpSmsUpstreamProviderClientTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.service.delivery.HttpSmsUpstreamProviderClientTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.MessageReceiptErrorOperationsServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.100 s -- in com.ycsopen.sms.core.service.delivery.MessageReceiptErrorOperationsServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.DispatchTaskRecoveryServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.ycsopen.sms.core.service.delivery.DispatchTaskRecoveryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.routing.ThirdPartyBlacklistClientTest
+2026-09-09T22:43:37.904+08:00 WARN  c.y.s.c.s.routing.ThirdPartyBlacklistClient - third-party blacklist check failed, applying fallback=CACHE provider=route-risk
+2026-09-09T22:43:37.908+08:00 WARN  c.y.s.c.s.routing.ThirdPartyBlacklistClient - third-party blacklist check failed, applying fallback=CACHE provider=route-risk
+2026-09-09T22:43:37.909+08:00 WARN  c.y.s.c.s.routing.ThirdPartyBlacklistClient - third-party blacklist check failed, applying fallback=CACHE provider=route-risk
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.ycsopen.sms.core.service.routing.ThirdPartyBlacklistClientTest
+[INFO] Running com.ycsopen.sms.core.service.routing.ContentReviewCheckerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 s -- in com.ycsopen.sms.core.service.routing.ContentReviewCheckerTest
+[INFO] Running com.ycsopen.sms.core.service.routing.ApiKeyRateLimitServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in com.ycsopen.sms.core.service.routing.ApiKeyRateLimitServiceTest
+[INFO] Running com.ycsopen.sms.core.service.routing.FrequencyCheckerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.ycsopen.sms.core.service.routing.FrequencyCheckerTest
+[INFO] Running com.ycsopen.sms.core.service.routing.ChannelSelectorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.ycsopen.sms.core.service.routing.ChannelSelectorTest
+[INFO] Running com.ycsopen.sms.core.service.routing.RoutingCircuitPolicyServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.routing.RoutingCircuitPolicyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.routing.RoutingEngineTest
+2026-09-09T22:43:38.267+08:00 WARN  c.ycsopen.sms.core.service.routing.RoutingEngine - risk decision evidence recorder failed; preserving routing decision
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.186 s -- in com.ycsopen.sms.core.service.routing.RoutingEngineTest
+[INFO] Running com.ycsopen.sms.core.service.account.PlatformAccountPolicyTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.account.PlatformAccountPolicyTest
+[INFO] Running com.ycsopen.sms.core.service.account.PlatformAccountServiceTransactionTest
+2026-09-09T22:43:38.284+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.service.account.PlatformAccountServiceTransactionTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:38.291+08:00 INFO  c.y.s.c.s.a.PlatformAccountServiceTransactionTest - Starting PlatformAccountServiceTransactionTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:38.291+08:00 DEBUG c.y.s.c.s.a.PlatformAccountServiceTransactionTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:38.291+08:00 INFO  c.y.s.c.s.a.PlatformAccountServiceTransactionTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:38.367+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:38.367+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-09T22:43:38.402+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 35 ms. Found 16 JPA repository interfaces.
+2026-09-09T22:43:38.406+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:38.409+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:c9e58aa2-91d6-47fd-8c9f-c6b9593bbdce;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:38.423+08:00 INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-09-09T22:43:38.424+08:00 INFO  o.h.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-09-09T22:43:38.426+08:00 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-09T22:43:38.489+08:00 INFO  o.h.e.t.j.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate:
+    drop table if exists billing_records cascade
+Hibernate:
+    drop table if exists blacklist_entries cascade
+Hibernate:
+    drop table if exists channels cascade
+Hibernate:
+    drop table if exists complaint_ratio_stats cascade
+Hibernate:
+    drop table if exists complaints cascade
+Hibernate:
+    drop table if exists frequency_rules cascade
+Hibernate:
+    drop table if exists message_tasks cascade
+Hibernate:
+    drop table if exists route_rules cascade
+Hibernate:
+    drop table if exists sensitive_words cascade
+Hibernate:
+    drop table if exists signatures cascade
+Hibernate:
+    drop table if exists templates cascade
+Hibernate:
+    drop table if exists tenant_accounts cascade
+Hibernate:
+    drop table if exists tenant_api_keys cascade
+Hibernate:
+    drop table if exists tenant_protocol_credentials cascade
+Hibernate:
+    drop table if exists tenants cascade
+Hibernate:
+    drop table if exists users cascade
+Hibernate:
+    create table billing_records (
+        billing_date date not null,
+        quantity integer not null,
+        unit_price numeric(38,2) not null,
+        amount bigint not null,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        task_ref_id bigint not null,
+        tenant_id bigint not null,
+        billing_status enum ('CONFIRMED','RESERVED','REVERSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table blacklist_entries (
+        created_at timestamp(6),
+        effective_at timestamp default current_timestamp,
+        expires_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        masked_mobile varchar(32) default '***' not null,
+        mobile_encrypted varbinary(255) not null,
+        mobile_hash varchar(255) not null,
+        reason varchar(255),
+        list_type enum ('BLACK','WHITE') not null,
+        source enum ('BATCH_IMPORT','COMPLAINT_LINKED','MANUAL','THIRD_PARTY_RISK','UNSUBSCRIBE_AUTO'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table channels (
+        max_connections integer not null,
+        port integer,
+        price numeric(38,2) not null,
+        priority integer not null,
+        tps_limit integer not null,
+        window_size integer not null,
+        configuration_version bigint not null,
+        effective_version_id bigint,
+        id bigint generated by default as identity,
+        offline_at timestamp(6),
+        paused_at timestamp(6),
+        account_encrypted varbinary(255),
+        active_window varchar(255),
+        availability varchar(255) not null,
+        channel_name varchar(255) not null,
+        extra_config varchar(255),
+        host varchar(255),
+        offline_by varchar(255),
+        password_encrypted varbinary(255),
+        pause_reason varchar(255),
+        paused_by varchar(255),
+        service_id varchar(255),
+        sp_id varchar(255),
+        src_id varchar(255),
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        protocol enum ('CMPP','HTTP','SGIP','SMGP'),
+        status enum ('ABNORMAL','MAINTENANCE','NORMAL','OFFLINE','PAUSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table complaint_ratio_stats (
+        over_threshold boolean,
+        ratio numeric(38,2),
+        calculated_at timestamp(6),
+        complaint_count bigint,
+        dimension_id bigint not null,
+        id bigint generated by default as identity,
+        send_count bigint,
+        stat_month varchar(255) not null,
+        dimension_type enum ('CHANNEL','TENANT') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table complaints (
+        channel_id bigint,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        message_id varchar(255),
+        summary varchar(255),
+        source enum ('OPERATOR','REGULATOR','USER_REPORT'),
+        status enum ('CLOSED','PENDING','PROCESSED','PROCESSING'),
+        primary key (id)
+    )
+Hibernate:
+    create table frequency_rules (
+        limit_count integer not null,
+        limit_window_seconds integer not null,
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        rule_name varchar(255) not null,
+        action enum ('ALERT','BLOCK','DELAY'),
+        limit_type enum ('CONTENT_SIMILARITY','IP','MOBILE','TENANT_LEVEL') not null,
+        scope enum ('API_KEY','GLOBAL','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table message_tasks (
+        cost numeric(38,2),
+        retry_count integer,
+        version integer,
+        channel_id bigint,
+        created_at timestamp(6),
+        deliver_time timestamp(6),
+        id bigint generated by default as identity,
+        send_time timestamp(6),
+        signature_id bigint,
+        submit_id bigint,
+        template_id bigint,
+        tenant_id bigint not null,
+        mobile_hash varchar(64) not null,
+        channel_msg_id varchar(255),
+        content varchar(255) not null,
+        error_code varchar(255),
+        error_message varchar(255),
+        message_id varchar(255) not null unique,
+        mobile_encrypted varbinary(255) not null,
+        send_status enum ('DELIVERED','FAILED','PENDING','SENT'),
+        primary key (id)
+    )
+Hibernate:
+    create table route_rules (
+        priority integer not null,
+        id bigint generated by default as identity,
+        target_channel_id bigint,
+        tenant_id bigint,
+        phone_prefix varchar(255),
+        rule_name varchar(255) not null,
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table sensitive_words (
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        replacement varchar(255),
+        word varchar(255) not null,
+        action enum ('ALERT','BLOCK','REPLACE'),
+        category enum ('ADULT','FINANCIAL','ILLEGAL','MARKETING','OTHER','POLITICAL'),
+        level enum ('HIGH','LOW','MEDIUM'),
+        scope enum ('GLOBAL','PRODUCT','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table signatures (
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint not null,
+        audit_comment varchar(255),
+        sign_code varchar(255) not null,
+        sign_content varchar(255) not null,
+        audit_status enum ('APPROVED','PENDING','REJECTED','SUPPLEMENT_REQUIRED'),
+        risk_level enum ('HIGH','LOW','MEDIUM'),
+        sign_type enum ('APP','ENTERPRISE','GOVERNMENT','INSTITUTION','TRADEMARK') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table templates (
+        is_system_template boolean,
+        version_no integer,
+        audit_time timestamp(6),
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        previous_template_id bigint,
+        signature_id bigint not null,
+        tenant_id bigint not null,
+        usage_count bigint,
+        audit_comment varchar(255),
+        content varchar(255) not null,
+        description varchar(255),
+        param_check_rule varchar(255),
+        template_code varchar(255) not null,
+        template_name varchar(255) not null,
+        variable_names varchar(255),
+        audit_status enum ('AMENDMENT_REQUIRED','APPROVED','PENDING','REJECTED'),
+        template_type enum ('MARKETING','NOTIFY','VERIFY') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_accounts (
+        version integer,
+        balance bigint not null,
+        frozen_amount bigint not null,
+        id bigint generated by default as identity,
+        tenant_id bigint not null unique,
+        status enum ('ARREARS_FROZEN','DISABLED','NORMAL'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_api_keys (
+        rate_limit_per_day integer,
+        rate_limit_per_hour integer,
+        rate_limit_per_min integer,
+        rate_limit_per_sec integer,
+        expire_time timestamp(6),
+        id bigint generated by default as identity,
+        last_used_time timestamp(6),
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        app_key varchar(255) not null unique,
+        app_secret_encrypted varbinary(255) not null,
+        description varchar(255),
+        ip_whitelist varchar(255),
+        key_name varchar(255),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_protocol_credentials (
+        endpoint_port integer,
+        max_connections integer,
+        tps_limit integer,
+        window_size integer,
+        id bigint generated by default as identity,
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        endpoint_host varchar(255),
+        ip_whitelist varchar(255),
+        protocol varchar(255),
+        spid varchar(255),
+        status varchar(255),
+        primary key (id)
+    )
+Hibernate:
+    create table tenants (
+        contract_signed_at date,
+        customer_level integer,
+        inspection_confidence float(53),
+        license_valid_until date,
+        trademark_use boolean default false not null,
+        trial_quota integer,
+        trial_quota_used integer,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        initial_admin_user_id bigint,
+        inspection_completed_at timestamp(6),
+        qualification_revision bigint default 0 not null,
+        qualification_submitted_at timestamp(6),
+        trial_end_at timestamp(6),
+        trial_start_at timestamp(6),
+        verification_time timestamp(6),
+        verification_updated_at timestamp(6),
+        inspection_credit_code varchar(18),
+        registered_capital varchar(50),
+        biz_manager varchar(64),
+        industry varchar(64),
+        inspection_company_name varchar(100),
+        inspection_provider_request_id varchar(100),
+        qualification_reason varchar(500),
+        business_address varchar(255),
+        business_license_url varchar(255),
+        business_scope TEXT,
+        contact_id_no_encrypted varbinary(255),
+        contact_name varchar(255),
+        contact_phone_encrypted varbinary(255),
+        full_name varchar(255) not null,
+        legal_rep_id_back_url varchar(255),
+        legal_rep_id_front_url varchar(255),
+        legal_rep_id_no_encrypted varbinary(255),
+        legal_rep_name varchar(255),
+        registered_address varchar(255),
+        short_name varchar(255) not null,
+        shortlink_domain_proof_url varchar(255),
+        tenant_no varchar(255) not null unique,
+        trademark_proof_url varchar(255),
+        unified_social_credit_code varchar(255) not null unique,
+        billing_mode enum ('POSTPAID','PREPAID'),
+        inspection_status enum ('COMPLETED','FAILED','NOT_STARTED') default 'NOT_STARTED' not null,
+        lifecycle_status enum ('FROZEN','SIGNED','SUBMITTED','TERMINATED','TRIAL','TRIAL_FROZEN'),
+        verification_status enum ('PENDING','REJECTED','SUPPLEMENT_REQUIRED','UNVERIFIED','VERIFIED'),
+        primary key (id)
+    )
+Hibernate:
+    create table users (
+        failed_login_count integer,
+        valid_until date,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        last_login_time timestamp(6),
+        password_expire_time timestamp(6),
+        tenant_id bigint,
+        created_by varchar(255),
+        email varchar(255),
+        last_login_ip varchar(255),
+        password_hash varchar(255) not null,
+        phone_encrypted varbinary(255),
+        real_name varchar(255),
+        username varchar(255) not null unique,
+        status enum ('ACTIVE','DISABLED','LOCKED'),
+        user_type enum ('ADMIN','FINANCE','OPERATOR','TENANT_ADMIN','TENANT_DEV','TENANT_USER') not null,
+        primary key (id)
+    )
+2026-09-09T22:43:38.492+08:00 INFO  o.s.o.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-09T22:43:38.586+08:00 INFO  c.y.s.c.s.a.PlatformAccountServiceTransactionTest - Started PlatformAccountServiceTransactionTest in 0.301 seconds (process running for 29.848)
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=?
+Hibernate:
+    insert
+    into
+        users
+        (created_at, created_by, email, failed_login_count, last_login_ip, last_login_time, password_expire_time, password_hash, phone_encrypted, real_name, status, tenant_id, user_type, username, valid_until, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    select
+        count(*)
+    from
+        users u1_0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.325 s -- in com.ycsopen.sms.core.service.account.PlatformAccountServiceTransactionTest
+[INFO] Running com.ycsopen.sms.core.service.account.RoleAdministrationServiceJdbcTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.service.account.RoleAdministrationServiceJdbcTest
+[INFO] Running com.ycsopen.sms.core.service.account.PrivilegedDataServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.service.account.PrivilegedDataServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.LoginHistoryServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.service.account.LoginHistoryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.IdentitySessionServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.account.IdentitySessionServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.LoginAnomalyServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.account.LoginAnomalyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.PlatformAccountServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.ycsopen.sms.core.service.account.PlatformAccountServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.RoleAdministrationServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.service.account.RoleAdministrationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.PlatformAccountPhoneStoreTest
+2026-09-09T22:43:38.634+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.service.account.PlatformAccountPhoneStoreTest]: PlatformAccountPhoneStoreTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:38.635+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.service.account.PlatformAccountPhoneStoreTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:38.644+08:00 INFO  c.y.s.c.s.account.PlatformAccountPhoneStoreTest - Starting PlatformAccountPhoneStoreTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:38.644+08:00 DEBUG c.y.s.c.s.account.PlatformAccountPhoneStoreTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:38.644+08:00 INFO  c.y.s.c.s.account.PlatformAccountPhoneStoreTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:38.756+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:38.761+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:c54e3875-95f1-40e4-a6b4-cb3207efabf0;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:38.769+08:00 INFO  c.y.s.c.s.account.PlatformAccountPhoneStoreTest - Started PlatformAccountPhoneStoreTest in 0.131 seconds (process running for 30.03)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.144 s -- in com.ycsopen.sms.core.service.account.PlatformAccountPhoneStoreTest
+[INFO] Running com.ycsopen.sms.core.service.account.RoleAdministrationServiceTransactionTest
+2026-09-09T22:43:38.779+08:00 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.ycsopen.sms.core.service.account.RoleAdministrationServiceTransactionTest]: RoleAdministrationServiceTransactionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-09T22:43:38.781+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.service.account.RoleAdministrationServiceTransactionTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:38.790+08:00 INFO  c.y.s.c.s.a.RoleAdministrationServiceTransactionTest - Starting RoleAdministrationServiceTransactionTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:38.790+08:00 DEBUG c.y.s.c.s.a.RoleAdministrationServiceTransactionTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:38.790+08:00 INFO  c.y.s.c.s.a.RoleAdministrationServiceTransactionTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:38.877+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:38.879+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:75d2aebc-b523-4ecc-ae9e-cf0d44a7bb00;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:38.883+08:00 INFO  c.y.s.c.s.a.RoleAdministrationServiceTransactionTest - Started RoleAdministrationServiceTransactionTest in 0.101 seconds (process running for 30.145)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.321 s -- in com.ycsopen.sms.core.service.account.RoleAdministrationServiceTransactionTest
+[INFO] Running com.ycsopen.sms.core.service.account.AccountStateServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.account.AccountStateServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.AuthServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.144 s -- in com.ycsopen.sms.core.service.account.AuthServiceTest
+[INFO] Running com.ycsopen.sms.core.service.account.AuthServiceTransactionTest
+2026-09-09T22:43:39.247+08:00 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.ycsopen.sms.core.YcsopenSmsCoreApplication for test class com.ycsopen.sms.core.service.account.AuthServiceTransactionTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-09T22:43:39.253+08:00 INFO  c.y.s.c.s.account.AuthServiceTransactionTest - Starting AuthServiceTransactionTest using Java 21.0.10 with PID 94299 (started by laosanzheong in /Users/laosanzheong/Documents/codebases/ycsopen-sms/core)
+2026-09-09T22:43:39.253+08:00 DEBUG c.y.s.c.s.account.AuthServiceTransactionTest - Running with Spring Boot v3.3.4, Spring v6.1.13
+2026-09-09T22:43:39.253+08:00 INFO  c.y.s.c.s.account.AuthServiceTransactionTest - The following 1 profile is active: "dev"
+2026-09-09T22:43:39.314+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-09-09T22:43:39.314+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-09T22:43:39.342+08:00 INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 27 ms. Found 16 JPA repository interfaces.
+2026-09-09T22:43:39.345+08:00 INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2026-09-09T22:43:39.348+08:00 INFO  o.s.j.d.embedded.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:84cc0939-6f48-479d-8381-9ce353475f8c;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2026-09-09T22:43:39.362+08:00 INFO  org.hibernate.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-09-09T22:43:39.363+08:00 INFO  o.h.cache.internal.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-09-09T22:43:39.365+08:00 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-09T22:43:39.439+08:00 INFO  o.h.e.t.j.platform.internal.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate:
+    drop table if exists billing_records cascade
+Hibernate:
+    drop table if exists blacklist_entries cascade
+Hibernate:
+    drop table if exists channels cascade
+Hibernate:
+    drop table if exists complaint_ratio_stats cascade
+Hibernate:
+    drop table if exists complaints cascade
+Hibernate:
+    drop table if exists frequency_rules cascade
+Hibernate:
+    drop table if exists message_tasks cascade
+Hibernate:
+    drop table if exists route_rules cascade
+Hibernate:
+    drop table if exists sensitive_words cascade
+Hibernate:
+    drop table if exists signatures cascade
+Hibernate:
+    drop table if exists templates cascade
+Hibernate:
+    drop table if exists tenant_accounts cascade
+Hibernate:
+    drop table if exists tenant_api_keys cascade
+Hibernate:
+    drop table if exists tenant_protocol_credentials cascade
+Hibernate:
+    drop table if exists tenants cascade
+Hibernate:
+    drop table if exists users cascade
+Hibernate:
+    create table billing_records (
+        billing_date date not null,
+        quantity integer not null,
+        unit_price numeric(38,2) not null,
+        amount bigint not null,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        task_ref_id bigint not null,
+        tenant_id bigint not null,
+        billing_status enum ('CONFIRMED','RESERVED','REVERSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table blacklist_entries (
+        created_at timestamp(6),
+        effective_at timestamp default current_timestamp,
+        expires_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        masked_mobile varchar(32) default '***' not null,
+        mobile_encrypted varbinary(255) not null,
+        mobile_hash varchar(255) not null,
+        reason varchar(255),
+        list_type enum ('BLACK','WHITE') not null,
+        source enum ('BATCH_IMPORT','COMPLAINT_LINKED','MANUAL','THIRD_PARTY_RISK','UNSUBSCRIBE_AUTO'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table channels (
+        max_connections integer not null,
+        port integer,
+        price numeric(38,2) not null,
+        priority integer not null,
+        tps_limit integer not null,
+        window_size integer not null,
+        configuration_version bigint not null,
+        effective_version_id bigint,
+        id bigint generated by default as identity,
+        offline_at timestamp(6),
+        paused_at timestamp(6),
+        account_encrypted varbinary(255),
+        active_window varchar(255),
+        availability varchar(255) not null,
+        channel_name varchar(255) not null,
+        extra_config varchar(255),
+        host varchar(255),
+        offline_by varchar(255),
+        password_encrypted varbinary(255),
+        pause_reason varchar(255),
+        paused_by varchar(255),
+        service_id varchar(255),
+        sp_id varchar(255),
+        src_id varchar(255),
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        protocol enum ('CMPP','HTTP','SGIP','SMGP'),
+        status enum ('ABNORMAL','MAINTENANCE','NORMAL','OFFLINE','PAUSED'),
+        primary key (id)
+    )
+Hibernate:
+    create table complaint_ratio_stats (
+        over_threshold boolean,
+        ratio numeric(38,2),
+        calculated_at timestamp(6),
+        complaint_count bigint,
+        dimension_id bigint not null,
+        id bigint generated by default as identity,
+        send_count bigint,
+        stat_month varchar(255) not null,
+        dimension_type enum ('CHANNEL','TENANT') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table complaints (
+        channel_id bigint,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint,
+        message_id varchar(255),
+        summary varchar(255),
+        source enum ('OPERATOR','REGULATOR','USER_REPORT'),
+        status enum ('CLOSED','PENDING','PROCESSED','PROCESSING'),
+        primary key (id)
+    )
+Hibernate:
+    create table frequency_rules (
+        limit_count integer not null,
+        limit_window_seconds integer not null,
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        rule_name varchar(255) not null,
+        action enum ('ALERT','BLOCK','DELAY'),
+        limit_type enum ('CONTENT_SIMILARITY','IP','MOBILE','TENANT_LEVEL') not null,
+        scope enum ('API_KEY','GLOBAL','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table message_tasks (
+        cost numeric(38,2),
+        retry_count integer,
+        version integer,
+        channel_id bigint,
+        created_at timestamp(6),
+        deliver_time timestamp(6),
+        id bigint generated by default as identity,
+        send_time timestamp(6),
+        signature_id bigint,
+        submit_id bigint,
+        template_id bigint,
+        tenant_id bigint not null,
+        mobile_hash varchar(64) not null,
+        channel_msg_id varchar(255),
+        content varchar(255) not null,
+        error_code varchar(255),
+        error_message varchar(255),
+        message_id varchar(255) not null unique,
+        mobile_encrypted varbinary(255) not null,
+        send_status enum ('DELIVERED','FAILED','PENDING','SENT'),
+        primary key (id)
+    )
+Hibernate:
+    create table route_rules (
+        priority integer not null,
+        id bigint generated by default as identity,
+        target_channel_id bigint,
+        tenant_id bigint,
+        phone_prefix varchar(255),
+        rule_name varchar(255) not null,
+        operator enum ('INTERNATIONAL','MOBILE','TELECOM','UNICOM','VIRTUAL'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table sensitive_words (
+        created_at timestamp(6),
+        hit_count bigint,
+        id bigint generated by default as identity,
+        scope_ref_id bigint,
+        updated_at timestamp(6),
+        replacement varchar(255),
+        word varchar(255) not null,
+        action enum ('ALERT','BLOCK','REPLACE'),
+        category enum ('ADULT','FINANCIAL','ILLEGAL','MARKETING','OTHER','POLITICAL'),
+        level enum ('HIGH','LOW','MEDIUM'),
+        scope enum ('GLOBAL','PRODUCT','TENANT'),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table signatures (
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        tenant_id bigint not null,
+        audit_comment varchar(255),
+        sign_code varchar(255) not null,
+        sign_content varchar(255) not null,
+        audit_status enum ('APPROVED','PENDING','REJECTED','SUPPLEMENT_REQUIRED'),
+        risk_level enum ('HIGH','LOW','MEDIUM'),
+        sign_type enum ('APP','ENTERPRISE','GOVERNMENT','INSTITUTION','TRADEMARK') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table templates (
+        is_system_template boolean,
+        version_no integer,
+        audit_time timestamp(6),
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        previous_template_id bigint,
+        signature_id bigint not null,
+        tenant_id bigint not null,
+        usage_count bigint,
+        audit_comment varchar(255),
+        content varchar(255) not null,
+        description varchar(255),
+        param_check_rule varchar(255),
+        template_code varchar(255) not null,
+        template_name varchar(255) not null,
+        variable_names varchar(255),
+        audit_status enum ('AMENDMENT_REQUIRED','APPROVED','PENDING','REJECTED'),
+        template_type enum ('MARKETING','NOTIFY','VERIFY') not null,
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_accounts (
+        version integer,
+        balance bigint not null,
+        frozen_amount bigint not null,
+        id bigint generated by default as identity,
+        tenant_id bigint not null unique,
+        status enum ('ARREARS_FROZEN','DISABLED','NORMAL'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_api_keys (
+        rate_limit_per_day integer,
+        rate_limit_per_hour integer,
+        rate_limit_per_min integer,
+        rate_limit_per_sec integer,
+        expire_time timestamp(6),
+        id bigint generated by default as identity,
+        last_used_time timestamp(6),
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        app_key varchar(255) not null unique,
+        app_secret_encrypted varbinary(255) not null,
+        description varchar(255),
+        ip_whitelist varchar(255),
+        key_name varchar(255),
+        status enum ('ACTIVE','DISABLED'),
+        primary key (id)
+    )
+Hibernate:
+    create table tenant_protocol_credentials (
+        endpoint_port integer,
+        max_connections integer,
+        tps_limit integer,
+        window_size integer,
+        id bigint generated by default as identity,
+        revoked_at timestamp(6),
+        tenant_id bigint not null,
+        endpoint_host varchar(255),
+        ip_whitelist varchar(255),
+        protocol varchar(255),
+        spid varchar(255),
+        status varchar(255),
+        primary key (id)
+    )
+Hibernate:
+    create table tenants (
+        contract_signed_at date,
+        customer_level integer,
+        inspection_confidence float(53),
+        license_valid_until date,
+        trademark_use boolean default false not null,
+        trial_quota integer,
+        trial_quota_used integer,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        initial_admin_user_id bigint,
+        inspection_completed_at timestamp(6),
+        qualification_revision bigint default 0 not null,
+        qualification_submitted_at timestamp(6),
+        trial_end_at timestamp(6),
+        trial_start_at timestamp(6),
+        verification_time timestamp(6),
+        verification_updated_at timestamp(6),
+        inspection_credit_code varchar(18),
+        registered_capital varchar(50),
+        biz_manager varchar(64),
+        industry varchar(64),
+        inspection_company_name varchar(100),
+        inspection_provider_request_id varchar(100),
+        qualification_reason varchar(500),
+        business_address varchar(255),
+        business_license_url varchar(255),
+        business_scope TEXT,
+        contact_id_no_encrypted varbinary(255),
+        contact_name varchar(255),
+        contact_phone_encrypted varbinary(255),
+        full_name varchar(255) not null,
+        legal_rep_id_back_url varchar(255),
+        legal_rep_id_front_url varchar(255),
+        legal_rep_id_no_encrypted varbinary(255),
+        legal_rep_name varchar(255),
+        registered_address varchar(255),
+        short_name varchar(255) not null,
+        shortlink_domain_proof_url varchar(255),
+        tenant_no varchar(255) not null unique,
+        trademark_proof_url varchar(255),
+        unified_social_credit_code varchar(255) not null unique,
+        billing_mode enum ('POSTPAID','PREPAID'),
+        inspection_status enum ('COMPLETED','FAILED','NOT_STARTED') default 'NOT_STARTED' not null,
+        lifecycle_status enum ('FROZEN','SIGNED','SUBMITTED','TERMINATED','TRIAL','TRIAL_FROZEN'),
+        verification_status enum ('PENDING','REJECTED','SUPPLEMENT_REQUIRED','UNVERIFIED','VERIFIED'),
+        primary key (id)
+    )
+Hibernate:
+    create table users (
+        failed_login_count integer,
+        valid_until date,
+        created_at timestamp(6),
+        id bigint generated by default as identity,
+        last_login_time timestamp(6),
+        password_expire_time timestamp(6),
+        tenant_id bigint,
+        created_by varchar(255),
+        email varchar(255),
+        last_login_ip varchar(255),
+        password_hash varchar(255) not null,
+        phone_encrypted varbinary(255),
+        real_name varchar(255),
+        username varchar(255) not null unique,
+        status enum ('ACTIVE','DISABLED','LOCKED'),
+        user_type enum ('ADMIN','FINANCE','OPERATOR','TENANT_ADMIN','TENANT_DEV','TENANT_USER') not null,
+        primary key (id)
+    )
+2026-09-09T22:43:39.442+08:00 INFO  o.s.o.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-09T22:43:39.527+08:00 INFO  c.y.s.c.s.account.AuthServiceTransactionTest - Started AuthServiceTransactionTest in 0.279 seconds (process running for 30.789)
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+Hibernate:
+    insert
+    into
+        users
+        (created_at, created_by, email, failed_login_count, last_login_ip, last_login_time, password_expire_time, password_hash, phone_encrypted, real_name, status, tenant_id, user_type, username, valid_until, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+Hibernate:
+    delete
+    from
+        users
+    where
+        id=?
+Hibernate:
+    insert
+    into
+        users
+        (created_at, created_by, email, failed_login_count, last_login_ip, last_login_time, password_expire_time, password_hash, phone_encrypted, real_name, status, tenant_id, user_type, username, valid_until, id)
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=? for update
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    update
+        users
+    set
+        created_at=?,
+        created_by=?,
+        email=?,
+        failed_login_count=?,
+        last_login_ip=?,
+        last_login_time=?,
+        password_expire_time=?,
+        password_hash=?,
+        phone_encrypted=?,
+        real_name=?,
+        status=?,
+        tenant_id=?,
+        user_type=?,
+        username=?,
+        valid_until=?
+    where
+        id=?
+Hibernate:
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_count,
+        u1_0.last_login_ip,
+        u1_0.last_login_time,
+        u1_0.password_expire_time,
+        u1_0.password_hash,
+        u1_0.phone_encrypted,
+        u1_0.real_name,
+        u1_0.status,
+        u1_0.tenant_id,
+        u1_0.user_type,
+        u1_0.username,
+        u1_0.valid_until
+    from
+        users u1_0
+    where
+        u1_0.username=?
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.118 s -- in com.ycsopen.sms.core.service.account.AuthServiceTransactionTest
+[INFO] Running com.ycsopen.sms.core.service.risk.BlacklistRiskControlServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.ycsopen.sms.core.service.risk.BlacklistRiskControlServiceTest
+[INFO] Running com.ycsopen.sms.core.service.risk.ContentSafetyServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.ycsopen.sms.core.service.risk.ContentSafetyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.risk.FrequencyRuleServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.ycsopen.sms.core.service.risk.FrequencyRuleServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tool.NumberAttributionServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.ycsopen.sms.core.service.tool.NumberAttributionServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tool.ProviderStatusTaxonomyServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.ycsopen.sms.core.service.tool.ProviderStatusTaxonomyServiceTest
+[INFO] Running com.ycsopen.sms.core.migration.WebhookDeliveryTransportMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.migration.WebhookDeliveryTransportMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.MessageReceiptErrorOperationsMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.migration.MessageReceiptErrorOperationsMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.BulkScheduledTaskOperationsMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.migration.BulkScheduledTaskOperationsMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.DefaultAdminMigrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 s -- in com.ycsopen.sms.core.migration.DefaultAdminMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.HttpUpstreamDeliveryMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.migration.HttpUpstreamDeliveryMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.SecureHttpMessageAcceptanceMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.migration.SecureHttpMessageAcceptanceMigrationTest
+[INFO] Running com.ycsopen.sms.core.migration.DispatchTaskRecoveryMigrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.migration.DispatchTaskRecoveryMigrationTest
+[INFO]
+[INFO] Results:
+[INFO]
+[WARNING] Tests run: 804, Failures: 0, Errors: 0, Skipped: 33
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  32.781 s
+[INFO] Finished at: 2026-09-09T22:43:40+08:00
+[INFO] ------------------------------------------------------------------------

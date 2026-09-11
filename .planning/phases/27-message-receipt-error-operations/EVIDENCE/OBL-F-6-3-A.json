@@ -1,0 +1,11 @@
+{
+  "obligation": "OBL-F-6-3-A",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.hmacStatusQueryRejectsCrossTenantMessageWithoutExistenceLeak",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/prd-obligations.log"
+  ],
+  "verified_behavior": "Authorized status query remains backed by the existing message status query service and returns normalized task/submission/outbox/billing state fields for the owning tenant."
+}

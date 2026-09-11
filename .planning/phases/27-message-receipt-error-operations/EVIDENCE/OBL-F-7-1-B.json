@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-1-B",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.listViewsExposeTraceColumnsAndDoNotRevealProtectedMobileOrFullContent",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-submission-trace",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Submission trace links accepted submission, task, outbox/provider, receipt, billing/status context without returning protected input plaintext."
+}

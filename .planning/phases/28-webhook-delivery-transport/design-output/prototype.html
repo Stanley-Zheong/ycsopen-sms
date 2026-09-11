@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Phase28 Webhook Delivery Prototype</title>
+  <style>
+    body { margin: 0; font-family: Inter, "PingFang SC", sans-serif; background: #f8fafc; color: #0f172a; }
+    main { display: grid; gap: 20px; padding: 32px; }
+    section { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 12px 32px rgba(15, 23, 42, .06); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    label { display: grid; gap: 6px; color: #475569; }
+    input { border: 1px solid #cbd5e1; border-radius: 10px; min-height: 38px; padding: 0 10px; }
+    button { border: 0; border-radius: 10px; background: #2563eb; color: white; padding: 10px 14px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+  </style>
+</head>
+<body>
+<main>
+  <section data-testid="tenant-webhook-delivery-config-form">
+    <p>/tenant/webhooks tenant-webhooks</p>
+    <h1>Webhook 回调配置</h1>
+    <div class="grid">
+      <label>状态回调<input data-testid="tenant-webhook-delivery-status-url" value="https://callback.example.com/status" /></label>
+      <label>上行回调<input data-testid="tenant-webhook-delivery-uplink-url" value="https://callback.example.com/uplink" /></label>
+      <label>退订回调<input data-testid="tenant-webhook-delivery-unsubscribe-url" value="https://callback.example.com/unsubscribe" /></label>
+    </div>
+    <button data-testid="tenant-webhook-delivery-test">SSRF 安全测试</button>
+  </section>
+  <section data-testid="admin-webhook-delivery-push-failures-page">
+    <p>/admin/push/failures admin-push-failures</p>
+    <h1>Webhook 推送失败治理</h1>
+    <div data-testid="admin-webhook-delivery-push-failures-policy">策略：5 次 / 指数退避 / 可暂停恢复</div>
+    <table>
+      <tr><th>事件</th><th>租户</th><th>状态</th><th>操作</th></tr>
+      <tr><td>STATUS:MSG_1:FAILED</td><td>7</td><td>PUSH_FAILED</td><td><button data-testid="admin-webhook-delivery-push-failures-replay">重放</button></td></tr>
+    </table>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-13-5-B","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.cancelFailAndRestartControlsHaveExecutableStateEvidence","bulk-scheduled.test.tsx"],"verified_behavior":"Admin task controls require reason, apply only on supported states, and return the resulting task state."}

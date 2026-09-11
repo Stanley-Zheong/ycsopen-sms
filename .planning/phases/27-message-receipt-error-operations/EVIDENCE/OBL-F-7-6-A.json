@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-6-A",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.errorGroupsUseNormalizedTaxonomyAndExportRequestsOnlyCreateHandoffEvidence",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-error-page",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Error detail groups final failed messages by normalized error code/category/severity/retryability with tenant and channel counts."
+}

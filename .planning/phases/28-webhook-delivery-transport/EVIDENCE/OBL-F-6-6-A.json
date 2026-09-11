@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-6-6-A",
+  "owner": "webhook-delivery-transport",
+  "status": "PASS",
+  "evidence": [
+    "WebhookDeliveryTransportServiceTest.savesThreeDistinctDestinationsAndRejectsSsrfTargets",
+    "web/test/scripts/webhook-delivery.spec.ts: pw-p28-tenant-webhooks"
+  ],
+  "verified_behavior": "Tenant callback configuration preserves separate status, uplink, and unsubscribe HTTPS destinations and rejects localhost/private-network targets before save or test."
+}

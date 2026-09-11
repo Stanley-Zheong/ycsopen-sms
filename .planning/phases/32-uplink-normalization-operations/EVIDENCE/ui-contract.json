@@ -1,0 +1,135 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/uplink",
+      "/tenant/uplink"
+    ],
+    "test_ids": [
+      "admin-uplink-normalization-uplink-detail",
+      "admin-uplink-normalization-uplink-replay",
+      "tenant-uplink-normalization-uplinks-auto-reply-config",
+      "admin-uplink-normalization-uplinks-page",
+      "admin-uplink-normalization-push-monitor-page",
+      "admin-uplink-normalization-uplink-push-destination-action"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/32-uplink-normalization-operations/UI-ELEMENTS.md",
+        "sha256": "9c7989d2be37b9d39855abf1bd66b8e3af28da3f5170ad86ef2fe5591b7bbeb5"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/32-uplink-normalization-operations/design-output/uplink-normalization.pen",
+        "sha256": "2908f09f25b81ac552544c41896528014a5cf9372da80bb9577baa7385264641"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/uplink",
+      "/tenant/uplink"
+    ],
+    "test_ids": [
+      "admin-uplink-normalization-uplink-detail",
+      "admin-uplink-normalization-uplink-replay",
+      "tenant-uplink-normalization-uplinks-auto-reply-config",
+      "admin-uplink-normalization-uplinks-page",
+      "admin-uplink-normalization-push-monitor-page",
+      "admin-uplink-normalization-uplink-push-destination-action"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/32-uplink-normalization-operations/design-output/prototype.html",
+        "sha256": "1d894211aaa4cb80aefaccb84b6fbac63b9987bb8a0ff772416ecef6ae841d7d"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-uplink-normalization-uplink-detail",
+      "admin-uplink-normalization-uplink-replay",
+      "tenant-uplink-normalization-uplinks-auto-reply-config",
+      "admin-uplink-normalization-uplinks-page",
+      "admin-uplink-normalization-push-monitor-page",
+      "admin-uplink-normalization-uplink-push-destination-action"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/32-uplink-normalization-operations/design-output/prototype.spec.ts",
+        "sha256": "8c179d11002c2408087e7d92af638a3ffe8bfe996f83d886e0e4d245107d32b1"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/uplink",
+      "/tenant/uplink"
+    ],
+    "test_ids": [
+      "admin-uplink-normalization-uplink-detail",
+      "admin-uplink-normalization-uplink-replay",
+      "tenant-uplink-normalization-uplinks-auto-reply-config",
+      "admin-uplink-normalization-uplinks-page",
+      "admin-uplink-normalization-push-monitor-page",
+      "admin-uplink-normalization-uplink-push-destination-action"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "628f0cb3e80fb994fcea30ffdb7db2c104133e02f2c9095dc26049015c1bb11c"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "f6448ec176287ee8ccd3c9168da6f414aaa73f1c0d3cfa17bfacc7e9fc36829b"
+      },
+      {
+        "path": "web/src/components/layout/TenantLayout.tsx",
+        "sha256": "c180dba0b87536287e07712e6180344b00c4a7d265cc652dca3bb353605f6e36"
+      },
+      {
+        "path": "web/src/api/uplinkNormalizationApi.ts",
+        "sha256": "85ca17c898ca5f8cb76100d4c14a04dd04c4f712da7c11271fdfcca7f1afdc6e"
+      },
+      {
+        "path": "web/src/pages/admin/uplinks/AdminUplinksPage.tsx",
+        "sha256": "82f6b95ef1ae332afd621af2e6c42f9191349735b2d5d8211b3dd01853fd07ce"
+      },
+      {
+        "path": "web/src/pages/tenant/uplinks/TenantUplinksPage.tsx",
+        "sha256": "59e90d25cf75e9cda6942699915efb7a5bb28b34ac5210982162895b893afcac"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-uplink-normalization-uplink-detail",
+      "admin-uplink-normalization-uplink-replay",
+      "tenant-uplink-normalization-uplinks-auto-reply-config",
+      "admin-uplink-normalization-uplinks-page",
+      "admin-uplink-normalization-push-monitor-page",
+      "admin-uplink-normalization-uplink-push-destination-action"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/uplink-normalization.spec.ts",
+        "sha256": "3c64e277981541fda501001b055fdc8f2e6287a24f73a423a831892880f4df4c"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test uplink-normalization.spec.ts --config web/playwright.config.ts --project=local-google-chrome",
+    "commit": "1ff8b90778054210588d95dfea408409ce7a80f8",
+    "config": "web/playwright.config.ts",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/32-uplink-normalization-operations/EVIDENCE/playwright-uplink-normalization-report.json",
+      "sha256": "9d37008d9d949d967dc0337239a1274534bf64991b12de010fdc53095d35fed1"
+    }
+  }
+}

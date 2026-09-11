@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-BATCH-COMPLETE","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.controlsStateBoundariesAndReconcilesTerminalItems"],"verified_behavior":"Reconcile marks a task completed only after valid child items are terminal and progress counts derive from item rows."}

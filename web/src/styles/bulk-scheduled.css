@@ -1,0 +1,97 @@
+.bulk-scheduled-page {
+  display: grid;
+  gap: 20px;
+}
+
+.bulk-scheduled-page header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bulk-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.bulk-form label,
+.bulk-reason {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.bulk-form input,
+.bulk-form select,
+.bulk-form textarea,
+.bulk-reason input {
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.bulk-form textarea {
+  min-height: 140px;
+}
+
+.bulk-wide {
+  grid-column: 1 / -1;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.bulk-alert {
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.bulk-alert.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.bulk-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.bulk-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bulk-table th,
+.bulk-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px;
+  text-align: left;
+}
+
+.bulk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.bulk-cards article {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.bulk-cards span {
+  display: block;
+  color: #64748b;
+}
+
+.bulk-cards strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 24px;
+}

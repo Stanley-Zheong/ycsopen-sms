@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-6-3-B",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.hmacStatusQueryRejectsCrossTenantMessageWithoutExistenceLeak",
+    "EVIDENCE/mvn-focused.log"
+  ],
+  "verified_behavior": "Cross-tenant status probing receives MESSAGE_STATUS_NOT_FOUND instead of tenant ownership or existence details."
+}

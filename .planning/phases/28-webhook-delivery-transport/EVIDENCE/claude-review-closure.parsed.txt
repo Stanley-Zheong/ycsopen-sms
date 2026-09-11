@@ -1,0 +1,13 @@
+Reviewed all five areas against the code shown:
+
+- **SSRF validation**: HTTPS-only, blocks `localhost`/`.local` by string, resolves DNS and rejects loopback/link-local/site-local/multicast/any-local addresses. Re-validated immediately before each delivery attempt (in `deliverEvent`), not just at config save time.
+- **Redirect handling**: `NoRedirectRequestFactory` disables `setInstanceFollowRedirects`, closing the redirect-based SSRF bypass.
+- **Timeout config**: Connect/read timeouts both set from a validated (`>0`) constructor param; no unbounded default.
+- **Tenant signing secret**: `COALESCE(callback_signing_secret, ?)` ensures the secret is generated once via `SecureRandom` and never silently rotated/overwritten on subsequent config saves.
+- **Jackson payload serialization**: Uses the standard injected `ObjectMapper` for serialization only (no deserialization of untrusted input, no polymorphic typing enabled), so no gadget-chain risk.
+
+One residual note, not rated blocking/high: there's a narrow TOCTOU window between `validateDestination`'s DNS resolution and `RestTemplate`'s own connection-time resolution (classic DNS-rebinding pattern), since the client re-resolves the hostname rather than connecting to the pre-validated IP. Worth a follow-up hardening ticket (e.g., resolve once and connect by IP with a Host header, or pin resolution), but it doesn't block this phase.
+
+NO BLOCKING OR HIGH FINDINGS.
+Tokens: input=2 output=4627 cache_read=20603 | Model: unknown
+SESSION_ID:cf75bf81-edbb-4c16-af20-d6d4994544ad

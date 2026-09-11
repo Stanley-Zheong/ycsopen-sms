@@ -1,0 +1,1 @@
+ui_contract=PASS phase=29 package=bulk-scheduled-task-operations stage=production mode=production selectors=12 routes=4 owned_elements=8 owned_pages=4

@@ -1,0 +1,12 @@
+{
+  "obligation": "OBL-F-7-2-B",
+  "owner": "message-receipt-error-operations",
+  "status": "PASS",
+  "evidence": [
+    "MessageReceiptErrorOperationsServiceTest.resendIsIdempotentAndPreservesOriginalEvidence",
+    "web/test/scripts/message-operations.spec.ts: pw-p27-send-resend",
+    "EVIDENCE/mvn-focused.log",
+    "EVIDENCE/playwright-message-operations.log"
+  ],
+  "verified_behavior": "Eligible failed-message resend and appeal require a reason, record operation evidence, and repeated actionId does not invoke retry twice."
+}

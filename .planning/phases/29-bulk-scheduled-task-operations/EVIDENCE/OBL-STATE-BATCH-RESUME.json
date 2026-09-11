@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-BATCH-RESUME","owner":"bulk-scheduled-task-operations","status":"PASS","evidence":["BulkScheduledTaskServiceTest.controlsStateBoundariesAndReconcilesTerminalItems"],"verified_behavior":"Resume is accepted only from PAUSED and returns RUNNING without re-fanning terminal item rows."}
