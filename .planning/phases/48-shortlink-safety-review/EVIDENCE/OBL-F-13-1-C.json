@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-1-C","result":"PASS","evidence":["ShortLinkSafetyServiceTest","TenantShortLinkPage"],"summary":"Analytics derive deduplicated click totals with privacy-safe region and device distribution."}

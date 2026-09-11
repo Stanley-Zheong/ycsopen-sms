@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-2-10-B",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationServiceTest.prepaidOutstandingBlocksUntilClearedThenApprovalAndEffectRevokeEveryMutableResource proves prepaid clearance blocks until balance/frozen amounts are zero.",
+    "TenantCooperationTerminationServiceTest.postpaidUnsettledEvidenceBlocksApprovalWithExactClearanceReason proves unsettled statements block approval with exact evidence.",
+    "web/test/scripts/tenant-cooperation-termination.spec.ts case C-P49-CLEARANCE covers visible clearance evidence."
+  ]
+}

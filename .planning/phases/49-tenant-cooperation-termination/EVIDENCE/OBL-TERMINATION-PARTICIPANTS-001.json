@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-TERMINATION-PARTICIPANTS-001",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationService.PARTICIPANTS defines HTTP_ACCEPTANCE, API_KEYS, CMPP_SESSIONS, CONSOLE_SESSIONS, BULK_SCHEDULED_WORK, WEBHOOK, UPLINK, UNSUBSCRIBE, SIGNATURE, TEMPLATE, BILLING, SETTLEMENT, ARCHIVE_RETENTION, FAILURE_COMPENSATION and IRREVERSIBILITY.",
+    "tenant_termination_participants persists participant_code, participant_state, blocker_count and evidence_json per request."
+  ]
+}

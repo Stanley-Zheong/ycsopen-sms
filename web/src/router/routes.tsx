@@ -66,6 +66,10 @@ import AdminTenantRiskPage from '@/pages/admin/risk/AdminTenantRiskPage';
 import AdminCustomReportsPage from '@/pages/admin/reports/AdminCustomReportsPage';
 import AdminExportCenterPage from '@/pages/admin/exports/AdminExportCenterPage';
 import AdminRetentionArchivePage from '@/pages/admin/archive/AdminRetentionArchivePage';
+import TenantShortLinkPage from '@/pages/tenant/shortlinks/TenantShortLinkPage';
+import AdminShortLinkReviewPage from '@/pages/admin/shortlinks/AdminShortLinkReviewPage';
+import PublicShortLinkSafePage from '@/pages/public/PublicShortLinkSafePage';
+import AdminTenantTerminationPage from '@/pages/admin/tenants/AdminTenantTerminationPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -76,6 +80,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/admin/auth/login', element: <LoginPage /> },
+  { path: '/s/:code', element: <PublicShortLinkSafePage /> },
   { path: '/admin/users', element: <Navigate to="/admin/system/users" replace /> },
   { path: '/admin/roles', element: <Navigate to="/admin/system/roles" replace /> },
   { path: '/tenant/register', element: <TenantRegistrationPage /> },
@@ -134,6 +139,8 @@ export const router = createBrowserRouter([
       { path: '/admin/custom/reports', element: <AdminCustomReportsPage /> },
       { path: '/admin/export-center', element: <AdminExportCenterPage /> },
       { path: '/admin/archive', element: <AdminRetentionArchivePage /> },
+      { path: '/admin/shortlinks/review', element: <AdminShortLinkReviewPage /> },
+      { path: '/admin/tenant/terminations', element: <AdminTenantTerminationPage /> },
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },
@@ -174,7 +181,7 @@ export const router = createBrowserRouter([
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },
       { path: '/tenant/unsubscribes', element: <TenantUnsubscribesPage /> },
-      { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },
+      { path: '/tenant/shortlink', element: <TenantShortLinkPage /> },
       { path: '/tenant/qualification', element: <TenantQualificationPage /> },
       { path: '/tenant/administrators', element: <TenantAdministratorsPage /> },
       { path: '/tenant/api/keys', element: <TenantApiKeysPage /> },

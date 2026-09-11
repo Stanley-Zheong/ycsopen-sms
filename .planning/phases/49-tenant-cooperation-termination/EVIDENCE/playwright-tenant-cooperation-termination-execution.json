@@ -1,0 +1,14 @@
+{
+  "command": "npm --prefix web exec -- playwright test tenant-cooperation-termination.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/49-tenant-cooperation-termination/EVIDENCE/playwright-tenant-cooperation-termination-raw.json",
+  "commit": "a9f48bfa3e76ac4752df853c35580022e4dce8ca",
+  "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P49-REQUEST",
+    "C-P49-CLEARANCE",
+    "C-P49-TIMELINE",
+    "C-P49-APPROVE",
+    "C-P49-FLOW"
+  ],
+  "raw_report": ".planning/phases/49-tenant-cooperation-termination/EVIDENCE/playwright-tenant-cooperation-termination-raw.json"
+}

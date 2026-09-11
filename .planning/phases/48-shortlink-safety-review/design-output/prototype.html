@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<body>
+  <main data-route="/tenant/shortlink" data-page-id="tenant-shortlinks" data-testid="tenant-shortlink-safety-shortlinks-page">
+    <input data-testid="tenant-shortlink-safety-shortlinks-form-url" value="https://example.com/campaign" />
+    <input data-testid="tenant-shortlink-safety-shortlinks-form-domain" value="s.ycsopen.test" />
+    <input data-testid="tenant-shortlink-safety-shortlinks-form-validity" type="date" />
+    <table data-testid="tenant-shortlink-safety-shortlinks-list"></table>
+    <section data-testid="tenant-shortlink-safety-analytics-page">去重点击 / 地域 / 设备</section>
+  </main>
+  <section data-route="/admin/shortlinks/review" data-page-id="admin-shortlinks-review" data-testid="admin-shortlink-safety-shortlinks-review-page">
+    <button data-testid="admin-shortlink-safety-shortlinks-approve">批准</button>
+    <button data-testid="admin-shortlink-safety-shortlinks-reject">驳回</button>
+  </section>
+  <section data-route="/s/:code" data-page-id="public-shortlink-pending" data-testid="public-shortlink-safety-pending-page">短链待审核，暂不跳转</section>
+  <section data-route="/s/:code" data-page-id="public-shortlink-expired" data-testid="public-shortlink-safety-expired-page">短链已过期</section>
+  <section data-route="/s/:code" data-page-id="public-shortlink-offline" data-testid="public-shortlink-safety-offline-page">短链已下线</section>
+</body>
+</html>
