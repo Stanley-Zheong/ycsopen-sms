@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-FLOW-12-1-CONTRACT","phase":37,"owner":"contract-pricing-postpaid","status":"PASS","evidence":["ContractPricingServiceTest covers mode, price version, credit, period, contract number and attachment validation.","contract-pricing.spec.ts pw-p37-flow-contract verifies admin conversion flow."]}

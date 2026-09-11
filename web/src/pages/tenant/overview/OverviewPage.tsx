@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { consumeTrial, getTrialOverview, requestConversion } from '@/api/trialPrepaidApi';
+import { getContractOverview } from '@/api/contractPricingApi';
 import { mutationErrorMessage } from '@/api/client';
 import { protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/trial-prepaid.css';
@@ -13,7 +14,9 @@ export default function OverviewPage() {
   const tenantId = useAuthStore((state) => state.tenantId) ?? 42;
   const queryClient = useQueryClient();
   const overviewKey = protectedQueryKey('trial-prepaid-overview', tenantId);
+  const contractKey = protectedQueryKey('contract-pricing-overview', tenantId);
   const overview = useQuery({ queryKey: overviewKey, queryFn: () => getTrialOverview(tenantId), retry: false });
+  const contract = useQuery({ queryKey: contractKey, queryFn: () => getContractOverview(tenantId), retry: false });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const consumeMutation = useMutation({
@@ -70,6 +73,20 @@ export default function OverviewPage() {
           <button type="button" data-testid="tenant-trial-prepaid-overview-consume-trial" onClick={() => consumeMutation.mutate()}>记录试用发送扣减</button>
           <button type="button" data-testid="tenant-trial-prepaid-overview-conversion-request" onClick={() => conversionMutation.mutate()}>申请转正式预付费</button>
         </div>
+      </section>
+      <section className="card" data-testid="tenant-contract-pricing-overview-contract-status">
+        <h2>签约状态</h2>
+        {contract.isLoading && <p>正在加载签约状态…</p>}
+        {contract.isError && <p role="alert">签约状态加载失败。</p>}
+        {contract.data && (
+          <dl className="trial-prepaid-metrics">
+            <div className="trial-prepaid-metric"><dt>状态</dt><dd>{contract.data.tenantState}</dd></div>
+            <div className="trial-prepaid-metric"><dt>计费模式</dt><dd>{contract.data.billingMode ?? '-'}</dd></div>
+            <div className="trial-prepaid-metric"><dt>价目表版本</dt><dd>{contract.data.priceBookVersion ?? '-'}</dd></div>
+            <div className="trial-prepaid-metric"><dt>授信额度</dt><dd>{contract.data.creditLimitMil ?? '-'}</dd></div>
+            <div className="trial-prepaid-metric"><dt>账期</dt><dd>{contract.data.billingPeriod ?? '-'}</dd></div>
+          </dl>
+        )}
       </section>
     </section>
   );

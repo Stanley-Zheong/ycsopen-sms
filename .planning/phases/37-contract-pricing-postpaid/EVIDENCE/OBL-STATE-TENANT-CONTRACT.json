@@ -1,0 +1,1 @@
+{"obligation_id":"OBL-STATE-TENANT-CONTRACT","phase":37,"owner":"contract-pricing-postpaid","status":"PASS","evidence":["ContractPricingService.approveContract updates trial_accounts to CONTRACTED inside the same transaction.","contract-pricing.spec.ts pw-p37-state-contract verifies tenant overview contracted state."]}

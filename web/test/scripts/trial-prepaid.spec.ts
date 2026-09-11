@@ -34,6 +34,9 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/v1/console/trial-prepaid/tenants/42/overview', async (route) => route.fulfill({
     json: response({ tenantId: 42, trialStatus: 'TRIAL_FROZEN', quotaTotal: 500, quotaRemaining: 0, validFrom: '2026-09-09T00:00:00', validUntil: '2026-09-23T00:00:00', version: 3 }),
   }));
+  await page.route('**/api/v1/console/contracts/tenants/42/overview', async (route) => route.fulfill({
+    json: response({ tenantId: 42, tenantState: 'NOT_CONTRACTED', billingMode: null, priceBookVersion: null, contractNo: null, signedAt: null, attachmentRef: null, creditLimitMil: null, billingPeriod: null, contractStatus: 'NONE', approvedBy: null }),
+  }));
   await page.route('**/api/v1/console/trial-prepaid/tenants/42/trial', async (route) => route.fulfill({
     json: response({ tenantId: 42, trialStatus: 'TRIAL', quotaTotal: 500, quotaRemaining: 500, validFrom: '2026-09-09T00:00:00', validUntil: '2026-09-23T00:00:00', version: 1 }),
   }));

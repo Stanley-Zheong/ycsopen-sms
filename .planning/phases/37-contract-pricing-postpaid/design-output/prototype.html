@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>Phase 37 Contract Pricing</title></head>
+  <body>
+    <main data-routes="/admin/tenant-trial-contracts /tenant/overview">
+      <section data-testid="admin-contract-pricing-tenant-contract-page">
+        <select data-testid="admin-contract-pricing-tenant-contract-billing-mode"><option>POSTPAID</option><option>PREPAID</option></select>
+        <input data-testid="admin-contract-pricing-tenant-contract-price-version" value="SMS_STANDARD_V1">
+        <input data-testid="admin-contract-pricing-tenant-contract-number" value="HT-2026-0001">
+        <input data-testid="admin-contract-pricing-tenant-contract-signed-date" value="2026-09-10">
+        <input data-testid="admin-contract-pricing-tenant-contract-attachment" value="oss://contracts/HT-2026-0001.pdf">
+        <div data-testid="admin-contract-pricing-tenant-contract-postpaid-fields">
+          <input data-testid="admin-contract-pricing-tenant-contract-credit-limit" value="1000000">
+          <label data-testid="admin-contract-pricing-tenant-contract-credit-period">账期<select data-testid="admin-contract-pricing-tenant-contract-billing-period"><option>MONTHLY</option></select></label>
+        </div>
+        <button data-testid="admin-contract-pricing-tenant-contract-approve">批准转正式签约</button>
+      </section>
+      <section data-testid="tenant-contract-pricing-overview-contract-status">CONTRACTED SMS_STANDARD_V1 MONTHLY</section>
+    </main>
+  </body>
+</html>
