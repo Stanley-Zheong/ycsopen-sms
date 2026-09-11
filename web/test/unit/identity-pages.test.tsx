@@ -277,7 +277,7 @@ describe('Phase 5 identity administration pages', () => {
       method: 'PUT',
       url: '/console/platform-roles/10/permissions',
       body: { permissionIds: [101, 102] },
-    }), { timeout: 5000 });
+    }));
     await waitFor(() => {
       expect(within(tree).getByLabelText('禁用账号')).toBeChecked();
       expect(screen.getByTestId('admin-console-identity-roles-save')).toBeDisabled();

@@ -28,21 +28,21 @@ CREATE TABLE number_prefix_mappings (
     CONSTRAINT fk_number_prefix_version FOREIGN KEY (version_id) REFERENCES number_prefix_versions(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Phase 19 validated 3-to-7 digit prefix mappings';
 
--- V1 already owns this table. Evolve it in place so existing portability rows
--- survive the Phase 19 cache metadata upgrade.
-ALTER TABLE mobile_portability
-    MODIFY mobile_encrypted VARBINARY(255) NULL COMMENT '🔒',
-    CHANGE COLUMN original_operator original_carrier
-        ENUM('MOBILE','UNICOM','TELECOM','VIRTUAL','INTERNATIONAL','UNKNOWN') NOT NULL,
-    CHANGE COLUMN current_operator current_carrier
-        ENUM('MOBILE','UNICOM','TELECOM','VIRTUAL','INTERNATIONAL','UNKNOWN') NOT NULL,
-    ADD COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT FIRST,
-    ADD COLUMN masked_mobile VARCHAR(32) NOT NULL DEFAULT '***' AFTER mobile_hash,
-    ADD COLUMN source_name VARCHAR(64) NOT NULL DEFAULT 'LEGACY' AFTER ported_at,
-    ADD COLUMN freshness_expires_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) AFTER source_name,
-    ADD COLUMN status ENUM('ACTIVE','EXPIRED','DISABLED') NOT NULL DEFAULT 'ACTIVE' AFTER freshness_expires_at,
-    ADD UNIQUE KEY uk_mobile_portability_id (id),
-    ADD KEY idx_mobile_portability_freshness (status, freshness_expires_at);
+CREATE TABLE mobile_portability (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    mobile_hash VARCHAR(64) NOT NULL,
+    masked_mobile VARCHAR(32) NOT NULL DEFAULT '***',
+    original_carrier ENUM('MOBILE','UNICOM','TELECOM','VIRTUAL','INTERNATIONAL','UNKNOWN') NOT NULL,
+    current_carrier ENUM('MOBILE','UNICOM','TELECOM','VIRTUAL','INTERNATIONAL','UNKNOWN') NOT NULL,
+    ported_at DATE NULL,
+    source_name VARCHAR(64) NOT NULL,
+    freshness_expires_at DATETIME(6) NOT NULL,
+    status ENUM('ACTIVE','EXPIRED','DISABLED') NOT NULL DEFAULT 'ACTIVE',
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    UNIQUE KEY uk_mobile_portability_hash (mobile_hash),
+    KEY idx_mobile_portability_freshness (status, freshness_expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Phase 19 protected portability cache; no plaintext mobile';
 
 CREATE TABLE portability_provider_configs (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
