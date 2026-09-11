@@ -34,22 +34,84 @@ function errorMessage(error: unknown) {
 
 export default function SendPage() {
   const [templateId, setTemplateId] = useState('');
-  const [result, setResult] = useState<string | null>(null);
+  const [recipientsText, setRecipientsText] = useState('13800138000');
+  const [variables, setVariables] = useState<Record<string, string>>({});
+  const [rendered, setRendered] = useState('');
+  const [correlationId, setCorrelationId] = useState(newCorrelationId);
+  const [results, setResults] = useState<TenantConsoleSendResponse[]>([]);
+  const [error, setError] = useState('');
+  const [networkRetry, setNetworkRetry] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    try {
-      const res = await apiClient.post('/sms/send', {
-        submitId: `CONSOLE-${Date.now()}`,
-        phoneNumber,
-        templateId,
-        templateParams: {},
-      });
-      setResult(`提交成功，消息ID：${res.data.data.messageId}`);
-    } catch (err: unknown) {
-      const message = isAxiosError<{ message?: string }>(err) ? err.response?.data?.message : undefined;
-      setResult(`提交失败：${message ?? '未知错误'}`);
-    }
+  const templates = useQuery({ queryKey: ['tenant-send-templates'], queryFn: listTenantTemplates, retry: false });
+  const signatures = useQuery({ queryKey: ['tenant-send-signatures'], queryFn: listTenantSignatures, retry: false });
+
+  const approvedSignatures = useMemo(() => (signatures.data ?? []).filter((signature) => signature.auditStatus === 'APPROVED'), [signatures.data]);
+  const approvedSignatureIds = useMemo(() => new Set(approvedSignatures.map((signature) => signature.id)), [approvedSignatures]);
+  const approvedTemplates = useMemo(() => (templates.data ?? []).filter((template) => (
+    template.auditStatus === 'APPROVED' && approvedSignatureIds.has(template.signatureId)
+  )), [templates.data, approvedSignatureIds]);
+  const selectedTemplate: TemplateRecord | null = approvedTemplates.find((template) => String(template.id) === templateId)
+    ?? approvedTemplates[0]
+    ?? null;
+  const selectedSignature = selectedTemplate
+    ? approvedSignatures.find((signature) => signature.id === selectedTemplate.signatureId)
+    : null;
+  const recipients = splitRecipients(recipientsText);
+
+  const preview = useMutation({
+    mutationFn: () => {
+      if (!selectedTemplate) throw new Error('请选择已审核通过的模板');
+      const scopedVariables = Object.fromEntries(
+        selectedTemplate.variableNames.map((name) => [name, variables[name] ?? '']),
+      );
+      return previewTemplate(selectedTemplate.id, scopedVariables);
+    },
+    onSuccess: (content) => {
+      setRendered(content);
+      setError('');
+    },
+    onError: (failure) => setError(errorMessage(failure)),
+  });
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (!selectedTemplate || !selectedSignature) throw new Error('请选择已审核通过的模板和签名');
+      if (recipients.length === 0) throw new Error('请至少输入一个手机号');
+      const scopedVariables = Object.fromEntries(
+        selectedTemplate.variableNames.map((name) => [name, variables[name] ?? '']),
+      );
+      const responses: TenantConsoleSendResponse[] = [];
+      for (const [index, phoneNumber] of recipients.entries()) {
+        responses.push(await sendTenantConsoleMessage({
+          submitId: `${correlationId}-${index}`,
+          phoneNumber,
+          templateId: String(selectedTemplate.id),
+          signId: String(selectedSignature.id),
+          templateParams: scopedVariables,
+        }));
+      }
+      return responses;
+    },
+    onSuccess: (responses) => {
+      setResults(responses);
+      setError('');
+      setNetworkRetry(false);
+      setCorrelationId(newCorrelationId());
+    },
+    onError: (failure) => {
+      setError(errorMessage(failure));
+      setNetworkRetry(isNetworkFailure(failure));
+    },
+  });
+
+  function updateVariable(name: string, value: string) {
+    setVariables((current) => ({ ...current, [name]: value }));
+    setRendered('');
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    submit.mutate();
   }
 
   return (
