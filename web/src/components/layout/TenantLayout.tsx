@@ -8,6 +8,8 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/templates', label: '模板管理' },
   { to: '/tenant/signatures', label: '签名管理' },
   { to: '/tenant/recharge', label: '账户充值' },
+  { to: '/tenant/statements', label: '对账单' },
+  { to: '/tenant/invoices', label: '发票申请' },
   { to: '/tenant/consumption-ledger', label: '消费账本' },
   { to: '/tenant/config', label: '配置管理' },
   { to: '/tenant/uplink', label: '上行消息查询' },
@@ -42,6 +44,10 @@ export default function TenantLayout() {
             <NavLink key={item.to} to={item.to} data-testid="tenant-trial-prepaid-consumption-ledger-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/recharge' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-recharge-operations-recharge-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/statements' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-reconciliation-settlement-statements-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
+          ) : item.to === '/tenant/invoices' ? (
+            <NavLink key={item.to} to={item.to} data-testid="tenant-reconciliation-settlement-invoices-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/uplink' ? (
             <NavLink key={item.to} to={item.to} data-testid="tenant-uplink-normalization-uplinks-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>{item.label}</NavLink>
           ) : item.to === '/tenant/unsubscribes' ? (

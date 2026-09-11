@@ -1,0 +1,28 @@
+{
+  "command": "npm --prefix web exec -- playwright test reconciliation-settlement.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P38-MONTHLY-PACK",
+    "C-P38-RECON-CONFIRM",
+    "C-P38-RECON-DIFFERENCE",
+    "C-P38-RECON-RESOLVE",
+    "C-P38-SETTLEMENT",
+    "C-P38-SETTLEMENT-DONE",
+    "C-P38-SETTLEMENT-RECEIVED",
+    "C-P38-SETTLEMENT-START",
+    "C-P38-STATEMENT-SOURCE",
+    "C-P38-TENANT-CONFIRM",
+    "C-P38-TENANT-INVOICE"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T03:53:14.068Z",
+    "duration": 3583.4970000000003,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "6231bb4302597d2c632d03f1ee02fcc2f9aa7c4c5e546a867a86b440f790712d"
+}
