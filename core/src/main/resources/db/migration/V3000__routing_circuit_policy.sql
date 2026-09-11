@@ -60,19 +60,18 @@ CREATE TABLE routing_decision_history (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'routing-policy:menu', '路由策略菜单', 'MENU', '访问路由策略页面'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='routing-policy:menu');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, status)
+SELECT 'routing-policy:menu', '路由策略菜单', 'MENU', '/admin/routing-policy', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='routing-policy:menu');
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'routing-policy:read', '路由策略读取', 'API', '查看路由策略、模拟和熔断状态'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='routing-policy:read');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, http_method, status)
+SELECT 'routing-policy:read', '路由策略读取', 'API', '/api/routing/policies', 'GET', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='routing-policy:read');
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'routing-policy:write', '路由策略维护', 'API', '维护路由规则、熔断和重试策略'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='routing-policy:write');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, http_method, status)
+SELECT 'routing-policy:write', '路由策略维护', 'API', '/api/routing/policies', 'POST', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='routing-policy:write');
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'routing-policy:import', '路由策略导入', 'BUTTON', '导入路由规则版本'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='routing-policy:import');
-
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, status)
+SELECT 'routing-policy:import', '路由策略导入', 'BUTTON', '/admin/routing-policy/import', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='routing-policy:import');
