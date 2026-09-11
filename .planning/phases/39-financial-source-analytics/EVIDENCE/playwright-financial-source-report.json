@@ -1,0 +1,20 @@
+{
+  "command": "npm --prefix web exec -- playwright test financial-source-analytics.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P39-CHANNEL-STATISTICS",
+    "C-P39-DRILLDOWN",
+    "C-P39-FINANCE-ANALYTICS"
+  ],
+  "raw_stats": {
+    "startTime": "2026-09-10T04:25:58.586Z",
+    "duration": 3307.299,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "raw_sha256": "e556d88b205d606dc2e0b0121ddee50e54e8c08ffedd3b284b26721481dbcaa7"
+}

@@ -1,0 +1,3 @@
+route:/admin/finance
+route:/admin/statistics
+testIds:admin-financial-source-financial-analytics-page,admin-financial-source-channel-statistics-page,admin-financial-source-financial-analytics-drilldown

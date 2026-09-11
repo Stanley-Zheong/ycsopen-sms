@@ -46,7 +46,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/uplink', label: '上行数据', roles: OPERATIONS },
   { to: '/admin/unsubscribes', label: '退订合规', roles: OPERATIONS },
   { to: '/admin/records', label: '数据详单', roles: OPERATIONS },
-  { to: '/admin/statistics', label: '数据统计', roles: OPERATIONS },
+  { to: '/admin/statistics', label: '数据统计', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/finance', label: '财务中心', roles: ['ADMIN', 'FINANCE'] },
   { to: '/admin/alerts', label: '告警管理', roles: OPERATIONS },
   { to: '/admin/tools', label: '工具管理', roles: OPERATIONS },
@@ -156,6 +156,14 @@ export default function AdminLayout() {
             </NavLink>
           ) : item.to === '/admin/invoices' ? (
             <NavLink key={item.to} to={item.to} data-testid="admin-reconciliation-settlement-invoices-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/statistics' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-financial-source-channel-statistics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+              {item.label}
+            </NavLink>
+          ) : item.to === '/admin/finance' ? (
+            <NavLink key={item.to} to={item.to} data-testid="admin-financial-source-financial-analytics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/uplink' ? (
