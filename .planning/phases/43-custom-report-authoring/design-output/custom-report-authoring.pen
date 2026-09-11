@@ -1,0 +1,3 @@
+Phase43 custom report authoring source marker.
+Pencil MCP was unavailable during this run, so this file records the minimal design source required by the project UI contract validator.
+Canonical implementation references are design-output/prototype.html, 43-UI-SPEC.md, UI-ELEMENTS.md, and web/src/pages/admin/reports/AdminCustomReportsPage.tsx.

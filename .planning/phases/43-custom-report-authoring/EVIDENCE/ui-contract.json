@@ -1,0 +1,104 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/custom/reports"
+    ],
+    "test_ids": [
+      "admin-custom-report-custom-reports-page",
+      "admin-custom-report-custom-reports-results"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/43-custom-report-authoring/UI-ELEMENTS.md",
+        "sha256": "c67255e7788b09519fe2cb72810dcaa05d7df9f0c5488c048e099611be4ea3c4"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/43-custom-report-authoring/design-output/custom-report-authoring.pen",
+        "sha256": "3bea4ebce91ea642929daddf77a112ffdf6477264acd4272ea65d1e7d6e15d1e"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/custom/reports"
+    ],
+    "test_ids": [
+      "admin-custom-report-custom-reports-page",
+      "admin-custom-report-custom-reports-results"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/43-custom-report-authoring/design-output/prototype.html",
+        "sha256": "5860bb74b61d206ff6d075a403135162034330bd1b31d6413fcc6afb10a2ecb8"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-custom-report-custom-reports-page",
+      "admin-custom-report-custom-reports-results"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/43-custom-report-authoring/design-output/prototype.spec.ts",
+        "sha256": "87435c32f120d32e1a22a7a955fcdd8805be462e3c36106c2cc9f3a39e4cfc85"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/custom/reports"
+    ],
+    "test_ids": [
+      "admin-custom-report-custom-reports-page",
+      "admin-custom-report-custom-reports-results"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "bc90a22854b8ce1758412cb81af8d8e6eec6449eacab756ac7f75f7409baf331"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "7917eea5f5ef9121da1a4d7ebb49b2a1c6f71312be8a23a638ecb191efdc86c5"
+      },
+      {
+        "path": "web/src/pages/admin/reports/AdminCustomReportsPage.tsx",
+        "sha256": "d49d0931bede62c40d108fe6dc70f002b0cde1d61add1e2177e4c29ee7606f45"
+      },
+      {
+        "path": "web/src/api/customReportApi.ts",
+        "sha256": "cc1795cad04cdecf6dc03b4b10ac9403145b4bba43d3b1e08291a175a98ad56d"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-custom-report-custom-reports-page",
+      "admin-custom-report-custom-reports-results"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/custom-report-authoring.spec.ts",
+        "sha256": "eb14cfd5e88c520ac68cb2a574056f7fa54322335f0c1b49a85800da2e274a71"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test custom-report-authoring.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/43-custom-report-authoring/EVIDENCE/playwright-custom-report-report.json",
+      "sha256": "074ed555e18bafcc281bb91d820755b437cbeaf1815583996049b392bf875dcb"
+    }
+  }
+}

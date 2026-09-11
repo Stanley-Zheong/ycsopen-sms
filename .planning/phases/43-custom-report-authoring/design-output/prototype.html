@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Phase 43 Custom Reports Prototype</title>
+  </head>
+  <body>
+    <main data-testid="admin-custom-report-custom-reports-page" data-route="/admin/custom/reports">
+      <section data-testid="admin-custom-report-custom-reports-builder">
+        <h1>自定义报表</h1>
+        <input data-testid="admin-custom-report-custom-reports-name" value="通道日报" />
+        <select data-testid="admin-custom-report-custom-reports-metric"><option>通道发送成功成本延迟指标</option></select>
+        <input data-testid="admin-custom-report-custom-reports-tenant" value="7" />
+        <input data-testid="admin-custom-report-custom-reports-channel" value="11" />
+        <input data-testid="admin-custom-report-custom-reports-message-type" value="VERIFY" />
+        <input data-testid="admin-custom-report-custom-reports-province" value="广东" />
+        <div data-testid="admin-custom-report-custom-reports-dimensions">period / tenant_id / channel_id / carrier / province / message_type</div>
+        <div data-testid="admin-custom-report-custom-reports-measures">send_count / success_count / fee_amount</div>
+        <button data-testid="admin-custom-report-custom-reports-preview">预览报表</button>
+        <button data-testid="admin-custom-report-custom-reports-save">保存定义</button>
+      </section>
+      <section data-testid="admin-custom-report-custom-reports-registry">
+        <div data-testid="admin-custom-report-custom-reports-formula">v1 / send/success/failure/cost/latency grouped by channel and geography</div>
+      </section>
+      <section data-testid="admin-custom-report-custom-reports-results">
+        <div data-testid="admin-custom-report-custom-reports-freshness">2026-09-01T01:03:00</div>
+        <div data-testid="admin-custom-report-custom-reports-quality">FRESH</div>
+        <table data-testid="admin-custom-report-custom-reports-accessible-table">
+          <tbody><tr data-testid="admin-custom-report-custom-reports-row"><td>MOBILE</td><td>drill-43</td></tr></tbody>
+        </table>
+      </section>
+      <section data-testid="admin-custom-report-custom-reports-saved-definition">通道日报</section>
+      <button data-testid="admin-custom-report-custom-reports-export">申请导出</button>
+      <div data-testid="admin-custom-report-custom-reports-export-status">REQUESTED</div>
+      <section data-testid="admin-custom-report-custom-reports-definition-list">已保存列表</section>
+    </main>
+  </body>
+</html>
