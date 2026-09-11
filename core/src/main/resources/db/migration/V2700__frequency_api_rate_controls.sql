@@ -51,11 +51,14 @@ CREATE TABLE frequency_rule_exemptions (
     KEY idx_frequency_exemption_scope (tenant_id, api_key_id, limit_type, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='F-5.6 频控豁免';
 
-INSERT IGNORE INTO permissions(code, name, resource_type, description)
-VALUES
-('frequency:menu', '频控规则菜单', 'MENU', '访问频控规则管理'),
-('frequency:read', '查看频控规则', 'API', '查看规则、指标、命中证据'),
-('frequency:write', '维护频控规则', 'API', '创建、更新、启停规则'),
-('frequency:import', '导入频控规则', 'BUTTON', '批量导入频控规则'),
-('frequency:export', '导出频控规则', 'BUTTON', '请求导出频控规则'),
-('frequency:scan', '试算频控规则', 'API', '执行频控规则试算');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, http_method, status)
+SELECT permission_code, permission_name, resource_type, resource_path, http_method, 'ACTIVE'
+FROM (
+    SELECT 'frequency:menu' permission_code, '频控规则菜单' permission_name, 'MENU' resource_type, '/admin/frequency/rules' resource_path, NULL http_method
+    UNION ALL SELECT 'frequency:read', '查看频控规则', 'API', '/api/frequency/rules', 'GET'
+    UNION ALL SELECT 'frequency:write', '维护频控规则', 'API', '/api/frequency/rules', 'POST'
+    UNION ALL SELECT 'frequency:import', '导入频控规则', 'BUTTON', '/admin/frequency/rules/import', NULL
+    UNION ALL SELECT 'frequency:export', '导出频控规则', 'BUTTON', '/admin/frequency/rules/export', NULL
+    UNION ALL SELECT 'frequency:scan', '试算频控规则', 'API', '/api/frequency/rules/scan', 'POST'
+) desired
+WHERE NOT EXISTS (SELECT 1 FROM permissions p WHERE p.permission_code = desired.permission_code);
