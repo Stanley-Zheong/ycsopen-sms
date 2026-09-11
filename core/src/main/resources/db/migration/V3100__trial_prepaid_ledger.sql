@@ -73,14 +73,14 @@ CREATE TABLE trial_conversion_requests (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'trial-prepaid:menu', '试用预付费菜单', 'MENU', '访问试用和预付费账本'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='trial-prepaid:menu');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, status)
+SELECT 'trial-prepaid:menu', '试用预付费菜单', 'MENU', '/admin/tenant-trial-contracts', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='trial-prepaid:menu');
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'trial-prepaid:read', '试用预付费读取', 'API', '查看试用、余额、消费、审计'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='trial-prepaid:read');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, http_method, status)
+SELECT 'trial-prepaid:read', '试用预付费读取', 'API', '/api/trial-prepaid', 'GET', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='trial-prepaid:read');
 
-INSERT INTO permissions(code, name, resource_type, description)
-SELECT 'trial-prepaid:write', '试用预付费维护', 'API', '维护试用额度、冻结、转换请求和账本'
-WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE code='trial-prepaid:write');
+INSERT INTO permissions(permission_code, permission_name, resource_type, resource_path, http_method, status)
+SELECT 'trial-prepaid:write', '试用预付费维护', 'API', '/api/trial-prepaid', 'POST', 'ACTIVE'
+WHERE NOT EXISTS (SELECT 1 FROM permissions WHERE permission_code='trial-prepaid:write');
