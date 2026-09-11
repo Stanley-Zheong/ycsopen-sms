@@ -16,9 +16,8 @@
 如需用于任何第三方商业交付，必须先取得项目版权方的书面商业授权。完整条款见
 [`LICENSE.md`](LICENSE.md)。
 
-> **实现程度请先读这句话**：本仓库按 GSD Phase 持续实施，当前不是全功能生产系统。
-> 已完成项必须同时有代码、测试和 Phase 验证证据；未进入或未闭环的模块不能按数据库表或页面
-> 占位算完成。CMPP 协议、大部分详单查询、计费账务后半段、告警通知等仍在后续范围。完整边界见
+> **实现边界**：56 个实施阶段已合并到 `main`。仓库提供可运行的后端、管理台、租户端和本地
+> 验证链路；生产部署仍需替换默认密钥、接入真实上游并完成安全审查。完整边界见
 > [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md) 与 [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)。
 
 ## 需求依据
@@ -147,7 +146,18 @@ npm run build
 并由 Nginx 托管 `web/dist/`、把 `/api/` 同源代理到后端。可直接复制的配置示例见
 [`docs/使用手册.md`](docs/使用手册.md#部署后端-jar)。
 
-### 6. 当前可用范围
+### 6. Docker 本机试运行
+
+```bash
+mvn -f core/pom.xml -DskipTests package
+npm --prefix web ci && npm --prefix web run build
+docker compose up --build
+```
+
+访问 <http://localhost:8088/login>，默认管理员为 `admin / Admin@123456`；演示机构、签名、模板、
+余额和 Sandbox 通道由 dev profile 自动种入。停止并删除本地数据：`docker compose down -v`。
+
+### 7. 当前可用范围
 
 登录后可查看已有真实页面和占位导航。控制台登录、机构注册/试用、通道基础管理、HTTP 单条发送、
 路由/预付费核心服务、投诉占比看板，以及带类型校验、版本历史、热加载和回滚的系统配置已有实现；
@@ -162,12 +172,12 @@ npm run build
 
 | 检查 | 结果 |
 |---|---|
-| `mvn -f core/pom.xml test` | ✅ 499/499 通过，另有 22 项环境条件跳过 |
-| `npm --prefix web test -- --run` | ✅ 37/37 通过 |
-| `npm --prefix web run lint` | ✅ 通过 |
+| `mvn -f core/pom.xml test` | ✅ 855 通过，33 项环境条件跳过 |
+| `npm --prefix web test` | ✅ 101/101 通过 |
+| `npm --prefix web run lint` | 以 CI/本地命令结果为准 |
 | `npm --prefix web run build` | ✅ 通过 |
 | 本机 Google Chrome Phase 07 真实服务 Playwright | ✅ 3/3 通过，无平台 API 请求替身 |
-| Phase 07 真实 MySQL | ✅ V1600/V1601、历史保护、版本并发和回滚通过 |
+| Phase 03 real integration | CI 使用 MySQL、MinIO、SoftHSM 执行；本机需 Docker |
 
 以上是实际执行过的命令结果，不是"应该能跑"的推测。
 
