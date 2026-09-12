@@ -6,7 +6,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate   # schema is owned by Flyway migrations, not Hibernate
+      ddl-auto: none      # schema is owned by Flyway migrations, not Hibernate
     properties:
       hibernate:
         format_sql: true
