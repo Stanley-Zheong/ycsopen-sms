@@ -73,7 +73,7 @@ services:
       - "${YCSOPEN_BIND_ADDRESS:-127.0.0.1}:${YCSOPEN_WEB_PORT:-5173}:80"
     depends_on:
       core:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
 volumes:
