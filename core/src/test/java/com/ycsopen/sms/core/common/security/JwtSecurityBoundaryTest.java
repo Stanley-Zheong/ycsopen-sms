@@ -26,7 +26,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(classes = JwtSecurityBoundaryTest.TestApplication.class)
+@SpringBootTest(
+        classes = JwtSecurityBoundaryTest.TestApplication.class,
+        properties = "management.health.redis.enabled=false")
 @AutoConfigureMockMvc
 class JwtSecurityBoundaryTest {
 

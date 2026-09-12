@@ -213,3 +213,41 @@ jobs:
         run: npm --prefix web test
       - name: Build frontend
         run: npm --prefix web run build
+
+  docker-release:
+    name: Docker release / Google Chrome
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Verify checked-out pull-request head
+        env:
+          BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
+        run: test "$(git rev-parse HEAD)" = "$BUILD_COMMIT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install Web acceptance dependencies
+        run: npm --prefix web ci
+      - name: Verify runner Google Chrome
+        run: /usr/bin/google-chrome --version
+      - name: Verify fresh and repeated Docker release
+        env:
+          BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+        run: ./scripts/verify-docker-release
+      - name: Upload Docker release diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-release-${{ github.run_id }}
+          path: |
+            web/playwright-report/
+            web/test-results/
+          if-no-files-found: warn
+          retention-days: 14
