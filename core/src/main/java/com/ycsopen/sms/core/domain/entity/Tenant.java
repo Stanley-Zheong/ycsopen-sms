@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -81,7 +83,7 @@ public class Tenant {
     private String businessAddress;
     @Column(name = "license_valid_until")
     private LocalDate licenseValidUntil;
-    @Column(name = "customer_level")
+    @Column(name = "customer_level", columnDefinition = "tinyint")
     private Integer customerLevel = 1;
     @Column(name = "biz_manager", length = 64)
     private String bizManager;
@@ -104,10 +106,14 @@ public class Tenant {
     private InspectionStatus inspectionStatus = InspectionStatus.NOT_STARTED;
     @Column(name = "inspection_company_name", length = 100)
     private String inspectionCompanyName;
-    @Column(name = "inspection_credit_code", length = 18)
+    @Convert(converter = FixedWidthCharConverter.class)
+    @Column(name = "inspection_credit_code", length = 18, columnDefinition = "char(18)")
     private String inspectionCreditCode;
-    @Column(name = "inspection_confidence")
-    private Double inspectionConfidence;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "inspection_confidence", precision = 5, scale = 4,
+            columnDefinition = "decimal(5,4)")
+    private BigDecimal inspectionConfidence;
     @Column(name = "inspection_provider_request_id", length = 100)
     private String inspectionProviderRequestId;
     @Column(name = "inspection_completed_at")
@@ -182,6 +188,16 @@ public class Tenant {
     public enum InspectionStatus { NOT_STARTED, COMPLETED, FAILED }
     public enum LifecycleStatus { SUBMITTED, TRIAL, TRIAL_FROZEN, SIGNED, FROZEN, TERMINATED }
     public enum BillingMode { PREPAID, POSTPAID }
+
+    public Double getInspectionConfidence() {
+        return inspectionConfidence == null ? null : inspectionConfidence.doubleValue();
+    }
+
+    public void setInspectionConfidence(Double value) {
+        inspectionConfidence = value == null
+                ? null
+                : BigDecimal.valueOf(value).setScale(4, RoundingMode.HALF_UP);
+    }
 
     /** Presence describes stored material without disclosing or decrypting its protected value. */
     @JsonIgnore

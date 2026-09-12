@@ -1,0 +1,80 @@
+name: ${COMPOSE_PROJECT_NAME:-ycsopen-sms}
+
+services:
+  mysql:
+    image: ${YCSOPEN_MYSQL_IMAGE:-mysql:8.4}
+    environment:
+      MYSQL_DATABASE: ${YCSOPEN_DB_NAME:-ycsopen_sms}
+      MYSQL_ROOT_PASSWORD: ${YCSOPEN_DB_ROOT_PASSWORD:-root-local-only}
+      MYSQL_USER: ${YCSOPEN_DB_USERNAME:-ycsopen}
+      MYSQL_PASSWORD: ${YCSOPEN_DB_PASSWORD:-ycsopen-local-only}
+      DB_MIGRATION_USERNAME: ${YCSOPEN_DB_MIGRATION_USERNAME:-ycsopen_migrator}
+      DB_MIGRATION_PASSWORD: ${YCSOPEN_DB_MIGRATION_PASSWORD:-ycsopen-migrator-local-only}
+    command: ["--log-bin-trust-function-creators=1"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./deploy/mysql/10-create-migration-user.sh:/docker-entrypoint-initdb.d/10-create-migration-user.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping --host=127.0.0.1 --user=root --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: ${YCSOPEN_REDIS_IMAGE:-redis:7.2-alpine}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  core:
+    image: ${COMPOSE_PROJECT_NAME:-ycsopen-sms}-core:${BUILD_COMMIT:-unknown}
+    build:
+      context: .
+      dockerfile: core/Dockerfile
+      args:
+        BUILD_COMMIT: ${BUILD_COMMIT:-unknown}
+    environment:
+      BUILD_COMMIT: ${BUILD_COMMIT:-unknown}
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${YCSOPEN_DB_NAME:-ycsopen_sms}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: ${YCSOPEN_DB_USERNAME:-ycsopen}
+      DB_PASSWORD: ${YCSOPEN_DB_PASSWORD:-ycsopen-local-only}
+      DB_MIGRATION_USERNAME: ${YCSOPEN_DB_MIGRATION_USERNAME:-ycsopen_migrator}
+      DB_MIGRATION_PASSWORD: ${YCSOPEN_DB_MIGRATION_PASSWORD:-ycsopen-migrator-local-only}
+      DB_USER_HOST: "%"
+      SPRING_FLYWAY_LOCATIONS: ${YCSOPEN_FLYWAY_LOCATIONS:-classpath:db/migration,classpath:db/devmigration,classpath:db/releasemigration}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      JWT_SECRET: ${YCSOPEN_JWT_SECRET:-docker-release-local-only-jwt-secret-change-before-shared-use}
+    ports:
+      - "${YCSOPEN_BIND_ADDRESS:-127.0.0.1}:${YCSOPEN_CORE_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: ${COMPOSE_PROJECT_NAME:-ycsopen-sms}-web:${BUILD_COMMIT:-unknown}
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        BUILD_COMMIT: ${BUILD_COMMIT:-unknown}
+    environment:
+      BUILD_COMMIT: ${BUILD_COMMIT:-unknown}
+    ports:
+      - "${YCSOPEN_BIND_ADDRESS:-127.0.0.1}:${YCSOPEN_WEB_PORT:-5173}:80"
+    depends_on:
+      core:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:

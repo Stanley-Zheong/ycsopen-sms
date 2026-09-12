@@ -162,7 +162,7 @@ public class MessageTaskProtectionAdapterTest {
                 "SELECT mobile_hash FROM message_tasks WHERE id = ?",
                 String.class, saved.getId());
         assertThat(storedEnvelope).containsExactly(prepared.copyEnvelope());
-        assertThat(locator).matches("p3c1_[A-Za-z0-9_-]{43}")
+        assertThat(locator.stripTrailing()).matches("p3c1_[A-Za-z0-9_-]{43}")
                 .doesNotMatch("[a-f0-9]{64}")
                 .isNotEqualTo(rawMobileSha256());
         assertThat(jdbc.queryForList("""
