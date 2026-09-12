@@ -19,6 +19,13 @@ and adds repeatable, development-release seed data in a separate Flyway
 location. The seed preserves existing rows and can run repeatedly without
 creating duplicates.
 
+The fresh-volume runtime gate also validates Hibernate against the migrated
+MySQL schema. Fixed-width fields already defined as `CHAR` by versioned
+migrations are mapped with the same width and SQL type in their JPA entities;
+this is an entity-contract correction and does not rewrite migration history.
+The same boundary explicitly maps the existing decimal, tiny-integer, and
+native-enum columns that differ from Java's default inferred SQL types.
+
 ## Scope and ownership
 
 | Rule | Owner | Delivery surface | Verification surface |
@@ -63,8 +70,8 @@ creating duplicates.
 
 ## Validation ladder
 
-- Unit: runtime metadata configuration, repeatable seed idempotency, dashboard
-  selector.
+- Unit: runtime metadata configuration, fixed-width MySQL/JPA compatibility,
+  repeatable seed idempotency, dashboard selector.
 - Repository: Java 21 tests, Node 20 install/tests/build, planning validators.
 - Integration: fresh MySQL volume, Core health, Flyway history, repeated start.
 - Browser/API: Google Chrome Playwright login, dashboard, API data, fixture and

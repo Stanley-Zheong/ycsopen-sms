@@ -52,7 +52,8 @@ public class MessageTask {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     @ToString.Exclude
-    @Column(name = "mobile_hash", nullable = false, length = 64)
+    @Convert(converter = FixedWidthCharConverter.class)
+    @Column(name = "mobile_hash", nullable = false, length = 64, columnDefinition = "char(64)")
     private String mobileHash;
 
     @Column(nullable = false)

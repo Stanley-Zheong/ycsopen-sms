@@ -21,7 +21,8 @@ public class ComplaintRatioStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "stat_month", nullable = false)
+    @Convert(converter = FixedWidthCharConverter.class)
+    @Column(name = "stat_month", nullable = false, length = 7, columnDefinition = "char(7)")
     private String statMonth;
 
     @Enumerated(EnumType.STRING)
