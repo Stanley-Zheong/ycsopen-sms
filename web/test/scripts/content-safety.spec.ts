@@ -77,11 +77,12 @@ test('pw-p17-policy C-P17-POLICY-METRICS OBL-F-5-5-A pw-p17-import C-P17-POLICY-
   await expect(page.getByTestId('admin-runtime-content-content-safety-cards')).toContainText('词库总数 3');
   await expect(page.getByTestId('admin-runtime-content-content-safety-cards')).toContainText('今日拦截 4');
   await expect(page.getByTestId('admin-runtime-content-content-safety-policy-page')).toContainText('营销');
+  await page.getByTestId('query-panel-toggle').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-word')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-category')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-level')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-action')).toHaveValue('');
-  await expect(page.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('ACTIVE');
+  await expect(page.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-create-dialog')).toHaveCount(0);
   await page.getByTestId('admin-runtime-content-content-safety-create-open').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-word')).toHaveValue('营销');

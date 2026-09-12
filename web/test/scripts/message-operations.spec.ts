@@ -10,10 +10,10 @@ const errors = [{ normalizedCode: 'E42', platformCategory: 'FAILURE', severity: 
 
 async function mockMessageOperationsApis(page: Page) {
   await mockEmptyDashboard(page);
-  await page.route('**/api/v1/console/message-operations/submissions?**', (route: Route) => route.fulfill({ json: apiResponse(submissions) }));
-  await page.route('**/api/v1/console/message-operations/sends?**', (route: Route) => route.fulfill({ json: apiResponse(sends) }));
-  await page.route('**/api/v1/console/message-operations/receipts?**', (route: Route) => route.fulfill({ json: apiResponse(receipts) }));
-  await page.route('**/api/v1/console/message-operations/errors?**', (route: Route) => route.fulfill({ json: apiResponse(errors) }));
+  await page.route(/\/api\/v1\/console\/message-operations\/submissions(?:\?.*)?$/, (route: Route) => route.fulfill({ json: apiResponse(submissions) }));
+  await page.route(/\/api\/v1\/console\/message-operations\/sends(?:\?.*)?$/, (route: Route) => route.fulfill({ json: apiResponse(sends) }));
+  await page.route(/\/api\/v1\/console\/message-operations\/receipts(?:\?.*)?$/, (route: Route) => route.fulfill({ json: apiResponse(receipts) }));
+  await page.route(/\/api\/v1\/console\/message-operations\/errors(?:\?.*)?$/, (route: Route) => route.fulfill({ json: apiResponse(errors) }));
   await page.route('**/api/v1/console/message-operations/sends/MSG_FAILED/resend', async (route: Route) => {
     expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核确认' }));
     await route.fulfill({ json: apiResponse({ actionId: 'RESEND-1', action: 'RESEND', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RETRY_CREATED', resultMessage: '301' }) });
@@ -33,7 +33,7 @@ async function mockMessageOperationsApis(page: Page) {
     expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ action: 'BULK_RETRY', errorCode: 'E42', messageIds: ['MSG_FAILED'] }));
     await route.fulfill({ json: apiResponse({ actionId: 'BULK-1', action: 'BULK_RETRY', total: 1, completed: 1, failed: 0, results: [] }) });
   });
-  await page.route('**/api/v1/console/message-operations/exports?**', async (route: Route) => route.fulfill({
+  await page.route(/\/api\/v1\/console\/message-operations\/exports(?:\?.*)?$/, async (route: Route) => route.fulfill({
     json: apiResponse({ actionId: 'EXPORT-1', action: 'EXPORT_REQUEST', target: 'snapshot', status: 'COMPLETED', resultCode: 'EXPORT_REQUESTED', resultMessage: '导出请求已登记，匹配行数:3' }),
   }));
 }

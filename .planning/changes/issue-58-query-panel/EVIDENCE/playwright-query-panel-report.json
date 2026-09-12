@@ -1,0 +1,52 @@
+{
+  "recordedAt": "2026-09-12T09:03:58Z",
+  "result": "PASS",
+  "expected": 3,
+  "unexpected": 0,
+  "skipped": 0,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "nativeLibrarySource": "Debian 12 arm64 packages extracted under the command's temporary LD_LIBRARY_PATH"
+  },
+  "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell",
+  "command": "LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4203 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue58-query-panel-report-final.json ./node_modules/.bin/playwright test test/scripts/query-panel.spec.ts --config playwright.config.ts --project=local-google-chrome --workers=1 --reporter=json --output=/tmp/issue58-query-panel-artifacts-final",
+  "rawReportSha256": "4a4358ec92a71060621290b8137dc7c7ab71cbd1b9f833fc1889bdd32d4c30b3",
+  "sourceSha256": {
+    "web/test/scripts/query-panel.spec.ts": "ce8025613ae074bfdf7d9e82bc9542a9031320c8c47642ee2d5a0fd2f34a9d4d",
+    "web/playwright.config.ts": "51ef39a70fb1c4559bdad4abe8dc807280bd9b2ec32f52459c9adbd4887a28d9",
+    "web/src/components/common/QueryPanel.tsx": "9ad5014bf18d4f92b920acc1f3ce496c003478416de7018f295ffa8113c94f77",
+    "web/src/pages/admin/tenants/TenantListPage.tsx": "845dbf4c71ccaa04c322d8880ec7cefebbde7c55a6a9a227d25e7950c7099b37",
+    "web/src/pages/admin/security/OperationAuditPage.tsx": "7dc4e35999c5d87af3d45df90c20f59661d218347a1d9b048188500403bd4319",
+    "web/src/pages/admin/uplinks/AdminUplinksPage.tsx": "0b4bfa299a011f2e66c8dc2cc3ee0bbce08bf9eab2ffc75bedb44613f557b777"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-58-ADMIN-TENANTS",
+      "playwrightId": "pw-issue-58-admin-tenants",
+      "obligationId": "OBL-ISSUE-58-ADMIN-TENANTS",
+      "status": "passed"
+    },
+    {
+      "id": "C-ISSUE-58-OPERATION-AUDIT",
+      "playwrightId": "pw-issue-58-operation-audit",
+      "obligationId": "OBL-ISSUE-58-OPERATION-AUDIT",
+      "status": "passed"
+    },
+    {
+      "id": "C-ISSUE-58-ADMIN-UPLINKS",
+      "playwrightId": "pw-issue-58-admin-uplinks",
+      "obligationId": "OBL-ISSUE-58-ADMIN-UPLINKS",
+      "status": "passed"
+    }
+  ],
+  "boundary": {
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "This ARM64 runner has no installed Google Chrome, no Ruby, and no reachable Docker daemon. The full Chromium binary also fails during Crashpad initialization; the Playwright Chromium headless shell is stable."
+  }
+}

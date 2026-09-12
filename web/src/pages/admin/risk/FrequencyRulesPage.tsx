@@ -13,6 +13,7 @@ import {
 } from '@/api/frequencyRuleApi';
 import { mutationErrorMessage } from '@/api/client';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/frequency-rules.css';
@@ -37,6 +38,8 @@ const IMPORT_RULE: Pick<FrequencyRulePayload, 'limitType' | 'limitCount' | 'limi
   scopeRefId: DEFAULT_RULE.scopeRefId,
 };
 
+const EMPTY_FILTERS = { name: '', type: '', action: '', status: '' };
+
 export default function FrequencyRulesPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -47,7 +50,8 @@ export default function FrequencyRulesPage() {
   const canImport = admin || access.can(FREQUENCY_PERMISSIONS.import);
   const canExport = admin || access.can(FREQUENCY_PERMISSIONS.export);
   const canUsePage = canRead || canWrite || canImport || canExport || access.isLoading;
-  const [filters, setFilters] = useState({ name: '', type: '', action: '', status: 'ACTIVE' });
+  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [form, setForm] = useState(DEFAULT_RULE);
   const [importText, setImportText] = useState('同号秒级限制\n同IP分钟限制');
   const [importRule, setImportRule] = useState(IMPORT_RULE);
@@ -160,30 +164,15 @@ export default function FrequencyRulesPage() {
         </div>
       </section>
 
-      <section className="card" data-testid="admin-frequency-api-frequency-rules-policy-page">
+      <section data-testid="admin-frequency-api-frequency-rules-policy-page">
         <h2>规则列表</h2>
-        <div className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-filters">
-          <label>规则名
-            <input data-testid="admin-frequency-api-frequency-rules-filter-name" value={filters.name} onChange={(event) => setFilters({ ...filters, name: event.target.value })} />
-          </label>
-          <label>维度
-            <select data-testid="admin-frequency-api-frequency-rules-filter-type" value={filters.type} onChange={(event) => setFilters({ ...filters, type: event.target.value })}>
-              <option value="">全部</option><option value="MOBILE">手机号</option><option value="TENANT_LEVEL">机构</option><option value="IP">IP</option><option value="CONTENT_SIMILARITY">内容相似度</option>
-            </select>
-          </label>
-          <label>动作
-            <select data-testid="admin-frequency-api-frequency-rules-filter-action" value={filters.action} onChange={(event) => setFilters({ ...filters, action: event.target.value })}>
-              <option value="">全部</option><option value="BLOCK">拦截</option><option value="DELAY">延迟</option><option value="ALERT">告警</option>
-            </select>
-          </label>
-          <label>状态
-            <select data-testid="admin-frequency-api-frequency-rules-filter-status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
-              <option value="">全部</option><option value="ACTIVE">启用</option><option value="DISABLED">停用</option>
-            </select>
-          </label>
-        </div>
-        {canWrite && <button type="button" data-testid="admin-frequency-api-frequency-rules-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建频控规则</button>}
-        {createOpen && (
+        <QueryPanel
+          legacyPanelTestId="admin-frequency-api-frequency-rules-filters"
+          onSubmit={() => setFilters({ ...draftFilters })}
+          onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+          result={<>
+            {canWrite && <button type="button" data-testid="admin-frequency-api-frequency-rules-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建频控规则</button>}
+            {createOpen && (
           <ModalDialog labelledBy="frequency-rule-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
             <form className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-create-dialog" onSubmit={(event) => { event.preventDefault(); saveMutation.mutate(form); }}>
               <h2 id="frequency-rule-create-title">新建频控规则</h2>
@@ -203,12 +192,12 @@ export default function FrequencyRulesPage() {
               </div>
             </form>
           </ModalDialog>
-        )}
-        <div className="frequency-rules-actions">
-          <button type="button" data-testid="admin-frequency-api-frequency-rules-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入规则</button>
-          <button type="button" data-testid="admin-frequency-api-frequency-rules-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
-        </div>
-        {importOpen && (
+            )}
+            <div className="frequency-rules-actions">
+              <button type="button" data-testid="admin-frequency-api-frequency-rules-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入规则</button>
+              <button type="button" data-testid="admin-frequency-api-frequency-rules-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
+            </div>
+            {importOpen && (
           <ModalDialog labelledBy="frequency-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
             <form className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
               <h2 id="frequency-import-title">批量导入频控规则</h2>
@@ -226,22 +215,48 @@ export default function FrequencyRulesPage() {
               </div>
             </form>
           </ModalDialog>
-        )}
-        <table className="ratio-table" data-testid="admin-frequency-api-frequency-rules-table">
-          <thead><tr><th>规则</th><th>维度</th><th>次数</th><th>窗口</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} data-testid="admin-frequency-api-frequency-rules-row">
-                <td>{row.ruleName}</td><td>{row.limitType}</td><td>{row.limitCount}</td><td>{row.limitWindowSeconds}</td><td>{row.action}</td><td>{row.scope}{row.scopeRefId ? `:${row.scopeRefId}` : ''}</td><td>{row.status}</td><td>{row.hitCount}</td><td>{row.createdAt ?? '-'}</td>
-                <td>
-                  {row.status === 'ACTIVE'
-                    ? <button type="button" data-testid="admin-frequency-api-frequency-rules-disable" disabled={!canWrite} onClick={() => disableMutation.mutate(row.id)}>停用</button>
-                    : <button type="button" data-testid="admin-frequency-api-frequency-rules-enable" disabled={!canWrite} onClick={() => enableMutation.mutate(row.id)}>启用</button>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            )}
+            {rules.isLoading && <p role="status">正在加载频控规则…</p>}
+            {rules.isError && <p role="alert">频控规则加载失败。</p>}
+            {!rules.isLoading && !rules.isError && rows.length === 0 && <p>暂无频控规则。</p>}
+            {!rules.isLoading && !rules.isError && rows.length > 0 && (
+              <table className="ratio-table" data-testid="admin-frequency-api-frequency-rules-table">
+                <thead><tr><th>规则</th><th>维度</th><th>次数</th><th>窗口</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} data-testid="admin-frequency-api-frequency-rules-row">
+                      <td>{row.ruleName}</td><td>{row.limitType}</td><td>{row.limitCount}</td><td>{row.limitWindowSeconds}</td><td>{row.action}</td><td>{row.scope}{row.scopeRefId ? `:${row.scopeRefId}` : ''}</td><td>{row.status}</td><td>{row.hitCount}</td><td>{row.createdAt ?? '-'}</td>
+                      <td>
+                        {row.status === 'ACTIVE'
+                          ? <button type="button" data-testid="admin-frequency-api-frequency-rules-disable" disabled={!canWrite} onClick={() => disableMutation.mutate(row.id)}>停用</button>
+                          : <button type="button" data-testid="admin-frequency-api-frequency-rules-enable" disabled={!canWrite} onClick={() => enableMutation.mutate(row.id)}>启用</button>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>}
+        >
+          <QueryField name="name" label="规则名">
+            <input data-testid="admin-frequency-api-frequency-rules-filter-name" value={draftFilters.name} onChange={(event) => setDraftFilters({ ...draftFilters, name: event.target.value })} />
+          </QueryField>
+          <QueryField name="type" label="维度">
+            <select data-testid="admin-frequency-api-frequency-rules-filter-type" value={draftFilters.type} onChange={(event) => setDraftFilters({ ...draftFilters, type: event.target.value })}>
+              <option value="">全部</option><option value="MOBILE">手机号</option><option value="TENANT_LEVEL">机构</option><option value="IP">IP</option><option value="CONTENT_SIMILARITY">内容相似度</option>
+            </select>
+          </QueryField>
+          <QueryField name="action" label="动作">
+            <select data-testid="admin-frequency-api-frequency-rules-filter-action" value={draftFilters.action} onChange={(event) => setDraftFilters({ ...draftFilters, action: event.target.value })}>
+              <option value="">全部</option><option value="BLOCK">拦截</option><option value="DELAY">延迟</option><option value="ALERT">告警</option>
+            </select>
+          </QueryField>
+          <QueryField name="status" label="状态">
+            <select data-testid="admin-frequency-api-frequency-rules-filter-status" value={draftFilters.status} onChange={(event) => setDraftFilters({ ...draftFilters, status: event.target.value })}>
+              <option value="">全部</option><option value="ACTIVE">启用</option><option value="DISABLED">停用</option>
+            </select>
+          </QueryField>
+        </QueryPanel>
       </section>
 
       <section className="card" data-testid="shared-frequency-api-queued-feedback">

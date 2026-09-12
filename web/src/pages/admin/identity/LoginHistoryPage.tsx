@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getLoginHistory, IDENTITY_PERMISSIONS } from '@/api/identity';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from './useIdentityAccess';
 import { protectedQueryKey } from '@/store/authStore';
 
@@ -22,26 +23,16 @@ export default function LoginHistoryPage() {
     enabled: canViewHistory,
   });
 
-  if (access.isLoading || (canViewHistory && history.isLoading)) return <div className="card">加载登录历史…</div>;
+  if (access.isLoading) return <div className="card">加载登录历史…</div>;
   if (access.isError) return <div className="card" role="alert">权限范围加载失败，请稍后重试</div>;
   if (!canViewHistory) return <div className="card" role="alert">无权查看登录历史</div>;
-  if (history.isError) return <div className="card" role="alert">登录历史加载失败，请稍后重试</div>;
 
-  const result = history.data!;
-  const hasNextPage = (page + 1) * result.size < result.totalElements;
-
-  return (
-    <section className="card" data-testid="shared-console-identity-profile-login-history">
-      <h1>登录历史</h1>
-      {canViewAllHistory && <form onSubmit={(event) => {
-        event.preventDefault();
-        setPage(0);
-        setAppliedUserId(userIdFilter ? Number(userIdFilter) : undefined);
-      }} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <label>用户 ID <input inputMode="numeric" pattern="[0-9]+" value={userIdFilter} onChange={(event) => setUserIdFilter(event.target.value)} /></label>
-        <button type="submit">查询</button>
-        <button type="button" onClick={() => { setUserIdFilter(''); setAppliedUserId(undefined); setPage(0); }}>重置</button>
-      </form>}
+  const result = history.data;
+  const hasNextPage = Boolean(result && (page + 1) * result.size < result.totalElements);
+  const historyResult = <>
+    {history.isLoading && <p>加载登录历史…</p>}
+    {history.isError && <p role="alert">登录历史加载失败，请稍后重试</p>}
+    {result && <>
       <table className="ratio-table">
         <caption className="visually-hidden">平台账号登录历史</caption>
         <thead><tr><th>用户</th><th>时间</th><th>登录地址</th><th>客户端</th><th>结果</th></tr></thead>
@@ -57,6 +48,21 @@ export default function LoginHistoryPage() {
         <span>第 {page + 1} 页，共 {result.totalElements} 条</span>
         <button type="button" disabled={!hasNextPage} onClick={() => setPage((current) => current + 1)}>下一页</button>
       </div>
+    </>}
+  </>;
+
+  return (
+    <section data-testid="shared-console-identity-profile-login-history">
+      <div className="card"><h1>登录历史</h1></div>
+      {canViewAllHistory ? (
+        <QueryPanel
+          onSubmit={() => { setPage(0); setAppliedUserId(userIdFilter ? Number(userIdFilter) : undefined); }}
+          onReset={() => { setUserIdFilter(''); setAppliedUserId(undefined); setPage(0); }}
+          result={historyResult}
+        >
+          <QueryField name="user-id" label="用户 ID"><input inputMode="numeric" pattern="[0-9]+" value={userIdFilter} onChange={(event) => setUserIdFilter(event.target.value)} /></QueryField>
+        </QueryPanel>
+      ) : <div className="card">{historyResult}</div>}
     </section>
   );
 }

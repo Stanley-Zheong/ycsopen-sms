@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import TenantScheduledTasksPage from '@/pages/tenant/bulk/TenantScheduledTasksPa
 import AdminBulkDetailsPage from '@/pages/admin/bulk/AdminBulkDetailsPage';
 import AdminSendJobsPage from '@/pages/admin/bulk/AdminSendJobsPage';
 
-type SeenRequest = { method: string; url: string; body: Record<string, unknown> };
+type SeenRequest = { method: string; url: string; body: Record<string, unknown>; params?: Record<string, unknown> };
 
 function apiResponse<T>(data: T): unknown {
   return { code: 200, message: 'OK', data, timestamp: '2026-09-09T00:00:00Z', traceId: 'trace-p29' };
@@ -55,7 +55,7 @@ describe('Phase 29 bulk scheduled pages', () => {
       const method = (request.method ?? 'get').toUpperCase();
       const url = request.url ?? '';
       const body = typeof request.data === 'string' && request.data ? JSON.parse(request.data) : request.data;
-      seen.push({ method, url, body });
+      seen.push({ method, url, body, params: request.params });
       if (url === '/console/tenant/bulk/preview') {
         return axiosResponse(request, apiResponse({
           tenantId: 42,
@@ -120,5 +120,39 @@ describe('Phase 29 bulk scheduled pages', () => {
     await waitFor(() => expect(screen.getByTestId('admin-bulk-scheduled-send-jobs-control')).toHaveTextContent('BULK-301'));
     fireEvent.click(screen.getByTestId('admin-bulk-scheduled-send-jobs-pause'));
     await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks/301/pause')).toBe(true));
+  });
+
+  it('applies and resets the admin bulk-details tenant query on submit', async () => {
+    renderWithQuery(<AdminBulkDetailsPage />);
+    const panel = screen.getByTestId('query-panel');
+    await screen.findByTestId('admin-bulk-scheduled-bulk-details-table');
+    seen.length = 0;
+
+    fireEvent.change(within(panel).getByTestId('admin-bulk-scheduled-bulk-details-filter-tenant'), { target: { value: '84' } });
+    expect(seen.filter((request) => request.url === '/console/bulk/tasks')).toHaveLength(0);
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks' && request.params?.tenantId === '84')).toBe(true));
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).getByTestId('admin-bulk-scheduled-bulk-details-filter-tenant')).toHaveValue('');
+    await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks' && !request.params?.tenantId)).toBe(true));
+  });
+
+  it('keeps send-job draft filters inert and applies the existing state API key', async () => {
+    renderWithQuery(<AdminSendJobsPage />);
+    const panel = screen.getByTestId('query-panel');
+    await screen.findByTestId('admin-bulk-scheduled-send-jobs-control');
+    seen.length = 0;
+
+    fireEvent.change(within(panel).getByTestId('admin-bulk-scheduled-send-jobs-filter-tenant'), { target: { value: '84' } });
+    fireEvent.change(within(panel).getByTestId('admin-bulk-scheduled-send-jobs-filter-state'), { target: { value: 'RUNNING' } });
+    expect(seen.filter((request) => request.url === '/console/bulk/tasks')).toHaveLength(0);
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks'
+      && request.params?.tenantId === '84' && request.params?.state === 'RUNNING')).toBe(true));
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).getByTestId('admin-bulk-scheduled-send-jobs-filter-state')).toHaveValue('');
+    expect(within(panel).queryByTestId('admin-bulk-scheduled-send-jobs-reason')).not.toBeInTheDocument();
   });
 });

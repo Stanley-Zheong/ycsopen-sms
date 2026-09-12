@@ -89,10 +89,11 @@ test('pw-p18-rules C-P18-RULE-METRICS OBL-F-5-6-A pw-p18-import C-P18-RULE-CRUD 
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-cards')).toContainText('规则总数 3');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-cards')).toContainText('今日拦截 4');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-policy-page')).toContainText('同号秒级限制');
+  await page.getByTestId('query-panel-toggle').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-name')).toHaveValue('');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-type')).toHaveValue('');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-action')).toHaveValue('');
-  await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-status')).toHaveValue('ACTIVE');
+  await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-status')).toHaveValue('');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-create-dialog')).toHaveCount(0);
   await page.getByTestId('admin-frequency-api-frequency-rules-create-open').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-name')).toHaveValue('同号秒级限制');

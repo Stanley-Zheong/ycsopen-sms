@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -139,5 +139,28 @@ describe('Phase 36 tenant recharge operations UI', () => {
 
     await waitFor(() => expect(rechargeApi.reviewRecharge).toHaveBeenCalledWith(3, { approved: true, reason: '到账一致' }));
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-message')).toHaveTextContent('APPROVED');
+  });
+
+  it('applies and resets the recharge status only through the shared query panel', async () => {
+    useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
+    renderWithProviders(<AdminRechargeReviewPage />);
+
+    const panel = screen.getByTestId('query-panel');
+    const status = within(panel).getByTestId('admin-tenant-recharge-operations-review-status');
+    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledWith(''));
+    vi.mocked(rechargeApi.listRechargeReviews).mockClear();
+
+    fireEvent.change(status, { target: { value: 'APPROVED' } });
+    expect(rechargeApi.listRechargeReviews).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledWith('APPROVED'));
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(status).toHaveValue('');
+    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenLastCalledWith(''));
+    expect(within(panel).getByTestId('query-result-table')).toContainElement(
+      screen.getByTestId('admin-tenant-recharge-operations-review-table'),
+    );
+    expect(within(panel).queryByTestId('admin-tenant-recharge-operations-review-reason')).not.toBeInTheDocument();
   });
 });

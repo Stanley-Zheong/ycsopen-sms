@@ -152,9 +152,17 @@ describe('Phase 12 signature lifecycle UI', () => {
     renderWithProviders(<SignatureReviewPage />);
     await screen.findByTestId('admin-signature-lifecycle-signature-review-page');
     await waitFor(() => expect(screen.getByTestId('admin-signature-lifecycle-signature-review-stats')).toHaveTextContent('待审核 1'));
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('query-result-table')).toContainElement(screen.getByTestId('admin-signature-lifecycle-signature-review-row'));
 
     fireEvent.change(screen.getByTestId('admin-signature-lifecycle-signature-review-filters'), { target: { value: '优创' } });
+    expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(false);
+    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(true));
+    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(screen.getByTestId('admin-signature-lifecycle-signature-review-filters')).toHaveValue('');
+    await waitFor(() => expect(seen.filter((req) => req.url === '/console/signatures/review')).toHaveLength(2));
 
     const row = screen.getByTestId('admin-signature-lifecycle-signature-review-row');
     fireEvent.click(within(row).getByTestId('admin-signature-lifecycle-signature-review-decision-open'));

@@ -41,7 +41,7 @@ function renderWithProviders(ui: ReactElement) {
 }
 
 describe('Phase 17 runtime content safety UI', () => {
-  const calls: Array<{ method?: string; url: string; data?: Record<string, unknown> }> = [];
+  const calls: Array<{ method?: string; url: string; data?: Record<string, unknown>; params?: Record<string, unknown> }> = [];
 
   beforeEach(() => {
     calls.length = 0;
@@ -56,7 +56,7 @@ describe('Phase 17 runtime content safety UI', () => {
       const request = config as InternalAxiosRequestConfig;
       const url = request.url ?? '';
       const data = request.data ? JSON.parse(String(request.data)) as Record<string, unknown> : undefined;
-      calls.push({ method: request.method, url, data });
+      calls.push({ method: request.method, url, data, params: request.params as Record<string, unknown> | undefined });
       if (url === '/console/account-overview') {
         return axiosResponse(request, apiResponse({
           id: 7,
@@ -102,7 +102,22 @@ describe('Phase 17 runtime content safety UI', () => {
     await screen.findByTestId('admin-runtime-content-content-safety-page');
     expect(await screen.findByTestId('admin-runtime-content-content-safety-row')).toHaveTextContent('营销');
     expect(await screen.findByText('今日拦截 4')).toBeInTheDocument();
-    expect(screen.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('ACTIVE');
+    expect(screen.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('');
+    expect(screen.getByTestId('query-panel-fields')).not.toBeVisible();
+    fireEvent.click(screen.getByTestId('query-panel-toggle'));
+    const initialQueryCount = calls.filter((call) => call.url === '/console/content-safety/policies' && call.method === 'get').length;
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('admin-runtime-content-content-safety-filter-word'), { target: { value: '高危' } });
+    });
+    expect(calls.filter((call) => call.url === '/console/content-safety/policies' && call.method === 'get')).toHaveLength(initialQueryCount);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(calls.some((call) => call.url === '/console/content-safety/policies' && call.method === 'get'
+      && call.params?.word === '高危')).toBe(true));
+    fireEvent.click(screen.getByTestId('query-reset'));
+    await waitFor(() => expect(calls.some((call) => call.url === '/console/content-safety/policies' && call.method === 'get'
+      && call.params?.word === '' && call.params?.category === '' && call.params?.level === ''
+      && call.params?.action === '' && call.params?.status === '')).toBe(true));
+    expect(screen.getByTestId('admin-runtime-content-content-safety-filter-word')).toHaveValue('');
     expect(screen.queryByTestId('admin-runtime-content-content-safety-create-dialog')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-create-open'));
     expect(screen.getByTestId('admin-runtime-content-content-safety-word')).toHaveValue('营销');

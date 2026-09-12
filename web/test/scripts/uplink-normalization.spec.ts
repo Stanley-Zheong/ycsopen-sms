@@ -73,7 +73,9 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/uplink');
     await expect(page.getByTestId('admin-uplink-normalization-uplinks-page')).toBeVisible();
+    await page.getByTestId('query-panel').first().getByTestId('query-panel-toggle').click();
     await page.getByTestId('admin-uplink-normalization-uplinks-filter-keyword').fill('帮助');
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
     await expect(page.getByTestId('admin-uplink-normalization-uplinks-row')).toContainText('138****8000');
     await page.getByTestId('admin-uplink-normalization-uplink-detail').click();
     await expect(page.getByTestId('admin-uplink-normalization-detail-drawer')).toContainText('回复帮助');
@@ -87,11 +89,22 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await expect(page.getByTestId('admin-uplink-normalization-operation-message')).toContainText('上行重放完成');
   });
 
-  test('pw-p32-tenant-auto-reply C-P32-TENANT-AUTO-REPLY OBL-F-7-5-C', async ({ page }) => {
+  test('pw-p32-tenant-auto-reply C-P32-TENANT-AUTO-REPLY OBL-F-7-5-C pw-issue-58-tenant-uplinks C-ISSUE-58-TENANT-UPLINKS OBL-ISSUE-58-TENANT-UPLINKS', async ({ page }) => {
     await mockUplinkApis(page);
     await loginAs(page, 'TENANT_ADMIN');
     await page.goto('/tenant/uplink');
     await expect(page.getByTestId('tenant-uplinks')).toBeVisible();
+    const panel = page.getByTestId('query-panel');
+    await panel.getByTestId('query-panel-toggle').click();
+    await panel.getByTestId('query-input-keyword').locator('input').fill('帮助');
+    const filteredRequest = page.waitForRequest((request) => {
+      const url = new URL(request.url());
+      return url.pathname.endsWith('/tenant/uplinks') && url.searchParams.get('keyword') === '帮助';
+    });
+    await panel.getByTestId('query-submit').click();
+    await filteredRequest;
+    await panel.getByTestId('query-reset').click();
+    await expect(panel.getByTestId('query-input-keyword').locator('input')).toHaveValue('');
     await expect(page.getByTestId('tenant-uplink-normalization-uplinks-auto-reply-config')).toBeVisible();
     await page.getByTestId('tenant-uplink-normalization-auto-reply-audit-reason').fill('更新自动回复');
     await page.getByTestId('tenant-uplink-normalization-auto-reply-save').click();

@@ -18,6 +18,7 @@ import {
 } from '@/api/blacklistRiskControlApi';
 import { mutationErrorMessage } from '@/api/client';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/blacklist-risk-control.css';
@@ -48,6 +49,8 @@ const IMPORT_FORM = {
   reason: ENTRY_FORM.reason,
 };
 
+const EMPTY_FILTERS = { tenantId: '', listType: '', status: '' };
+
 export default function BlacklistRiskControlPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -64,7 +67,8 @@ export default function BlacklistRiskControlPage() {
   const canAppeal = admin || access.can(BLACKLIST_RISK_PERMISSIONS.appeal);
   const canUsePage = canRead || canWrite || canImport || canExport || canProviderRead || canProviderWrite || canAnalyze || canCheck || access.isLoading;
   const [entryForm, setEntryForm] = useState(ENTRY_FORM);
-  const [filters, setFilters] = useState({ tenantId: '42', listType: '', status: 'ACTIVE' });
+  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [importText, setImportText] = useState('13900000002\nbad-mobile');
   const [importForm, setImportForm] = useState(IMPORT_FORM);
   const [providerForm, setProviderForm] = useState(PROVIDER_FORM);
@@ -193,82 +197,82 @@ export default function BlacklistRiskControlPage() {
       {message && <p role="status" data-testid="admin-blacklist-risk-message" className="blacklist-risk-alert success">{message}</p>}
       {error && <p role="alert" data-testid="admin-blacklist-risk-error" className="blacklist-risk-alert error">{error}</p>}
 
-      <section className="card" data-testid="admin-blacklist-risk-black-white-lists-page">
+      <section data-testid="admin-blacklist-risk-black-white-lists-page">
         <h2>黑白名单</h2>
-        <div className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-filters">
-          <label>筛选机构
-            <input data-testid="admin-blacklist-risk-black-white-lists-filter-tenant" value={filters.tenantId} onChange={(event) => setFilters({ ...filters, tenantId: event.target.value })} />
-          </label>
-          <label>筛选类型
-            <select data-testid="admin-blacklist-risk-black-white-lists-filter-type" value={filters.listType} onChange={(event) => setFilters({ ...filters, listType: event.target.value })}>
-              <option value="">全部</option>
-              <option value="BLACK">黑名单</option>
-              <option value="WHITE">白名单</option>
+        <QueryPanel
+          legacyPanelTestId="admin-blacklist-risk-black-white-lists-filters"
+          onSubmit={() => setFilters({ ...draftFilters })}
+          onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+          result={<>
+            {canWrite && <button type="button" data-testid="admin-blacklist-risk-black-white-lists-create-open" onClick={() => { setEntryError(''); setEntryOpen(true); }}>新建名单记录</button>}
+            {entryOpen && (
+              <ModalDialog labelledBy="blacklist-entry-create-title" onRequestClose={() => { setEntryOpen(false); setEntryError(''); }}>
+                <form className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-create-dialog" onSubmit={(event) => { event.preventDefault(); createMutation.mutate(entryForm); }}>
+                  <h2 id="blacklist-entry-create-title">新建名单记录</h2>
+                  <div className="dialog-form-fields" data-testid="admin-blacklist-risk-black-white-lists-form">
+                    <label>机构<input data-testid="admin-blacklist-risk-black-white-lists-tenant" type="number" value={entryForm.tenantId ?? ''} onChange={(event) => setEntryForm({ ...entryForm, tenantId: Number(event.target.value) || null })} /></label>
+                    <label>手机号<input required pattern="1[3-9][0-9]{9}" data-testid="admin-blacklist-risk-black-white-lists-mobile" value={entryForm.mobile} onChange={(event) => setEntryForm({ ...entryForm, mobile: event.target.value })} /></label>
+                    <label>类型<select data-testid="admin-blacklist-risk-black-white-lists-type" value={entryForm.listType} onChange={(event) => setEntryForm({ ...entryForm, listType: event.target.value })}><option value="BLACK">黑名单</option><option value="WHITE">白名单</option></select></label>
+                    <label>来源<select data-testid="admin-blacklist-risk-black-white-lists-source" value={entryForm.source} onChange={(event) => setEntryForm({ ...entryForm, source: event.target.value })}><option value="MANUAL">人工</option><option value="COMPLAINT_LINKED">投诉关联</option><option value="THIRD_PARTY_RISK">第三方风险</option></select></label>
+                    <label>原因<input required data-testid="admin-blacklist-risk-black-white-lists-reason" value={entryForm.reason} onChange={(event) => setEntryForm({ ...entryForm, reason: event.target.value })} /></label>
+                  </div>
+                  {entryError && <p role="alert" data-testid="admin-blacklist-risk-black-white-lists-create-error" className="blacklist-risk-alert error">{entryError}</p>}
+                  <div className="dialog-actions"><button type="button" className="button-secondary" data-testid="admin-blacklist-risk-black-white-lists-create-cancel" onClick={() => { setEntryOpen(false); setEntryError(''); }}>取消</button><button type="submit" data-testid="admin-blacklist-risk-black-white-lists-save" disabled={createMutation.isPending}>保存</button></div>
+                </form>
+              </ModalDialog>
+            )}
+            <div className="blacklist-risk-actions">
+              <button type="button" data-testid="admin-blacklist-risk-black-white-lists-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>批量导入</button>
+              <button type="button" data-testid="admin-blacklist-risk-black-white-lists-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
+            </div>
+            {importOpen && (
+              <ModalDialog labelledBy="blacklist-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
+                <form className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
+                  <h2 id="blacklist-import-title">批量导入名单</h2>
+                  <label>机构<input data-testid="admin-blacklist-risk-black-white-lists-import-tenant" type="number" value={importForm.tenantId ?? ''} onChange={(event) => setImportForm({ ...importForm, tenantId: Number(event.target.value) || null })} /></label>
+                  <label>类型<select data-testid="admin-blacklist-risk-black-white-lists-import-type" value={importForm.listType} onChange={(event) => setImportForm({ ...importForm, listType: event.target.value })}><option value="BLACK">黑名单</option><option value="WHITE">白名单</option></select></label>
+                  <label>原因<input required data-testid="admin-blacklist-risk-black-white-lists-import-reason" value={importForm.reason} onChange={(event) => setImportForm({ ...importForm, reason: event.target.value })} /></label>
+                  <label className="blacklist-risk-import">手机号列表<textarea required data-testid="admin-blacklist-risk-black-white-lists-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} /></label>
+                  {importError && <p role="alert" data-testid="admin-blacklist-risk-black-white-lists-import-error" className="blacklist-risk-alert error">{importError}</p>}
+                  <div className="dialog-actions">
+                    <button type="button" className="button-secondary" data-testid="admin-blacklist-risk-black-white-lists-import-cancel" onClick={() => { setImportOpen(false); setImportError(''); }}>取消</button>
+                    <button type="submit" data-testid="admin-blacklist-risk-black-white-lists-import-submit" disabled={importMutation.isPending}>导入</button>
+                  </div>
+                </form>
+              </ModalDialog>
+            )}
+            {entries.isLoading && <p role="status">正在加载黑白名单…</p>}
+            {entries.isError && <p role="alert">黑白名单加载失败。</p>}
+            {!entries.isLoading && !entries.isError && rows.length === 0 && <p>暂无黑白名单记录。</p>}
+            {!entries.isLoading && !entries.isError && rows.length > 0 && (
+              <table className="ratio-table" data-testid="admin-blacklist-risk-black-white-lists-table">
+                <thead><tr><th>类型</th><th>机构</th><th>脱敏手机号</th><th>来源</th><th>状态</th><th>原因</th><th>有效期</th><th>创建时间</th><th>动作</th></tr></thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} data-testid="admin-blacklist-risk-black-white-lists-row">
+                      <td>{row.listType}</td><td>{row.tenantId ?? '系统级'}</td><td>{row.maskedMobile}</td><td>{row.source}</td><td>{row.status}</td><td>{row.reason}</td><td>{row.expiresAt ?? '长期'}</td><td>{row.createdAt}</td>
+                      <td><button type="button" data-testid="admin-blacklist-risk-black-white-lists-disable" disabled={!canWrite || row.status !== 'ACTIVE'} onClick={() => disableMutation.mutate(row.id)}>移除</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>}
+        >
+          <QueryField name="tenant-id" label="筛选机构">
+            <input data-testid="admin-blacklist-risk-black-white-lists-filter-tenant" value={draftFilters.tenantId} onChange={(event) => setDraftFilters({ ...draftFilters, tenantId: event.target.value })} />
+          </QueryField>
+          <QueryField name="list-type" label="筛选类型">
+            <select data-testid="admin-blacklist-risk-black-white-lists-filter-type" value={draftFilters.listType} onChange={(event) => setDraftFilters({ ...draftFilters, listType: event.target.value })}>
+              <option value="">全部</option><option value="BLACK">黑名单</option><option value="WHITE">白名单</option>
             </select>
-          </label>
-          <label>筛选状态
-            <select data-testid="admin-blacklist-risk-black-white-lists-filter-status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
-              <option value="">全部</option>
-              <option value="ACTIVE">生效</option>
-              <option value="DISABLED">已移除</option>
+          </QueryField>
+          <QueryField name="status" label="筛选状态">
+            <select data-testid="admin-blacklist-risk-black-white-lists-filter-status" value={draftFilters.status} onChange={(event) => setDraftFilters({ ...draftFilters, status: event.target.value })}>
+              <option value="">全部</option><option value="ACTIVE">生效</option><option value="DISABLED">已移除</option>
             </select>
-          </label>
-        </div>
-        {canWrite && <button type="button" data-testid="admin-blacklist-risk-black-white-lists-create-open" onClick={() => { setEntryError(''); setEntryOpen(true); }}>新建名单记录</button>}
-        {entryOpen && (
-          <ModalDialog labelledBy="blacklist-entry-create-title" onRequestClose={() => { setEntryOpen(false); setEntryError(''); }}>
-            <form className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-create-dialog" onSubmit={(event) => { event.preventDefault(); createMutation.mutate(entryForm); }}>
-              <h2 id="blacklist-entry-create-title">新建名单记录</h2>
-              <div className="dialog-form-fields" data-testid="admin-blacklist-risk-black-white-lists-form">
-                <label>机构<input data-testid="admin-blacklist-risk-black-white-lists-tenant" type="number" value={entryForm.tenantId ?? ''} onChange={(event) => setEntryForm({ ...entryForm, tenantId: Number(event.target.value) || null })} /></label>
-                <label>手机号<input required pattern="1[3-9][0-9]{9}" data-testid="admin-blacklist-risk-black-white-lists-mobile" value={entryForm.mobile} onChange={(event) => setEntryForm({ ...entryForm, mobile: event.target.value })} /></label>
-                <label>类型<select data-testid="admin-blacklist-risk-black-white-lists-type" value={entryForm.listType} onChange={(event) => setEntryForm({ ...entryForm, listType: event.target.value })}><option value="BLACK">黑名单</option><option value="WHITE">白名单</option></select></label>
-                <label>来源<select data-testid="admin-blacklist-risk-black-white-lists-source" value={entryForm.source} onChange={(event) => setEntryForm({ ...entryForm, source: event.target.value })}><option value="MANUAL">人工</option><option value="COMPLAINT_LINKED">投诉关联</option><option value="THIRD_PARTY_RISK">第三方风险</option></select></label>
-                <label>原因<input required data-testid="admin-blacklist-risk-black-white-lists-reason" value={entryForm.reason} onChange={(event) => setEntryForm({ ...entryForm, reason: event.target.value })} /></label>
-              </div>
-              {entryError && <p role="alert" data-testid="admin-blacklist-risk-black-white-lists-create-error" className="blacklist-risk-alert error">{entryError}</p>}
-              <div className="dialog-actions"><button type="button" className="button-secondary" data-testid="admin-blacklist-risk-black-white-lists-create-cancel" onClick={() => { setEntryOpen(false); setEntryError(''); }}>取消</button><button type="submit" data-testid="admin-blacklist-risk-black-white-lists-save" disabled={createMutation.isPending}>保存</button></div>
-            </form>
-          </ModalDialog>
-        )}
-        <div className="blacklist-risk-actions">
-          <button type="button" data-testid="admin-blacklist-risk-black-white-lists-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>批量导入</button>
-          <button type="button" data-testid="admin-blacklist-risk-black-white-lists-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
-        </div>
-        {importOpen && (
-          <ModalDialog labelledBy="blacklist-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
-            <form className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
-              <h2 id="blacklist-import-title">批量导入名单</h2>
-              <label>机构<input data-testid="admin-blacklist-risk-black-white-lists-import-tenant" type="number" value={importForm.tenantId ?? ''} onChange={(event) => setImportForm({ ...importForm, tenantId: Number(event.target.value) || null })} /></label>
-              <label>类型<select data-testid="admin-blacklist-risk-black-white-lists-import-type" value={importForm.listType} onChange={(event) => setImportForm({ ...importForm, listType: event.target.value })}><option value="BLACK">黑名单</option><option value="WHITE">白名单</option></select></label>
-              <label>原因<input required data-testid="admin-blacklist-risk-black-white-lists-import-reason" value={importForm.reason} onChange={(event) => setImportForm({ ...importForm, reason: event.target.value })} /></label>
-              <label className="blacklist-risk-import">手机号列表<textarea required data-testid="admin-blacklist-risk-black-white-lists-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} /></label>
-              {importError && <p role="alert" data-testid="admin-blacklist-risk-black-white-lists-import-error" className="blacklist-risk-alert error">{importError}</p>}
-              <div className="dialog-actions">
-                <button type="button" className="button-secondary" data-testid="admin-blacklist-risk-black-white-lists-import-cancel" onClick={() => { setImportOpen(false); setImportError(''); }}>取消</button>
-                <button type="submit" data-testid="admin-blacklist-risk-black-white-lists-import-submit" disabled={importMutation.isPending}>导入</button>
-              </div>
-            </form>
-          </ModalDialog>
-        )}
-        <table className="ratio-table" data-testid="admin-blacklist-risk-black-white-lists-table">
-          <thead><tr><th>类型</th><th>机构</th><th>脱敏手机号</th><th>来源</th><th>状态</th><th>原因</th><th>有效期</th><th>创建时间</th><th>动作</th></tr></thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} data-testid="admin-blacklist-risk-black-white-lists-row">
-                <td>{row.listType}</td>
-                <td>{row.tenantId ?? '系统级'}</td>
-                <td>{row.maskedMobile}</td>
-                <td>{row.source}</td>
-                <td>{row.status}</td>
-                <td>{row.reason}</td>
-                <td>{row.expiresAt ?? '长期'}</td>
-                <td>{row.createdAt}</td>
-                <td><button type="button" data-testid="admin-blacklist-risk-black-white-lists-disable" disabled={!canWrite || row.status !== 'ACTIVE'} onClick={() => disableMutation.mutate(row.id)}>移除</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          </QueryField>
+        </QueryPanel>
       </section>
 
       <section className="card" data-testid="admin-blacklist-risk-risk-provider-page">

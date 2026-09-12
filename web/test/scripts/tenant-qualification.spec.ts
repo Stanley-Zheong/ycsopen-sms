@@ -238,6 +238,7 @@ test('pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A', async ({ page, 
   await openAdminRow(page);
   await page.goto('/admin/tenants');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page')).toBeVisible();
+  await page.getByTestId('query-panel-toggle').click();
   await page.getByTestId('admin-tenant-qualification-tenants-keyword').fill(company.shortName);
   await page.getByTestId('admin-tenant-qualification-tenants-verification-status').selectOption('PENDING');
   await page.getByTestId('admin-tenant-qualification-tenants-query').click();
