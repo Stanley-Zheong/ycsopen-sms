@@ -183,6 +183,27 @@ test('pw-p5-login C-P5-LOGIN OBL-F-1-4-A', async ({ page }) => {
     })),
   }));
   await page.goto('/admin/auth/login');
+  await expect(page.getByTestId('admin-console-identity-auth-intro-title')).toHaveText('企业短信运营工作台');
+  await expect(page.getByTestId('admin-console-identity-auth-intro-summary'))
+    .toHaveText('面向多租户、多通道短信业务，为平台与机构用户提供统一的管理入口。');
+
+  const loginPage = page.getByTestId('shared-auth-login-page');
+  await expect(loginPage).toHaveCSS('background-image', /login-messaging-network\.svg/);
+  const remember = page.getByTestId('shared-auth-login-remember');
+  const rememberLabel = remember.locator('..');
+  const rememberText = rememberLabel.getByText('记住用户名');
+  const [rememberBox, rememberTextBox] = await Promise.all([remember.boundingBox(), rememberText.boundingBox()]);
+  expect(rememberBox).not.toBeNull();
+  expect(rememberTextBox).not.toBeNull();
+  expect(rememberBox!.width).toBe(16);
+  expect(rememberBox!.height).toBe(16);
+  const rememberLabelBox = await rememberLabel.boundingBox();
+  expect(rememberLabelBox).not.toBeNull();
+  expect(rememberLabelBox!.height).toBeGreaterThanOrEqual(40);
+  const rememberCenter = rememberBox!.y + rememberBox!.height / 2;
+  const rememberTextCenter = rememberTextBox!.y + rememberTextBox!.height / 2;
+  expect(Math.abs(rememberCenter - rememberTextCenter)).toBeLessThanOrEqual(1);
+
   await page.getByPlaceholder('用户名').fill('admin-user');
   await page.getByPlaceholder('密码').fill('valid-password');
   await page.getByTestId('admin-console-identity-auth-login-submit').click();

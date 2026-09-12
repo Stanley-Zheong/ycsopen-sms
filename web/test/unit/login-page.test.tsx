@@ -34,6 +34,21 @@ describe('LoginPage remembered username', () => {
     window.localStorage.clear();
   });
 
+  it('presents the product context and keeps the remember option inside one compact row', () => {
+    renderLoginPage();
+
+    expect(screen.getByRole('heading', { name: '企业短信运营工作台' })).toBeVisible();
+    expect(screen.getByText('面向多租户、多通道短信业务，为平台与机构用户提供统一的管理入口。')).toBeVisible();
+    expect(screen.getByRole('list', { name: '平台能力概览' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: '欢迎登录' })).toBeVisible();
+
+    const remember = screen.getByTestId('shared-auth-login-remember');
+    expect(remember).toHaveAttribute('type', 'checkbox');
+    expect(remember).toHaveClass('login-remember-input');
+    expect(remember.closest('label')).toHaveTextContent('记住用户名');
+    expect(remember.closest('label')).toHaveClass('login-remember');
+  });
+
   it('prefills the saved username without persisting a password', () => {
     window.localStorage.setItem('ycsopen.console.remembered-username', 'remembered-admin');
 
