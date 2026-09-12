@@ -17,8 +17,9 @@ test('WEB-TENANT-001 approving a tenant refreshes its trial state', async ({ pag
     approved = true;
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(apiResponse({ ...tenantPending, verificationStatus: 'VERIFIED', lifecycleStatus: 'TRIAL' })) });
   });
-  await loginAs(page, 'OPERATOR');
-  await page.getByRole('link', { name: '机构管理' }).click();
+  await loginAs(page, 'ADMIN');
+  await page.getByTestId('admin-console-navigation-tenant-management-group-toggle').click();
+  await page.getByTestId('admin-tenant-qualification-tenants-nav-menu').click();
   await page.getByRole('button', { name: '审核通过并开通试用' }).click();
   const row = page.getByRole('row').filter({ hasText: '示例机构' });
   await expect(row).toContainText('VERIFIED');
@@ -37,7 +38,8 @@ test('WEB-CHANNEL-001 pausing a channel submits reason and reads back PAUSED', a
   });
   page.on('dialog', (dialog) => dialog.accept('投诉率超阈值'));
   await loginAs(page, 'OPERATOR');
-  await page.getByRole('link', { name: '通道管理' }).click();
+  await page.getByTestId('admin-console-navigation-channel-management-group-toggle').click();
+  await page.getByTestId('admin-channel-configuration-nav-menu').click();
   await page.getByRole('button', { name: '暂停' }).click();
   const row = page.getByRole('row').filter({ hasText: '移动主通道' });
   await expect(row).toContainText('PAUSED');
@@ -54,7 +56,8 @@ test('WEB-CHANNEL-002 resuming a channel reads back NORMAL', async ({ page }) =>
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(apiResponse({ ...channelNormal, status })) });
   });
   await loginAs(page, 'OPERATOR');
-  await page.getByRole('link', { name: '通道管理' }).click();
+  await page.getByTestId('admin-console-navigation-channel-management-group-toggle').click();
+  await page.getByTestId('admin-channel-configuration-nav-menu').click();
   await page.getByRole('button', { name: '恢复' }).click();
   const row = page.getByRole('row').filter({ hasText: '移动主通道' });
   await expect(row).toContainText('NORMAL');
