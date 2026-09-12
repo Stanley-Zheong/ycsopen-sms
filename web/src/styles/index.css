@@ -32,11 +32,16 @@
 body { margin: 0; background: var(--color-page); font-size: 14px; line-height: 1.5; }
 h1 { margin: 0 0 16px; font-size: 28px; font-weight: 600; line-height: 1.2; }
 h2, h3 { margin: 0 0 16px; font-size: 20px; font-weight: 600; line-height: 1.2; }
-button, input, select { min-height: 40px; font: inherit; }
-button { width: fit-content; justify-self: start; padding: 8px 16px; color: #fff; background: var(--color-brand); border: 1px solid var(--color-brand); border-radius: var(--radius-control); cursor: pointer; }
+button, input, select, textarea { font: inherit; }
+button { width: fit-content; min-height: 40px; justify-self: start; padding: 8px 16px; color: #fff; background: var(--color-brand); border: 1px solid var(--color-brand); border-radius: var(--radius-control); cursor: pointer; }
 button:hover { background: var(--color-brand-deep); }
 button:disabled { opacity: .55; cursor: not-allowed; }
-input, select { width: 100%; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+input, select { min-height: 40px; }
+input, select, textarea { width: 100%; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+body .layout input:not(:is([type="checkbox"], [type="radio"])),
+body .layout select:not([multiple]),
+body .layout textarea { height: 40px; min-height: 40px; }
+textarea { resize: vertical; }
 input:is([type="checkbox"], [type="radio"]) {
   width: 16px;
   height: 16px;
@@ -53,7 +58,7 @@ label:has(> input:is([type="checkbox"], [type="radio"])) {
   gap: 8px;
 }
 select[multiple] { min-height: 96px; }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 label { display: inline-grid; gap: 4px; color: var(--color-text); }
 
 .layout { display: flex; min-height: 100vh; }
