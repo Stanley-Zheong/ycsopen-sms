@@ -22,6 +22,13 @@ test("pw-p5-role-migrate C-P5-ROLE-MIGRATE OBL-F-1-2-C", async ({ page }) => {
 });
 test("pw-p5-login C-P5-LOGIN OBL-F-1-4-A", async ({ page }) => {
   await page.goto("/admin/auth/login");
+  await expect(page.getByTestId("admin-console-identity-auth-intro-title")).toHaveText("企业短信运营工作台");
+  await expect(page.getByTestId("admin-console-identity-auth-intro-summary")).toContainText("多租户、多通道短信业务");
+  const remember = page.getByTestId("shared-auth-login-remember");
+  await expect(remember).toBeVisible();
+  expect(await remember.boundingBox()).toMatchObject({ width: 16, height: 16 });
+  const rememberLabel = remember.locator("..");
+  expect((await rememberLabel.boundingBox())?.height).toBeGreaterThanOrEqual(40);
   await page.getByTestId("admin-console-identity-auth-login-submit").click();
 });
 test("pw-p5-logout C-P5-LOGOUT OBL-F-1-4-B", async ({ page }) => {

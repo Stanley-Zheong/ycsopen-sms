@@ -32,7 +32,7 @@
     "sources": [
       {
         "path": ".planning/phases/05-console-identity-platform-rbac/design-output/identity-prototype.html",
-        "sha256": "b3b1a68b513542c5296096e71b94dc301a527b456403e45295b90b1a869bec66"
+        "sha256": "774c3b1f19d7cf07a5544a1084baaee8cf605e0ca2f5f3086fe937b926c7ee58"
       }
     ]
   },
@@ -76,7 +76,7 @@
     "sources": [
       {
         "path": ".planning/phases/05-console-identity-platform-rbac/design-output/identity-prototype.html",
-        "sha256": "b3b1a68b513542c5296096e71b94dc301a527b456403e45295b90b1a869bec66"
+        "sha256": "774c3b1f19d7cf07a5544a1084baaee8cf605e0ca2f5f3086fe937b926c7ee58"
       }
     ]
   },
@@ -106,7 +106,7 @@
     "sources": [
       {
         "path": ".planning/phases/05-console-identity-platform-rbac/design-output/prototype.spec.ts",
-        "sha256": "a34a11a470ea04c075e9cbce75457780e1be9902b79aca7bc58ceb4a1d424cd8"
+        "sha256": "b354c3c26eefc01d282b5bb48acb99e048745276aec51fda3a3bca091d6a3d3e"
       }
     ]
   },

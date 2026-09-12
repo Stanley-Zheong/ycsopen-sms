@@ -43,3 +43,7 @@ Both URL-matcher and method-security denials are HTTP 403, which is the client c
 ## DR-P05-011 — Bound delegated identity administration by the actor's live authority
 
 A non-ADMIN actor cannot mutate a role they currently hold, grant a permission they do not currently hold, assign or migrate an account into a role whose active permissions exceed their own, or create/promote/demote an ADMIN account. ADMIN bypass remains explicit. These checks run inside the transactional service boundary against current database state so a narrow role-management permission cannot become a self-escalation primitive.
+
+## DR-P05-012 — Keep login presentation separate from capability completion claims
+
+The public login shell may explain the platform's multi-tenant SMS operations purpose and use a repository-owned abstract background, but it does not enumerate roadmap items as delivered features. Authentication remains the only action on the page. The presentation reuses the Phase 2 blue/teal tokens, preserves all Phase 1 compatibility selectors, and keeps remembered-username storage limited to the username value.
