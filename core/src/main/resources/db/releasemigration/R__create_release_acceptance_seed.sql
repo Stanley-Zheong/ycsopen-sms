@@ -98,3 +98,69 @@ WHERE v.version_no = 'DEV-PREFIX-2026-09'
       SELECT 1 FROM number_prefix_mappings m
       WHERE m.version_id = v.id AND m.prefix = '1380013'
   );
+
+-- Demo CMPP channels used by local acceptance and manual verification.  The
+-- repeatable migration is additive and never overwrites operator-managed rows.
+INSERT INTO channels (
+    channel_name, protocol, operator, host, port, sp_id, service_id, src_id,
+    max_connections, window_size, price, priority, active_window, extra_config, status
+)
+SELECT seed.channel_name, 'CMPP', seed.operator, 'mock-cmpp', 7890,
+       'MOCK-SP', 'MOCK-SMS', '10690000', 4, 16, seed.price, seed.priority,
+       '00:00-23:59', JSON_OBJECT('mock', TRUE, 'releaseFixture', TRUE), 'NORMAL'
+FROM (
+    SELECT 'A移动' channel_name, 'MOBILE' operator, 0.0270 price, 10 priority UNION ALL
+    SELECT 'B联通', 'UNICOM', 0.0278, 20 UNION ALL
+    SELECT 'C移动', 'MOBILE', 0.0285, 30 UNION ALL
+    SELECT 'D电信', 'TELECOM', 0.0292, 40 UNION ALL
+    SELECT 'E联通', 'UNICOM', 0.0299, 50 UNION ALL
+    SELECT 'F移动', 'MOBILE', 0.0304, 60 UNION ALL
+    SELECT 'G电信', 'TELECOM', 0.0310, 70 UNION ALL
+    SELECT 'H移动', 'MOBILE', 0.0316, 80 UNION ALL
+    SELECT 'I移动', 'MOBILE', 0.0322, 90 UNION ALL
+    SELECT '同业广联A', 'VIRTUAL', 0.0325, 100 UNION ALL
+    SELECT '同业财源B', 'VIRTUAL', 0.0327, 110 UNION ALL
+    SELECT '同业营销C', 'VIRTUAL', 0.0329, 120 UNION ALL
+    SELECT '同业竞争D', 'VIRTUAL', 0.0330, 130
+) seed
+WHERE NOT EXISTS (
+    SELECT 1 FROM channels existing WHERE existing.channel_name = seed.channel_name
+);
+
+-- Three representative operator price books with a 10-million-message tier
+-- discount of 0.002 yuan, retained as JSON for the existing pricing model.
+INSERT INTO tenant_price_books (
+    price_book_version, product_code, unit_price_mil, tier_rule_json, status
+)
+SELECT seed.version, 'SMS', seed.unit_price_mil,
+       JSON_OBJECT('thresholdMessages', 10000000, 'discountMil', 2), 'ACTIVE'
+FROM (
+    SELECT 'SMS_MOBILE_V2' version, 27 unit_price_mil UNION ALL
+    SELECT 'SMS_UNICOM_V2', 28 UNION ALL
+    SELECT 'SMS_TELECOM_V2', 29
+) seed
+WHERE NOT EXISTS (
+    SELECT 1 FROM tenant_price_books existing
+    WHERE existing.price_book_version = seed.version
+);
+
+INSERT INTO templates (
+    tenant_id, biz_type, template_code, template_name, template_type,
+    content, signature_id, description, audit_status, audit_time,
+    audit_comment, is_system_template
+)
+SELECT t.id, 'DOMESTIC', seed.template_code, seed.template_name, seed.template_type,
+       seed.content, s.id, '本地验收测试模板', 'APPROVED', CURRENT_TIMESTAMP,
+       'release seed', 0
+FROM tenants t
+JOIN signatures s ON s.tenant_id = t.id AND s.sign_code = 'DEV-SIGN'
+JOIN (
+    SELECT 'DEV-NOTIFY' template_code, '开发通知' template_name, 'NOTIFY' template_type,
+           '您有一条新的服务通知' content UNION ALL
+    SELECT 'DEV-MARKETING', '开发营销', 'MARKETING', '限时优惠活动，回复TD退订'
+) seed
+WHERE t.tenant_no = 'DEV-TENANT'
+  AND NOT EXISTS (
+      SELECT 1 FROM templates existing
+      WHERE existing.tenant_id = t.id AND existing.template_code = seed.template_code
+  );
