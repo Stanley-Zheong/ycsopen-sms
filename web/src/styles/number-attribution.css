@@ -38,6 +38,42 @@
   min-height: 72px;
 }
 
+.number-attribution-lookup-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.number-attribution-lookup-field,
+.number-attribution-lookup-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.number-attribution-lookup-field {
+  min-width: min(260px, 100%);
+  flex: 1 1 320px;
+}
+
+.number-attribution-lookup-field label,
+.number-attribution-lookup-choice label {
+  display: block;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.number-attribution-lookup-field input {
+  min-width: 0;
+  flex: 1 1 220px;
+  width: auto;
+}
+
+.number-attribution-lookup-choice {
+  flex: 0 0 auto;
+}
+
 .number-attribution-alert {
   border-radius: 8px;
   padding: 10px 12px;
