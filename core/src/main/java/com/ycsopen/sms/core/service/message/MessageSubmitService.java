@@ -15,6 +15,7 @@ import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
 import com.ycsopen.sms.core.service.template.TemplateSendComplianceService;
 import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
+import com.ycsopen.sms.core.service.tool.NumberAttributionService;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class MessageSubmitService {
     private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     private final TenantEligibilityPolicy tenantEligibilityPolicy;
     private final MessageAcceptanceIdempotencyService idempotency;
+    private final NumberAttributionService numberAttributionService;
 
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine,
@@ -52,7 +54,8 @@ public class MessageSubmitService {
                                  FeeWarningCreditService feeWarningCreditService,
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
                                  TenantEligibilityPolicy tenantEligibilityPolicy,
-                                 MessageAcceptanceIdempotencyService idempotency) {
+                                 MessageAcceptanceIdempotencyService idempotency,
+                                 NumberAttributionService numberAttributionService) {
         this.templateCompliance = templateCompliance;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
@@ -60,6 +63,7 @@ public class MessageSubmitService {
         this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
         this.tenantEligibilityPolicy = tenantEligibilityPolicy;
         this.idempotency = idempotency;
+        this.numberAttributionService = numberAttributionService;
     }
 
     @Transactional
@@ -80,6 +84,8 @@ public class MessageSubmitService {
                 tenantId, request.templateId(), request.signId(), request.templateParams());
         Template template = compliance.template();
         Signature signature = compliance.signature();
+        NumberAttributionService.AttributionResult attribution = numberAttributionService.lookup(
+                request.phoneNumber(), false);
         idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
@@ -92,6 +98,7 @@ public class MessageSubmitService {
                 .mobileQueryIndexes(preparedRouting.queryIndexes())
                 .legacyMobileLookupToken(preparedRouting.legacyLookupToken())
                 .clientIp(clientIp)
+                .operatorHint(attribution.carrier())
                 .content(compliance.finalContent())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
