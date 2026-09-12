@@ -128,9 +128,17 @@ export default function NumberAttributionPage() {
 
       <section className="card" data-testid="admin-number-attribution-lookup-panel">
         <h2>归属查询</h2>
-        <label>手机号<input data-testid="admin-number-attribution-mobile" value={mobile} onChange={(event) => setMobile(event.target.value)} /></label>
-        <label><input data-testid="admin-number-attribution-force-provider-failure" type="checkbox" checked={forceFailure} onChange={(event) => setForceFailure(event.target.checked)} /> 模拟携转服务失败</label>
-        <button type="button" data-testid="admin-number-attribution-lookup" disabled={!canRead} onClick={() => lookupMutation.mutate()}>查询归属</button>
+        <div className="number-attribution-lookup-form" data-testid="admin-number-attribution-lookup-form">
+          <div className="number-attribution-lookup-field">
+            <label htmlFor="admin-number-attribution-mobile-input" data-testid="admin-number-attribution-mobile-label">手机号</label>
+            <input id="admin-number-attribution-mobile-input" data-testid="admin-number-attribution-mobile" value={mobile} onChange={(event) => setMobile(event.target.value)} />
+          </div>
+          <div className="number-attribution-lookup-choice">
+            <label htmlFor="admin-number-attribution-force-provider-failure-input" data-testid="admin-number-attribution-force-provider-failure-label">模拟携转服务失败</label>
+            <input id="admin-number-attribution-force-provider-failure-input" data-testid="admin-number-attribution-force-provider-failure" type="checkbox" checked={forceFailure} onChange={(event) => setForceFailure(event.target.checked)} />
+          </div>
+          <button type="button" data-testid="admin-number-attribution-lookup" disabled={!canRead} onClick={() => lookupMutation.mutate()}>查询归属</button>
+        </div>
         {lookupResult && (
           <div data-testid="admin-number-attribution-result">
             <strong>{lookupResult.carrier}</strong> / {lookupResult.prefixCarrier} / {lookupResult.province}{lookupResult.city}

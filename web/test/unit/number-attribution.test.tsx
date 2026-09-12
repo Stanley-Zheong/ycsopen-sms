@@ -108,4 +108,20 @@ describe('Phase 19 number attribution and portability UI', () => {
     fireEvent.click(screen.getByTestId('admin-number-portability-save'));
     await waitFor(() => expect(numberApi.savePortability).toHaveBeenCalled());
   });
+
+  it('groups the lookup controls in the shared compact choice-control layout', async () => {
+    renderWithProviders(<NumberAttributionPage />);
+
+    const lookupForm = await screen.findByTestId('admin-number-attribution-lookup-form');
+    expect(lookupForm).toHaveClass('number-attribution-lookup-form');
+    expect(screen.getByTestId('admin-number-attribution-mobile-label')).toHaveAttribute(
+      'for',
+      'admin-number-attribution-mobile-input',
+    );
+    expect(screen.getByTestId('admin-number-attribution-force-provider-failure-label')).toHaveAttribute(
+      'for',
+      'admin-number-attribution-force-provider-failure-input',
+    );
+    expect(screen.getByTestId('admin-number-attribution-force-provider-failure')).toHaveAttribute('type', 'checkbox');
+  });
 });
