@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.tool;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class NumberAttributionService {
     private final JdbcTemplate jdbc;
     private final PortabilityProvider provider;
 
+    @Autowired
     public NumberAttributionService(JdbcTemplate jdbc) {
         this(jdbc, mobile -> null);
     }

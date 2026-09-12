@@ -81,7 +81,7 @@ public class Tenant {
     private String businessAddress;
     @Column(name = "license_valid_until")
     private LocalDate licenseValidUntil;
-    @Column(name = "customer_level")
+    @Column(name = "customer_level", columnDefinition = "tinyint")
     private Integer customerLevel = 1;
     @Column(name = "biz_manager", length = 64)
     private String bizManager;
@@ -106,7 +106,7 @@ public class Tenant {
     private String inspectionCompanyName;
     @Column(name = "inspection_credit_code", length = 18)
     private String inspectionCreditCode;
-    @Column(name = "inspection_confidence")
+    @Column(name = "inspection_confidence", columnDefinition = "decimal(5,4)")
     private Double inspectionConfidence;
     @Column(name = "inspection_provider_request_id", length = 100)
     private String inspectionProviderRequestId;
