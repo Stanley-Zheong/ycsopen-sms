@@ -122,10 +122,11 @@ test('pw-p16-list C-P16-LIST OBL-F-5-2-A pw-p16-import C-P16-IMPORT-EXPORT OBL-F
   await page.goto('/admin/riskcontrol');
   await expect(page.getByTestId('admin-blacklist-risk-page')).toBeVisible();
   await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-page')).toContainText('139****0001');
+  await page.getByTestId('query-panel-toggle').click();
   await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filters')).toBeVisible();
-  await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant')).toHaveValue('42');
+  await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant')).toHaveValue('');
   await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filter-type')).toHaveValue('');
-  await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filter-status')).toHaveValue('ACTIVE');
+  await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-filter-status')).toHaveValue('');
   await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-create-dialog')).toHaveCount(0);
   await page.getByTestId('admin-blacklist-risk-black-white-lists-create-open').click();
   await expect(page.getByTestId('admin-blacklist-risk-black-white-lists-form')).toBeVisible();

@@ -14,6 +14,7 @@ import {
 } from '@/api/alertEngineApi';
 import { mutationErrorMessage } from '@/api/client';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/alert-engine.css';
 
 const defaultRule = {
@@ -40,6 +41,7 @@ const defaultEvaluation = {
 export default function AdminAlertsPage() {
   const queryClient = useQueryClient();
   const [ruleDraft, setRuleDraft] = useState(defaultRule);
+  const [historyFilterDraft, setHistoryFilterDraft] = useState({ status: '', severity: '' });
   const [historyFilter, setHistoryFilter] = useState({ status: '', severity: '' });
   const [activeTab, setActiveTab] = useState<'ALL' | 'ACTIVE' | 'SEVERE'>('ALL');
   const [resolveReason, setResolveReason] = useState('确认来源已恢复');
@@ -222,15 +224,9 @@ export default function AdminAlertsPage() {
         </ModalDialog>
       )}
 
-      <section className="card" data-testid="admin-alert-engine-alert-history">
+      <section data-testid="admin-alert-engine-alert-history">
         <div className="alert-engine-toolbar">
           <h2>告警历史</h2>
-          <label>状态<select data-testid="admin-alert-engine-history-status-filter" value={historyFilter.status} onChange={(event) => setHistoryFilter((current) => ({ ...current, status: event.target.value }))}>
-            <option value="">全部</option><option value="ACTIVE">活跃</option><option value="ACKNOWLEDGED">已确认</option><option value="RESOLVED">已解决</option>
-          </select></label>
-          <label>级别<select data-testid="admin-alert-engine-history-severity-filter" value={historyFilter.severity} onChange={(event) => setHistoryFilter((current) => ({ ...current, severity: event.target.value }))}>
-            <option value="">全部</option><option value="MEDIUM">中</option><option value="HIGH">高</option><option value="CRITICAL">严重</option>
-          </select></label>
         </div>
         <div className="alert-engine-tabs" data-testid="admin-alert-engine-dashboard-alert-tabs">
           <button type="button" onClick={() => setActiveTab('ALL')}>全部</button>
@@ -239,26 +235,54 @@ export default function AdminAlertsPage() {
         </div>
         <label>解决原因<input data-testid="admin-alert-engine-resolve-reason" value={resolveReason} onChange={(event) => setResolveReason(event.target.value)} /></label>
         <label>静音原因<input data-testid="admin-alert-engine-mute-reason" value={muteReason} onChange={(event) => setMuteReason(event.target.value)} /></label>
-        <table className="alert-engine-table">
-          <thead>
-            <tr><th>标题</th><th>级别</th><th>状态</th><th>描述</th><th>来源</th><th>影响</th><th>触发</th><th>投递</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            {visibleAlerts.map((row) => (
-              <tr key={row.id} data-testid="admin-alert-engine-alert-row">
-                <td>{row.title}</td><td>{row.severity}</td><td>{row.status}</td><td>{row.content}</td>
-                <td>{row.sourceModule}/{row.sourceKey}</td><td>{row.impactScope}</td><td>{row.triggeredAt ?? '-'}</td><td>{row.deliveryState}</td>
-                <td data-testid="admin-alert-engine-dashboard-alert-action">
-                  <button type="button" data-testid="admin-alert-engine-alert-acknowledge" onClick={() => acknowledge.mutate(row)}>确认</button>
-                  <button type="button" data-testid="admin-alert-engine-alert-history-acknowledge" onClick={() => acknowledge.mutate(row)}>历史确认</button>
-                  <button type="button" data-testid="admin-alert-engine-alert-resolve" onClick={() => resolve.mutate(row)}>解决</button>
-                  <button type="button" data-testid="admin-alert-engine-alert-mute" onClick={() => mute.mutate(row)}>静音</button>
-                  <button type="button" data-testid="admin-alert-engine-alert-history-mute" onClick={() => mute.mutate(row)}>历史静音</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <QueryPanel
+          onSubmit={() => setHistoryFilter({ ...historyFilterDraft })}
+          onReset={() => {
+            setHistoryFilterDraft({ status: '', severity: '' });
+            setHistoryFilter({ status: '', severity: '' });
+            setActiveTab('ALL');
+          }}
+          result={(
+            <>
+              {history.isLoading && <p>正在加载…</p>}
+              {history.isError && <p role="alert">告警历史加载失败。</p>}
+              {!history.isLoading && !history.isError && visibleAlerts.length === 0 && <p>暂无告警历史。</p>}
+              {visibleAlerts.length > 0 && (
+                <table className="alert-engine-table">
+                  <thead>
+                    <tr><th>标题</th><th>级别</th><th>状态</th><th>描述</th><th>来源</th><th>影响</th><th>触发</th><th>投递</th><th>操作</th></tr>
+                  </thead>
+                  <tbody>
+                    {visibleAlerts.map((row) => (
+                      <tr key={row.id} data-testid="admin-alert-engine-alert-row">
+                        <td>{row.title}</td><td>{row.severity}</td><td>{row.status}</td><td>{row.content}</td>
+                        <td>{row.sourceModule}/{row.sourceKey}</td><td>{row.impactScope}</td><td>{row.triggeredAt ?? '-'}</td><td>{row.deliveryState}</td>
+                        <td data-testid="admin-alert-engine-dashboard-alert-action">
+                          <button type="button" data-testid="admin-alert-engine-alert-acknowledge" onClick={() => acknowledge.mutate(row)}>确认</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-history-acknowledge" onClick={() => acknowledge.mutate(row)}>历史确认</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-resolve" onClick={() => resolve.mutate(row)}>解决</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-mute" onClick={() => mute.mutate(row)}>静音</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-history-mute" onClick={() => mute.mutate(row)}>历史静音</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+        >
+          <QueryField name="status" label="状态">
+            <select data-testid="admin-alert-engine-history-status-filter" value={historyFilterDraft.status} onChange={(event) => setHistoryFilterDraft((current) => ({ ...current, status: event.target.value }))}>
+              <option value="">全部</option><option value="ACTIVE">活跃</option><option value="ACKNOWLEDGED">已确认</option><option value="RESOLVED">已解决</option>
+            </select>
+          </QueryField>
+          <QueryField name="severity" label="级别">
+            <select data-testid="admin-alert-engine-history-severity-filter" value={historyFilterDraft.severity} onChange={(event) => setHistoryFilterDraft((current) => ({ ...current, severity: event.target.value }))}>
+              <option value="">全部</option><option value="MEDIUM">中</option><option value="HIGH">高</option><option value="CRITICAL">严重</option>
+            </select>
+          </QueryField>
+        </QueryPanel>
       </section>
 
       <section className="card" data-testid="admin-alert-engine-alert-delivery-attempts">

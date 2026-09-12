@@ -115,6 +115,7 @@ test('pw-p13-template-review pw-p13-template-decision pw-p13-template-approve pw
   await expect(page.getByTestId('admin-template-lifecycle-template-review-page')).toBeVisible();
   await expect(page.getByTestId('admin-template-lifecycle-template-review-stats')).toContainText('待审核 1');
   await page.getByTestId('admin-template-lifecycle-template-review-filters').fill('验证码');
+  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-template-lifecycle-template-review-row')).toContainText('code');
   await page.getByTestId('admin-template-lifecycle-template-review-decision-open').click();
   await page.getByTestId('admin-template-lifecycle-template-review-decision-opinion').fill('材料完整');

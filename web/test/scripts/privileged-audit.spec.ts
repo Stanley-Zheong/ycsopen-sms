@@ -111,6 +111,7 @@ test('pw-p6-audit-page C-P6-AUDIT-CAPTURE OBL-F-14-1-A', async ({ page }) => {
   await expect(page.getByTestId('admin-privileged-data-system-logs-heading')).toBeVisible();
   await expect(page.getByTestId('admin-privileged-data-system-logs-table')).toContainText('UPDATE_PLATFORM_ROLE_PERMISSIONS');
   await expect(page.getByTestId('admin-privileged-data-system-logs-row')).toHaveCount(1);
+  await page.getByTestId('query-panel-toggle').click();
   await page.getByTestId('admin-privileged-data-system-logs-actor-input').fill('admin-user');
   await expect(page.getByTestId('admin-privileged-data-system-logs-operation-input')).toBeVisible();
   await expect(page.getByTestId('admin-privileged-data-system-logs-result-select')).toBeVisible();
@@ -120,7 +121,7 @@ test('pw-p6-audit-page C-P6-AUDIT-CAPTURE OBL-F-14-1-A', async ({ page }) => {
     && request.url().includes('actor=admin-user'));
   await page.getByTestId('admin-privileged-data-system-logs-query').click();
   await filtered;
-  await expect(page.getByTestId('admin-privileged-data-system-logs-reset')).toBeEnabled();
+  await expect(page.getByTestId('query-panel').getByTestId('query-reset')).toBeEnabled();
   await expect(page.getByTestId('admin-privileged-data-system-logs-previous')).toBeDisabled();
   await expect(page.getByTestId('admin-privileged-data-system-logs-page-status')).toContainText('第 1 页');
   await expect(page.getByTestId('admin-privileged-data-system-logs-next')).toBeDisabled();
@@ -177,6 +178,7 @@ test('pw-p6-security-filter C-P6-SECURITY-FILTER OBL-F-14-2-B', async ({ page })
   await loginAs(page, 'ADMIN');
   await page.goto('/admin/system/security-events');
 
+  await page.getByTestId('query-panel-toggle').click();
   await expect(page.getByTestId('admin-privileged-data-security-events-filter')).toBeVisible();
   await page.getByTestId('admin-privileged-data-security-events-type-select').selectOption('UNUSUAL_LOGIN');
   await page.getByTestId('admin-privileged-data-security-events-actor-input').fill('admin-user');

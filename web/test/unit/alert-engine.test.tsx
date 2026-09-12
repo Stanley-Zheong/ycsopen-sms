@@ -78,6 +78,18 @@ describe('Phase 35 alert engine console UI', () => {
     expect(await screen.findByTestId('admin-alert-engine-dashboard-alert-tabs')).toHaveTextContent('活跃');
     expect(await screen.findByTestId('admin-alert-engine-alert-row')).toHaveTextContent('通道失败率过高');
     expect(await screen.findByTestId('admin-alert-engine-alert-delivery-attempts')).toHaveTextContent('EMAIL');
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('query-result-table')).toContainElement(screen.getByTestId('admin-alert-engine-alert-row'));
+
+    const initialHistoryRequests = vi.mocked(api.listAlertHistory).mock.calls.length;
+    fireEvent.change(screen.getByTestId('admin-alert-engine-history-status-filter'), { target: { value: 'ACTIVE' } });
+    expect(api.listAlertHistory).toHaveBeenCalledTimes(initialHistoryRequests);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(api.listAlertHistory).toHaveBeenCalledWith({ status: 'ACTIVE', severity: '' }));
+    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(screen.getByTestId('admin-alert-engine-history-status-filter')).toHaveValue('');
+    await waitFor(() => expect(api.listAlertHistory).toHaveBeenLastCalledWith({ status: '', severity: '' }));
 
     expect(screen.queryByTestId('admin-alert-engine-rule-form-dialog')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-alert-engine-rule-create-open'));
@@ -111,5 +123,20 @@ describe('Phase 35 alert engine console UI', () => {
     expect(error).toHaveTextContent('告警规则保存失败');
     expect(error.closest('[role="dialog"]')).toContainElement(error);
     expect(screen.getByTestId('admin-alert-engine-rule-form-dialog')).toBeVisible();
+  });
+
+  it('restores the initial alert list when the shared query is reset', async () => {
+    vi.mocked(api.listAlertHistory).mockResolvedValue([
+      alertRow,
+      { ...alertRow, id: 502, title: '已恢复告警', status: 'RESOLVED', severity: 'MEDIUM' },
+    ]);
+    renderWithQuery(<AdminAlertsPage />);
+
+    expect(await screen.findByText('已恢复告警')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: '活跃' }));
+    expect(screen.queryByText('已恢复告警')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(await screen.findByText('已恢复告警')).toBeVisible();
   });
 });

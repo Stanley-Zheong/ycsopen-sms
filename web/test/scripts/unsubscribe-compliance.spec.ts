@@ -93,10 +93,21 @@ test.describe('Phase 33 unsubscribe compliance', () => {
     await expect(page.getByTestId('admin-unsubscribe-compliance-message')).toContainText('退订关键词已保存');
   });
 
-  test('pw-p33-admin-statistics C-P33-ADMIN-STATISTICS OBL-F-10-3-A pw-p33-alert C-P33-ALERT OBL-F-10-3-B', async ({ page }) => {
+  test('pw-p33-admin-statistics C-P33-ADMIN-STATISTICS OBL-F-10-3-A pw-p33-alert C-P33-ALERT OBL-F-10-3-B pw-issue-58-admin-unsubscribes C-ISSUE-58-ADMIN-UNSUBSCRIBES OBL-ISSUE-58-ADMIN-UNSUBSCRIBES', async ({ page }) => {
     await mockUnsubscribeApis(page);
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/unsubscribes');
+    const panel = page.getByTestId('query-panel');
+    await panel.getByTestId('query-panel-toggle').click();
+    await panel.getByTestId('query-input-keyword').locator('input').fill('TD');
+    const filteredRequest = page.waitForRequest((request) => {
+      const url = new URL(request.url());
+      return url.pathname.endsWith('/unsubscribes') && url.searchParams.get('keyword') === 'TD';
+    });
+    await panel.getByTestId('query-submit').click();
+    await filteredRequest;
+    await panel.getByTestId('query-reset').click();
+    await expect(panel.getByTestId('query-input-keyword').locator('input')).toHaveValue('');
     await expect(page.getByTestId('admin-unsubscribe-compliance-statistics-page')).toBeVisible();
     await expect(page.getByTestId('admin-unsubscribe-compliance-statistics-row')).toContainText('1.00%');
     await page.getByTestId('admin-unsubscribe-compliance-alert-evaluate').click();

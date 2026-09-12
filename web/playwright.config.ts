@@ -18,7 +18,13 @@ export default defineConfig({
   use: { baseURL, trace: 'on-first-retry', viewport: { width: 1440, height: 900 } },
   projects: [{
     name: 'local-google-chrome',
-    use: { ...devices['Desktop Chrome'], launchOptions: { executablePath: localChromePath } },
+    use: {
+      ...devices['Desktop Chrome'],
+      launchOptions: {
+        executablePath: localChromePath,
+        args: ['--disable-crashpad-for-testing'],
+      },
+    },
   }],
   webServer: {
     command: `npm run dev -- --host 127.0.0.1 --port ${webPort}`,

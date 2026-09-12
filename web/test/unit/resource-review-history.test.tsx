@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { ReactElement } from 'react';
@@ -103,22 +103,42 @@ describe('Phase 15 unified resource review history UI', () => {
     renderWithProviders(<ResourceReviewHistoryPage />);
 
     await screen.findByTestId('admin-resource-review-history-review-page');
-    fireEvent.change(screen.getByLabelText('资源类型'), { target: { value: 'SIGNATURE' } });
-    fireEvent.change(screen.getByLabelText('机构'), { target: { value: '42' } });
-    fireEvent.change(screen.getByLabelText('审核人'), { target: { value: 'operator' } });
-    fireEvent.change(screen.getByLabelText('开始时间'), { target: { value: '2026-09-09T00:00' } });
-    fireEvent.change(screen.getByLabelText('结束时间'), { target: { value: '2026-09-09T23:59' } });
-
     const table = await screen.findByTestId('admin-resource-review-history-review-table');
     expect(table).toHaveTextContent('SIGNATURE:1');
     expect(table).toHaveTextContent('TEMPLATE:1');
-    expect(urls.some((url) => url.includes('resourceType=SIGNATURE') && url.includes('tenantId=42')
+
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    expect(within(panel).getByTestId('query-result-table')).toContainElement(table);
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
+    const filters = screen.getByTestId('admin-resource-review-history-review-filters');
+    const initialRequestCount = urls.filter((url) => url.startsWith('/console/review-history?')).length;
+    fireEvent.change(within(filters).getByLabelText('资源类型'), { target: { value: 'SIGNATURE' } });
+    fireEvent.change(within(filters).getByLabelText('机构'), { target: { value: '42' } });
+    fireEvent.change(within(filters).getByLabelText('审核人'), { target: { value: 'operator' } });
+    fireEvent.change(within(filters).getByLabelText('开始时间'), { target: { value: '2026-09-09T00:00' } });
+    fireEvent.change(within(filters).getByLabelText('结束时间'), { target: { value: '2026-09-09T23:59' } });
+    expect(urls.filter((url) => url.startsWith('/console/review-history?'))).toHaveLength(initialRequestCount);
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+
+    await waitFor(() => expect(urls.some((url) => url.includes('resourceType=SIGNATURE') && url.includes('tenantId=42')
       && url.includes('createdFrom=2026-09-09T00%3A00') && url.includes('createdTo=2026-09-09T23%3A59')
-      && url.includes('page=0') && url.includes('pageSize=50'))).toBe(true);
+      && url.includes('page=0') && url.includes('pageSize=50'))).toBe(true));
     expect(screen.getByTestId('admin-resource-review-history-review-page-prev')).toBeDisabled();
     expect(screen.getByTestId('admin-resource-review-history-review-page-next')).toBeDisabled();
 
-    fireEvent.click(within(table).getAllByTestId('admin-resource-review-history-review-detail-open')[1]);
+    const requestCountBeforeReset = urls.filter((url) => url.startsWith('/console/review-history?')).length;
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(filters).getByLabelText('资源类型')).toHaveValue('');
+    expect(within(filters).getByLabelText('机构')).toHaveValue('');
+    expect(within(filters).getByLabelText('审核人')).toHaveValue('');
+    await waitFor(() => expect(urls.filter((url) => url.startsWith('/console/review-history?')).length)
+      .toBeGreaterThan(requestCountBeforeReset));
+    expect([...urls].reverse().find((url) => url.startsWith('/console/review-history?')))
+      .toContain('page=0&pageSize=50');
+
+    const resetTable = screen.getByTestId('admin-resource-review-history-review-table');
+    fireEvent.click(within(resetTable).getAllByTestId('admin-resource-review-history-review-detail-open')[1]);
     const drawer = await screen.findByTestId('admin-resource-review-history-review-detail-drawer');
     expect(drawer).toHaveTextContent('TEMPLATE:1');
     expect(drawer).toHaveTextContent('验证码 ${code}');

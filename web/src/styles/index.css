@@ -179,3 +179,20 @@ tr.over-threshold td:first-child { font-weight: 600; }
 .configuration-alert { padding: 12px 16px; border-radius: var(--radius-control); }
 .configuration-alert.error { color: var(--color-danger); background: var(--color-error-bg); border: 1px solid var(--color-danger); }
 .configuration-alert.success { color: var(--color-success); background: var(--color-success-bg); border: 1px solid var(--color-success); }
+
+.query-panel, .query-panel-form { display: grid; gap: 16px; }
+.query-panel-form { margin: 0; }
+.query-panel-heading, .query-panel-actions { display: flex; align-items: center; gap: 8px; }
+.query-panel-heading { justify-content: space-between; }
+.query-panel-heading strong { color: var(--color-text); font-size: 16px; }
+.query-panel-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.query-panel-fields[hidden] { display: none; }
+.query-panel-field { display: grid; grid-template-columns: minmax(88px, auto) minmax(0, 1fr); align-items: center; gap: 12px; }
+.query-panel-field > label { color: var(--color-muted); font-size: 14px; text-align: right; white-space: nowrap; }
+.query-panel-control > input, .query-panel-control > select, .query-panel-control > textarea { box-sizing: border-box; width: 100%; }
+.query-panel-toggle { min-width: 72px; }
+.query-panel-result { overflow-x: auto; }
+
+@media (max-width: 900px) {
+  .query-panel-fields { grid-template-columns: 1fr; }
+}

@@ -69,10 +69,12 @@ test.beforeEach(async ({ page }) => {
 test('pw-p15-review-history C-P15-REVIEW-HISTORY OBL-IA-ADMIN-REVIEW-HISTORY', async ({ page }) => {
   await page.goto('/admin/review-history');
   await expect(page.getByTestId('admin-resource-review-history-review-page')).toBeVisible();
+  await page.getByTestId('query-panel-toggle').click();
   await expect(page.getByTestId('admin-resource-review-history-review-filters')).toBeVisible();
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('资源类型').selectOption('SIGNATURE');
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('开始时间').fill('2026-09-09T00:00');
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('结束时间').fill('2026-09-09T23:59');
+  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-resource-review-history-review-table')).toContainText('SIGNATURE:1');
   await expect(page.getByTestId('admin-resource-review-history-review-pagination')).toContainText('第 1 页，每页 50 条');
   await expect(page.getByTestId('admin-resource-review-history-review-page-prev')).toBeDisabled();

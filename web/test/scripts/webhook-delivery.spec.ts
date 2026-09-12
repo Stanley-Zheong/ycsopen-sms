@@ -48,7 +48,7 @@ async function mockWebhookApis(page: Page) {
     expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ type: 'STATUS', destinationUrl: 'https://callback.example.com/status2' }));
     await route.fulfill({ json: apiResponse({ eventId: 101, destinationUrl: 'https://callback.example.com/status2', state: 'DELIVERED', resultCode: 'HTTP_204', resultMessage: null }) });
   });
-  await page.route('**/api/v1/console/webhook-deliveries/failures?**', async (route: Route) => {
+  await page.route(/\/api\/v1\/console\/webhook-deliveries\/failures(?:\?.*)?$/, async (route: Route) => {
     await route.fulfill({ json: apiResponse([
       { eventId: 501, tenantId: 7, eventType: 'STATUS', sourceId: 'STATUS:MSG_1:FAILED', logicalId: 'STATUS:MSG_1:FAILED', destinationUrl: 'https://callback.example.com/status', state: 'PUSH_FAILED', attemptCount: 5, maxAttempts: 5, nextAttemptAt: null, updatedAt: '2026-09-09T00:00:00' },
     ]) });

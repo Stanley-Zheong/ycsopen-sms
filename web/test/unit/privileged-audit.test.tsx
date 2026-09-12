@@ -166,17 +166,24 @@ describe('Phase 6 privileged audit UI', () => {
     const { queryClient } = renderPage(<OperationAuditPage />);
     await screen.findByText('UPDATE_PLATFORM_ROLE_PERMISSIONS');
 
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
     const filters = screen.getByTestId('admin-privileged-data-system-logs-filter');
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
     fireEvent.change(within(filters).getByLabelText('操作'), { target: { value: 'UPDATE_PLATFORM_ROLE_PERMISSIONS' } });
     fireEvent.change(within(filters).getByLabelText('结果'), { target: { value: 'SUCCESS' } });
     fireEvent.change(within(filters).getByLabelText('开始时间'), { target: { value: '2026-09-07T09:00' } });
-    fireEvent.click(within(filters).getByRole('button', { name: '查询' }));
+    fireEvent.click(within(panel).getByTestId('query-submit'));
 
     await waitFor(() => expect(seen.some((request) => request.url === '/console/operation-audits'
       && JSON.stringify(request.params).includes('UPDATE_PLATFORM_ROLE_PERMISSIONS'))).toBe(true));
     const filteredRequest = [...seen].reverse().find((request) => request.url === '/console/operation-audits');
     expect(filteredRequest?.params).toMatchObject({ from: new Date('2026-09-07T09:00').toISOString() });
+    expect(screen.getByTestId('query-result-table')).toHaveTextContent('UPDATE_PLATFORM_ROLE_PERMISSIONS');
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(filters).getByLabelText('操作人')).toHaveValue('');
+    expect(screen.getByTestId('admin-privileged-data-system-logs-page-status')).toHaveTextContent('第 1 页');
     fireEvent.click(screen.getByRole('button', { name: '查看审计详情' }));
     const drawer = screen.getByTestId('admin-privileged-data-system-logs-detail-drawer');
     expect(drawer).toHaveTextContent('parameterNames=[roleId]');
@@ -191,15 +198,29 @@ describe('Phase 6 privileged audit UI', () => {
     const table = await screen.findByTestId('admin-privileged-data-security-events-table');
     expect(within(table).getByText('异常登录')).toBeVisible();
 
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    expect(within(panel).getByTestId('query-result-table')).toContainElement(table);
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
     const filters = screen.getByTestId('admin-privileged-data-security-events-filter');
+    const initialRequestCount = seen.filter((request) => request.url === '/console/security-events').length;
     fireEvent.change(within(filters).getByLabelText('事件类型'), { target: { value: 'UNUSUAL_LOGIN' } });
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
     fireEvent.change(within(filters).getByLabelText('结果'), { target: { value: 'DETECTED' } });
-    fireEvent.click(within(filters).getByRole('button', { name: '查询' }));
+    expect(seen.filter((request) => request.url === '/console/security-events')).toHaveLength(initialRequestCount);
+    fireEvent.click(within(panel).getByTestId('query-submit'));
 
     await waitFor(() => expect(seen.some((request) => request.url === '/console/security-events'
       && JSON.stringify(request.params).includes('UNUSUAL_LOGIN'))).toBe(true));
-    expect(screen.getByTestId('admin-privileged-data-security-events-table')).toHaveTextContent('检测到登录来源变化');
+    expect(screen.getByTestId('query-result-table')).toHaveTextContent('检测到登录来源变化');
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(filters).getByLabelText('事件类型')).toHaveValue('');
+    expect(within(filters).getByLabelText('操作人')).toHaveValue('');
+    expect(within(filters).getByLabelText('结果')).toHaveValue('');
+    await waitFor(() => expect([...seen].reverse().find((request) => request.url === '/console/security-events')?.params)
+      .toEqual({ page: 0, size: 20 }));
+    expect(screen.getByTestId('admin-privileged-data-security-events-page-status')).toHaveTextContent('第 1 页');
     await settleQueries(queryClient);
   });
 

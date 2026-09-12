@@ -76,7 +76,7 @@ function renderWithProviders(ui: ReactElement) {
 }
 
 describe('Phase 16 blacklist risk control UI', () => {
-  const calls: Array<{ method?: string; url: string; data?: Record<string, unknown> }> = [];
+  const calls: Array<{ method?: string; url: string; data?: Record<string, unknown>; params?: Record<string, unknown> }> = [];
 
   beforeEach(() => {
     calls.length = 0;
@@ -91,7 +91,7 @@ describe('Phase 16 blacklist risk control UI', () => {
       const request = config as InternalAxiosRequestConfig;
       const url = request.url ?? '';
       const data = request.data ? JSON.parse(String(request.data)) as Record<string, unknown> : undefined;
-      calls.push({ method: request.method, url, data });
+      calls.push({ method: request.method, url, data, params: request.params as Record<string, unknown> | undefined });
       if (url === '/console/account-overview') {
         return axiosResponse(request, apiResponse({
           id: 7,
@@ -146,6 +146,26 @@ describe('Phase 16 blacklist risk control UI', () => {
     expect(await screen.findByText('139****0001')).toBeInTheDocument();
     expect(await screen.findByText('拦截 1')).toBeInTheDocument();
     expect(await screen.findByText(/local-risk/)).toBeInTheDocument();
+
+    expect(screen.getByTestId('query-panel-fields')).not.toBeVisible();
+    expect(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-status')).toHaveValue('');
+    fireEvent.click(screen.getByTestId('query-panel-toggle'));
+    const initialQueryCount = calls.filter((call) => call.url === '/console/risk/blacklist' && call.method === 'get').length;
+    await act(async () => {
+      fireEvent.change(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant'), { target: { value: '77' } });
+    });
+    expect(calls.filter((call) => call.url === '/console/risk/blacklist' && call.method === 'get')).toHaveLength(initialQueryCount);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(calls.some((call) => call.url === '/console/risk/blacklist' && call.method === 'get'
+      && call.params?.tenantId === '77')).toBe(true));
+    fireEvent.change(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant'), { target: { value: '88' } });
+    fireEvent.click(screen.getByTestId('admin-blacklist-risk-black-white-lists-export'));
+    await waitFor(() => expect(calls.some((call) => call.url === '/console/risk/blacklist/export-request'
+      && call.params?.tenantId === '77')).toBe(true));
+    fireEvent.click(screen.getByTestId('query-reset'));
+    await waitFor(() => expect(calls.some((call) => call.url === '/console/risk/blacklist' && call.method === 'get'
+      && call.params?.tenantId === '' && call.params?.listType === '' && call.params?.status === '')).toBe(true));
+    expect(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant')).toHaveValue('');
 
     expect(screen.queryByTestId('admin-blacklist-risk-black-white-lists-create-dialog')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-blacklist-risk-black-white-lists-create-open'));

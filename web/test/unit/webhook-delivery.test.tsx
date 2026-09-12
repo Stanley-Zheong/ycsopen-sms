@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
@@ -101,5 +101,23 @@ describe('Phase 28 webhook delivery UI', () => {
     await waitFor(() => expect(api.pauseWebhookFailure).toHaveBeenCalledWith(501, '运营复核后处理'));
     fireEvent.click(screen.getByTestId('admin-webhook-delivery-push-failures-resume'));
     await waitFor(() => expect(api.resumeWebhookFailure).toHaveBeenCalledWith(501, '运营复核后处理'));
+  });
+
+  it('applies push-failure filters only on submit and resets to the unfiltered list', async () => {
+    renderWithQuery(<AdminPushFailuresPage />);
+
+    const panel = screen.getByTestId('query-panel');
+    await waitFor(() => expect(api.listWebhookFailures).toHaveBeenCalledWith({ tenantId: '', state: '' }));
+    vi.mocked(api.listWebhookFailures).mockClear();
+    fireEvent.change(within(panel).getByTestId('admin-webhook-delivery-filter-tenant'), { target: { value: '7' } });
+    fireEvent.change(within(panel).getByTestId('admin-webhook-delivery-filter-state'), { target: { value: 'PAUSED' } });
+    expect(api.listWebhookFailures).not.toHaveBeenCalled();
+
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    await waitFor(() => expect(api.listWebhookFailures).toHaveBeenCalledWith({ tenantId: '7', state: 'PAUSED' }));
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).getByTestId('admin-webhook-delivery-filter-state')).toHaveValue('');
+    await waitFor(() => expect(api.listWebhookFailures).toHaveBeenLastCalledWith({ tenantId: '', state: '' }));
+    expect(within(panel).queryByTestId('admin-webhook-delivery-action-reason')).not.toBeInTheDocument();
   });
 });

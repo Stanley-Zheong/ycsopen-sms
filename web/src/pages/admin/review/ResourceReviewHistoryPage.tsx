@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import {
   getResourceReviewHistoryDetail,
   listResourceReviewHistory,
@@ -30,6 +31,7 @@ export default function ResourceReviewHistoryPage() {
   const roleAllowed = userType === 'ADMIN' || userType === 'OPERATOR';
   const access = useIdentityAccess(isPlatformRole(userType) && roleAllowed);
   const canRead = userType === 'ADMIN' || (userType === 'OPERATOR' && access.can(REVIEW_HISTORY_PERMISSIONS.read));
+  const [draft, setDraft] = useState<ResourceReviewHistoryFilters>(EMPTY_FILTERS);
   const [filters, setFilters] = useState<ResourceReviewHistoryFilters>(EMPTY_FILTERS);
   const [detailTarget, setDetailTarget] = useState<ResourceReviewHistoryItem | null>(null);
 
@@ -48,7 +50,7 @@ export default function ResourceReviewHistoryPage() {
   const rows = rowsQuery.data ?? [];
   const detail = detailQuery.data ?? detailTarget;
   const setFilter = (key: keyof Omit<ResourceReviewHistoryFilters, 'page' | 'pageSize'>, value: string) => {
-    setFilters({ ...filters, [key]: value, page: 0 });
+    setDraft({ ...draft, [key]: value });
   };
   const canGoPrevious = filters.page > 0;
   const canGoNext = rows.length === filters.pageSize;
@@ -67,50 +69,17 @@ export default function ResourceReviewHistoryPage() {
         </div>
       </header>
 
-      <section data-testid="admin-resource-review-history-review-filters" className="review-history-filters">
-        <label>资源类型
-          <select value={filters.resourceType} onChange={(event) => setFilter('resourceType', event.target.value)}>
-            <option value="">全部</option>
-            <option value="SIGNATURE">签名</option>
-            <option value="TEMPLATE">模板</option>
-            <option value="EXEMPTION">豁免</option>
-          </select>
-        </label>
-        <label>机构
-          <input value={filters.tenantId} onChange={(event) => setFilter('tenantId', event.target.value)} />
-        </label>
-        <label>状态
-          <input value={filters.decisionState} onChange={(event) => setFilter('decisionState', event.target.value)} />
-        </label>
-        <label>审核人
-          <input value={filters.actor} onChange={(event) => setFilter('actor', event.target.value)} />
-        </label>
-        <label>风险
-          <select value={filters.riskLevel} onChange={(event) => setFilter('riskLevel', event.target.value)}>
-            <option value="">全部</option>
-            <option value="LOW">低</option>
-            <option value="MEDIUM">中</option>
-            <option value="HIGH">高</option>
-          </select>
-        </label>
-        <label>关键词
-          <input value={filters.keyword} onChange={(event) => setFilter('keyword', event.target.value)} />
-        </label>
-        <label>开始时间
-          <input type="datetime-local" value={filters.createdFrom} onChange={(event) => setFilter('createdFrom', event.target.value)} />
-        </label>
-        <label>结束时间
-          <input type="datetime-local" value={filters.createdTo} onChange={(event) => setFilter('createdTo', event.target.value)} />
-        </label>
-      </section>
-
-      <section className="card">
-        {rowsQuery.isLoading && <p role="status">正在加载统一审核历史…</p>}
-        {rowsQuery.isError && <p role="alert">统一审核历史加载失败。</p>}
-        {!rowsQuery.isLoading && rows.length === 0 && <p>暂无审核历史。</p>}
-        {rows.length > 0 && (
-          <>
-            <table data-testid="admin-resource-review-history-review-table" className="ratio-table">
+      <QueryPanel
+        legacyPanelTestId="admin-resource-review-history-review-filters"
+        onSubmit={() => setFilters({ ...draft, page: 0, pageSize: 50 })}
+        onReset={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+        result={<>
+          {rowsQuery.isLoading && <p role="status">正在加载统一审核历史…</p>}
+          {rowsQuery.isError && <p role="alert">统一审核历史加载失败。</p>}
+          {!rowsQuery.isLoading && rows.length === 0 && <p>暂无审核历史。</p>}
+          {rows.length > 0 && (
+            <>
+              <table data-testid="admin-resource-review-history-review-table" className="ratio-table">
               <thead>
                 <tr><th>决定</th><th>资源</th><th>机构</th><th>状态</th><th>审核人</th><th>原因</th><th>时间</th><th>操作</th></tr>
               </thead>
@@ -128,8 +97,8 @@ export default function ResourceReviewHistoryPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-            <div className="review-history-pagination" data-testid="admin-resource-review-history-review-pagination">
+              </table>
+              <div className="review-history-pagination" data-testid="admin-resource-review-history-review-pagination">
               <button
                 type="button"
                 data-testid="admin-resource-review-history-review-page-prev"
@@ -147,10 +116,24 @@ export default function ResourceReviewHistoryPage() {
               >
                 下一页
               </button>
-            </div>
-          </>
-        )}
-      </section>
+              </div>
+            </>
+          )}
+        </>}
+      >
+        <QueryField name="resource-type" label="资源类型"><select value={draft.resourceType} onChange={(event) => setFilter('resourceType', event.target.value)}>
+          <option value="">全部</option><option value="SIGNATURE">签名</option><option value="TEMPLATE">模板</option><option value="EXEMPTION">豁免</option>
+        </select></QueryField>
+        <QueryField name="tenant-id" label="机构"><input value={draft.tenantId} onChange={(event) => setFilter('tenantId', event.target.value)} /></QueryField>
+        <QueryField name="state" label="状态"><input value={draft.decisionState} onChange={(event) => setFilter('decisionState', event.target.value)} /></QueryField>
+        <QueryField name="reviewed-by" label="审核人"><input value={draft.actor} onChange={(event) => setFilter('actor', event.target.value)} /></QueryField>
+        <QueryField name="risk-level" label="风险"><select value={draft.riskLevel} onChange={(event) => setFilter('riskLevel', event.target.value)}>
+          <option value="">全部</option><option value="LOW">低</option><option value="MEDIUM">中</option><option value="HIGH">高</option>
+        </select></QueryField>
+        <QueryField name="keyword" label="关键词"><input value={draft.keyword} onChange={(event) => setFilter('keyword', event.target.value)} /></QueryField>
+        <QueryField name="created-from" label="开始时间"><input type="datetime-local" value={draft.createdFrom} onChange={(event) => setFilter('createdFrom', event.target.value)} /></QueryField>
+        <QueryField name="created-to" label="结束时间"><input type="datetime-local" value={draft.createdTo} onChange={(event) => setFilter('createdTo', event.target.value)} /></QueryField>
+      </QueryPanel>
 
       {detailTarget && detail && (
         <ModalDialog labelledBy="review-history-detail-title" onRequestClose={() => setDetailTarget(null)}>

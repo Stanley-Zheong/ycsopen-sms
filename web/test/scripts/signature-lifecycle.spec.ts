@@ -125,6 +125,7 @@ test('pw-p12-review-stats pw-p12-review-filters pw-p12-review-decision C-P12-REV
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-page')).toBeVisible();
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-stats')).toContainText('待审核 1');
   await page.getByTestId('admin-signature-lifecycle-signature-review-filters').fill('优创');
+  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-row')).toContainText('pobj-proof-1');
   await page.getByTestId('admin-signature-lifecycle-signature-review-decision-open').click();
   await page.getByTestId('admin-signature-lifecycle-signature-review-decision-status').selectOption('SUPPLEMENT_REQUIRED');

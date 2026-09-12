@@ -6,12 +6,15 @@ import {
   saveTenantUplinkAutoReply,
 } from '@/api/uplinkNormalizationApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/uplink-normalization.css';
+
+const EMPTY_FILTERS = { phoneNumber: '', keyword: '', carrier: '', pushState: '' };
 
 export default function TenantUplinksPage() {
   const queryClient = useQueryClient();
-  const [draftFilters, setDraftFilters] = useState({ phoneNumber: '', keyword: '', carrier: '', pushState: '' });
-  const [filters, setFilters] = useState(draftFilters);
+  const [draftFilters, setDraftFilters] = useState({ ...EMPTY_FILTERS });
+  const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
   const [enabled, setEnabled] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [templateId, setTemplateId] = useState('');
@@ -53,6 +56,10 @@ export default function TenantUplinksPage() {
   });
 
   const setFilter = (key: keyof typeof draftFilters, value: string) => setDraftFilters((current) => ({ ...current, [key]: value }));
+  const resetFilters = () => {
+    setDraftFilters({ ...EMPTY_FILTERS });
+    setFilters({ ...EMPTY_FILTERS });
+  };
 
   return (
     <section className="uplink-page" data-testid="tenant-uplinks">
@@ -68,38 +75,42 @@ export default function TenantUplinksPage() {
       {message && <p role="status" className="uplink-alert success" data-testid="tenant-uplink-normalization-operation-message">{message}</p>}
       {error && <p role="alert" className="uplink-alert error" data-testid="tenant-uplink-normalization-operation-error">{error}</p>}
 
-      <section className="card uplink-filters">
-        <label>手机号<input data-testid="tenant-uplink-normalization-uplinks-filter-number" value={draftFilters.phoneNumber} onChange={(event) => setFilter('phoneNumber', event.target.value)} /></label>
-        <label>关键词<input data-testid="tenant-uplink-normalization-uplinks-filter-keyword" value={draftFilters.keyword} onChange={(event) => setFilter('keyword', event.target.value)} /></label>
-        <label>运营商<input data-testid="tenant-uplink-normalization-uplinks-filter-carrier" value={draftFilters.carrier} onChange={(event) => setFilter('carrier', event.target.value)} /></label>
-        <label>推送状态<select data-testid="tenant-uplink-normalization-uplinks-filter-push-state" value={draftFilters.pushState} onChange={(event) => setFilter('pushState', event.target.value)}><option value="">全部</option><option value="PENDING">PENDING</option><option value="DELIVERED">DELIVERED</option><option value="PUSH_FAILED">PUSH_FAILED</option><option value="NOT_CONFIGURED">NOT_CONFIGURED</option></select></label>
-        <button type="button" data-testid="tenant-uplink-normalization-uplinks-search" onClick={() => setFilters(draftFilters)}>查询</button>
-      </section>
-
-      <section className="card">
-        <h2>上行记录</h2>
-        {uplinks.isLoading && <p>正在加载上行记录…</p>}
-        {uplinks.isError && <p role="alert">上行记录加载失败。</p>}
-        <table className="uplink-table" data-testid="tenant-uplink-normalization-uplinks-table">
-          <thead>
-            <tr><th>来源</th><th>手机号</th><th>内容关键词</th><th>状态</th><th>运营商</th><th>目的地</th><th>位置</th><th>接收时间</th></tr>
-          </thead>
-          <tbody>
-            {(uplinks.data ?? []).map((row) => (
-              <tr key={row.id} data-testid="tenant-uplink-normalization-uplinks-row">
-                <td>{row.sourceProtocol}/{row.sourceConnector}</td>
-                <td>{row.phoneMasked}</td>
-                <td>{row.contentKeyword ?? '-'}</td>
-                <td>{row.state}/{row.pushState}</td>
-                <td>{row.carrier ?? '-'}</td>
-                <td>{row.destination ?? '-'}</td>
-                <td>{row.province ?? '-'}/{row.city ?? '-'}</td>
-                <td>{row.receiveTime ?? '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <QueryPanel
+        onSubmit={() => setFilters({ ...draftFilters })}
+        onReset={resetFilters}
+        submitLegacyTestId="tenant-uplink-normalization-uplinks-search"
+        result={(
+          <section>
+            <h2>上行记录</h2>
+            {uplinks.isLoading && <p>正在加载上行记录…</p>}
+            {uplinks.isError && <p role="alert">上行记录加载失败。</p>}
+            <table className="uplink-table" data-testid="tenant-uplink-normalization-uplinks-table">
+              <thead>
+                <tr><th>来源</th><th>手机号</th><th>内容关键词</th><th>状态</th><th>运营商</th><th>目的地</th><th>位置</th><th>接收时间</th></tr>
+              </thead>
+              <tbody>
+                {(uplinks.data ?? []).map((row) => (
+                  <tr key={row.id} data-testid="tenant-uplink-normalization-uplinks-row">
+                    <td>{row.sourceProtocol}/{row.sourceConnector}</td>
+                    <td>{row.phoneMasked}</td>
+                    <td>{row.contentKeyword ?? '-'}</td>
+                    <td>{row.state}/{row.pushState}</td>
+                    <td>{row.carrier ?? '-'}</td>
+                    <td>{row.destination ?? '-'}</td>
+                    <td>{row.province ?? '-'}/{row.city ?? '-'}</td>
+                    <td>{row.receiveTime ?? '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="phone-number" label="手机号"><input data-testid="tenant-uplink-normalization-uplinks-filter-number" value={draftFilters.phoneNumber} onChange={(event) => setFilter('phoneNumber', event.target.value)} /></QueryField>
+        <QueryField name="keyword" label="关键词"><input data-testid="tenant-uplink-normalization-uplinks-filter-keyword" value={draftFilters.keyword} onChange={(event) => setFilter('keyword', event.target.value)} /></QueryField>
+        <QueryField name="carrier" label="运营商"><input data-testid="tenant-uplink-normalization-uplinks-filter-carrier" value={draftFilters.carrier} onChange={(event) => setFilter('carrier', event.target.value)} /></QueryField>
+        <QueryField name="push-state" label="推送状态"><select data-testid="tenant-uplink-normalization-uplinks-filter-push-state" value={draftFilters.pushState} onChange={(event) => setFilter('pushState', event.target.value)}><option value="">全部</option><option value="PENDING">PENDING</option><option value="DELIVERED">DELIVERED</option><option value="PUSH_FAILED">PUSH_FAILED</option><option value="NOT_CONFIGURED">NOT_CONFIGURED</option></select></QueryField>
+      </QueryPanel>
 
       <section className="card uplink-auto-reply" data-testid="tenant-uplink-normalization-uplinks-auto-reply-config">
         <h2>上行自动回复</h2>

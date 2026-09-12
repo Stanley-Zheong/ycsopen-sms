@@ -13,6 +13,7 @@ import {
 } from '@/api/contentSafetyApi';
 import { mutationErrorMessage } from '@/api/client';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/content-safety.css';
@@ -37,6 +38,8 @@ const IMPORT_FORM: Pick<ContentSafetyPolicyPayload, 'category' | 'level' | 'repl
   scopeRefId: POLICY_FORM.scopeRefId,
 };
 
+const EMPTY_FILTERS = { word: '', category: '', level: '', action: '', status: '' };
+
 export default function ContentSafetyPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -48,7 +51,8 @@ export default function ContentSafetyPage() {
   const canExport = admin || access.can(CONTENT_SAFETY_PERMISSIONS.export);
   const canScan = admin || access.can(CONTENT_SAFETY_PERMISSIONS.scan);
   const canUsePage = canRead || canWrite || canImport || canExport || canScan || access.isLoading;
-  const [filters, setFilters] = useState({ word: '', category: '', level: '', action: '', status: 'ACTIVE' });
+  const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [form, setForm] = useState(POLICY_FORM);
   const [importText, setImportText] = useState('高危营销\nＡＢＣ');
   const [importForm, setImportForm] = useState(IMPORT_FORM);
@@ -166,35 +170,15 @@ export default function ContentSafetyPage() {
         </div>
       </section>
 
-      <section className="card" data-testid="admin-runtime-content-content-safety-policy-page">
+      <section data-testid="admin-runtime-content-content-safety-policy-page">
         <h2>词库策略</h2>
-        <div className="content-safety-form" data-testid="admin-runtime-content-content-safety-filters">
-          <label>敏感词
-            <input data-testid="admin-runtime-content-content-safety-filter-word" value={filters.word} onChange={(event) => setFilters({ ...filters, word: event.target.value })} />
-          </label>
-          <label>分类
-            <select data-testid="admin-runtime-content-content-safety-filter-category" value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}>
-              <option value="">全部</option><option value="ILLEGAL">违法</option><option value="FINANCIAL">金融</option><option value="MARKETING">营销</option><option value="POLITICAL">政治</option><option value="ADULT">色情</option><option value="OTHER">其他</option>
-            </select>
-          </label>
-          <label>级别
-            <select data-testid="admin-runtime-content-content-safety-filter-level" value={filters.level} onChange={(event) => setFilters({ ...filters, level: event.target.value })}>
-              <option value="">全部</option><option value="HIGH">高</option><option value="MEDIUM">中</option><option value="LOW">低</option>
-            </select>
-          </label>
-          <label>动作
-            <select data-testid="admin-runtime-content-content-safety-filter-action" value={filters.action} onChange={(event) => setFilters({ ...filters, action: event.target.value })}>
-              <option value="">全部</option><option value="BLOCK">拦截</option><option value="REPLACE">替换</option><option value="ALERT">告警</option>
-            </select>
-          </label>
-          <label>状态
-            <select data-testid="admin-runtime-content-content-safety-filter-status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
-              <option value="">全部</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option>
-            </select>
-          </label>
-        </div>
-        {canWrite && <button type="button" data-testid="admin-runtime-content-content-safety-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建词库策略</button>}
-        {createOpen && (
+        <QueryPanel
+          legacyPanelTestId="admin-runtime-content-content-safety-filters"
+          onSubmit={() => setFilters({ ...draftFilters })}
+          onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+          result={<>
+            {canWrite && <button type="button" data-testid="admin-runtime-content-content-safety-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建词库策略</button>}
+            {createOpen && (
           <ModalDialog labelledBy="content-safety-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
             <form className="content-safety-form" data-testid="admin-runtime-content-content-safety-create-dialog" onSubmit={(event) => { event.preventDefault(); saveMutation.mutate(form); }}>
               <h2 id="content-safety-create-title">新建词库策略</h2>
@@ -222,12 +206,12 @@ export default function ContentSafetyPage() {
               </div>
             </form>
           </ModalDialog>
-        )}
-        <div className="content-safety-actions">
-          <button type="button" data-testid="admin-runtime-content-content-safety-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入词库</button>
-          <button type="button" data-testid="admin-runtime-content-content-safety-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
-        </div>
-        {importOpen && (
+            )}
+            <div className="content-safety-actions">
+              <button type="button" data-testid="admin-runtime-content-content-safety-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入词库</button>
+              <button type="button" data-testid="admin-runtime-content-content-safety-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
+            </div>
+            {importOpen && (
           <ModalDialog labelledBy="content-safety-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
             <form className="content-safety-form" data-testid="admin-runtime-content-content-safety-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
               <h2 id="content-safety-import-title">批量导入词库</h2>
@@ -245,18 +229,49 @@ export default function ContentSafetyPage() {
               </div>
             </form>
           </ModalDialog>
-        )}
-        <table className="ratio-table" data-testid="admin-runtime-content-content-safety-table">
-          <thead><tr><th>词</th><th>分类</th><th>级别</th><th>替换</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} data-testid="admin-runtime-content-content-safety-row">
-                <td>{row.word}</td><td>{row.category}</td><td>{row.level}</td><td>{row.replacement ?? '-'}</td><td>{row.action}</td><td>{row.scope}{row.scopeRefId ? `:${row.scopeRefId}` : ''}</td><td>{row.status}</td><td>{row.hitCount}</td><td>{row.createdAt ?? '-'}</td>
-                <td><button type="button" data-testid="admin-runtime-content-content-safety-delete" disabled={!canWrite || row.status !== 'ACTIVE'} onClick={() => deleteMutation.mutate(row.id)}>删除/禁用</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            )}
+            {policies.isLoading && <p role="status">正在加载词库策略…</p>}
+            {policies.isError && <p role="alert">词库策略加载失败。</p>}
+            {!policies.isLoading && !policies.isError && rows.length === 0 && <p>暂无词库策略。</p>}
+            {!policies.isLoading && !policies.isError && rows.length > 0 && (
+              <table className="ratio-table" data-testid="admin-runtime-content-content-safety-table">
+                <thead><tr><th>词</th><th>分类</th><th>级别</th><th>替换</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} data-testid="admin-runtime-content-content-safety-row">
+                      <td>{row.word}</td><td>{row.category}</td><td>{row.level}</td><td>{row.replacement ?? '-'}</td><td>{row.action}</td><td>{row.scope}{row.scopeRefId ? `:${row.scopeRefId}` : ''}</td><td>{row.status}</td><td>{row.hitCount}</td><td>{row.createdAt ?? '-'}</td>
+                      <td><button type="button" data-testid="admin-runtime-content-content-safety-delete" disabled={!canWrite || row.status !== 'ACTIVE'} onClick={() => deleteMutation.mutate(row.id)}>删除/禁用</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>}
+        >
+          <QueryField name="word" label="敏感词">
+            <input data-testid="admin-runtime-content-content-safety-filter-word" value={draftFilters.word} onChange={(event) => setDraftFilters({ ...draftFilters, word: event.target.value })} />
+          </QueryField>
+          <QueryField name="category" label="分类">
+            <select data-testid="admin-runtime-content-content-safety-filter-category" value={draftFilters.category} onChange={(event) => setDraftFilters({ ...draftFilters, category: event.target.value })}>
+              <option value="">全部</option><option value="ILLEGAL">违法</option><option value="FINANCIAL">金融</option><option value="MARKETING">营销</option><option value="POLITICAL">政治</option><option value="ADULT">色情</option><option value="OTHER">其他</option>
+            </select>
+          </QueryField>
+          <QueryField name="level" label="级别">
+            <select data-testid="admin-runtime-content-content-safety-filter-level" value={draftFilters.level} onChange={(event) => setDraftFilters({ ...draftFilters, level: event.target.value })}>
+              <option value="">全部</option><option value="HIGH">高</option><option value="MEDIUM">中</option><option value="LOW">低</option>
+            </select>
+          </QueryField>
+          <QueryField name="action" label="动作">
+            <select data-testid="admin-runtime-content-content-safety-filter-action" value={draftFilters.action} onChange={(event) => setDraftFilters({ ...draftFilters, action: event.target.value })}>
+              <option value="">全部</option><option value="BLOCK">拦截</option><option value="REPLACE">替换</option><option value="ALERT">告警</option>
+            </select>
+          </QueryField>
+          <QueryField name="status" label="状态">
+            <select data-testid="admin-runtime-content-content-safety-filter-status" value={draftFilters.status} onChange={(event) => setDraftFilters({ ...draftFilters, status: event.target.value })}>
+              <option value="">全部</option><option value="ACTIVE">启用</option><option value="DISABLED">禁用</option>
+            </select>
+          </QueryField>
+        </QueryPanel>
       </section>
 
       <section className="card" data-testid="admin-runtime-content-content-safety-scan-panel">

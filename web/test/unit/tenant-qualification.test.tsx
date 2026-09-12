@@ -373,6 +373,25 @@ describe('Phase 08 tenant qualification production UI', () => {
     }));
   });
 
+  it('applies and resets the shared tenant query from a collapsed first-page panel', async () => {
+    useAuthStore.setState({ userType: 'OPERATOR', tenantId: null, principalKey: '7:test-token' });
+    renderPage(<TenantListPage />);
+
+    await screen.findByTestId('admin-tenant-qualification-tenants-row');
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
+    fireEvent.change(screen.getByTestId('admin-tenant-qualification-tenants-keyword'), { target: { value: '不存在的机构' } });
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    expect(await screen.findByTestId('admin-tenant-qualification-tenants-empty')).toBeVisible();
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(screen.getByTestId('admin-tenant-qualification-tenants-keyword')).toHaveValue('');
+    expect(await screen.findByTestId('admin-tenant-qualification-tenants-row')).toBeVisible();
+    expect(screen.getByTestId('admin-tenant-qualification-tenants-page-status')).toHaveTextContent('第 1 / 1 页');
+  });
+
   it('hides every mutation action from a read-only operator', async () => {
     permissions = ['tenant:menu', 'tenant:read'];
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null, principalKey: '7:test-token' });

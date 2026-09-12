@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -78,6 +78,19 @@ describe('Phase 32 uplink normalization UI', () => {
 
     expect(await screen.findByTestId('admin-uplink-normalization-uplinks-page')).toBeVisible();
     expect(await screen.findByTestId('admin-uplink-normalization-uplinks-row')).toHaveTextContent('138****8000');
+    const panels = screen.getAllByTestId('query-panel');
+    expect(panels).toHaveLength(2);
+    const uplinkPanel = panels[0];
+    expect(within(uplinkPanel).getByTestId('query-panel-fields')).not.toBeVisible();
+    fireEvent.click(within(uplinkPanel).getByTestId('query-panel-toggle'));
+    vi.mocked(api.listAdminUplinks).mockClear();
+    fireEvent.change(screen.getByTestId('admin-uplink-normalization-uplinks-filter-keyword'), { target: { value: '帮助' } });
+    expect(api.listAdminUplinks).not.toHaveBeenCalled();
+    fireEvent.click(within(uplinkPanel).getByTestId('query-submit'));
+    await waitFor(() => expect(api.listAdminUplinks).toHaveBeenCalledWith(expect.objectContaining({ keyword: '帮助' })));
+    fireEvent.click(within(uplinkPanel).getByTestId('query-reset'));
+    expect(screen.getByTestId('admin-uplink-normalization-uplinks-filter-keyword')).toHaveValue('');
+    expect(within(uplinkPanel).getByTestId('query-result-table')).toHaveTextContent('帮助');
     fireEvent.click(screen.getByTestId('admin-uplink-normalization-uplink-detail'));
     await waitFor(() => expect(api.getAdminUplink).toHaveBeenCalledWith(101));
     expect(await screen.findByTestId('admin-uplink-normalization-detail-drawer')).toHaveTextContent('回复帮助');
@@ -97,6 +110,18 @@ describe('Phase 32 uplink normalization UI', () => {
 
     expect(await screen.findByTestId('tenant-uplinks')).toBeVisible();
     expect(await screen.findByTestId('tenant-uplink-normalization-uplinks-row')).toHaveTextContent('帮助');
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
+    vi.mocked(api.listTenantUplinks).mockClear();
+    fireEvent.change(screen.getByTestId('tenant-uplink-normalization-uplinks-filter-number'), { target: { value: '13800138000' } });
+    expect(api.listTenantUplinks).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+    await waitFor(() => expect(api.listTenantUplinks).toHaveBeenCalledWith(expect.objectContaining({ phoneNumber: '13800138000' })));
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(screen.getByTestId('tenant-uplink-normalization-uplinks-filter-number')).toHaveValue('');
+    await waitFor(() => expect(api.listTenantUplinks).toHaveBeenCalledWith({ phoneNumber: '', keyword: '', carrier: '', pushState: '' }));
+    expect(within(panel).getByTestId('query-result-table')).toHaveTextContent('帮助');
     expect(await screen.findByTestId('tenant-uplink-normalization-uplinks-auto-reply-config')).toBeVisible();
     fireEvent.change(screen.getByTestId('tenant-uplink-normalization-auto-reply-audit-reason'), { target: { value: '更新' } });
     fireEvent.click(screen.getByTestId('tenant-uplink-normalization-auto-reply-save'));

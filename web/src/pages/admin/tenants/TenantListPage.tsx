@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { protectedQueryKey } from '@/store/authStore';
 import {
@@ -250,21 +251,18 @@ export default function TenantListPage() {
   return (
     <section data-testid="admin-tenant-qualification-tenants-page">
       <header className="qualification-page-header"><div><h1 data-testid="admin-tenant-qualification-tenants-heading">机构管理</h1><p className="page-description">审核机构资质并维护业务信息和账户运行状态。</p></div></header>
-      <section className="card qualification-filter-grid" aria-label="机构筛选">
-        <label htmlFor="tenant-keyword">关键字<input id="tenant-keyword" data-testid="admin-tenant-qualification-tenants-keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="机构编号、简称或全称" /></label>
-        <label htmlFor="tenant-verification">认证状态<select id="tenant-verification" data-testid="admin-tenant-qualification-tenants-verification-status" value={verification} onChange={(event) => setVerification(event.target.value as VerificationStatus | '')}><option value="">全部</option>{Object.entries(VERIFICATION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <label htmlFor="tenant-operating">运行状态<select id="tenant-operating" data-testid="admin-tenant-qualification-tenants-operating-status" value={operating} onChange={(event) => setOperating(event.target.value as OperatingStatus | '')}><option value="">全部</option>{Object.entries(OPERATING_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <div className="qualification-filter-actions">
-          <button data-testid="admin-tenant-qualification-tenants-query" type="button" onClick={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}>查询</button>
-          <button data-testid="admin-tenant-qualification-tenants-reset" className="button-secondary" type="button" onClick={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}>重置</button>
-        </div>
-      </section>
-      {tenants.isLoading && <p data-testid="admin-tenant-qualification-tenants-loading">正在加载机构列表…</p>}
-      {tenants.isError && <div data-testid="admin-tenant-qualification-tenants-error" className="qualification-alert error" role="alert">机构列表加载失败。<button data-testid="admin-tenant-qualification-tenants-retry" type="button" onClick={() => void tenants.refetch()}>重新加载</button></div>}
-      {!tenants.isLoading && !tenants.isError && rows.length === 0 && <p data-testid="admin-tenant-qualification-tenants-empty" className="card">没有符合条件的机构。</p>}
-      {!tenants.isLoading && !tenants.isError && rows.length > 0 && (
-        <div className="card qualification-table-wrap">
-          <table data-testid="admin-tenant-qualification-tenants-table" className="ratio-table">
+      <QueryPanel
+        submitLegacyTestId="admin-tenant-qualification-tenants-query"
+        resetLegacyTestId="admin-tenant-qualification-tenants-reset"
+        onSubmit={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}
+        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}
+        result={<>
+          {tenants.isLoading && <p data-testid="admin-tenant-qualification-tenants-loading">正在加载机构列表…</p>}
+          {tenants.isError && <div data-testid="admin-tenant-qualification-tenants-error" className="qualification-alert error" role="alert">机构列表加载失败。<button data-testid="admin-tenant-qualification-tenants-retry" type="button" onClick={() => void tenants.refetch()}>重新加载</button></div>}
+          {!tenants.isLoading && !tenants.isError && rows.length === 0 && <p data-testid="admin-tenant-qualification-tenants-empty">没有符合条件的机构。</p>}
+          {!tenants.isLoading && !tenants.isError && rows.length > 0 && (
+            <div className="qualification-table-wrap">
+              <table data-testid="admin-tenant-qualification-tenants-table" className="ratio-table">
             <thead><tr><th>机构编号</th><th>简称</th><th>全称</th><th>认证状态</th><th>生命周期</th><th>运行状态</th><th>提交时间</th><th>客户经理</th><th>操作</th></tr></thead>
             <tbody>{rows.map((tenant) => (
               <tr key={tenant.tenantId} data-testid="admin-tenant-qualification-tenants-row" data-tenant-id={tenant.tenantId}>
@@ -279,10 +277,16 @@ export default function TenantListPage() {
                 </div></td>
               </tr>
             ))}</tbody>
-          </table>
-          <div className="pagination-row"><button data-testid="admin-tenant-qualification-tenants-previous" className="button-secondary" type="button" disabled={page === 0} onClick={() => { setPage((current) => current - 1); void tenants.refetch(); }}>上一页</button><span data-testid="admin-tenant-qualification-tenants-page-status">第 {page + 1} / {pageCount} 页，共 {filtered.length} 条</span><button data-testid="admin-tenant-qualification-tenants-next" className="button-secondary" type="button" disabled={page + 1 >= pageCount} onClick={() => { setPage((current) => current + 1); void tenants.refetch(); }}>下一页</button></div>
-        </div>
-      )}
+              </table>
+              <div className="pagination-row"><button data-testid="admin-tenant-qualification-tenants-previous" className="button-secondary" type="button" disabled={page === 0} onClick={() => { setPage((current) => current - 1); void tenants.refetch(); }}>上一页</button><span data-testid="admin-tenant-qualification-tenants-page-status">第 {page + 1} / {pageCount} 页，共 {filtered.length} 条</span><button data-testid="admin-tenant-qualification-tenants-next" className="button-secondary" type="button" disabled={page + 1 >= pageCount} onClick={() => { setPage((current) => current + 1); void tenants.refetch(); }}>下一页</button></div>
+            </div>
+          )}
+        </>}
+      >
+        <QueryField name="keyword" label="关键字"><input data-testid="admin-tenant-qualification-tenants-keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="机构编号、简称或全称" /></QueryField>
+        <QueryField name="verification-status" label="认证状态"><select data-testid="admin-tenant-qualification-tenants-verification-status" value={verification} onChange={(event) => setVerification(event.target.value as VerificationStatus | '')}><option value="">全部</option>{Object.entries(VERIFICATION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></QueryField>
+        <QueryField name="operating-status" label="运行状态"><select data-testid="admin-tenant-qualification-tenants-operating-status" value={operating} onChange={(event) => setOperating(event.target.value as OperatingStatus | '')}><option value="">全部</option>{Object.entries(OPERATING_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></QueryField>
+      </QueryPanel>
       {reviewLoading && <p className="qualification-alert">正在加载审核资料…</p>}
       {reviewError && <p className="qualification-alert error" role="alert">{reviewError}</p>}
       <p role="status" aria-live="polite" className="qualification-success">{liveStatus}</p>

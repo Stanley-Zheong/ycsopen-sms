@@ -8,16 +8,19 @@ import {
   type WebhookFailureRow,
 } from '@/api/webhookDeliveryApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/webhook-delivery.css';
+
+const EMPTY_FILTER = { tenantId: '', state: '' };
 
 export default function AdminPushFailuresPage() {
   const queryClient = useQueryClient();
-  const [tenantId, setTenantId] = useState('');
-  const [state, setState] = useState('PUSH_FAILED');
+  const [draftFilter, setDraftFilter] = useState(EMPTY_FILTER);
+  const [appliedFilter, setAppliedFilter] = useState(EMPTY_FILTER);
   const [reason, setReason] = useState('运营复核后处理');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const filter = useMemo(() => ({ tenantId, state }), [tenantId, state]);
+  const filter = useMemo(() => ({ ...appliedFilter }), [appliedFilter]);
   const failures = useQuery({ queryKey: ['webhook-failures', filter], queryFn: () => listWebhookFailures(filter), retry: false });
 
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['webhook-failures'] });
@@ -61,39 +64,60 @@ export default function AdminPushFailuresPage() {
       {message && <p role="status" className="webhook-delivery-alert success" data-testid="admin-webhook-delivery-operation-message">{message}</p>}
       {error && <p role="alert" className="webhook-delivery-alert error" data-testid="admin-webhook-delivery-operation-error">{error}</p>}
 
-      <section className="card webhook-delivery-filters" data-testid="admin-webhook-delivery-push-failures-policy">
-        <label>租户ID<input data-testid="admin-webhook-delivery-filter-tenant" value={tenantId} onChange={(event) => setTenantId(event.target.value)} /></label>
-        <label>状态<select data-testid="admin-webhook-delivery-filter-state" value={state} onChange={(event) => setState(event.target.value)}><option value="PUSH_FAILED">PUSH_FAILED</option><option value="PAUSED">PAUSED</option><option value="RETRY">RETRY</option></select></label>
+      <section className="card webhook-delivery-filters">
         <label>操作原因<input data-testid="admin-webhook-delivery-action-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></label>
       </section>
 
-      <section className="card">
-        {failures.isLoading && <p>正在加载推送失败记录…</p>}
-        {failures.isError && <p role="alert">推送失败记录加载失败。</p>}
-        <table className="webhook-delivery-table">
-          <thead>
-            <tr><th>事件</th><th>租户</th><th>类型</th><th>目的地</th><th>状态</th><th>策略</th><th>下次重试</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            {(failures.data ?? []).map((row) => (
-              <tr key={row.eventId} data-testid="admin-webhook-delivery-push-failures-row">
-                <td>{row.logicalId}</td>
-                <td>{row.tenantId}</td>
-                <td>{row.eventType}</td>
-                <td>{row.destinationUrl}</td>
-                <td>{row.state}</td>
-                <td>{row.attemptCount}/{row.maxAttempts}</td>
-                <td>{row.nextAttemptAt ?? '-'}</td>
-                <td>
-                  <button type="button" data-testid="admin-webhook-delivery-push-failures-replay" onClick={() => replay.mutate(row)}>重放</button>
-                  <button type="button" data-testid="admin-webhook-delivery-push-failures-pause" onClick={() => pause.mutate(row)}>暂停</button>
-                  <button type="button" data-testid="admin-webhook-delivery-push-failures-resume" onClick={() => resume.mutate(row)}>恢复</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <QueryPanel
+        legacyPanelTestId="admin-webhook-delivery-push-failures-policy"
+        onSubmit={() => setAppliedFilter({ ...draftFilter })}
+        onReset={() => {
+          setDraftFilter(EMPTY_FILTER);
+          setAppliedFilter(EMPTY_FILTER);
+        }}
+        result={(
+          <section className="card">
+            {failures.isLoading && <p>正在加载推送失败记录…</p>}
+            {failures.isError && <p role="alert">推送失败记录加载失败。</p>}
+            {!failures.isLoading && !failures.isError && (failures.data ?? []).length === 0 && <p>暂无推送失败记录。</p>}
+            <table className="webhook-delivery-table">
+              <thead>
+                <tr><th>事件</th><th>租户</th><th>类型</th><th>目的地</th><th>状态</th><th>策略</th><th>下次重试</th><th>操作</th></tr>
+              </thead>
+              <tbody>
+                {(failures.data ?? []).map((row) => (
+                  <tr key={row.eventId} data-testid="admin-webhook-delivery-push-failures-row">
+                    <td>{row.logicalId}</td>
+                    <td>{row.tenantId}</td>
+                    <td>{row.eventType}</td>
+                    <td>{row.destinationUrl}</td>
+                    <td>{row.state}</td>
+                    <td>{row.attemptCount}/{row.maxAttempts}</td>
+                    <td>{row.nextAttemptAt ?? '-'}</td>
+                    <td>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-replay" onClick={() => replay.mutate(row)}>重放</button>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-pause" onClick={() => pause.mutate(row)}>暂停</button>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-resume" onClick={() => resume.mutate(row)}>恢复</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="tenant-id" label="租户ID">
+          <input data-testid="admin-webhook-delivery-filter-tenant" value={draftFilter.tenantId} onChange={(event) => setDraftFilter((current) => ({ ...current, tenantId: event.target.value }))} />
+        </QueryField>
+        <QueryField name="state" label="状态">
+          <select data-testid="admin-webhook-delivery-filter-state" value={draftFilter.state} onChange={(event) => setDraftFilter((current) => ({ ...current, state: event.target.value }))}>
+            <option value="">全部</option>
+            <option value="PUSH_FAILED">PUSH_FAILED</option>
+            <option value="PAUSED">PAUSED</option>
+            <option value="RETRY">RETRY</option>
+          </select>
+        </QueryField>
+      </QueryPanel>
     </section>
   );
 }

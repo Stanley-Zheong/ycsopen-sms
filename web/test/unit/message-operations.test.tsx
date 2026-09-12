@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '@/api/messageOperationsApi';
@@ -95,5 +95,37 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(await screen.findByTestId('admin-message-receipt-error-details-row')).toHaveTextContent('E42');
     fireEvent.click(screen.getByTestId('admin-message-receipt-error-details-bulk-retry'));
     await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '运营复核确认'));
+  });
+
+  it('keeps message filters as a collapsed draft until search and resets every API query', async () => {
+    renderPage('submissions');
+
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
+    await waitFor(() => expect(api.listSubmissions).toHaveBeenCalledWith({ tenantId: '', messageId: '', status: '', errorCode: '' }));
+    vi.mocked(api.listSubmissions).mockClear();
+    vi.mocked(api.listSends).mockClear();
+    vi.mocked(api.listReceipts).mockClear();
+    vi.mocked(api.listErrorGroups).mockClear();
+
+    fireEvent.change(within(panel).getByTestId('admin-message-receipt-filter-tenant'), { target: { value: '84' } });
+    fireEvent.change(within(panel).getByTestId('admin-message-receipt-filter-message'), { target: { value: 'MSG_84' } });
+    fireEvent.change(within(panel).getByTestId('admin-message-receipt-filter-status'), { target: { value: 'FAILED' } });
+    fireEvent.change(within(panel).getByTestId('admin-message-receipt-filter-error-code'), { target: { value: 'E84' } });
+    expect(api.listSubmissions).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByTestId('query-submit'));
+
+    const applied = { tenantId: '84', messageId: 'MSG_84', status: 'FAILED', errorCode: 'E84' };
+    await waitFor(() => expect(api.listSubmissions).toHaveBeenCalledWith(applied));
+    expect(api.listSends).toHaveBeenCalledWith(applied);
+    expect(api.listReceipts).toHaveBeenCalledWith(applied);
+    expect(api.listErrorGroups).toHaveBeenCalledWith(applied);
+
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).getByTestId('admin-message-receipt-filter-tenant')).toHaveValue('');
+    const reset = { tenantId: '', messageId: '', status: '', errorCode: '' };
+    await waitFor(() => expect(api.listSubmissions).toHaveBeenLastCalledWith(reset));
+    expect(within(panel).queryByTestId('admin-message-receipt-action-reason')).not.toBeInTheDocument();
   });
 });
