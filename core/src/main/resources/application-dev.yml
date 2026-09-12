@@ -5,7 +5,7 @@ spring:
     password: ${DB_PASSWORD:ycsopen}
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
-    locations: classpath:db/migration,classpath:db/devmigration
+    locations: classpath:db/migration,classpath:db/devmigration,classpath:db/releasemigration
     user: ${DB_MIGRATION_USERNAME:ycsopen_migrator}
     password: ${DB_MIGRATION_PASSWORD:ycsopen_migrator}
 ycsopen:

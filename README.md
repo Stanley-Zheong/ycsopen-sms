@@ -147,7 +147,46 @@ npm run build
 并由 Nginx 托管 `web/dist/`、把 `/api/` 同源代理到后端。可直接复制的配置示例见
 [`docs/使用手册.md`](docs/使用手册.md#部署后端-jar)。
 
-### 6. 当前可用范围
+### 6. Docker Compose 开发发布
+
+仓库根目录的 `compose.yaml` 会从当前检出的源码构建 Core 和 Web，不依赖预先存在的应用镜像。
+首次启动会创建 MySQL 卷、迁移账号并执行全部 Flyway migration 和 `dev` 种子：
+
+```bash
+export BUILD_COMMIT="$(git rev-parse HEAD)"
+docker compose up -d --build
+```
+
+默认访问地址为 <http://localhost:5173/login>，Core 健康检查为
+<http://localhost:8080/actuator/health>。可通过 `YCSOPEN_WEB_PORT` 和
+`YCSOPEN_CORE_PORT` 修改宿主机端口。服务默认只绑定 `127.0.0.1`；确需其他地址时，
+必须显式设置 `YCSOPEN_BIND_ADDRESS` 并自行配置防火墙和非开发凭据。例如：
+
+```bash
+YCSOPEN_WEB_PORT=15173 YCSOPEN_CORE_PORT=18080 docker compose up -d --build
+```
+
+例如，经过风险评估后显式监听所有 IPv4 网卡：
+
+```bash
+YCSOPEN_BIND_ADDRESS=0.0.0.0 docker compose up -d --build
+```
+
+Web 页面中的 `meta[name="ycsopen-build-commit"]` 与 Core 的 `/actuator/info`
+都会返回 `BUILD_COMMIT`。同一 Compose 项目再次执行构建会复用命名卷，Flyway
+只增量升级，并保留已有账号和业务数据。默认数据库、JWT 和管理员凭据只供本机开发，
+不得用于共享或公网环境；结束后可用 `docker compose down` 保留数据，或明确执行
+`docker compose down -v` 删除本项目卷。
+
+发布验收要求本机标准路径中已有 Google Chrome，并会创建和清理两个不可由调用者改名的
+独立 Compose 项目：一个验证全新卷，另一个先创建 Issue #60 之前的 Flyway location 基线，
+再强制重建当前 Core/Web 验证增量升级、业务数据保留和重复启动：
+
+```bash
+BUILD_COMMIT="$(git rev-parse HEAD)" ./scripts/verify-docker-release
+```
+
+### 7. 当前可用范围
 
 登录后可查看已有真实页面和占位导航。控制台登录、机构注册/试用、通道基础管理、HTTP 单条发送、
 路由/预付费核心服务、投诉占比看板，以及带类型校验、版本历史、热加载和回滚的系统配置已有实现；
