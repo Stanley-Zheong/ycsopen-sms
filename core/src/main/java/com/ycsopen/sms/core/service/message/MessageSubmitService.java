@@ -18,6 +18,7 @@ import com.ycsopen.sms.core.service.tool.NumberAttributionService;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -44,6 +45,7 @@ public class MessageSubmitService {
     private final MessageAcceptanceIdempotencyService idempotency;
     private final NumberAttributionService numberAttributionService;
 
+    @Autowired
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
@@ -63,12 +65,11 @@ public class MessageSubmitService {
     /** Backward-compatible constructor for focused unit tests that do not exercise attribution. */
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine, BillingService billingService,
-                                 FeeWarningCreditService feeWarningCreditService,
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
                                  TenantEligibilityPolicy tenantEligibilityPolicy,
                                  MessageAcceptanceIdempotencyService idempotency) {
-        this(templateCompliance, routingEngine, billingService, feeWarningCreditService,
-                messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null);
+        this(templateCompliance, routingEngine, billingService, messageTaskProtectionAdapter,
+                tenantEligibilityPolicy, idempotency, null);
     }
 
     @Transactional
