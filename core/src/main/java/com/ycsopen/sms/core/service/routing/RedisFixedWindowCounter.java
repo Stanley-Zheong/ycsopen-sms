@@ -1,5 +1,6 @@
 package com.ycsopen.sms.core.service.routing;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class RedisFixedWindowCounter {
     private final StringRedisTemplate redis;
     private final Clock clock;
 
+    @Autowired
     public RedisFixedWindowCounter(StringRedisTemplate redis) {
         this(redis, Clock.systemUTC());
     }
