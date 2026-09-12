@@ -32,9 +32,13 @@ interface QueryResultProps {
 }
 
 const COMPACT_QUERY = '(max-width: 900px)';
+const MEDIUM_QUERY = '(max-width: 1200px)';
 
-function isCompactQueryLayout(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.matchMedia?.(COMPACT_QUERY).matches);
+function queryColumnCount(): number {
+  if (typeof window === 'undefined' || !window.matchMedia) return 3;
+  if (window.matchMedia(COMPACT_QUERY).matches) return 1;
+  if (window.matchMedia(MEDIUM_QUERY).matches) return 2;
+  return 3;
 }
 
 export function QueryField({ name, label, children }: QueryFieldProps) {
@@ -61,18 +65,18 @@ export function QueryPanel({
   submitLegacyTestId,
   resetLegacyTestId,
 }: QueryPanelProps) {
-  const [compact, setCompact] = useState(isCompactQueryLayout);
-  const collapsible = Children.count(children) > (compact ? 1 : 2);
+  const [columns, setColumns] = useState(queryColumnCount);
+  const collapsible = Children.count(children) > columns;
   const [expanded, setExpanded] = useState(!collapsible);
   const fieldsId = useId();
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
-    const media = window.matchMedia(COMPACT_QUERY);
-    const update = () => setCompact(media.matches);
+    const media = [window.matchMedia(COMPACT_QUERY), window.matchMedia(MEDIUM_QUERY)];
+    const update = () => setColumns(queryColumnCount());
     update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    media.forEach((query) => query.addEventListener('change', update));
+    return () => media.forEach((query) => query.removeEventListener('change', update));
   }, []);
 
   useEffect(() => {

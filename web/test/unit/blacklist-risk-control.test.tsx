@@ -147,9 +147,9 @@ describe('Phase 16 blacklist risk control UI', () => {
     expect(await screen.findByText('拦截 1')).toBeInTheDocument();
     expect(await screen.findByText(/local-risk/)).toBeInTheDocument();
 
-    expect(screen.getByTestId('query-panel-fields')).not.toBeVisible();
+    expect(screen.getByTestId('query-panel-fields')).toBeVisible();
+    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
     expect(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-status')).toHaveValue('');
-    fireEvent.click(screen.getByTestId('query-panel-toggle'));
     const initialQueryCount = calls.filter((call) => call.url === '/console/risk/blacklist' && call.method === 'get').length;
     await act(async () => {
       fireEvent.change(screen.getByTestId('admin-blacklist-risk-black-white-lists-filter-tenant'), { target: { value: '77' } });
