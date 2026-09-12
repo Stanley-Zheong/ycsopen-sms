@@ -8,6 +8,7 @@ import {
   type SignatureRecord,
 } from '@/api/signatureLifecycleApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import { useAuthStore, isPlatformRole } from '@/store/authStore';
 import '@/styles/signature-lifecycle.css';
 
@@ -27,6 +28,8 @@ export default function SignatureLifecyclePage() {
   const [form, setForm] = useState(emptyForm);
   const [selected, setSelected] = useState<SignatureRecord | null>(null);
   const [usable, setUsable] = useState<SignatureFiling[] | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -46,8 +49,13 @@ export default function SignatureLifecyclePage() {
       setError('');
       setForm(emptyForm);
       await queryClient.invalidateQueries({ queryKey: ['tenant-signatures'] });
+      setCreateOpen(false);
+      setCreateError('');
     },
-    onError: (failure) => setError(mutationErrorMessage(failure, '签名申请提交失败')),
+    onError: (failure) => {
+      setMessage('');
+      setCreateError(mutationErrorMessage(failure, '签名申请提交失败'));
+    },
   });
 
   const loadUsable = async () => {
@@ -73,43 +81,28 @@ export default function SignatureLifecyclePage() {
           <h1>签名管理</h1>
           <p className="page-description">提交签名申请，查看审核反馈和已报备可用通道。</p>
         </div>
+        <button type="button" data-testid="tenant-signature-lifecycle-signatures-application-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建签名申请</button>
       </header>
       {message && <p role="status" className="signature-lifecycle-alert success">{message}</p>}
       {error && <p role="alert" className="signature-lifecycle-alert error">{error}</p>}
 
-      <section className="card signature-lifecycle-form" data-testid="tenant-signature-lifecycle-signatures-application-form">
-        <h2>提交签名申请</h2>
-        <label>签名内容
-          <input value={form.signContent} onChange={(event) => setForm({ ...form, signContent: event.target.value })} />
-        </label>
-        <label>签名类型
-          <select value={form.signType} onChange={(event) => setForm({ ...form, signType: event.target.value })}>
-            <option value="ENTERPRISE">企业</option>
-            <option value="APP">App</option>
-            <option value="TRADEMARK">商标</option>
-            <option value="INSTITUTION">事业单位</option>
-            <option value="GOVERNMENT">政府</option>
-          </select>
-        </label>
-        <label>使用类型
-          <select value={form.usageType} onChange={(event) => setForm({ ...form, usageType: event.target.value })}>
-            <option value="SELF">自用</option>
-            <option value="OTHER">他用</option>
-          </select>
-        </label>
-        <label>证明材料
-          <input value={form.evidenceRef} onChange={(event) => setForm({ ...form, evidenceRef: event.target.value })} placeholder="pobj-proof-..." />
-        </label>
-        <label>申请人
-          <input value={form.applicantName} onChange={(event) => setForm({ ...form, applicantName: event.target.value })} />
-        </label>
-        <label>联系电话
-          <input value={form.applicantPhone} onChange={(event) => setForm({ ...form, applicantPhone: event.target.value })} />
-        </label>
-        <button type="button" data-testid="tenant-signature-lifecycle-signatures-application-submit" onClick={() => submit.mutate()} disabled={submit.isPending}>
-          提交申请
-        </button>
-      </section>
+      {createOpen && (
+        <ModalDialog labelledBy="signature-application-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
+          <form className="signature-lifecycle-form" data-testid="tenant-signature-lifecycle-signatures-application-dialog" onSubmit={(event) => { event.preventDefault(); submit.mutate(); }}>
+            <h2 id="signature-application-create-title">新建签名申请</h2>
+            <div className="dialog-form-fields" data-testid="tenant-signature-lifecycle-signatures-application-form">
+              <label>签名内容<input value={form.signContent} onChange={(event) => setForm({ ...form, signContent: event.target.value })} /></label>
+              <label>签名类型<select value={form.signType} onChange={(event) => setForm({ ...form, signType: event.target.value })}><option value="ENTERPRISE">企业</option><option value="APP">App</option><option value="TRADEMARK">商标</option><option value="INSTITUTION">事业单位</option><option value="GOVERNMENT">政府</option></select></label>
+              <label>使用类型<select value={form.usageType} onChange={(event) => setForm({ ...form, usageType: event.target.value })}><option value="SELF">自用</option><option value="OTHER">他用</option></select></label>
+              <label>证明材料<input value={form.evidenceRef} onChange={(event) => setForm({ ...form, evidenceRef: event.target.value })} placeholder="pobj-proof-..." /></label>
+              <label>申请人<input value={form.applicantName} onChange={(event) => setForm({ ...form, applicantName: event.target.value })} /></label>
+              <label>联系电话<input pattern="1[3-9][0-9]{9}" value={form.applicantPhone} onChange={(event) => setForm({ ...form, applicantPhone: event.target.value })} /></label>
+            </div>
+            {createError && <p role="alert" data-testid="tenant-signature-lifecycle-signatures-application-error" className="signature-lifecycle-alert error">{createError}</p>}
+            <div className="dialog-actions"><button type="button" className="button-secondary" data-testid="tenant-signature-lifecycle-signatures-application-cancel" onClick={() => { setCreateOpen(false); setCreateError(''); }}>取消</button><button type="submit" data-testid="tenant-signature-lifecycle-signatures-application-submit" disabled={submit.isPending}>提交申请</button></div>
+          </form>
+        </ModalDialog>
+      )}
 
       <section className="card">
         <h2>签名列表</h2>

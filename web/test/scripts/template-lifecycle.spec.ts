@@ -87,6 +87,8 @@ test('pw-p13-template-application pw-p13-template-name pw-p13-template-content p
   await routeApi(page);
   await page.goto('/tenant/templates');
   await expect(page.getByTestId('tenant-template-lifecycle-templates-page')).toBeVisible();
+  await expect(page.getByTestId('tenant-template-lifecycle-templates-create-dialog')).toHaveCount(0);
+  await page.getByTestId('tenant-template-lifecycle-templates-create-open').click();
   await page.getByTestId('tenant-template-lifecycle-templates-form-name').fill('登录验证码');
   await page.getByTestId('tenant-template-lifecycle-templates-form-content').fill('您的验证码是 ${code}');
   await page.getByTestId('tenant-template-lifecycle-templates-form-type').selectOption('verification');

@@ -50,6 +50,8 @@ test.beforeEach(async ({ page }) => {
 test('pw-p14-exemption-config C-P14-EXEMPTION-CONFIG OBL-F-3-6-A', async ({ page }) => {
   await page.goto('/admin/exemption/policy');
   await expect(page.getByTestId('admin-auditable-exemption-exemption-policy-page')).toBeVisible();
+  await expect(page.getByTestId('admin-auditable-exemption-exemption-policy-create-dialog')).toHaveCount(0);
+  await page.getByTestId('admin-auditable-exemption-exemption-policy-create-open').click();
   await page.getByTestId('admin-auditable-exemption-exemption-policy-type').selectOption('CONTENT');
   await page.getByTestId('admin-auditable-exemption-exemption-policy-resource').fill('tpl-1');
   await page.getByTestId('admin-auditable-exemption-exemption-policy-save').click();

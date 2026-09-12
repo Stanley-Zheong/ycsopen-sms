@@ -129,11 +129,15 @@ describe('Phase 14 auditable exemption policy UI', () => {
     renderWithProviders(<ExemptionPolicyPage />);
     await screen.findByTestId('admin-auditable-exemption-exemption-policy-page');
 
+    expect(screen.queryByTestId('admin-auditable-exemption-exemption-policy-create-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('admin-auditable-exemption-exemption-policy-create-open'));
+    expect(screen.getByTestId('admin-auditable-exemption-exemption-policy-create-dialog')).toBeVisible();
     fireEvent.change(screen.getByTestId('admin-auditable-exemption-exemption-policy-type'), { target: { value: 'CONTENT' } });
     fireEvent.change(screen.getByTestId('admin-auditable-exemption-exemption-policy-resource'), { target: { value: 'tpl-1' } });
     fireEvent.click(screen.getByTestId('admin-auditable-exemption-exemption-policy-save'));
 
     await screen.findByText('豁免策略已保存。');
+    expect(screen.queryByTestId('admin-auditable-exemption-exemption-policy-create-dialog')).not.toBeInTheDocument();
     expect(seen).toContainEqual(expect.objectContaining({
       method: 'POST',
       url: '/console/exemptions',

@@ -12,6 +12,7 @@ import {
   type ContentSafetyPolicyPayload,
 } from '@/api/contentSafetyApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/content-safety.css';
@@ -25,6 +26,15 @@ const POLICY_FORM: ContentSafetyPolicyPayload = {
   scope: 'GLOBAL',
   scopeRefId: null,
   status: 'ACTIVE',
+};
+
+const IMPORT_FORM: Pick<ContentSafetyPolicyPayload, 'category' | 'level' | 'replacement' | 'action' | 'scope' | 'scopeRefId'> = {
+  category: POLICY_FORM.category,
+  level: POLICY_FORM.level,
+  replacement: POLICY_FORM.replacement,
+  action: POLICY_FORM.action,
+  scope: POLICY_FORM.scope,
+  scopeRefId: POLICY_FORM.scopeRefId,
 };
 
 export default function ContentSafetyPage() {
@@ -41,10 +51,15 @@ export default function ContentSafetyPage() {
   const [filters, setFilters] = useState({ word: '', category: '', level: '', action: '', status: 'ACTIVE' });
   const [form, setForm] = useState(POLICY_FORM);
   const [importText, setImportText] = useState('高危营销\nＡＢＣ');
+  const [importForm, setImportForm] = useState(IMPORT_FORM);
   const [scanTenant, setScanTenant] = useState('17');
   const [scanTemplate, setScanTemplate] = useState('8');
   const [scanContent, setScanContent] = useState('【签名】变量填入ＡＢＣ，高危营销');
   const [scanResult, setScanResult] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [importError, setImportError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
@@ -69,21 +84,38 @@ export default function ContentSafetyPage() {
 
   const saveMutation = useMutation({
     mutationFn: saveContentSafetyPolicy,
-    onSuccess: () => onSuccess('内容审核策略已热更新。'),
-    onError: (failure) => onError(failure, '内容审核策略保存失败'),
+    onSuccess: async () => {
+      await onSuccess('内容审核策略已热更新。');
+      setCreateOpen(false);
+      setCreateError('');
+      setForm(POLICY_FORM);
+    },
+    onError: (failure) => {
+      setMessage('');
+      setCreateError(mutationErrorMessage(failure, '内容审核策略保存失败'));
+    },
   });
   const importMutation = useMutation({
     mutationFn: () => importContentSafetyPolicies({
       words: importText.split(/\s+/).filter(Boolean),
-      category: form.category,
-      level: form.level,
-      replacement: form.replacement,
-      action: form.action,
-      scope: form.scope,
-      scopeRefId: form.scopeRefId,
+      category: importForm.category,
+      level: importForm.level,
+      replacement: importForm.replacement,
+      action: importForm.action,
+      scope: importForm.scope,
+      scopeRefId: importForm.scopeRefId,
     }),
-    onSuccess: (result) => onSuccess(`词库导入完成：成功 ${result.success}，失败 ${result.failed}。`),
-    onError: (failure) => onError(failure, '词库导入失败'),
+    onSuccess: async (result) => {
+      await onSuccess(`词库导入完成：成功 ${result.success}，失败 ${result.failed}。`);
+      setImportOpen(false);
+      setImportError('');
+      setImportForm(IMPORT_FORM);
+      setImportText('高危营销\nＡＢＣ');
+    },
+    onError: (failure) => {
+      setMessage('');
+      setImportError(mutationErrorMessage(failure, '词库导入失败'));
+    },
   });
   const exportMutation = useMutation({
     mutationFn: () => requestContentSafetyExport(filters),
@@ -161,45 +193,59 @@ export default function ContentSafetyPage() {
             </select>
           </label>
         </div>
-        <div className="content-safety-form" data-testid="admin-runtime-content-content-safety-form">
-          <label>敏感词
-            <input data-testid="admin-runtime-content-content-safety-word" value={form.word} onChange={(event) => setForm({ ...form, word: event.target.value })} />
-          </label>
-          <label>分类
-            <select data-testid="admin-runtime-content-content-safety-category" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
-              <option value="ILLEGAL">违法</option><option value="FINANCIAL">金融</option><option value="MARKETING">营销</option><option value="POLITICAL">政治</option><option value="ADULT">色情</option><option value="OTHER">其他</option>
-            </select>
-          </label>
-          <label>级别
-            <select data-testid="admin-runtime-content-content-safety-level" value={form.level} onChange={(event) => setForm({ ...form, level: event.target.value })}>
-              <option value="HIGH">高</option><option value="MEDIUM">中</option><option value="LOW">低</option>
-            </select>
-          </label>
-          <label>替换词
-            <input data-testid="admin-runtime-content-content-safety-replacement" value={form.replacement ?? ''} onChange={(event) => setForm({ ...form, replacement: event.target.value })} />
-          </label>
-          <label>动作
-            <select data-testid="admin-runtime-content-content-safety-action" value={form.action} onChange={(event) => setForm({ ...form, action: event.target.value })}>
-              <option value="BLOCK">拦截</option><option value="REPLACE">替换</option><option value="ALERT">告警</option>
-            </select>
-          </label>
-          <label>作用域
-            <select data-testid="admin-runtime-content-content-safety-scope" value={form.scope} onChange={(event) => setForm({ ...form, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : form.scopeRefId })}>
-              <option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="PRODUCT">指定产品</option>
-            </select>
-          </label>
-          <label>作用域ID
-            <input data-testid="admin-runtime-content-content-safety-scope-ref" type="number" value={form.scopeRefId ?? ''} onChange={(event) => setForm({ ...form, scopeRefId: Number(event.target.value) || null })} />
-          </label>
-          <button type="button" data-testid="admin-runtime-content-content-safety-save" disabled={!canWrite} onClick={() => saveMutation.mutate(form)}>保存并热更新</button>
-        </div>
-        <label className="content-safety-import">批量导入
-          <textarea data-testid="admin-runtime-content-content-safety-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} />
-        </label>
+        {canWrite && <button type="button" data-testid="admin-runtime-content-content-safety-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建词库策略</button>}
+        {createOpen && (
+          <ModalDialog labelledBy="content-safety-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
+            <form className="content-safety-form" data-testid="admin-runtime-content-content-safety-create-dialog" onSubmit={(event) => { event.preventDefault(); saveMutation.mutate(form); }}>
+              <h2 id="content-safety-create-title">新建词库策略</h2>
+              <div className="dialog-form-fields" data-testid="admin-runtime-content-content-safety-form">
+              <label>敏感词<input required data-testid="admin-runtime-content-content-safety-word" value={form.word} onChange={(event) => setForm({ ...form, word: event.target.value })} /></label>
+              <label>分类
+                <select data-testid="admin-runtime-content-content-safety-category" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
+                  <option value="ILLEGAL">违法</option><option value="FINANCIAL">金融</option><option value="MARKETING">营销</option><option value="POLITICAL">政治</option><option value="ADULT">色情</option><option value="OTHER">其他</option>
+                </select>
+              </label>
+              <label>级别<select data-testid="admin-runtime-content-content-safety-level" value={form.level} onChange={(event) => setForm({ ...form, level: event.target.value })}><option value="HIGH">高</option><option value="MEDIUM">中</option><option value="LOW">低</option></select></label>
+              <label>替换词<input data-testid="admin-runtime-content-content-safety-replacement" value={form.replacement ?? ''} onChange={(event) => setForm({ ...form, replacement: event.target.value })} /></label>
+              <label>动作<select data-testid="admin-runtime-content-content-safety-action" value={form.action} onChange={(event) => setForm({ ...form, action: event.target.value })}><option value="BLOCK">拦截</option><option value="REPLACE">替换</option><option value="ALERT">告警</option></select></label>
+              <label>作用域
+                <select data-testid="admin-runtime-content-content-safety-scope" value={form.scope} onChange={(event) => setForm({ ...form, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : form.scopeRefId })}>
+                  <option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="PRODUCT">指定产品</option>
+                </select>
+              </label>
+              <label>作用域ID<input data-testid="admin-runtime-content-content-safety-scope-ref" type="number" value={form.scopeRefId ?? ''} onChange={(event) => setForm({ ...form, scopeRefId: Number(event.target.value) || null })} /></label>
+              </div>
+              {createError && <p role="alert" data-testid="admin-runtime-content-content-safety-create-error" className="content-safety-alert error">{createError}</p>}
+              <div className="dialog-actions">
+                <button type="button" className="button-secondary" data-testid="admin-runtime-content-content-safety-create-cancel" onClick={() => { setCreateOpen(false); setCreateError(''); }}>取消</button>
+                <button type="submit" data-testid="admin-runtime-content-content-safety-save" disabled={saveMutation.isPending}>保存并热更新</button>
+              </div>
+            </form>
+          </ModalDialog>
+        )}
         <div className="content-safety-actions">
-          <button type="button" data-testid="admin-runtime-content-content-safety-import" disabled={!canImport} onClick={() => importMutation.mutate()}>导入词库</button>
+          <button type="button" data-testid="admin-runtime-content-content-safety-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入词库</button>
           <button type="button" data-testid="admin-runtime-content-content-safety-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
         </div>
+        {importOpen && (
+          <ModalDialog labelledBy="content-safety-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
+            <form className="content-safety-form" data-testid="admin-runtime-content-content-safety-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
+              <h2 id="content-safety-import-title">批量导入词库</h2>
+              <label>分类<select data-testid="admin-runtime-content-content-safety-import-category" value={importForm.category} onChange={(event) => setImportForm({ ...importForm, category: event.target.value })}><option value="ILLEGAL">违法</option><option value="FINANCIAL">金融</option><option value="MARKETING">营销</option><option value="POLITICAL">政治</option><option value="ADULT">色情</option><option value="OTHER">其他</option></select></label>
+              <label>级别<select data-testid="admin-runtime-content-content-safety-import-level" value={importForm.level} onChange={(event) => setImportForm({ ...importForm, level: event.target.value })}><option value="HIGH">高</option><option value="MEDIUM">中</option><option value="LOW">低</option></select></label>
+              <label>替换词<input data-testid="admin-runtime-content-content-safety-import-replacement" value={importForm.replacement ?? ''} onChange={(event) => setImportForm({ ...importForm, replacement: event.target.value })} /></label>
+              <label>动作<select data-testid="admin-runtime-content-content-safety-import-action" value={importForm.action} onChange={(event) => setImportForm({ ...importForm, action: event.target.value })}><option value="BLOCK">拦截</option><option value="REPLACE">替换</option><option value="ALERT">告警</option></select></label>
+              <label>作用域<select data-testid="admin-runtime-content-content-safety-import-scope" value={importForm.scope} onChange={(event) => setImportForm({ ...importForm, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : importForm.scopeRefId })}><option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="PRODUCT">指定产品</option></select></label>
+              <label>作用域ID<input required={importForm.scope !== 'GLOBAL'} data-testid="admin-runtime-content-content-safety-import-scope-ref" type="number" value={importForm.scopeRefId ?? ''} onChange={(event) => setImportForm({ ...importForm, scopeRefId: Number(event.target.value) || null })} /></label>
+              <label className="content-safety-import">敏感词列表<textarea required data-testid="admin-runtime-content-content-safety-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} /></label>
+              {importError && <p role="alert" data-testid="admin-runtime-content-content-safety-import-error" className="content-safety-alert error">{importError}</p>}
+              <div className="dialog-actions">
+                <button type="button" className="button-secondary" data-testid="admin-runtime-content-content-safety-import-cancel" onClick={() => { setImportOpen(false); setImportError(''); }}>取消</button>
+                <button type="submit" data-testid="admin-runtime-content-content-safety-import-submit" disabled={importMutation.isPending}>导入词库</button>
+              </div>
+            </form>
+          </ModalDialog>
+        )}
         <table className="ratio-table" data-testid="admin-runtime-content-content-safety-table">
           <thead><tr><th>词</th><th>分类</th><th>级别</th><th>替换</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
           <tbody>

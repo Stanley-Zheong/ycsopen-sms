@@ -65,6 +65,8 @@ test.describe('Phase 29 bulk scheduled task operations', () => {
     await loginAs(page, 'TENANT_USER');
     await page.goto('/tenant/bulk/send');
     await expect(page.getByTestId('tenant-bulk-scheduled-bulk-send-page')).toBeVisible();
+    await expect(page.getByTestId('tenant-bulk-scheduled-bulk-send-form')).toHaveCount(0);
+    await page.getByTestId('tenant-bulk-scheduled-bulk-send-create-open').click();
     await page.getByTestId('tenant-bulk-scheduled-bulk-send-preview').click();
     await expect(page.getByTestId('tenant-bulk-scheduled-bulk-send-validation-results')).toContainText('重复手机号');
     await page.getByTestId('tenant-bulk-scheduled-bulk-send-create').click();

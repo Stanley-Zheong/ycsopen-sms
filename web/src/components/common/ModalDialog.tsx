@@ -37,8 +37,12 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   }
 
   return (
-    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} onKeyDown={onKeyDown}>
-      {children}
+    <div className="modal-backdrop" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) event.preventDefault();
+    }}>
+      <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} onKeyDown={onKeyDown}>
+        {children}
+      </div>
     </div>
   );
 }

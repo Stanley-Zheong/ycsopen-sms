@@ -89,11 +89,15 @@ describe('Phase 29 bulk scheduled pages', () => {
     renderWithQuery(<TenantBulkSendPage />);
 
     expect(screen.getByTestId('tenant-bulk-scheduled-bulk-send-page')).toBeVisible();
+    expect(screen.queryByTestId('tenant-bulk-scheduled-bulk-send-form')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tenant-bulk-scheduled-bulk-send-create-open'));
+    expect(screen.getByRole('dialog', { name: '新建批任务' })).toBeVisible();
     fireEvent.click(screen.getByTestId('tenant-bulk-scheduled-bulk-send-preview'));
     expect(await screen.findByTestId('tenant-bulk-scheduled-bulk-send-validation-results')).toHaveTextContent('重复手机号');
     fireEvent.click(screen.getByTestId('tenant-bulk-scheduled-bulk-send-create'));
     await waitFor(() => expect(seen.some((request) => request.url === '/console/tenant/bulk/tasks')).toBe(true));
     expect(await screen.findByRole('status')).toHaveTextContent('批任务已创建');
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '新建批任务' })).not.toBeInTheDocument());
   });
 
   it('shows tenant scheduled task controls', async () => {

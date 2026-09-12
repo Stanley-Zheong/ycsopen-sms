@@ -124,6 +124,8 @@ describe('Phase 13 template lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-variable-preview'));
     await screen.findByText('尊敬的 张三，本次消费 99.5 元');
 
+    expect(screen.queryByTestId('tenant-template-lifecycle-templates-create-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-create-open'));
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-name'), { target: { value: '登录验证码' } });
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-content'), { target: { value: '您的验证码是 ${code}' } });
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-type'), { target: { value: 'verification' } });
@@ -132,6 +134,7 @@ describe('Phase 13 template lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-submit'));
 
     await screen.findByText('模板申请已提交。');
+    expect(screen.queryByTestId('tenant-template-lifecycle-templates-create-dialog')).not.toBeInTheDocument();
     expect(seen).toContainEqual(expect.objectContaining({
       method: 'POST',
       url: '/console/tenant/templates',

@@ -121,6 +121,8 @@ describe('Phase 12 signature lifecycle UI', () => {
     await screen.findByTestId('tenant-signature-lifecycle-signatures-page');
     expect(await screen.findByTestId('tenant-signature-lifecycle-signatures-history')).toHaveTextContent('SUBMITTED');
 
+    expect(screen.queryByTestId('tenant-signature-lifecycle-signatures-application-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tenant-signature-lifecycle-signatures-application-open'));
     const form = screen.getByTestId('tenant-signature-lifecycle-signatures-application-form');
     fireEvent.change(within(form).getByLabelText('签名内容'), { target: { value: '新商标' } });
     fireEvent.change(within(form).getByLabelText('签名类型'), { target: { value: 'TRADEMARK' } });
@@ -128,6 +130,7 @@ describe('Phase 12 signature lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-signature-lifecycle-signatures-application-submit'));
 
     await screen.findByText('签名申请已提交。');
+    expect(screen.queryByTestId('tenant-signature-lifecycle-signatures-application-dialog')).not.toBeInTheDocument();
     expect(seen).toContainEqual(expect.objectContaining({
       method: 'POST',
       url: '/console/tenant/signatures',

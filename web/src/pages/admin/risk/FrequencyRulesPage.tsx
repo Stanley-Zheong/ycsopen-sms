@@ -12,6 +12,7 @@ import {
   type FrequencyRulePayload,
 } from '@/api/frequencyRuleApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/frequency-rules.css';
@@ -27,6 +28,15 @@ const DEFAULT_RULE: FrequencyRulePayload = {
   status: 'ACTIVE',
 };
 
+const IMPORT_RULE: Pick<FrequencyRulePayload, 'limitType' | 'limitCount' | 'limitWindowSeconds' | 'action' | 'scope' | 'scopeRefId'> = {
+  limitType: DEFAULT_RULE.limitType,
+  limitCount: DEFAULT_RULE.limitCount,
+  limitWindowSeconds: DEFAULT_RULE.limitWindowSeconds,
+  action: DEFAULT_RULE.action,
+  scope: DEFAULT_RULE.scope,
+  scopeRefId: DEFAULT_RULE.scopeRefId,
+};
+
 export default function FrequencyRulesPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -40,6 +50,11 @@ export default function FrequencyRulesPage() {
   const [filters, setFilters] = useState({ name: '', type: '', action: '', status: 'ACTIVE' });
   const [form, setForm] = useState(DEFAULT_RULE);
   const [importText, setImportText] = useState('同号秒级限制\n同IP分钟限制');
+  const [importRule, setImportRule] = useState(IMPORT_RULE);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [importError, setImportError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
@@ -63,21 +78,38 @@ export default function FrequencyRulesPage() {
   };
   const saveMutation = useMutation({
     mutationFn: saveFrequencyRule,
-    onSuccess: () => onSuccess('频控规则已保存并热更新。'),
-    onError: (failure) => onError(failure, '频控规则保存失败'),
+    onSuccess: async () => {
+      await onSuccess('频控规则已保存并热更新。');
+      setCreateOpen(false);
+      setCreateError('');
+      setForm(DEFAULT_RULE);
+    },
+    onError: (failure) => {
+      setMessage('');
+      setCreateError(mutationErrorMessage(failure, '频控规则保存失败'));
+    },
   });
   const importMutation = useMutation({
     mutationFn: () => importFrequencyRules({
       ruleNames: importText.split(/\n+/).map((value) => value.trim()).filter(Boolean),
-      limitType: form.limitType,
-      limitCount: form.limitCount,
-      limitWindowSeconds: form.limitWindowSeconds,
-      action: form.action,
-      scope: form.scope,
-      scopeRefId: form.scopeRefId,
+      limitType: importRule.limitType,
+      limitCount: importRule.limitCount,
+      limitWindowSeconds: importRule.limitWindowSeconds,
+      action: importRule.action,
+      scope: importRule.scope,
+      scopeRefId: importRule.scopeRefId,
     }),
-    onSuccess: (result) => onSuccess(`频控规则导入完成：成功 ${result.success}，失败 ${result.failed}。`),
-    onError: (failure) => onError(failure, '频控规则导入失败'),
+    onSuccess: async (result) => {
+      await onSuccess(`频控规则导入完成：成功 ${result.success}，失败 ${result.failed}。`);
+      setImportOpen(false);
+      setImportError('');
+      setImportRule(IMPORT_RULE);
+      setImportText('同号秒级限制\n同IP分钟限制');
+    },
+    onError: (failure) => {
+      setMessage('');
+      setImportError(mutationErrorMessage(failure, '频控规则导入失败'));
+    },
   });
   const exportMutation = useMutation({
     mutationFn: () => requestFrequencyExport(filters),
@@ -150,45 +182,51 @@ export default function FrequencyRulesPage() {
             </select>
           </label>
         </div>
-        <div className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-form">
-          <label>规则名
-            <input data-testid="admin-frequency-api-frequency-rules-name" value={form.ruleName} onChange={(event) => setForm({ ...form, ruleName: event.target.value })} />
-          </label>
-          <label>维度
-            <select data-testid="admin-frequency-api-frequency-rules-type" value={form.limitType} onChange={(event) => setForm({ ...form, limitType: event.target.value })}>
-              <option value="MOBILE">手机号</option><option value="TENANT_LEVEL">机构</option><option value="IP">IP</option><option value="CONTENT_SIMILARITY">内容相似度</option>
-            </select>
-          </label>
-          <label>次数
-            <input data-testid="admin-frequency-api-frequency-rules-count" type="number" value={form.limitCount} onChange={(event) => setForm({ ...form, limitCount: Number(event.target.value) || 1 })} />
-          </label>
-          <label>窗口
-            <select data-testid="admin-frequency-api-frequency-rules-window" value={form.limitWindowSeconds} onChange={(event) => setForm({ ...form, limitWindowSeconds: Number(event.target.value) })}>
-              <option value={1}>秒</option><option value={60}>分钟</option><option value={3600}>小时</option><option value={86400}>天</option>
-            </select>
-          </label>
-          <label>动作
-            <select data-testid="admin-frequency-api-frequency-rules-action" value={form.action} onChange={(event) => setForm({ ...form, action: event.target.value })}>
-              <option value="BLOCK">拦截</option><option value="DELAY">延迟</option><option value="ALERT">告警</option>
-            </select>
-          </label>
-          <label>作用域
-            <select data-testid="admin-frequency-api-frequency-rules-scope" value={form.scope} onChange={(event) => setForm({ ...form, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : form.scopeRefId })}>
-              <option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="API_KEY">指定 API Key</option>
-            </select>
-          </label>
-          <label>作用域ID
-            <input data-testid="admin-frequency-api-frequency-rules-scope-ref" type="number" value={form.scopeRefId ?? ''} onChange={(event) => setForm({ ...form, scopeRefId: Number(event.target.value) || null })} />
-          </label>
-          <button type="button" data-testid="admin-frequency-api-frequency-rules-save" disabled={!canWrite} onClick={() => saveMutation.mutate(form)}>保存并热更新</button>
-        </div>
-        <label className="frequency-rules-import">批量导入
-          <textarea data-testid="admin-frequency-api-frequency-rules-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} />
-        </label>
+        {canWrite && <button type="button" data-testid="admin-frequency-api-frequency-rules-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新建频控规则</button>}
+        {createOpen && (
+          <ModalDialog labelledBy="frequency-rule-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
+            <form className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-create-dialog" onSubmit={(event) => { event.preventDefault(); saveMutation.mutate(form); }}>
+              <h2 id="frequency-rule-create-title">新建频控规则</h2>
+              <div className="dialog-form-fields" data-testid="admin-frequency-api-frequency-rules-form">
+                <label>规则名<input required data-testid="admin-frequency-api-frequency-rules-name" value={form.ruleName} onChange={(event) => setForm({ ...form, ruleName: event.target.value })} /></label>
+                <label>维度<select data-testid="admin-frequency-api-frequency-rules-type" value={form.limitType} onChange={(event) => setForm({ ...form, limitType: event.target.value })}><option value="MOBILE">手机号</option><option value="TENANT_LEVEL">机构</option><option value="IP">IP</option><option value="CONTENT_SIMILARITY">内容相似度</option></select></label>
+                <label>次数<input required min="1" data-testid="admin-frequency-api-frequency-rules-count" type="number" value={form.limitCount} onChange={(event) => setForm({ ...form, limitCount: Number(event.target.value) || 1 })} /></label>
+                <label>窗口<select data-testid="admin-frequency-api-frequency-rules-window" value={form.limitWindowSeconds} onChange={(event) => setForm({ ...form, limitWindowSeconds: Number(event.target.value) })}><option value={1}>秒</option><option value={60}>分钟</option><option value={3600}>小时</option><option value={86400}>天</option></select></label>
+                <label>动作<select data-testid="admin-frequency-api-frequency-rules-action" value={form.action} onChange={(event) => setForm({ ...form, action: event.target.value })}><option value="BLOCK">拦截</option><option value="DELAY">延迟</option><option value="ALERT">告警</option></select></label>
+                <label>作用域<select data-testid="admin-frequency-api-frequency-rules-scope" value={form.scope} onChange={(event) => setForm({ ...form, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : form.scopeRefId })}><option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="API_KEY">指定 API Key</option></select></label>
+                <label>作用域ID<input data-testid="admin-frequency-api-frequency-rules-scope-ref" type="number" value={form.scopeRefId ?? ''} onChange={(event) => setForm({ ...form, scopeRefId: Number(event.target.value) || null })} /></label>
+              </div>
+              {createError && <p role="alert" data-testid="admin-frequency-api-frequency-rules-create-error" className="frequency-rules-alert error">{createError}</p>}
+              <div className="dialog-actions">
+                <button type="button" className="button-secondary" data-testid="admin-frequency-api-frequency-rules-create-cancel" onClick={() => { setCreateOpen(false); setCreateError(''); }}>取消</button>
+                <button type="submit" data-testid="admin-frequency-api-frequency-rules-save" disabled={saveMutation.isPending}>保存并热更新</button>
+              </div>
+            </form>
+          </ModalDialog>
+        )}
         <div className="frequency-rules-actions">
-          <button type="button" data-testid="admin-frequency-api-frequency-rules-import" disabled={!canImport} onClick={() => importMutation.mutate()}>导入规则</button>
+          <button type="button" data-testid="admin-frequency-api-frequency-rules-import" disabled={!canImport} onClick={() => { setImportError(''); setImportOpen(true); }}>导入规则</button>
           <button type="button" data-testid="admin-frequency-api-frequency-rules-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
         </div>
+        {importOpen && (
+          <ModalDialog labelledBy="frequency-import-title" onRequestClose={() => { setImportOpen(false); setImportError(''); }}>
+            <form className="frequency-rules-form" data-testid="admin-frequency-api-frequency-rules-import-dialog" onSubmit={(event) => { event.preventDefault(); importMutation.mutate(); }}>
+              <h2 id="frequency-import-title">批量导入频控规则</h2>
+              <label>维度<select data-testid="admin-frequency-api-frequency-rules-import-type" value={importRule.limitType} onChange={(event) => setImportRule({ ...importRule, limitType: event.target.value })}><option value="MOBILE">手机号</option><option value="TENANT_LEVEL">机构</option><option value="IP">IP</option><option value="CONTENT_SIMILARITY">内容相似度</option></select></label>
+              <label>次数<input required min="1" data-testid="admin-frequency-api-frequency-rules-import-count" type="number" value={importRule.limitCount} onChange={(event) => setImportRule({ ...importRule, limitCount: Number(event.target.value) || 1 })} /></label>
+              <label>窗口<select data-testid="admin-frequency-api-frequency-rules-import-window" value={importRule.limitWindowSeconds} onChange={(event) => setImportRule({ ...importRule, limitWindowSeconds: Number(event.target.value) })}><option value={1}>秒</option><option value={60}>分钟</option><option value={3600}>小时</option><option value={86400}>天</option></select></label>
+              <label>动作<select data-testid="admin-frequency-api-frequency-rules-import-action" value={importRule.action} onChange={(event) => setImportRule({ ...importRule, action: event.target.value })}><option value="BLOCK">拦截</option><option value="DELAY">延迟</option><option value="ALERT">告警</option></select></label>
+              <label>作用域<select data-testid="admin-frequency-api-frequency-rules-import-scope" value={importRule.scope} onChange={(event) => setImportRule({ ...importRule, scope: event.target.value, scopeRefId: event.target.value === 'GLOBAL' ? null : importRule.scopeRefId })}><option value="GLOBAL">全平台</option><option value="TENANT">指定机构</option><option value="API_KEY">指定 API Key</option></select></label>
+              <label>作用域ID<input required={importRule.scope !== 'GLOBAL'} data-testid="admin-frequency-api-frequency-rules-import-scope-ref" type="number" value={importRule.scopeRefId ?? ''} onChange={(event) => setImportRule({ ...importRule, scopeRefId: Number(event.target.value) || null })} /></label>
+              <label className="frequency-rules-import">规则名列表<textarea required data-testid="admin-frequency-api-frequency-rules-import-input" value={importText} onChange={(event) => setImportText(event.target.value)} /></label>
+              {importError && <p role="alert" data-testid="admin-frequency-api-frequency-rules-import-error" className="frequency-rules-alert error">{importError}</p>}
+              <div className="dialog-actions">
+                <button type="button" className="button-secondary" data-testid="admin-frequency-api-frequency-rules-import-cancel" onClick={() => { setImportOpen(false); setImportError(''); }}>取消</button>
+                <button type="submit" data-testid="admin-frequency-api-frequency-rules-import-submit" disabled={importMutation.isPending}>导入规则</button>
+              </div>
+            </form>
+          </ModalDialog>
+        )}
         <table className="ratio-table" data-testid="admin-frequency-api-frequency-rules-table">
           <thead><tr><th>规则</th><th>维度</th><th>次数</th><th>窗口</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
           <tbody>

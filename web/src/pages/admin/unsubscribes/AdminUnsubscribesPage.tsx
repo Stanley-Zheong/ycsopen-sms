@@ -8,21 +8,27 @@ import {
   saveAdminUnsubscribeKeyword,
 } from '@/api/unsubscribeComplianceApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import '@/styles/unsubscribe-compliance.css';
+
+const DEFAULT_KEYWORD = 'TD';
 
 export default function AdminUnsubscribesPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState({ tenantId: '', mobile: '', keyword: '', outcome: '', signatureId: '', productCode: '', notificationState: '' });
   const [filters, setFilters] = useState(draft);
+  const [keywordFilterTenant, setKeywordFilterTenant] = useState('');
   const [keywordTenant, setKeywordTenant] = useState('');
-  const [keywordText, setKeywordText] = useState('TD');
+  const [keywordText, setKeywordText] = useState(DEFAULT_KEYWORD);
   const [keywordScope, setKeywordScope] = useState('GLOBAL');
   const [thresholdRate, setThresholdRate] = useState('0.03');
+  const [keywordOpen, setKeywordOpen] = useState(false);
+  const [keywordError, setKeywordError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const applied = useMemo(() => filters, [filters]);
   const records = useQuery({ queryKey: ['admin-unsubscribes', applied], queryFn: () => listAdminUnsubscribes(applied), retry: false });
-  const keywords = useQuery({ queryKey: ['admin-unsubscribe-keywords', keywordTenant], queryFn: () => listAdminUnsubscribeKeywords(keywordTenant), retry: false });
+  const keywords = useQuery({ queryKey: ['admin-unsubscribe-keywords', keywordFilterTenant], queryFn: () => listAdminUnsubscribeKeywords(keywordFilterTenant), retry: false });
   const statistics = useQuery({ queryKey: ['admin-unsubscribe-statistics', applied], queryFn: () => listUnsubscribeStatistics(applied), retry: false });
 
   const saveKeyword = useMutation({
@@ -35,10 +41,15 @@ export default function AdminUnsubscribesPage() {
       setMessage('退订关键词已保存');
       setError('');
       await queryClient.invalidateQueries({ queryKey: ['admin-unsubscribe-keywords'] });
+      setKeywordOpen(false);
+      setKeywordError('');
+      setKeywordText(DEFAULT_KEYWORD);
+      setKeywordScope('GLOBAL');
+      setKeywordTenant('');
     },
     onError: (failure) => {
       setMessage('');
-      setError(mutationErrorMessage(failure, '退订关键词保存失败'));
+      setKeywordError(mutationErrorMessage(failure, '退订关键词保存失败'));
     },
   });
   const evaluateAlerts = useMutation({
@@ -82,12 +93,23 @@ export default function AdminUnsubscribesPage() {
 
       <section className="card" data-testid="admin-unsubscribe-compliance-keywords-page">
         <h2>退订关键词库</h2>
-        <div className="unsubscribe-filters compact">
-          <label>关键词<input data-testid="admin-unsubscribe-compliance-keyword-input" value={keywordText} onChange={(event) => setKeywordText(event.target.value)} /></label>
-          <label>范围<select data-testid="admin-unsubscribe-compliance-keyword-scope" value={keywordScope} onChange={(event) => setKeywordScope(event.target.value)}><option value="GLOBAL">GLOBAL</option><option value="TENANT">TENANT</option></select></label>
-          <label>租户ID<input data-testid="admin-unsubscribe-compliance-keyword-tenant" value={keywordTenant} onChange={(event) => setKeywordTenant(event.target.value)} /></label>
-          <button type="button" data-testid="admin-unsubscribe-compliance-keyword-save" onClick={() => saveKeyword.mutate()}>保存关键词</button>
-        </div>
+        <label>筛选租户ID<input type="number" data-testid="admin-unsubscribe-compliance-keyword-filter-tenant" value={keywordFilterTenant} onChange={(event) => setKeywordFilterTenant(event.target.value)} /></label>
+        <button type="button" data-testid="admin-unsubscribe-compliance-keyword-create-open" onClick={() => { setKeywordError(''); setKeywordOpen(true); }}>新增关键词</button>
+        {keywordOpen && (
+          <ModalDialog labelledBy="admin-unsubscribe-keyword-create-title" onRequestClose={() => { setKeywordOpen(false); setKeywordError(''); }}>
+            <form className="unsubscribe-filters compact" data-testid="admin-unsubscribe-compliance-keyword-create-dialog" onSubmit={(event) => { event.preventDefault(); saveKeyword.mutate(); }}>
+              <h2 id="admin-unsubscribe-keyword-create-title">新增退订关键词</h2>
+              <label>关键词<input required data-testid="admin-unsubscribe-compliance-keyword-input" value={keywordText} onChange={(event) => setKeywordText(event.target.value)} /></label>
+              <label>范围<select data-testid="admin-unsubscribe-compliance-keyword-scope" value={keywordScope} onChange={(event) => setKeywordScope(event.target.value)}><option value="GLOBAL">GLOBAL</option><option value="TENANT">TENANT</option></select></label>
+              <label>租户ID<input required={keywordScope === 'TENANT'} type="number" data-testid="admin-unsubscribe-compliance-keyword-tenant" value={keywordTenant} onChange={(event) => setKeywordTenant(event.target.value)} /></label>
+              {keywordError && <p role="alert" data-testid="admin-unsubscribe-compliance-keyword-create-error" className="unsubscribe-alert error">{keywordError}</p>}
+              <div className="dialog-actions">
+                <button type="button" className="button-secondary" data-testid="admin-unsubscribe-compliance-keyword-create-cancel" onClick={() => { setKeywordOpen(false); setKeywordError(''); }}>取消</button>
+                <button type="submit" data-testid="admin-unsubscribe-compliance-keyword-save" disabled={saveKeyword.isPending}>保存关键词</button>
+              </div>
+            </form>
+          </ModalDialog>
+        )}
         <table className="unsubscribe-table" data-testid="admin-unsubscribe-compliance-keywords-table">
           <thead><tr><th>关键词</th><th>归一化</th><th>范围</th><th>租户</th><th>状态</th></tr></thead>
           <tbody>{(keywords.data ?? []).map((row) => (

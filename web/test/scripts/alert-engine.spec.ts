@@ -65,6 +65,8 @@ test.describe('Phase 35 alert engine console', () => {
     await page.goto('/admin/alerts');
     await expect(page.getByTestId('admin-alert-engine-rules-page')).toBeVisible();
     await expect(page.getByTestId('admin-alert-engine-notification-targets')).toContainText('SMS');
+    await expect(page.getByTestId('admin-alert-engine-rule-form-dialog')).toHaveCount(0);
+    await page.getByTestId('admin-alert-engine-rule-create-open').click();
     await page.getByTestId('admin-alert-engine-rule-save').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警规则已保存');
   });
