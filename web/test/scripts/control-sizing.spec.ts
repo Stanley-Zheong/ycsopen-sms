@@ -111,4 +111,28 @@ test('pw-issue-73-primary-control-height C-ISSUE-73-PRIMARY-CONTROL-HEIGHT OBL-I
     expect(box, 'primary control has a layout box').not.toBeNull();
     expect(box!.height, 'primary controls share the 40px height').toBe(40);
   }
+
+  const textarea = page.getByTestId('admin-routing-circuit-routing-policy-import-input');
+  await textarea.focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+  await expect(textarea).toBeFocused();
+  const focusStyle = await textarea.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      focusVisible: element.matches(':focus-visible'),
+      outlineColor: style.outlineColor,
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      outlineOffset: style.outlineOffset,
+    };
+  });
+  expect(focusStyle.focusVisible, 'textarea receives visible focus').toBe(true);
+  expect(focusStyle).toEqual({
+    focusVisible: true,
+    outlineColor: 'rgba(12, 133, 232, 0.28)',
+    outlineStyle: 'solid',
+    outlineWidth: '3px',
+    outlineOffset: '2px',
+  });
 });

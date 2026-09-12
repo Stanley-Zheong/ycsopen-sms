@@ -11,7 +11,7 @@ effects, layout columns, and resize behavior remain unchanged.
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-73-primary-control-height | The shared field contract gives ordinary inputs, single-value selects, and textareas `height: 40px` and `min-height: 40px`; this overrides larger page-local textarea minimum heights while retaining vertical textarea resizing. | On `/admin/routing-policy`, `admin-routing-circuit-routing-policy-version`, `admin-routing-circuit-routing-policy-import-input`, and `admin-routing-circuit-routing-retry-category` each have a 40 px rendered layout height. |
+| issue-73-primary-control-height | The shared field contract gives ordinary inputs, single-value selects, and textareas `height: 40px` and `min-height: 40px`; this overrides larger page-local textarea minimum heights while retaining vertical textarea resizing and the shared `--color-focus` visible-focus outline. | On `/admin/routing-policy`, `admin-routing-circuit-routing-policy-version`, `admin-routing-circuit-routing-policy-import-input`, and `admin-routing-circuit-routing-retry-category` each have a 40 px rendered layout height; keyboard focus on the textarea has the shared 3 px outline. |
 
 ## Exclusions
 

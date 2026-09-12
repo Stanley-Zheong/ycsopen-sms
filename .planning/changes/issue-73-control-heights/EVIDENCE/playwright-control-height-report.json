@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-09-12T23:02:12Z",
-  "baseCommit": "e9759679145bb5666a9f13feeb76d072412fe93c",
+  "recordedAt": "2026-09-12T23:21:14Z",
+  "baseCommit": "f4f5462d1f155e23619e9bf32b9499beeec1aab8",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
@@ -17,8 +17,8 @@
   "command": "From web/: LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_USE_BUNDLED_CHROMIUM=true npm run test:e2e -- control-sizing.spec.ts --project=bundled-chromium --grep pw-issue-73-primary-control-height",
   "sourceSha256": {
     "web/playwright.config.ts": "0e0dd0373153aa404bc9fdd93af4b408647c54e5475f5d7806dd208c64ce8831",
-    "web/test/scripts/control-sizing.spec.ts": "124395b1743c55d1c9dcf199037a2629193f44d27caf5438bdf554c0aef80632",
-    "web/src/styles/index.css": "7b87daa5d4f19557ddaa974e2dce237c96b81bdaf0faaad10e10dc6182a880f2"
+    "web/test/scripts/control-sizing.spec.ts": "54dbb44b8ad614be741e2b67e81595bdbea76ee1ebb7be920341d4994784cc90",
+    "web/src/styles/index.css": "d1b8ffef4aca217521737bf54ac7d89888d327d3c6046271e8855f4c4baa6d3b"
   },
   "cases": [
     {
@@ -32,6 +32,6 @@
     "realReactDom": true,
     "platformApiRoutesIntercepted": true,
     "realServiceAcceptance": false,
-    "reason": "The issue claim is browser-rendered CSS geometry. Authentication and routing-policy APIs are intercepted, so this evidence does not claim backend-service acceptance. The unprefixed mandated command was blocked before test execution because bundled Chromium could not load libatk-1.0.so.0; the existing extracted library bundle was required to execute the same browser case."
+    "reason": "The issue claim is browser-rendered CSS geometry and visible focus. Authentication and routing-policy APIs are intercepted, so this evidence does not claim backend-service acceptance. The unprefixed mandated command was blocked before test execution because bundled Chromium could not load libatk-1.0.so.0; the existing extracted library bundle was required to execute the same browser case."
   }
 }
