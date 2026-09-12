@@ -2,6 +2,7 @@ package com.ycsopen.sms.core.service.exemption;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.web.dto.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -28,6 +29,7 @@ public class ExemptionPolicyService {
     private final JdbcTemplate jdbc;
     private final Clock clock;
 
+    @Autowired
     public ExemptionPolicyService(JdbcTemplate jdbc) {
         this(jdbc, Clock.systemDefaultZone());
     }
