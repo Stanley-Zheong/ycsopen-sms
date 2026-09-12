@@ -236,6 +236,14 @@ jobs:
         run: npm --prefix web ci
       - name: Verify runner Google Chrome
         run: /usr/bin/google-chrome --version
+      - name: Install Playwright Chromium
+        run: npm --prefix web exec -- playwright install chromium
+      - name: Verify control sizing breakpoints
+        env:
+          YCSOPEN_USE_BUNDLED_CHROMIUM: "true"
+        run: >-
+          npm --prefix web run test:e2e --
+          control-sizing.spec.ts --project=bundled-chromium
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
