@@ -82,7 +82,7 @@ public final class Phase03ServiceHarness {
                     "PHASE03_MINIO_SECRET_KEY", secretKey));
             assertIdentity(identity, "minio", runId);
             if (!identity.path("image_reference").asText().equals(
-                    "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e")) {
+                    "quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e")) {
                 throw new FixtureException("MINIO_IMAGE_IDENTITY_MISMATCH");
             }
             return ServiceSession.minio(runId, identity, accessKey, secretKey);

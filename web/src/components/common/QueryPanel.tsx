@@ -66,7 +66,8 @@ export function QueryPanel({
   resetLegacyTestId,
 }: QueryPanelProps) {
   const [columns, setColumns] = useState(queryColumnCount);
-  const collapsible = Children.count(children) > columns;
+  const fieldCount = Children.count(children);
+  const collapsible = fieldCount > columns;
   const [expanded, setExpanded] = useState(!collapsible);
   const fieldsId = useId();
 
