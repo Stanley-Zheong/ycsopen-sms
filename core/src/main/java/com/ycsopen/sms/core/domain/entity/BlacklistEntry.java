@@ -29,7 +29,7 @@ public class BlacklistEntry {
     @Column(name = "mobile_encrypted", nullable = false, length = 255)
     private byte[] mobileEncrypted;
 
-    @Column(name = "mobile_hash", nullable = false)
+    @Column(name = "mobile_hash", nullable = false, columnDefinition = "char(64)")
     private String mobileHash;
 
     @Column(name = "masked_mobile", nullable = false, length = 32, columnDefinition = "varchar(32) default '***'")
