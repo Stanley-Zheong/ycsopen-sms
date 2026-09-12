@@ -273,6 +273,8 @@ describe('Phase 5 identity administration pages', () => {
     expect(within(tree).getByText('按钮权限')).toBeVisible();
     expect(within(tree).getByText('接口权限')).toBeVisible();
     expect(within(tree).getByText('数据权限')).toBeVisible();
+    expect(within(tree).getAllByTestId('admin-console-identity-roles-permission-choice')).toHaveLength(4);
+    expect(within(tree).getByLabelText('禁用账号')).toHaveAttribute('data-permission-code', 'button:user:disable');
 
     fireEvent.click(within(tree).getByLabelText('禁用账号'));
     fireEvent.click(screen.getByTestId('admin-console-identity-roles-save'));
