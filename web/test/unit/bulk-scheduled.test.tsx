@@ -122,7 +122,7 @@ describe('Phase 29 bulk scheduled pages', () => {
     await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks/301/pause')).toBe(true));
   });
 
-  it('applies and resets the admin bulk-details tenant query on submit', async () => {
+  it('applies the single admin bulk-details tenant query without a reset action', async () => {
     renderWithQuery(<AdminBulkDetailsPage />);
     const panel = screen.getByTestId('query-panel');
     await screen.findByTestId('admin-bulk-scheduled-bulk-details-table');
@@ -133,7 +133,9 @@ describe('Phase 29 bulk scheduled pages', () => {
     fireEvent.click(within(panel).getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks' && request.params?.tenantId === '84')).toBe(true));
 
-    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(within(panel).getByTestId('admin-bulk-scheduled-bulk-details-filter-tenant'), { target: { value: '' } });
+    fireEvent.click(within(panel).getByTestId('query-submit'));
     expect(within(panel).getByTestId('admin-bulk-scheduled-bulk-details-filter-tenant')).toHaveValue('');
     await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks' && !request.params?.tenantId)).toBe(true));
   });

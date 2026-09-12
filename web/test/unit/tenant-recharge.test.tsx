@@ -141,7 +141,7 @@ describe('Phase 36 tenant recharge operations UI', () => {
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-message')).toHaveTextContent('APPROVED');
   });
 
-  it('applies and resets the recharge status only through the shared query panel', async () => {
+  it('applies the single recharge status through search without a reset action', async () => {
     useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
     renderWithProviders(<AdminRechargeReviewPage />);
 
@@ -155,7 +155,9 @@ describe('Phase 36 tenant recharge operations UI', () => {
     fireEvent.click(within(panel).getByTestId('query-submit'));
     await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledWith('APPROVED'));
 
-    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(status, { target: { value: '' } });
+    fireEvent.click(within(panel).getByTestId('query-submit'));
     expect(status).toHaveValue('');
     await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenLastCalledWith(''));
     expect(within(panel).getByTestId('query-result-table')).toContainElement(

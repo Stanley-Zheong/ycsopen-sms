@@ -160,7 +160,9 @@ describe('Phase 12 signature lifecycle UI', () => {
     expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(false);
     fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(true));
-    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(screen.queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('admin-signature-lifecycle-signature-review-filters'), { target: { value: '' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     expect(screen.getByTestId('admin-signature-lifecycle-signature-review-filters')).toHaveValue('');
     await waitFor(() => expect(seen.filter((req) => req.url === '/console/signatures/review')).toHaveLength(2));
 

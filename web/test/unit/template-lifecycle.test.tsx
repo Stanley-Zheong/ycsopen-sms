@@ -175,7 +175,9 @@ describe('Phase 13 template lifecycle UI', () => {
     expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=验证码'))).toBe(false);
     fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=验证码'))).toBe(true));
-    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(screen.queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('admin-template-lifecycle-template-review-filters'), { target: { value: '' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     expect(screen.getByTestId('admin-template-lifecycle-template-review-filters')).toHaveValue('');
     await waitFor(() => expect(seen.filter((req) => req.url === '/console/templates/review')).toHaveLength(2));
     const row = screen.getByTestId('admin-template-lifecycle-template-review-row');

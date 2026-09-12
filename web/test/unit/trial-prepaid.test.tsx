@@ -168,7 +168,9 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     expect(trialPrepaidApi.listConsumption).not.toHaveBeenCalled();
     fireEvent.click(within(panel).getByTestId('query-submit'));
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, 'SMS'));
-    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: '' } });
+    fireEvent.click(within(panel).getByTestId('query-submit'));
     expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type')).toHaveValue('');
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, ''));
     expect(within(panel).getByTestId('query-result-table')).toHaveTextContent('MSG-22');

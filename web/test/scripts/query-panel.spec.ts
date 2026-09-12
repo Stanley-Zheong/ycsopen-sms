@@ -18,6 +18,26 @@ async function expectAllLabelsLeftOfControls(panel: Locator, names: string[]) {
   for (const name of names) await expectLabelLeftOfControl(panel, name);
 }
 
+async function expectActionsInlineWithFirstField(panel: Locator, name: string, hasReset = true) {
+  const fields = panel.getByTestId('query-panel-fields');
+  const controlBox = await panel.getByTestId(`query-input-${name}`).boundingBox();
+  const submit = fields.getByTestId('query-submit');
+  const submitBox = await submit.boundingBox();
+  expect(controlBox, `${name} control has a layout box`).not.toBeNull();
+  expect(submitBox, 'search button has a layout box').not.toBeNull();
+  expect(Math.min(controlBox!.y + controlBox!.height, submitBox!.y + submitBox!.height)
+    - Math.max(controlBox!.y, submitBox!.y)).toBeGreaterThan(0);
+
+  if (hasReset) {
+    const reset = fields.getByTestId('query-reset');
+    const resetBox = await reset.boundingBox();
+    expect(resetBox, 'reset button has a layout box').not.toBeNull();
+    expect(Math.abs(submitBox!.y - resetBox!.y)).toBeLessThanOrEqual(1);
+  } else {
+    await expect(fields.getByTestId('query-reset')).toHaveCount(0);
+  }
+}
+
 async function expectAllControlsEmpty(panel: Locator, names: string[]) {
   for (const name of names) {
     await expect(panel.getByTestId(`query-input-${name}`).locator('input, select, textarea')).toHaveValue('');
@@ -28,6 +48,8 @@ async function expectCollapsedAfterReload(page: Page, panelIndex = 0) {
   await page.reload();
   const panel = page.getByTestId('query-panel').nth(panelIndex);
   await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
+  await expect(panel.getByTestId('query-submit')).toBeHidden();
+  await expect(panel.getByTestId('query-reset')).toBeHidden();
   await expect(panel.getByTestId('query-panel-toggle')).toHaveAttribute('aria-expanded', 'false');
 }
 
@@ -66,6 +88,7 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
   await expect(panel.getByTestId('query-panel-toggle')).toHaveCount(0);
   const fields = ['keyword', 'verification-status', 'operating-status'];
   await expectAllLabelsLeftOfControls(panel, fields);
+  await expectActionsInlineWithFirstField(panel, 'keyword');
 
   await panel.getByTestId('query-input-keyword').locator('input').fill('阿尔法');
   await panel.getByTestId('query-input-verification-status').locator('select').selectOption('PENDING');
@@ -81,6 +104,45 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
   await expect(panel.getByTestId('query-result-table')).toContainText('贝塔机构');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 / 2 页');
 
+});
+
+test('pw-issue-64-inline-actions C-ISSUE-64-INLINE-ACTIONS OBL-ISSUE-64-INLINE-ACTIONS', async ({ page }) => {
+  await mockEmptyDashboard(page);
+  await page.route('**/api/v1/console/admin/tenants', (route) => route.fulfill({
+    json: apiResponse([tenant(8, '贝塔机构')]),
+  }));
+  await loginAs(page, 'ADMIN');
+  await page.goto('/admin/tenants');
+
+  const panel = page.getByTestId('query-panel');
+  await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
+  await expect(panel.getByTestId('query-submit')).toBeHidden();
+  await expect(panel.getByTestId('query-reset')).toBeHidden();
+  await panel.getByTestId('query-panel-toggle').click();
+  await expectActionsInlineWithFirstField(panel, 'keyword');
+  await page.setViewportSize({ width: 800, height: 900 });
+  await expectActionsInlineWithFirstField(panel, 'keyword');
+});
+
+test('pw-issue-64-collapse-actions C-ISSUE-64-COLLAPSE-ACTIONS OBL-ISSUE-64-COLLAPSE-ACTIONS', async ({ page }) => {
+  await mockEmptyDashboard(page);
+  await page.route('**/api/v1/console/admin/tenants', (route) => route.fulfill({
+    json: apiResponse([tenant(8, '贝塔机构')]),
+  }));
+  await loginAs(page, 'ADMIN');
+  await page.goto('/admin/tenants');
+
+  const panel = page.getByTestId('query-panel');
+  await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
+  await expect(panel.getByTestId('query-submit')).toBeHidden();
+  await expect(panel.getByTestId('query-reset')).toBeHidden();
+  await panel.getByTestId('query-panel-toggle').click();
+  await expect(panel.getByTestId('query-submit')).toBeVisible();
+  await expect(panel.getByTestId('query-reset')).toBeVisible();
+  await panel.getByTestId('query-panel-toggle').click();
+  await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
+  await expect(panel.getByTestId('query-submit')).toBeHidden();
+  await expect(panel.getByTestId('query-reset')).toBeHidden();
 });
 
 const initialAudit = {
@@ -113,6 +175,7 @@ test('pw-issue-58-operation-audit C-ISSUE-58-OPERATION-AUDIT OBL-ISSUE-58-OPERAT
   await panel.getByTestId('query-panel-toggle').click();
   const fields = ['actor', 'operation', 'result', 'from', 'to'];
   await expectAllLabelsLeftOfControls(panel, fields);
+  await expectActionsInlineWithFirstField(panel, 'actor');
   await panel.getByTestId('query-input-actor').locator('input').fill('admin-user');
   await panel.getByTestId('query-input-operation').locator('input').fill('EXPORT_REPORT');
   await panel.getByTestId('query-input-result').locator('select').selectOption('SUCCESS');
@@ -185,6 +248,7 @@ test('pw-issue-58-admin-uplinks C-ISSUE-58-ADMIN-UPLINKS OBL-ISSUE-58-ADMIN-UPLI
   await panel.getByTestId('query-panel-toggle').click();
   const fields = ['tenant-id', 'phone-number', 'keyword', 'carrier', 'push-state', 'start-time', 'end-time'];
   await expectAllLabelsLeftOfControls(panel, fields);
+  await expectActionsInlineWithFirstField(panel, 'tenant-id');
   await panel.getByTestId('query-input-tenant-id').locator('input').fill('7');
   await panel.getByTestId('query-input-phone-number').locator('input').fill('138');
   await panel.getByTestId('query-input-keyword').locator('input').fill('帮助');
@@ -213,4 +277,28 @@ test('pw-issue-58-admin-uplinks C-ISSUE-58-ADMIN-UPLINKS OBL-ISSUE-58-ADMIN-UPLI
 
   await panel.getByTestId('query-panel-toggle').click();
   await expectCollapsedAfterReload(page);
+});
+
+test('pw-issue-64-single-field C-ISSUE-64-SINGLE-FIELD OBL-ISSUE-64-SINGLE-FIELD', async ({ page }) => {
+  await mockEmptyDashboard(page);
+  await page.route('**/api/v1/console/signatures/review**', (route) => route.fulfill({
+    json: apiResponse({
+      summary: { total: 0, pending: 0, approved: 0, rejected: 0, supplementRequired: 0, highRisk: 0 },
+      items: [],
+    }),
+  }));
+  await loginAs(page, 'OPERATOR');
+  await page.goto('/admin/signatures/review');
+
+  const panel = page.getByTestId('query-panel');
+  await expect(panel.getByTestId('query-panel-fields')).toBeVisible();
+  await expect(panel.getByTestId('query-panel-toggle')).toHaveCount(0);
+  await expectActionsInlineWithFirstField(panel, 'keyword', false);
+
+  await panel.getByTestId('query-input-keyword').locator('input').fill('优创');
+  const filteredRequest = page.waitForRequest((request) => (
+    request.url().includes('/api/v1/console/signatures/review?keyword=%E4%BC%98%E5%88%9B')
+  ));
+  await panel.getByTestId('query-submit').click();
+  await filteredRequest;
 });
