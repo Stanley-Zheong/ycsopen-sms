@@ -236,6 +236,12 @@ jobs:
         run: npm --prefix web ci
       - name: Verify runner Google Chrome
         run: /usr/bin/google-chrome --version
+      - name: Verify control sizing breakpoints
+        env:
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+        run: >-
+          npm --prefix web run test:e2e --
+          control-sizing.spec.ts --project=local-google-chrome
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
