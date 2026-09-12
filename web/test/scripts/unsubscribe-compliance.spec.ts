@@ -84,6 +84,10 @@ test.describe('Phase 33 unsubscribe compliance', () => {
     await page.goto('/admin/unsubscribes');
     await expect(page.getByTestId('admin-unsubscribe-compliance-keywords-page')).toBeVisible();
     await expect(page.getByTestId('admin-unsubscribe-compliance-keywords-table')).toContainText('退订');
+    await expect(page.getByTestId('admin-unsubscribe-compliance-keyword-filter-tenant')).toHaveValue('');
+    await expect(page.getByTestId('admin-unsubscribe-compliance-keyword-create-dialog')).toHaveCount(0);
+    await page.getByTestId('admin-unsubscribe-compliance-keyword-create-open').click();
+    await expect(page.getByTestId('admin-unsubscribe-compliance-keyword-tenant')).toHaveValue('');
     await page.getByTestId('admin-unsubscribe-compliance-keyword-input').fill('QUIT');
     await page.getByTestId('admin-unsubscribe-compliance-keyword-save').click();
     await expect(page.getByTestId('admin-unsubscribe-compliance-message')).toContainText('退订关键词已保存');

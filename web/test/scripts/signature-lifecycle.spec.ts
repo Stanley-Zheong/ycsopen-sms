@@ -99,6 +99,8 @@ test('pw-p12-signature-application pw-p12-signature-submit C-P12-APPLICATION-COM
   await routeApi(page);
   await page.goto('/tenant/signatures');
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-page')).toBeVisible();
+  await expect(page.getByTestId('tenant-signature-lifecycle-signatures-application-dialog')).toHaveCount(0);
+  await page.getByTestId('tenant-signature-lifecycle-signatures-application-open').click();
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-application-form')).toBeVisible();
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-history')).toContainText('SUBMITTED');
   await page.getByLabel('签名内容').fill('新商标');

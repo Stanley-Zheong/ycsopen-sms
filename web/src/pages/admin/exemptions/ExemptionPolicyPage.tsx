@@ -13,6 +13,7 @@ import {
   type ExemptionPreviewResult,
 } from '@/api/exemptionPolicyApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/exemption-policy.css';
@@ -53,6 +54,8 @@ export default function ExemptionPolicyPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [previewForm, setPreviewForm] = useState(INITIAL_PREVIEW);
   const [previewResult, setPreviewResult] = useState<ExemptionPreviewResult | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
@@ -83,8 +86,14 @@ export default function ExemptionPolicyPage() {
       setMessage('豁免策略已保存。');
       setError('');
       await refresh();
+      setCreateOpen(false);
+      setCreateError('');
+      setForm(INITIAL_FORM);
     },
-    onError: (failure) => setError(mutationErrorMessage(failure, '豁免策略保存失败')),
+    onError: (failure) => {
+      setMessage('');
+      setCreateError(mutationErrorMessage(failure, '豁免策略保存失败'));
+    },
   });
 
   const previewMutation = useMutation({
@@ -123,49 +132,42 @@ export default function ExemptionPolicyPage() {
           <h1>豁免策略</h1>
           <p className="page-description">配置有边界、有审批、有有效期的签名、内容、账号豁免，并保留每次决策和使用证据。</p>
         </div>
+        {canWrite && <button type="button" data-testid="admin-auditable-exemption-exemption-policy-create-open" onClick={() => { setCreateError(''); setCreateOpen(true); }}>新增豁免</button>}
       </header>
       {message && <p role="status" className="exemption-policy-alert success" data-testid="admin-auditable-exemption-exemption-policy-message">{message}</p>}
       {error && <p role="alert" className="exemption-policy-alert error" data-testid="admin-auditable-exemption-exemption-policy-error">{error}</p>}
 
-      <section className="card exemption-policy-form">
-        <h2>新增豁免</h2>
-        <label>租户
-          <input data-testid="admin-auditable-exemption-exemption-policy-tenant" type="number" value={form.tenantId} onChange={(event) => setForm({ ...form, tenantId: Number(event.target.value) })} />
-        </label>
-        <label>类型
-          <select data-testid="admin-auditable-exemption-exemption-policy-type" value={form.exemptionType} onChange={(event) => setForm({ ...form, exemptionType: event.target.value })}>
-            <option value="SIGNATURE">签名</option>
-            <option value="CONTENT">内容</option>
-            <option value="ACCOUNT">账号</option>
-          </select>
-        </label>
-        <label>资源
-          <input data-testid="admin-auditable-exemption-exemption-policy-resource" value={form.resourceId} onChange={(event) => setForm({ ...form, resourceId: event.target.value })} />
-        </label>
-        <label>产品
-          <input data-testid="admin-auditable-exemption-exemption-policy-product" value={form.productCode} onChange={(event) => setForm({ ...form, productCode: event.target.value })} />
-        </label>
-        <label>范围
-          <input data-testid="admin-auditable-exemption-exemption-policy-scope" value={form.scopeExpression} onChange={(event) => setForm({ ...form, scopeExpression: event.target.value })} />
-        </label>
-        <label>审批
-          <select data-testid="admin-auditable-exemption-exemption-policy-approval" value={form.approvalStatus} onChange={(event) => setForm({ ...form, approvalStatus: event.target.value })}>
-            <option value="APPROVED">已批准</option>
-            <option value="PENDING">待批准</option>
-            <option value="REJECTED">已拒绝</option>
-          </select>
-        </label>
-        <label>生效时间
-          <input data-testid="admin-auditable-exemption-exemption-policy-valid-from" value={form.validFrom} onChange={(event) => setForm({ ...form, validFrom: event.target.value })} />
-        </label>
-        <label>失效时间
-          <input data-testid="admin-auditable-exemption-exemption-policy-valid-until" value={form.validUntil} onChange={(event) => setForm({ ...form, validUntil: event.target.value })} />
-        </label>
-        <label>原因
-          <textarea data-testid="admin-auditable-exemption-exemption-policy-reason" value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} />
-        </label>
-        <button type="button" data-testid="admin-auditable-exemption-exemption-policy-save" onClick={() => createMutation.mutate(form)} disabled={!canWrite || createMutation.isPending}>保存豁免</button>
-      </section>
+      {createOpen && (
+        <ModalDialog labelledBy="exemption-policy-create-title" onRequestClose={() => { setCreateOpen(false); setCreateError(''); }}>
+          <form className="exemption-policy-form" data-testid="admin-auditable-exemption-exemption-policy-create-dialog" onSubmit={(event) => { event.preventDefault(); createMutation.mutate(form); }}>
+            <h2 id="exemption-policy-create-title">新增豁免</h2>
+            <label>租户
+              <input required data-testid="admin-auditable-exemption-exemption-policy-tenant" type="number" value={form.tenantId} onChange={(event) => setForm({ ...form, tenantId: Number(event.target.value) })} />
+            </label>
+            <label>类型
+              <select data-testid="admin-auditable-exemption-exemption-policy-type" value={form.exemptionType} onChange={(event) => setForm({ ...form, exemptionType: event.target.value })}>
+                <option value="SIGNATURE">签名</option><option value="CONTENT">内容</option><option value="ACCOUNT">账号</option>
+              </select>
+            </label>
+            <label>资源<input required data-testid="admin-auditable-exemption-exemption-policy-resource" value={form.resourceId} onChange={(event) => setForm({ ...form, resourceId: event.target.value })} /></label>
+            <label>产品<input required data-testid="admin-auditable-exemption-exemption-policy-product" value={form.productCode} onChange={(event) => setForm({ ...form, productCode: event.target.value })} /></label>
+            <label>范围<input required data-testid="admin-auditable-exemption-exemption-policy-scope" value={form.scopeExpression} onChange={(event) => setForm({ ...form, scopeExpression: event.target.value })} /></label>
+            <label>审批
+              <select data-testid="admin-auditable-exemption-exemption-policy-approval" value={form.approvalStatus} onChange={(event) => setForm({ ...form, approvalStatus: event.target.value })}>
+                <option value="APPROVED">已批准</option><option value="PENDING">待批准</option><option value="REJECTED">已拒绝</option>
+              </select>
+            </label>
+            <label>生效时间<input required data-testid="admin-auditable-exemption-exemption-policy-valid-from" value={form.validFrom} onChange={(event) => setForm({ ...form, validFrom: event.target.value })} /></label>
+            <label>失效时间<input required data-testid="admin-auditable-exemption-exemption-policy-valid-until" value={form.validUntil} onChange={(event) => setForm({ ...form, validUntil: event.target.value })} /></label>
+            <label>原因<textarea required data-testid="admin-auditable-exemption-exemption-policy-reason" value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} /></label>
+            {createError && <p role="alert" data-testid="admin-auditable-exemption-exemption-policy-create-error" className="exemption-policy-alert error">{createError}</p>}
+            <div className="dialog-actions">
+              <button type="button" className="button-secondary" data-testid="admin-auditable-exemption-exemption-policy-create-cancel" onClick={() => { setCreateOpen(false); setCreateError(''); }}>取消</button>
+              <button type="submit" data-testid="admin-auditable-exemption-exemption-policy-save" disabled={createMutation.isPending}>保存豁免</button>
+            </div>
+          </form>
+        </ModalDialog>
+      )}
 
       <section className="card" data-testid="admin-auditable-exemption-exemption-effective-preview">
         <h2>生效预览</h2>

@@ -107,7 +107,10 @@ describe('Phase 36 tenant recharge operations UI', () => {
   it('submits amount method transaction evidence and shows processing state', async () => {
     renderWithProviders(<TenantRechargePage />);
 
-    expect(await screen.findByTestId('tenant-recharge-operations-recharge-form')).toBeVisible();
+    await screen.findByTestId('tenant-recharge-operations-recharge-history');
+    expect(screen.queryByTestId('tenant-recharge-operations-recharge-form')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tenant-recharge-operations-recharge-create-open'));
+    expect(screen.getByTestId('tenant-recharge-operations-recharge-form')).toBeVisible();
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-amount'), { target: { value: '200000' } });
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-method'), { target: { value: 'ALIPAY' } });
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-transaction'), { target: { value: 'ALI-RECHARGE-0002' } });
@@ -121,6 +124,7 @@ describe('Phase 36 tenant recharge operations UI', () => {
       evidenceText: '支付宝凭证',
     }));
     expect(await screen.findByTestId('tenant-recharge-operations-recharge-message')).toHaveTextContent('PENDING');
+    expect(screen.queryByTestId('tenant-recharge-operations-recharge-form')).not.toBeInTheDocument();
     expect(screen.getByTestId('tenant-recharge-operations-recharge-state')).toHaveTextContent('PENDING');
   });
 

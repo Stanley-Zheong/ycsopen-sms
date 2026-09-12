@@ -79,10 +79,17 @@ describe('Phase 35 alert engine console UI', () => {
     expect(await screen.findByTestId('admin-alert-engine-alert-row')).toHaveTextContent('通道失败率过高');
     expect(await screen.findByTestId('admin-alert-engine-alert-delivery-attempts')).toHaveTextContent('EMAIL');
 
+    expect(screen.queryByTestId('admin-alert-engine-rule-form-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-create-open'));
+    expect(screen.getByTestId('admin-alert-engine-rule-form-dialog')).toBeVisible();
     fireEvent.change(screen.getByTestId('admin-alert-engine-rule-threshold'), { target: { value: '0.2' } });
     fireEvent.click(screen.getByTestId('admin-alert-engine-rule-save'));
     await waitFor(() => expect(api.saveAlertRule).toHaveBeenCalledWith(expect.objectContaining({ thresholdValue: 0.2 })));
+    await waitFor(() => expect(screen.queryByTestId('admin-alert-engine-rule-form-dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(vi.mocked(api.listAlertRules).mock.calls.length).toBeGreaterThan(1));
     fireEvent.click(screen.getByTestId('admin-alert-engine-source-evaluate'));
+    expect(screen.getByTestId('admin-alert-engine-source-evaluate-dialog')).toBeVisible();
+    fireEvent.click(screen.getByTestId('admin-alert-engine-source-evaluate-submit'));
     await waitFor(() => expect(api.evaluateAlertSource).toHaveBeenCalledWith(expect.objectContaining({ metricName: 'FAILURE_RATE' })));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-acknowledge'));
     await waitFor(() => expect(api.acknowledgeAlert).toHaveBeenCalledWith(501));
@@ -90,5 +97,19 @@ describe('Phase 35 alert engine console UI', () => {
     await waitFor(() => expect(api.resolveAlert).toHaveBeenCalledWith(501, '确认来源已恢复'));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-mute'));
     await waitFor(() => expect(api.muteAlert).toHaveBeenCalledWith(501, 30, '运营临时静音'));
+  });
+
+  it('keeps validation failures inside the create dialog', async () => {
+    vi.mocked(api.saveAlertRule).mockRejectedValueOnce(new Error('invalid rule'));
+    renderWithQuery(<AdminAlertsPage />);
+
+    await screen.findByTestId('admin-alert-engine-rules-page');
+    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-create-open'));
+    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-save'));
+
+    const error = await screen.findByTestId('admin-alert-engine-rule-form-error');
+    expect(error).toHaveTextContent('告警规则保存失败');
+    expect(error.closest('[role="dialog"]')).toContainElement(error);
+    expect(screen.getByTestId('admin-alert-engine-rule-form-dialog')).toBeVisible();
   });
 });

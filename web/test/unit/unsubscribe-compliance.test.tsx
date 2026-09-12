@@ -80,9 +80,13 @@ describe('Phase 33 unsubscribe compliance UI', () => {
     expect(await screen.findByTestId('admin-unsubscribe-compliance-statistics-page')).toBeVisible();
     expect(await screen.findByTestId('admin-unsubscribe-compliance-unsubscribe-row')).toHaveTextContent('138****8000');
     expect(screen.getByTestId('admin-unsubscribe-compliance-unsubscribes-notification-state')).toHaveTextContent('PENDING');
+    expect(screen.getByTestId('admin-unsubscribe-compliance-keyword-filter-tenant')).toBeVisible();
+    expect(screen.queryByTestId('admin-unsubscribe-compliance-keyword-create-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('admin-unsubscribe-compliance-keyword-create-open'));
     fireEvent.change(screen.getByTestId('admin-unsubscribe-compliance-keyword-input'), { target: { value: 'QUIT' } });
     fireEvent.click(screen.getByTestId('admin-unsubscribe-compliance-keyword-save'));
     await waitFor(() => expect(api.saveAdminUnsubscribeKeyword).toHaveBeenCalledWith(expect.objectContaining({ keyword: 'QUIT', scope: 'GLOBAL' })));
+    await waitFor(() => expect(screen.queryByTestId('admin-unsubscribe-compliance-keyword-create-dialog')).not.toBeInTheDocument());
     fireEvent.click(screen.getByTestId('admin-unsubscribe-compliance-alert-evaluate'));
     await waitFor(() => expect(api.evaluateUnsubscribeAlerts).toHaveBeenCalledWith(expect.objectContaining({ thresholdRate: 0.03 })));
   });
@@ -95,8 +99,11 @@ describe('Phase 33 unsubscribe compliance UI', () => {
     expect(screen.getByTestId('tenant-unsubscribe-compliance-unsubscribes-notification-state')).toHaveTextContent('PENDING');
     fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-export-request'));
     await waitFor(() => expect(api.requestTenantUnsubscribeExport).toHaveBeenCalled());
+    expect(screen.queryByTestId('tenant-unsubscribe-compliance-keyword-create-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-keyword-create-open'));
     fireEvent.change(screen.getByTestId('tenant-unsubscribe-compliance-keyword-input'), { target: { value: 'STOP' } });
     fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-keyword-save'));
     await waitFor(() => expect(api.saveTenantUnsubscribeKeyword).toHaveBeenCalledWith(expect.objectContaining({ keyword: 'STOP', scope: 'TENANT' })));
+    await waitFor(() => expect(screen.queryByTestId('tenant-unsubscribe-compliance-keyword-create-dialog')).not.toBeInTheDocument());
   });
 });

@@ -93,6 +93,8 @@ test('pw-p18-rules C-P18-RULE-METRICS OBL-F-5-6-A pw-p18-import C-P18-RULE-CRUD 
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-type')).toHaveValue('');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-action')).toHaveValue('');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-filter-status')).toHaveValue('ACTIVE');
+  await expect(page.getByTestId('admin-frequency-api-frequency-rules-create-dialog')).toHaveCount(0);
+  await page.getByTestId('admin-frequency-api-frequency-rules-create-open').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-name')).toHaveValue('同号秒级限制');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-type')).toHaveValue('MOBILE');
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-count')).toHaveValue('3');
@@ -104,6 +106,9 @@ test('pw-p18-rules C-P18-RULE-METRICS OBL-F-5-6-A pw-p18-import C-P18-RULE-CRUD 
   await page.getByTestId('admin-frequency-api-frequency-rules-save').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-message')).toContainText('热更新');
   await page.getByTestId('admin-frequency-api-frequency-rules-import').click();
+  await expect(page.getByTestId('admin-frequency-api-frequency-rules-import-dialog')).toBeVisible();
+  await expect(page.getByTestId('admin-frequency-api-frequency-rules-import-type')).toHaveValue('MOBILE');
+  await page.getByTestId('admin-frequency-api-frequency-rules-import-submit').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-message')).toContainText('导入完成');
   await page.getByTestId('admin-frequency-api-frequency-rules-export').click();
   await expect(page.getByTestId('admin-frequency-api-frequency-rules-message')).toContainText('导出请求已登记');

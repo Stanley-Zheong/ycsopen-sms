@@ -95,7 +95,9 @@ label { display: inline-grid; gap: 4px; color: var(--color-text); }
 }
 .content { min-width: 0; flex: 1; padding: 24px; }
 .card { margin-bottom: 16px; padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: 0 1px 2px var(--color-card-shadow); }
-[role="dialog"].card { position: fixed; inset: 50% auto auto 50%; z-index: 900; width: min(720px, calc(100vw - 48px)); max-height: calc(100vh - 48px); margin: 0; overflow: auto; transform: translate(-50%, -50%); box-shadow: 0 0 0 100vmax rgb(18 50 80 / 35%), 0 16px 48px var(--color-shadow); }
+.modal-backdrop { position: fixed; inset: 0; z-index: 900; background: rgb(18 50 80 / 35%); }
+[role="dialog"].card { position: fixed; inset: 50% auto auto 50%; z-index: 901; width: min(720px, calc(100vw - 48px)); max-height: calc(100vh - 48px); margin: 0; overflow: auto; transform: translate(-50%, -50%); box-shadow: 0 0 0 100vmax rgb(18 50 80 / 35%), 0 16px 48px var(--color-shadow); }
+.modal-backdrop [role="dialog"].card { box-shadow: 0 16px 48px var(--color-shadow); }
 
 table.ratio-table { width: 100%; border-collapse: collapse; }
 table.ratio-table th, table.ratio-table td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--color-row-border); }
@@ -128,6 +130,21 @@ tr.over-threshold td:first-child { font-weight: 600; }
 .audit-filter-actions { display: flex; gap: 8px; }
 .button-secondary { color: var(--color-brand-deep); background: var(--color-surface); border-color: var(--color-brand); }
 .button-secondary:hover { color: #fff; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.dialog-form-fields {
+  display: grid;
+  flex-basis: 100%;
+  gap: 12px;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  width: 100%;
+}
+[role="dialog"] form > h2,
+[role="dialog"] form > h3,
+[role="dialog"] form > section,
+[role="dialog"] form > [role="alert"],
+[role="dialog"] form > [role="status"],
+[role="dialog"] form > .dialog-actions { flex-basis: 100%; grid-column: 1 / -1; width: 100%; }
 .pagination-row { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
 .status-text { font-weight: 600; }
 .status-success, .status-detected { color: var(--color-success); }

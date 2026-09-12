@@ -103,12 +103,17 @@ describe('Phase 17 runtime content safety UI', () => {
     expect(await screen.findByTestId('admin-runtime-content-content-safety-row')).toHaveTextContent('营销');
     expect(await screen.findByText('今日拦截 4')).toBeInTheDocument();
     expect(screen.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('ACTIVE');
+    expect(screen.queryByTestId('admin-runtime-content-content-safety-create-dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-create-open'));
     expect(screen.getByTestId('admin-runtime-content-content-safety-word')).toHaveValue('营销');
     expect(screen.getByTestId('admin-runtime-content-content-safety-action')).toHaveValue('REPLACE');
     expect(screen.getByTestId('admin-runtime-content-content-safety-scan-content')).toHaveValue('【签名】变量填入ＡＢＣ，高危营销');
 
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-save'));
+    await waitFor(() => expect(screen.queryByTestId('admin-runtime-content-content-safety-create-dialog')).not.toBeInTheDocument());
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-import'));
+    expect(screen.getByTestId('admin-runtime-content-content-safety-import-category')).toHaveValue('MARKETING');
+    fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-import-submit'));
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-export'));
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-delete'));
     fireEvent.click(screen.getByTestId('admin-runtime-content-content-safety-scan'));

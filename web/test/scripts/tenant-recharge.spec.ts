@@ -98,6 +98,8 @@ test('pw-p36-tenant-recharge C-P36-TENANT-RECHARGE OBL-F-8-3-A', async ({ page }
     window.sessionStorage.setItem('ycsopen.console.auth-session', JSON.stringify(value));
   }, { accessToken: token('tenant'), userType: 'TENANT_ADMIN', tenantId: 42 });
   await page.goto('/tenant/recharge');
+  await expect(page.getByTestId('tenant-recharge-operations-recharge-form')).toHaveCount(0);
+  await page.getByTestId('tenant-recharge-operations-recharge-create-open').click();
   await expect(page.getByTestId('tenant-recharge-operations-recharge-form')).toBeVisible();
   await page.getByTestId('tenant-recharge-operations-recharge-amount').fill('200000');
   await page.getByTestId('tenant-recharge-operations-recharge-method').selectOption('ALIPAY');

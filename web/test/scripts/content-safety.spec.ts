@@ -82,6 +82,8 @@ test('pw-p17-policy C-P17-POLICY-METRICS OBL-F-5-5-A pw-p17-import C-P17-POLICY-
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-level')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-action')).toHaveValue('');
   await expect(page.getByTestId('admin-runtime-content-content-safety-filter-status')).toHaveValue('ACTIVE');
+  await expect(page.getByTestId('admin-runtime-content-content-safety-create-dialog')).toHaveCount(0);
+  await page.getByTestId('admin-runtime-content-content-safety-create-open').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-word')).toHaveValue('营销');
   await expect(page.getByTestId('admin-runtime-content-content-safety-category')).toHaveValue('MARKETING');
   await expect(page.getByTestId('admin-runtime-content-content-safety-level')).toHaveValue('HIGH');
@@ -92,6 +94,9 @@ test('pw-p17-policy C-P17-POLICY-METRICS OBL-F-5-5-A pw-p17-import C-P17-POLICY-
   await page.getByTestId('admin-runtime-content-content-safety-save').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-message')).toContainText('热更新');
   await page.getByTestId('admin-runtime-content-content-safety-import').click();
+  await expect(page.getByTestId('admin-runtime-content-content-safety-import-dialog')).toBeVisible();
+  await expect(page.getByTestId('admin-runtime-content-content-safety-import-category')).toHaveValue('MARKETING');
+  await page.getByTestId('admin-runtime-content-content-safety-import-submit').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-message')).toContainText('词库导入完成');
   await page.getByTestId('admin-runtime-content-content-safety-export').click();
   await expect(page.getByTestId('admin-runtime-content-content-safety-message')).toContainText('导出请求已登记');

@@ -13,6 +13,7 @@ import {
   type AlertRecord,
 } from '@/api/alertEngineApi';
 import { mutationErrorMessage } from '@/api/client';
+import ModalDialog from '@/components/common/ModalDialog';
 import '@/styles/alert-engine.css';
 
 const defaultRule = {
@@ -30,6 +31,12 @@ const defaultRule = {
   status: 'ACTIVE',
 };
 
+const defaultEvaluation = {
+  metricName: defaultRule.metricName,
+  thresholdValue: defaultRule.thresholdValue,
+  durationMinutes: defaultRule.durationMinutes,
+};
+
 export default function AdminAlertsPage() {
   const queryClient = useQueryClient();
   const [ruleDraft, setRuleDraft] = useState(defaultRule);
@@ -37,6 +44,11 @@ export default function AdminAlertsPage() {
   const [activeTab, setActiveTab] = useState<'ALL' | 'ACTIVE' | 'SEVERE'>('ALL');
   const [resolveReason, setResolveReason] = useState('确认来源已恢复');
   const [muteReason, setMuteReason] = useState('运营临时静音');
+  const [ruleOpen, setRuleOpen] = useState(false);
+  const [evaluationOpen, setEvaluationOpen] = useState(false);
+  const [ruleError, setRuleError] = useState('');
+  const [evaluationError, setEvaluationError] = useState('');
+  const [evaluationDraft, setEvaluationDraft] = useState(defaultEvaluation);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -68,14 +80,22 @@ export default function AdminAlertsPage() {
       thresholdValue: Number(ruleDraft.thresholdValue),
       durationMinutes: Number(ruleDraft.durationMinutes),
     }),
-    onSuccess: () => ok('告警规则已保存'),
-    onError: (failure) => fail(failure, '告警规则保存失败'),
+    onSuccess: async () => {
+      await ok('告警规则已保存');
+      setRuleOpen(false);
+      setRuleError('');
+      setRuleDraft(defaultRule);
+    },
+    onError: (failure) => {
+      setMessage('');
+      setRuleError(mutationErrorMessage(failure, '告警规则保存失败'));
+    },
   });
   const evaluate = useMutation({
     mutationFn: () => evaluateAlertSource({
-      metricName: ruleDraft.metricName,
-      metricValue: Number(ruleDraft.thresholdValue) + 0.05,
-      sustainedMinutes: Number(ruleDraft.durationMinutes),
+      metricName: evaluationDraft.metricName,
+      metricValue: Number(evaluationDraft.thresholdValue) + 0.05,
+      sustainedMinutes: Number(evaluationDraft.durationMinutes),
       sourceModule: 'CHANNEL',
       sourceKey: 'channel:11:demo',
       title: '通道失败率过高',
@@ -83,8 +103,16 @@ export default function AdminAlertsPage() {
       impactScope: '影响 1250 项',
       forceAdapterFailure: false,
     }),
-    onSuccess: (result) => ok(`告警评估完成：${result.alerts.length} 条`),
-    onError: (failure) => fail(failure, '告警评估失败'),
+    onSuccess: async (result) => {
+      await ok(`告警评估完成：${result.alerts.length} 条`);
+      setEvaluationOpen(false);
+      setEvaluationError('');
+      setEvaluationDraft(defaultEvaluation);
+    },
+    onError: (failure) => {
+      setMessage('');
+      setEvaluationError(mutationErrorMessage(failure, '告警评估失败'));
+    },
   });
   const acknowledge = useMutation({
     mutationFn: (row: AlertRecord) => acknowledgeAlert(row.id),
@@ -135,31 +163,64 @@ export default function AdminAlertsPage() {
       <section className="card alert-engine-rule-grid">
         <div data-testid="admin-alert-engine-rules-page">
           <h2>告警规则</h2>
-          <label>规则名称<input data-testid="admin-alert-engine-rule-name" value={ruleDraft.ruleName} onChange={(event) => setRule('ruleName', event.target.value)} /></label>
-          <label>指标<select data-testid="admin-alert-engine-rule-metric" value={ruleDraft.metricName} onChange={(event) => setRule('metricName', event.target.value)}>
-            <option value="CHANNEL_HEALTH">通道异常</option>
-            <option value="FAILURE_RATE">失败率</option>
-            <option value="BALANCE">余额不足</option>
-            <option value="QUEUE_BACKLOG">队列积压</option>
-            <option value="COMPLAINT_RATIO">投诉占比</option>
-          </select></label>
-          <label>比较符<input data-testid="admin-alert-engine-rule-comparison" value={ruleDraft.comparisonOp} onChange={(event) => setRule('comparisonOp', event.target.value)} /></label>
-          <label>阈值<input data-testid="admin-alert-engine-rule-threshold" value={ruleDraft.thresholdValue} onChange={(event) => setRule('thresholdValue', event.target.value)} /></label>
-          <label>持续分钟<input data-testid="admin-alert-engine-rule-duration" value={ruleDraft.durationMinutes} onChange={(event) => setRule('durationMinutes', event.target.value)} /></label>
-          <label>严重级别<select data-testid="admin-alert-engine-rule-severity" value={ruleDraft.severity} onChange={(event) => setRule('severity', event.target.value)}>
-            <option value="LOW">低</option><option value="MEDIUM">中</option><option value="HIGH">高</option><option value="CRITICAL">严重</option>
-          </select></label>
-          <button type="button" data-testid="admin-alert-engine-rule-save" onClick={() => saveRule.mutate()}>保存规则</button>
-          <button type="button" data-testid="admin-alert-engine-source-evaluate" onClick={() => evaluate.mutate()}>模拟源事件评估</button>
+          <button type="button" data-testid="admin-alert-engine-rule-create-open" onClick={() => { setRuleDraft(defaultRule); setRuleError(''); setRuleOpen(true); }}>新建告警规则</button>
+          <button type="button" data-testid="admin-alert-engine-source-evaluate" onClick={() => { setEvaluationError(''); setEvaluationOpen(true); }}>模拟源事件评估</button>
         </div>
 
         <div data-testid="admin-alert-engine-notification-targets">
           <h2>通知设置</h2>
-          <label>通知渠道<input data-testid="admin-alert-engine-notify-channels" value={ruleDraft.notifyChannels} onChange={(event) => setRule('notifyChannels', event.target.value)} /></label>
-          <label>通知对象<input data-testid="admin-alert-engine-notification-targets-input" value={ruleDraft.notificationTargets} onChange={(event) => setRule('notificationTargets', event.target.value)} /></label>
+          <p>默认渠道：{ruleDraft.notifyChannels}</p>
+          <p>默认对象：{ruleDraft.notificationTargets}</p>
           <p>支持 SMS、EMAIL、DINGTALK、WECOM，以及 individual、role、tenant、finance、operations 目标。</p>
         </div>
       </section>
+
+      {ruleOpen && (
+        <ModalDialog labelledBy="alert-rule-create-title" onRequestClose={() => { setRuleOpen(false); setRuleError(''); setRuleDraft(defaultRule); }}>
+          <form data-testid="admin-alert-engine-rule-form-dialog" onSubmit={(event) => { event.preventDefault(); saveRule.mutate(); }}>
+            <h2 id="alert-rule-create-title">新建告警规则</h2>
+            <label>规则名称<input required data-testid="admin-alert-engine-rule-name" value={ruleDraft.ruleName} onChange={(event) => setRule('ruleName', event.target.value)} /></label>
+            <label>指标<select data-testid="admin-alert-engine-rule-metric" value={ruleDraft.metricName} onChange={(event) => setRule('metricName', event.target.value)}>
+              <option value="CHANNEL_HEALTH">通道异常</option>
+              <option value="FAILURE_RATE">失败率</option>
+              <option value="BALANCE">余额不足</option>
+              <option value="QUEUE_BACKLOG">队列积压</option>
+              <option value="COMPLAINT_RATIO">投诉占比</option>
+            </select></label>
+            <label>比较符<input required data-testid="admin-alert-engine-rule-comparison" value={ruleDraft.comparisonOp} onChange={(event) => setRule('comparisonOp', event.target.value)} /></label>
+            <label>阈值<input required type="number" step="any" data-testid="admin-alert-engine-rule-threshold" value={ruleDraft.thresholdValue} onChange={(event) => setRule('thresholdValue', event.target.value)} /></label>
+            <label>持续分钟<input required type="number" min="1" data-testid="admin-alert-engine-rule-duration" value={ruleDraft.durationMinutes} onChange={(event) => setRule('durationMinutes', event.target.value)} /></label>
+            <label>严重级别<select data-testid="admin-alert-engine-rule-severity" value={ruleDraft.severity} onChange={(event) => setRule('severity', event.target.value)}>
+              <option value="LOW">低</option><option value="MEDIUM">中</option><option value="HIGH">高</option><option value="CRITICAL">严重</option>
+            </select></label>
+            <label>通知渠道<input required data-testid="admin-alert-engine-notify-channels" value={ruleDraft.notifyChannels} onChange={(event) => setRule('notifyChannels', event.target.value)} /></label>
+            <label>通知对象<input required data-testid="admin-alert-engine-notification-targets-input" value={ruleDraft.notificationTargets} onChange={(event) => setRule('notificationTargets', event.target.value)} /></label>
+            {ruleError && <p role="alert" data-testid="admin-alert-engine-rule-form-error" className="alert-engine-message error">{ruleError}</p>}
+            <div className="dialog-actions">
+              <button type="button" className="button-secondary" data-testid="admin-alert-engine-rule-create-cancel" onClick={() => { setRuleOpen(false); setRuleError(''); setRuleDraft(defaultRule); }}>取消</button>
+              <button type="submit" data-testid="admin-alert-engine-rule-save" disabled={saveRule.isPending}>保存规则</button>
+            </div>
+          </form>
+        </ModalDialog>
+      )}
+
+      {evaluationOpen && (
+        <ModalDialog labelledBy="alert-evaluation-title" onRequestClose={() => { setEvaluationOpen(false); setEvaluationError(''); }}>
+          <form data-testid="admin-alert-engine-source-evaluate-dialog" onSubmit={(event) => { event.preventDefault(); evaluate.mutate(); }}>
+            <h2 id="alert-evaluation-title">模拟源事件评估</h2>
+            <label>指标<select data-testid="admin-alert-engine-source-evaluate-metric" value={evaluationDraft.metricName} onChange={(event) => setEvaluationDraft({ ...evaluationDraft, metricName: event.target.value })}>
+              <option value="CHANNEL_HEALTH">通道异常</option><option value="FAILURE_RATE">失败率</option><option value="BALANCE">余额不足</option><option value="QUEUE_BACKLOG">队列积压</option><option value="COMPLAINT_RATIO">投诉占比</option>
+            </select></label>
+            <label>规则阈值<input required type="number" step="any" data-testid="admin-alert-engine-source-evaluate-threshold" value={evaluationDraft.thresholdValue} onChange={(event) => setEvaluationDraft({ ...evaluationDraft, thresholdValue: event.target.value })} /></label>
+            <label>持续分钟<input required type="number" min="1" data-testid="admin-alert-engine-source-evaluate-duration" value={evaluationDraft.durationMinutes} onChange={(event) => setEvaluationDraft({ ...evaluationDraft, durationMinutes: event.target.value })} /></label>
+            {evaluationError && <p role="alert" data-testid="admin-alert-engine-source-evaluate-error" className="alert-engine-message error">{evaluationError}</p>}
+            <div className="dialog-actions">
+              <button type="button" className="button-secondary" data-testid="admin-alert-engine-source-evaluate-cancel" onClick={() => { setEvaluationOpen(false); setEvaluationError(''); }}>取消</button>
+              <button type="submit" data-testid="admin-alert-engine-source-evaluate-submit" disabled={evaluate.isPending}>执行评估</button>
+            </div>
+          </form>
+        </ModalDialog>
+      )}
 
       <section className="card" data-testid="admin-alert-engine-alert-history">
         <div className="alert-engine-toolbar">
