@@ -36,6 +36,7 @@ button, input, select, textarea { font: inherit; }
 button { width: fit-content; min-height: 40px; justify-self: start; padding: 8px 16px; color: #fff; background: var(--color-brand); border: 1px solid var(--color-brand); border-radius: var(--radius-control); cursor: pointer; }
 button:hover { background: var(--color-brand-deep); }
 button:disabled { opacity: .55; cursor: not-allowed; }
+input, select { min-height: 40px; }
 input, select, textarea { width: 100%; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 body .layout input:not(:is([type="checkbox"], [type="radio"])),
 body .layout select:not([multiple]),

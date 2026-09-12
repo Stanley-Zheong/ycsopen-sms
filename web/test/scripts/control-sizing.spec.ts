@@ -135,4 +135,10 @@ test('pw-issue-73-primary-control-height C-ISSUE-73-PRIMARY-CONTROL-HEIGHT OBL-I
     outlineWidth: '3px',
     outlineOffset: '2px',
   });
+
+  await page.goto('/tenant/register');
+  const publicRegistrationInput = page.getByTestId('public-tenant-qualification-register-admin-username');
+  const publicRegistrationBox = await publicRegistrationInput.boundingBox();
+  expect(publicRegistrationBox, 'public registration input has a layout box').not.toBeNull();
+  expect(publicRegistrationBox!.height, 'public registration input keeps the shared 40px minimum height').toBe(40);
 });

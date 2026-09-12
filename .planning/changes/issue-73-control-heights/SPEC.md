@@ -1,17 +1,19 @@
 # Issue 73 Primary Control Heights
 
 GitHub issue #73 restores the shared console primary-control height contract.
-The shared stylesheet is the semantic owner: ordinary inputs, single-value
-selects, and textareas start at 40 px high. The representative rendered route
-is admin-routing-policy `/admin/routing-policy`, where an input, textarea, and
-select must share that height. Page-owned values, validation, permissions, API
-effects, layout columns, and resize behavior remain unchanged.
+The shared stylesheet is the semantic owner: ordinary inputs and single-value
+selects retain their global 40 px minimum, while console textareas start at
+40 px high. The representative rendered routes are admin-routing-policy
+`/admin/routing-policy`, where an input, textarea, and select share that
+height, and public registration `/tenant/register`, where the input retains
+the global minimum outside `.layout`. Page-owned values, validation,
+permissions, API effects, layout columns, and resize behavior remain unchanged.
 
 ## Behavior
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-73-primary-control-height | The shared field contract gives ordinary inputs, single-value selects, and textareas `height: 40px` and `min-height: 40px`; this overrides larger page-local textarea minimum heights while retaining vertical textarea resizing and the shared `--color-focus` visible-focus outline. | On `/admin/routing-policy`, `admin-routing-circuit-routing-policy-version`, `admin-routing-circuit-routing-policy-import-input`, and `admin-routing-circuit-routing-retry-category` each have a 40 px rendered layout height; keyboard focus on the textarea has the shared 3 px outline. |
+| issue-73-primary-control-height | Ordinary inputs and single-value selects retain the global `min-height: 40px`. Eligible console inputs, selects, and textareas also have `height: 40px`; the textarea rule overrides larger page-local minimum heights while retaining vertical textarea resizing and the shared `--color-focus` visible-focus outline. | On `/admin/routing-policy`, `admin-routing-circuit-routing-policy-version`, `admin-routing-circuit-routing-policy-import-input`, and `admin-routing-circuit-routing-retry-category` each have a 40 px rendered layout height; keyboard focus on the textarea has the shared 3 px outline. On `/tenant/register`, `public-tenant-qualification-register-admin-username` retains a 40 px rendered height. |
 
 ## Exclusions
 
