@@ -1,5 +1,6 @@
 {
   "recordedAt": "2026-09-12T09:03:58Z",
+  "sourceCommit": "85379f34c678521bc3524be04cb06dad0f9f1b34",
   "result": "PASS",
   "expected": 3,
   "unexpected": 0,
