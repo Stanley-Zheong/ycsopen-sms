@@ -66,6 +66,17 @@ public class MessageSubmitService {
         this.numberAttributionService = numberAttributionService;
     }
 
+    /** Backward-compatible constructor for focused unit tests that do not exercise attribution. */
+    public MessageSubmitService(TemplateSendComplianceService templateCompliance,
+                                 RoutingEngine routingEngine, BillingService billingService,
+                                 FeeWarningCreditService feeWarningCreditService,
+                                 MessageTaskProtectionAdapter messageTaskProtectionAdapter,
+                                 TenantEligibilityPolicy tenantEligibilityPolicy,
+                                 MessageAcceptanceIdempotencyService idempotency) {
+        this(templateCompliance, routingEngine, billingService, feeWarningCreditService,
+                messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null);
+    }
+
     @Transactional
     public SmsSendResponse submit(Long tenantId, SmsSendRequest request, String clientIp) {
         return submit(tenantId, null, request, clientIp);
@@ -84,8 +95,8 @@ public class MessageSubmitService {
                 tenantId, request.templateId(), request.signId(), request.templateParams());
         Template template = compliance.template();
         Signature signature = compliance.signature();
-        NumberAttributionService.AttributionResult attribution = numberAttributionService.lookup(
-                request.phoneNumber(), false);
+        NumberAttributionService.AttributionResult attribution = numberAttributionService == null
+                ? null : numberAttributionService.lookup(request.phoneNumber(), false);
         idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
@@ -98,7 +109,7 @@ public class MessageSubmitService {
                 .mobileQueryIndexes(preparedRouting.queryIndexes())
                 .legacyMobileLookupToken(preparedRouting.legacyLookupToken())
                 .clientIp(clientIp)
-                .operatorHint(attribution.carrier())
+                .operatorHint(attribution == null ? null : attribution.carrier())
                 .content(compliance.finalContent())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
