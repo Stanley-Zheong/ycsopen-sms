@@ -62,9 +62,8 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
 
   const panel = page.getByTestId('query-panel');
   await expect(panel).toBeVisible();
-  await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
-  await panel.getByTestId('query-panel-toggle').click();
   await expect(panel.getByTestId('query-panel-fields')).toBeVisible();
+  await expect(panel.getByTestId('query-panel-toggle')).toHaveCount(0);
   const fields = ['keyword', 'verification-status', 'operating-status'];
   await expectAllLabelsLeftOfControls(panel, fields);
 
@@ -82,9 +81,6 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
   await expect(panel.getByTestId('query-result-table')).toContainText('贝塔机构');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 / 2 页');
 
-  await panel.getByTestId('query-panel-toggle').click();
-  await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
-  await expectCollapsedAfterReload(page);
 });
 
 const initialAudit = {

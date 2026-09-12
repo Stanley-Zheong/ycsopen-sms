@@ -373,15 +373,15 @@ describe('Phase 08 tenant qualification production UI', () => {
     }));
   });
 
-  it('applies and resets the shared tenant query from a collapsed first-page panel', async () => {
+  it('applies and resets the shared tenant query from a visible single-row panel', async () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null, principalKey: '7:test-token' });
     renderPage(<TenantListPage />);
 
     await screen.findByTestId('admin-tenant-qualification-tenants-row');
     const panel = screen.getByTestId('query-panel');
-    expect(within(panel).getByTestId('query-panel-fields')).not.toBeVisible();
+    expect(within(panel).getByTestId('query-panel-fields')).toBeVisible();
+    expect(within(panel).queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
 
-    fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
     fireEvent.change(screen.getByTestId('admin-tenant-qualification-tenants-keyword'), { target: { value: '不存在的机构' } });
     fireEvent.click(within(panel).getByTestId('query-submit'));
     expect(await screen.findByTestId('admin-tenant-qualification-tenants-empty')).toBeVisible();
