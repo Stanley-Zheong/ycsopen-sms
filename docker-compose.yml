@@ -25,9 +25,7 @@ services:
       retries: 20
 
   core:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ycsopen-main-fixzzem3q-core:latest
     environment:
       SPRING_PROFILES_ACTIVE: dev
       DB_HOST: mysql
@@ -57,3 +55,5 @@ services:
 
 volumes:
   mysql-data:
+    external: true
+    name: ycsopen-main-fixzzem3q_mysql-data
