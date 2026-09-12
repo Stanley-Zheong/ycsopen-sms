@@ -1,7 +1,7 @@
-# Shared Query Panel UI Elements (Issues 58 and 64)
+# Shared Query Panel UI Elements (Issues 58, 64, and 71)
 
 This production-change addendum defines the shared query-panel contract from
-GitHub issues #58 and #64. It does not replace or relabel evidence from completed GSD
+GitHub issues #58, #64, and #71. It does not replace or relabel evidence from completed GSD
 phases. Existing phase-owned selectors remain on their controls and tables;
 the shared selectors below add one consistent interaction contract that tests
 scope within each `query-panel` region.
@@ -9,9 +9,13 @@ scope within each `query-panel` region.
 The field grid has three columns above 1200 px, two columns from 901-1200 px,
 and one column at the compact viewport. A panel starts collapsed whenever its
 field count would occupy more than one row in the current grid, and exposes
-`query-panel-toggle`. Search and reset remain visible while fields are
-collapsed. Reset clears the query draft, applies the empty query, and restores
-the first page where the page is paginated.
+`query-panel-toggle`. Search and reset share the disclosure region with the
+fields and remain hidden while it is collapsed. When visible, the action group
+uses the trailing edge of the panel and aligns with the final field row. At
+widths where the configured field columns and action group cannot fit, it
+moves to a separate row and stays right-aligned. Reset clears the query draft,
+applies the empty query, and restores the first page where the page is
+paginated.
 
 Every panel uses `query-panel`, `query-panel-fields`, `query-submit`, and
 `query-result-table`. A multi-field panel also uses `query-reset`; a

@@ -6,11 +6,16 @@ source files, 22 mounted panel instances, 24 distinct routes, and 25
 route-panel surfaces. Page-specific query parameters, permissions, pagination,
 result rendering, and API behavior remain unchanged.
 
+Issue #71 supersedes only the action-position detail below: actions use the
+final field row when the configured field columns and action group fit, and
+otherwise move to a separate right-aligned row. They never begin at the left
+edge or overlap a field.
+
 ## Behaviors
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-64-inline-actions | Visible query actions share the field-content row and the action buttons never split onto separate lines. | In a rendered browser, the first field control and search button overlap vertically; search and reset have the same vertical position. |
+| issue-64-inline-actions | Visible query actions share the field-content region and the action buttons never split onto separate lines. Issue #71 owns whether the group uses the final field row or a separate right-aligned row. | In a rendered browser, search and reset have the same vertical position; the action group is right-aligned and does not overlap any field. |
 | issue-64-single-field-search | A panel with exactly one `QueryField` renders search without reset. | `query-submit` is visible and `query-reset` is absent. |
 | issue-64-collapse-actions | A collapsible panel treats fields and actions as one disclosure region. | When `query-panel-fields` is collapsed, its field controls, search, and reset are all hidden; expanding it reveals all of them together. |
 
