@@ -1,0 +1,37 @@
+{
+  "recordedAt": "2026-09-12T23:02:12Z",
+  "baseCommit": "e9759679145bb5666a9f13feeb76d072412fe93c",
+  "result": "PASS",
+  "expected": 1,
+  "unexpected": 0,
+  "project": "bundled-chromium",
+  "engine": "Chromium 151.0.7922.34",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "nativeLibrarySource": "Existing Debian 12 arm64 Chromium libraries at /tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu"
+  },
+  "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell",
+  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_USE_BUNDLED_CHROMIUM=true npm run test:e2e -- control-sizing.spec.ts --project=bundled-chromium --grep pw-issue-73-primary-control-height",
+  "sourceSha256": {
+    "web/playwright.config.ts": "0e0dd0373153aa404bc9fdd93af4b408647c54e5475f5d7806dd208c64ce8831",
+    "web/test/scripts/control-sizing.spec.ts": "124395b1743c55d1c9dcf199037a2629193f44d27caf5438bdf554c0aef80632",
+    "web/src/styles/index.css": "7b87daa5d4f19557ddaa974e2dce237c96b81bdaf0faaad10e10dc6182a880f2"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-73-PRIMARY-CONTROL-HEIGHT",
+      "playwrightId": "pw-issue-73-primary-control-height",
+      "obligationId": "OBL-ISSUE-73-PRIMARY-CONTROL-HEIGHT",
+      "status": "passed"
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The issue claim is browser-rendered CSS geometry. Authentication and routing-policy APIs are intercepted, so this evidence does not claim backend-service acceptance. The unprefixed mandated command was blocked before test execution because bundled Chromium could not load libatk-1.0.so.0; the existing extracted library bundle was required to execute the same browser case."
+  }
+}
