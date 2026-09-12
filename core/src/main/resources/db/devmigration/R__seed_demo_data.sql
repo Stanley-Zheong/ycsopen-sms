@@ -39,7 +39,7 @@ INSERT INTO templates (
     content, signature_id, param_check_rule, audit_status, audit_time
 )
 SELECT tenant.id, 'DOMESTIC', 'DEMO_LOGIN', '演示验证码', 'VERIFY',
-       '您的验证码是${code}，5分钟内有效。', signature_row.id,
+       '您的验证码是$${code}，5分钟内有效。', signature_row.id,
        '{"code":"^[0-9]{6}$"}', 'APPROVED', CURRENT_TIMESTAMP
 FROM tenants tenant
 JOIN signatures signature_row

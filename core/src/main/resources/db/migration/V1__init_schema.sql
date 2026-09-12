@@ -219,7 +219,7 @@ CREATE TABLE templates (
     template_code    VARCHAR(32) NOT NULL,
     template_name    VARCHAR(50) NOT NULL,
     template_type    ENUM('VERIFY','NOTIFY','MARKETING') NOT NULL,
-    content          VARCHAR(500) NOT NULL COMMENT '含 ${var} 占位符',
+    content          VARCHAR(500) NOT NULL COMMENT '含 $${var} 占位符',
     signature_id     BIGINT UNSIGNED NOT NULL,
     param_check_rule VARCHAR(255),
     description      VARCHAR(255),
