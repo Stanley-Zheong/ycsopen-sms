@@ -39,4 +39,11 @@
 - Installed Google Chrome: Phase 05 identity suite 19/19 PASS; complete web suite 33/33 PASS at 1440x900 with one worker.
 - Planning contracts: 21/21 owned obligation evidence files parse as PASS; PRD trace validator PASS; production UI contract validator PASS.
 
+## Login presentation refinement
+
+- Replaced the sparse centered form with the Phase 2 brand-panel authentication shell and a repository-owned abstract messaging-network background.
+- Added durable product-context copy that describes the SMS operations domain without presenting unfinished roadmap modules as delivered.
+- Kept authentication as the only action, preserved the Phase 1 selectors, and constrained the remembered-username checkbox to 16px with its text inside one aligned form row.
+- Added focused React and Playwright checks for the product context, background reference, remembered-control size, label alignment, and existing login redirect.
+
 `TODO.md` remains the completion authority and is closed only after independent and Claude reviews pass.

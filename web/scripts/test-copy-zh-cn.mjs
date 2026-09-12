@@ -133,17 +133,17 @@ export async function runCopyContractMutationSuite() {
       {
         name: 'unregistered-English-source-copy',
         diagnostic: 'COPY_TECHNICAL_TOKEN_UNREGISTERED',
-        mutation: { source: (source) => source.replace('<h2>', '<h2>Welcome ' ) },
+        mutation: { source: (source) => source.replace('<h2 id="login-form-title">', '<h2 id="login-form-title">Welcome ') },
       },
       {
         name: 'traditional-only-source-copy',
         diagnostic: 'COPY_TRADITIONAL_ONLY_VARIANT',
-        mutation: { source: (source) => source.replace('aria-label="密码"', 'aria-label="密碼"') },
+        mutation: { source: (source) => source.replace('<span>密码</span>', '<span>密碼</span>') },
       },
       {
         name: 'hidden-unregistered-source-copy',
         diagnostic: 'COPY_TECHNICAL_TOKEN_UNREGISTERED',
-        mutation: { source: (source) => source.replace('<h2>', '<span hidden>Secret status</span><h2>') },
+        mutation: { source: (source) => source.replace('<h2 id="login-form-title">', '<span hidden>Secret status</span><h2 id="login-form-title">') },
       },
       {
         name: 'missing-source-surface',

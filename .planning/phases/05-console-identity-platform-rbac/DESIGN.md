@@ -28,6 +28,8 @@ A successful login from a different address is recorded as unusual and writes a 
 
 The production routes are `/admin/auth/login`, `/admin/system/users`, `/admin/system/roles`, `/admin/system/login-history`, and `/admin/account-overview`. Phase 2 colors, typography, spacing, shell, and desktop-only 1440x900 Chrome contract are reused. `UI-ELEMENTS.md` is the exact page/action/state selector registry.
 
+The unauthenticated login surface uses a two-column authentication shell: a blue/teal brand panel explains the platform's intended multi-tenant SMS operations context, while one 320–400px credential form remains the sole interactive panel. The shell uses the repository-owned abstract messaging-network SVG as a decorative background. Product-positioning copy does not imply that roadmap modules without verified phase evidence are complete. The remembered-username control is one 16px checkbox and adjacent label within the credential form; only the username may be stored locally.
+
 ## Rollback
 
 V1400 and V1401 are additive. Application rollback leaves new nullable columns/tables and permission rows in place; a forward corrective migration may remove only proven-unused Phase 5 records after snapshot verification. No destructive down migration is required.

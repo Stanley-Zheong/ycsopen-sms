@@ -112,8 +112,9 @@ Phase 2 `/admin/users` and `/admin/roles` paths remain compatibility redirects t
 ### Platform login
 
 - Use the Phase 2 authentication shell: brand panel plus a single `320–400px` credential card centered in the content area.
+- The brand panel identifies YCSOpen SMS as an enterprise SMS operations workspace and uses the repository-owned abstract messaging-network background. Its copy describes the product domain without claiming that unfinished roadmap modules are delivered.
 - Fields are labeled “用户名” and “密码”, with `autocomplete="username"` and `autocomplete="current-password"`.
-- “记住用户名” stores only the username. Passwords and bearer tokens are never placed in local storage.
+- “记住用户名” is a `16px × 16px` checkbox aligned with its adjacent label inside the credential form. It stores only the username; passwords and bearer tokens are never placed in local storage.
 - The primary CTA is “登录”. While pending, label it “登录中…” and disable duplicate submission.
 - Invalid credentials retain the Phase 1 compatibility copy “用户名或密码错误，或账号已被锁定”; locked, disabled, and expired-account outcomes may use their controlled server messages without exposing hashes, internal identifiers, stack text, or policy internals.
 - On rejection, focus the error summary, keep the username, clear the password, and remain on the login route.
@@ -228,6 +229,8 @@ Every ID below is literal, unique within the active DOM, and statically discover
 | `shared-auth-login-remember` | Preserve Phase 1 remembered-username contract |
 | `shared-auth-login-error` | Preserve Phase 1 controlled-error contract |
 | `shared-auth-login-submit` | Nested compatibility target inside the phase-owned login button |
+| `admin-console-identity-auth-intro-title` | Stable product-context heading on the login brand panel |
+| `admin-console-identity-auth-intro-summary` | Stable product-context summary on the login brand panel |
 | `admin-console-identity-users-page` | Account page root |
 | `admin-console-identity-users-form` | Create/edit account dialog/form |
 | `admin-console-identity-users-edit` | Edit-account action |

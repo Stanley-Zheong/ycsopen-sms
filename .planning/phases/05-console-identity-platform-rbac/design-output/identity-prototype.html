@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Phase 5 平台账号与权限原型</title>
   <style>
-    :root{--page:#f4f8fc;--surface:#fff;--alt:#eef5ff;--brand:#0c85e8;--dark:#123250;--border:#dbe5ef;--danger:#c93647;--success:#0d8779;--warning:#a56a00}*{box-sizing:border-box}body{margin:0;background:var(--page);color:#1d2939;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{display:grid;grid-template-columns:220px 1fr;min-height:900px}.nav{padding:24px 16px;background:var(--dark);color:#fff}.nav a{display:block;margin:8px 0;padding:10px 12px;border-radius:6px;color:#d9ebfa;text-decoration:none}.nav a:hover,.nav a:focus{background:#1f527d}.content{padding:24px}.toolbar{display:flex;align-items:center;justify-content:space-between}.card{margin-top:16px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);box-shadow:0 8px 24px #12325012}button,input,select{min-height:40px;border:1px solid #b8c8d8;border-radius:6px;padding:8px 12px;background:#fff}button{cursor:pointer}.primary{border-color:var(--brand);background:var(--brand);color:#fff}.danger{border-color:var(--danger);color:var(--danger)}table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left}.grid{display:grid;grid-template-columns:280px 1fr;gap:24px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.fields label{display:grid;gap:4px}.dialog{position:fixed;inset:120px auto auto 50%;z-index:3;width:560px;transform:translateX(-50%)}[hidden]{display:none!important}.notice{position:fixed;right:24px;top:24px;z-index:5;width:420px;border-color:var(--danger);background:#fff0f2}h1{font-size:28px}h2{font-size:20px}.badge{color:var(--success)}
+    :root{--page:#f4f8fc;--surface:#fff;--alt:#eef5ff;--brand:#0c85e8;--dark:#123250;--border:#dbe5ef;--danger:#c93647;--success:#0d8779;--warning:#a56a00}*{box-sizing:border-box}body{margin:0;background:var(--page);color:#1d2939;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{display:grid;grid-template-columns:220px 1fr;min-height:900px}.nav{padding:24px 16px;background:var(--dark);color:#fff}.nav a{display:block;margin:8px 0;padding:10px 12px;border-radius:6px;color:#d9ebfa;text-decoration:none}.nav a:hover,.nav a:focus{background:#1f527d}.content{padding:24px}.auth-route .shell{grid-template-columns:1fr}.auth-route .nav{display:none}.auth-route .content{padding:0}.toolbar{display:flex;align-items:center;justify-content:space-between}.card{margin-top:16px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);box-shadow:0 8px 24px #12325012}button,input,select{min-height:40px;border:1px solid #b8c8d8;border-radius:6px;padding:8px 12px;background:#fff}button{cursor:pointer}.primary{border-color:var(--brand);background:var(--brand);color:#fff}.danger{border-color:var(--danger);color:var(--danger)}table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left}.grid{display:grid;grid-template-columns:280px 1fr;gap:24px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.fields label{display:grid;gap:4px}.dialog{position:fixed;inset:120px auto auto 50%;z-index:3;width:560px;transform:translateX(-50%)}[hidden]{display:none!important}.notice{position:fixed;right:24px;top:24px;z-index:5;width:420px;border-color:var(--danger);background:#fff0f2}h1{font-size:28px}h2{font-size:20px}.badge{color:var(--success)}.auth-shell{display:grid;grid-template-columns:1.2fr .8fr;min-height:900px;background:linear-gradient(135deg,#073451,#0b61aa 62%,#0c85e8);color:#fff}.auth-intro{display:flex;flex-direction:column;justify-content:center;padding:64px;background-image:radial-gradient(circle at 76% 18%,#31c9b655,transparent 42%),linear-gradient(120deg,#ffffff0a 1px,transparent 1px);background-size:auto,32px 32px}.auth-intro p{max-width:520px;color:#d9ebfa;line-height:1.8}.auth-points{display:grid;gap:16px;margin:32px 0 0;padding:0;list-style:none}.auth-points strong{display:block;color:#fff}.auth-form-panel{display:flex;align-items:center;padding:48px;background:#fffffff5;color:#123250}.auth-card{width:100%;max-width:400px;margin:0}.auth-card label{display:grid;gap:8px;margin:0 0 16px}.auth-remember{display:flex!important;align-items:center;gap:8px!important;min-height:40px}.auth-remember input{width:16px;height:16px;min-height:16px;margin:0;padding:0}.auth-card .primary{width:100%;margin-top:16px}
   </style>
 </head>
 <body>
@@ -19,10 +19,20 @@
     <a href="#/admin/auth/login" data-route="/admin/auth/login">登录</a>
   </nav>
   <main class="content">
-    <section id="login" data-route="/admin/auth/login">
-      <div class="card" style="max-width:400px;margin:140px auto">
-        <h1>平台管理登录</h1><label>用户名<input autocomplete="username"></label><br><label>密码<input type="password" autocomplete="current-password"></label><br>
-        <button class="primary" data-testid="admin-console-identity-auth-login-submit">登录</button>
+    <section id="login" class="auth-shell" data-route="/admin/auth/login">
+      <div class="auth-intro">
+        <p>YCSOpen SMS</p>
+        <h1 data-testid="admin-console-identity-auth-intro-title">企业短信运营工作台</h1>
+        <p data-testid="admin-console-identity-auth-intro-summary">面向多租户、多通道短信业务，为平台与机构用户提供统一的管理入口。</p>
+        <ul class="auth-points"><li><strong>统一入口</strong>按账号类型进入对应的管理工作区</li><li><strong>角色隔离</strong>根据当前账号状态与权限控制访问范围</li><li><strong>安全登录</strong>勾选后仅保存用户名，不会保存密码</li></ul>
+      </div>
+      <div class="auth-form-panel">
+        <form class="card auth-card">
+          <p>YCSOpen SMS 控制台</p><h2>欢迎登录</h2><p>使用已授权的控制台账号继续</p>
+          <label>用户名<input autocomplete="username" placeholder="用户名"></label><label>密码<input type="password" autocomplete="current-password" placeholder="密码"></label>
+          <label class="auth-remember"><input data-testid="shared-auth-login-remember" type="checkbox"> <span>记住用户名</span></label>
+          <button class="primary" data-testid="admin-console-identity-auth-login-submit">登录</button>
+        </form>
       </div>
     </section>
     <section id="users" data-route="/admin/system/users">
@@ -41,7 +51,7 @@
 <aside class="card notice" role="alert" data-testid="shared-console-identity-internal-error-message">系统繁忙，请稍后再试<br><small>问题编号：trace-example</small></aside>
 <script>
   const routes={"/admin/auth/login":"login","/admin/system/users":"users","/admin/system/roles":"roles","/admin/system/login-history":"history","/admin/account-overview":"overview"};
-  function render(){const route=location.hash.slice(1)||"/admin/system/users";Object.values(routes).forEach(id=>document.getElementById(id).hidden=id!==routes[route]);}
+  function render(){const route=location.hash.slice(1)||"/admin/system/users";const active=routes[route];Object.values(routes).forEach(id=>document.getElementById(id).hidden=id!==active);document.body.classList.toggle("auth-route",active==="login");}
   addEventListener("hashchange",render);render();
   document.querySelector('[data-testid="admin-console-identity-users-create"]').onclick=()=>document.getElementById("account-dialog").hidden=false;
   document.getElementById("close-account").onclick=()=>document.getElementById("account-dialog").hidden=true;
