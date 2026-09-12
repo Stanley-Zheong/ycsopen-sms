@@ -9,6 +9,7 @@ describe('QueryPanel', () => {
         <QueryField name="tenant-id" label="租户 ID"><input /></QueryField>
         <QueryField name="status" label="状态"><select><option>全部</option></select></QueryField>
         <QueryField name="keyword" label="关键字"><input /></QueryField>
+        <QueryField name="created-at" label="创建时间"><input /></QueryField>
       </QueryPanel>,
     );
 
@@ -29,7 +30,20 @@ describe('QueryPanel', () => {
     expect(within(panel).getByTestId('query-input-tenant-id').querySelector('input')).toBeInTheDocument();
   });
 
-  it('keeps only search for a single field', () => {
+  it('keeps three desktop fields visible because they fit on one row', () => {
+    render(
+      <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
+        <QueryField name="keyword" label="关键字"><input /></QueryField>
+        <QueryField name="verification-status" label="认证状态"><select><option>全部</option></select></QueryField>
+        <QueryField name="operating-status" label="运行状态"><select><option>全部</option></select></QueryField>
+      </QueryPanel>,
+    );
+
+    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('query-panel-fields')).toBeVisible();
+  });
+
+  it('keeps search and reset visible and invokes their page-owned behavior', () => {
     const onSubmit = vi.fn();
     const onReset = vi.fn();
     render(
@@ -91,6 +105,35 @@ describe('QueryPanel', () => {
     try {
       render(
         <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
+          <QueryField name="status" label="状态"><select><option>全部</option></select></QueryField>
+          <QueryField name="severity" label="级别"><select><option>全部</option></select></QueryField>
+        </QueryPanel>,
+      );
+
+      expect(screen.getByTestId('query-panel-fields')).not.toBeVisible();
+      expect(screen.getByTestId('query-panel-toggle')).toHaveAttribute('aria-expanded', 'false');
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it('collapses three fields when the medium grid wraps to two columns', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(max-width: 1200px)',
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      render(
+        <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
+          <QueryField name="keyword" label="关键字"><input /></QueryField>
           <QueryField name="status" label="状态"><select><option>全部</option></select></QueryField>
           <QueryField name="severity" label="级别"><select><option>全部</option></select></QueryField>
         </QueryPanel>,

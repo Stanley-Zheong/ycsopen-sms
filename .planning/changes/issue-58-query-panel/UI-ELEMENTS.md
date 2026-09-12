@@ -6,14 +6,12 @@ phases. Existing phase-owned selectors remain on their controls and tables;
 the shared selectors below add one consistent interaction contract that tests
 scope within each `query-panel` region.
 
-The field grid has two columns at the production desktop viewport and one at
-the compact viewport. The non-wrapping action group sits beside the first field
-row. A panel starts collapsed whenever its field count would occupy more than
-one row in the current grid, and exposes `query-panel-toggle`. The disclosure
-region contains both fields and actions, so they expand and collapse together.
-A one-field panel renders search without reset. A multi-field panel also
-renders reset, which clears the query draft, applies the empty query, and
-restores the first page where the page is paginated.
+The field grid has three columns above 1200 px, two columns from 901-1200 px,
+and one column at the compact viewport. A panel starts collapsed whenever its
+field count would occupy more than one row in the current grid, and exposes
+`query-panel-toggle`. Search and reset remain visible while fields are
+collapsed. Reset clears the query draft, applies the empty query, and restores
+the first page where the page is paginated.
 
 Every panel uses `query-panel`, `query-panel-fields`, `query-submit`, and
 `query-result-table`. A multi-field panel also uses `query-reset`; a

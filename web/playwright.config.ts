@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const localChromePath = process.env.YCSOPEN_CHROME_PATH
   ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const useBundledChromium = process.env.YCSOPEN_USE_BUNDLED_CHROMIUM === 'true';
 const webPort = process.env.YCSOPEN_WEB_PORT ?? '4173';
 
 if (!/^\d{4,5}$/.test(webPort)) {
@@ -16,16 +17,26 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: { baseURL, trace: 'on-first-retry', viewport: { width: 1440, height: 900 } },
-  projects: [{
-    name: 'local-google-chrome',
-    use: {
-      ...devices['Desktop Chrome'],
-      launchOptions: {
-        executablePath: localChromePath,
-        args: ['--disable-crashpad-for-testing'],
+  projects: [
+    useBundledChromium
+      ? {
+        name: 'bundled-chromium',
+        use: {
+          ...devices['Desktop Chrome'],
+          launchOptions: { args: ['--disable-crashpad-for-testing'] },
+        },
+      }
+      : {
+        name: 'local-google-chrome',
+        use: {
+          ...devices['Desktop Chrome'],
+          launchOptions: {
+            executablePath: localChromePath,
+            args: ['--disable-crashpad-for-testing'],
+          },
+        },
       },
-    },
-  }],
+  ],
   webServer: {
     command: `npm run dev -- --host 127.0.0.1 --port ${webPort}`,
     url: `${baseURL}/login`,
