@@ -348,7 +348,9 @@ describe('Phase 5 identity administration pages', () => {
 
     fireEvent.click(within(panel).getByTestId('query-submit'));
     await waitFor(() => expect(latestHistoryParams).toEqual({ userId: 42, page: 0, size: 20 }));
-    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
+    fireEvent.change(userId, { target: { value: '' } });
+    fireEvent.click(within(panel).getByTestId('query-submit'));
     expect(userId).toHaveValue('');
     await waitFor(() => expect(latestHistoryParams).toEqual({ all: true, page: 0, size: 20 }));
     expect(within(panel).getByText(/第 1 页/)).toBeVisible();

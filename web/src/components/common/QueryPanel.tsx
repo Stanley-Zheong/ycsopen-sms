@@ -62,7 +62,8 @@ export function QueryPanel({
   resetLegacyTestId,
 }: QueryPanelProps) {
   const [compact, setCompact] = useState(isCompactQueryLayout);
-  const collapsible = Children.count(children) > (compact ? 1 : 2);
+  const fieldCount = Children.count(children);
+  const collapsible = fieldCount > (compact ? 1 : 2);
   const [expanded, setExpanded] = useState(!collapsible);
   const fieldsId = useId();
 
@@ -110,15 +111,19 @@ export function QueryPanel({
           aria-hidden={!expanded}
           hidden={!expanded}
         >
-          {children}
-        </div>
-        <div className="query-panel-actions">
-          <button type="submit" data-testid="query-submit">
-            {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>搜索</span> : '搜索'}
-          </button>
-          <button type="button" className="button-secondary" data-testid="query-reset" onClick={onReset}>
-            {resetLegacyTestId ? <span data-testid={resetLegacyTestId}>重置</span> : '重置'}
-          </button>
+          <div className="query-panel-field-grid">
+            {children}
+          </div>
+          <div className="query-panel-actions">
+            <button type="submit" data-testid="query-submit">
+              {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>搜索</span> : '搜索'}
+            </button>
+            {fieldCount > 1 && (
+              <button type="button" className="button-secondary" data-testid="query-reset" onClick={onReset}>
+                {resetLegacyTestId ? <span data-testid={resetLegacyTestId}>重置</span> : '重置'}
+              </button>
+            )}
+          </div>
         </div>
       </form>
       {result !== undefined && <QueryResult>{result}</QueryResult>}
