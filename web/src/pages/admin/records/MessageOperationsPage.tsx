@@ -11,6 +11,7 @@ import {
   replayReceipt,
   requestMessageExport,
   resendMessage,
+  type ErrorGroupRow,
   type OperationFilter,
 } from '@/api/messageOperationsApi';
 import { mutationErrorMessage } from '@/api/client';
@@ -81,13 +82,13 @@ function exportDataset(section: Section): string {
 }
 
 function bulkActionUnavailableReason({
-  errorCode,
+  bulkActionSupported,
   totalCount,
   loadedCount,
   loading,
   failed,
 }: {
-  errorCode: string;
+  bulkActionSupported: boolean;
   totalCount: number;
   loadedCount: number;
   loading: boolean;
@@ -95,7 +96,7 @@ function bulkActionUnavailableReason({
 }): string | undefined {
   if (loading) return '失败消息仍在加载';
   if (failed) return '失败消息加载失败';
-  if (errorCode === 'UNKNOWN') return '错误码为空的 UNKNOWN 分组不支持批量操作';
+  if (!bulkActionSupported) return '错误码为空的 UNKNOWN 分组不支持批量操作';
   if (totalCount <= 0 || loadedCount === 0) return '没有匹配的失败消息';
   if (totalCount > MAX_BULK_SELECTION) return `错误组共 ${totalCount} 条，超过单次 ${MAX_BULK_SELECTION} 条限制`;
   if (loadedCount !== totalCount) return `目标未完整加载：已加载 ${loadedCount} 条，共 ${totalCount} 条`;
@@ -159,10 +160,10 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   const receipts = useQuery({ queryKey: ['message-ops-receipts', filter], queryFn: () => listReceipts(filter), ...queryOptions });
   const errors = useQuery({ queryKey: ['message-ops-errors', filter], queryFn: () => listErrorGroups(filter), ...queryOptions });
   const failedMessageIdsByErrorCode = useMemo(() => {
-    const grouped = new Map<string, string[]>();
+    const grouped = new Map<string | null, string[]>();
     for (const row of sends.data ?? []) {
       if (row.sendStatus !== 'FAILED') continue;
-      const errorCode = row.errorCode ?? 'UNKNOWN';
+      const errorCode = row.errorCode;
       const messageIds = grouped.get(errorCode) ?? [];
       if (!messageIds.includes(row.messageId)) messageIds.push(row.messageId);
       grouped.set(errorCode, messageIds);
@@ -230,11 +231,12 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     setReason('');
     setError('');
   };
-  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', errorCode: string, totalCount: number) => {
-    const messageIds = failedMessageIdsByErrorCode.get(errorCode) ?? [];
+  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', group: ErrorGroupRow) => {
+    const errorCode = group.normalizedCode;
+    const messageIds = failedMessageIdsByErrorCode.get(group.bulkActionSupported ? errorCode : null) ?? [];
     if (bulkActionUnavailableReason({
-      errorCode,
-      totalCount,
+      bulkActionSupported: group.bulkActionSupported,
+      totalCount: group.totalCount,
       loadedCount: messageIds.length,
       loading: sends.isFetching,
       failed: sends.isError,
@@ -354,9 +356,9 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           <table className="message-operations-table" data-testid="admin-message-receipt-error-details-table">
             <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th><th>动作</th></tr></thead>
             <tbody>{(errors.data ?? []).map((row) => {
-              const messageIds = failedMessageIdsByErrorCode.get(row.normalizedCode) ?? [];
+              const messageIds = failedMessageIdsByErrorCode.get(row.bulkActionSupported ? row.normalizedCode : null) ?? [];
               const bulkUnavailableReason = bulkActionUnavailableReason({
-                errorCode: row.normalizedCode,
+                bulkActionSupported: row.bulkActionSupported,
                 totalCount: row.totalCount,
                 loadedCount: messageIds.length,
                 loading: sends.isFetching,
@@ -364,12 +366,12 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
               });
               const bulkDisabled = Boolean(bulkUnavailableReason);
               return (
-                <tr key={row.normalizedCode} data-testid="admin-message-receipt-error-details-row">
-                  <td>{row.normalizedCode}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
+                <tr key={`${row.bulkActionSupported ? 'literal' : 'null'}:${row.normalizedCode}`} data-testid="admin-message-receipt-error-details-row">
+                  <td>{row.bulkActionSupported ? row.normalizedCode : `${row.normalizedCode}（错误码为空）`}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
                   <td>
                     <div className="message-operations-actions">
-                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode, row.totalCount)}>批量重试</button>
-                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode, row.totalCount)}>标记问题</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={row.bulkActionSupported ? `批量重试错误码 ${row.normalizedCode}` : '批量重试空错误码分组'} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row)}>批量重试</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={row.bulkActionSupported ? `标记问题错误码 ${row.normalizedCode}` : '标记问题空错误码分组'} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row)}>标记问题</button>
                     </div>
                   </td>
                 </tr>

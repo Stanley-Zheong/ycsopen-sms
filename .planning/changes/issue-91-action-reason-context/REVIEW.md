@@ -14,8 +14,12 @@ found that a same-ID retry could edit its reason even though the idempotent
 backend retains the first audit value. Another asynchronous review found that
 Escape or cancel could close the dialog in the synchronous window between the
 submit latch and the owner's pending rerender. Both corrections now pass on
-`fcb5038684fd8c80985b10002765856cc5e73a95`. Current-head live review found no
-remaining author-actionable issue. Existing API shapes, permissions, tenant
+`fcb5038684fd8c80985b10002765856cc5e73a95`. A later current-head review found
+that the null-derived display label `UNKNOWN` collided with a valid literal
+upstream code and also detected an expired browser-evidence source digest. The
+current worktree separates those aggregates with an explicit capability flag,
+tests both cases, and reseals the browser evidence. Final review remains open
+until the corrected head passes the remote gate. Existing permissions, tenant
 boundaries, state transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
@@ -96,6 +100,12 @@ back exactly one matching balance-audit entry.
   cannot produce a partial submission. The display-only `UNKNOWN` group is also
   unavailable because it represents a null database value that the existing
   bulk API cannot accept losslessly. Unit and Chromium tests cover both guards.
+- Null stored error codes and the literal upstream code `UNKNOWN` now remain
+  separate backend aggregates even though both share the normalized display
+  label. The API exposes `bulkActionSupported`; the UI labels and disables only
+  the null-derived placeholder, while a literal `UNKNOWN` action sends that
+  exact code and excludes null-code messages. Backend, unit, and Chromium tests
+  cover both rows.
 - Alert mute confirmation now names global alert notification as the target,
   keeps the chosen alert only as initiating context, and states that all new
   alert notifications are suppressed for 30 minutes.

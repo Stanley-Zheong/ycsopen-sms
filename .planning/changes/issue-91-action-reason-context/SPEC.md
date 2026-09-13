@@ -38,12 +38,15 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
   severity, and retry policy instead of duplicating the group. The loaded target
   count must equal that distinct-task aggregate, so a list truncated by its
   independent 200-row limit cannot become a partial submission. Groups exceeding
-  the backend limit of 50 are not partially submitted. The display-only
-  `UNKNOWN` group represents a null stored error code and cannot be passed
-  losslessly to the existing bulk API, so its actions remain unavailable. While
-  send targets are loading, when target loading fails, when loaded targets are
-  incomplete, or when a group has zero or more than 50 matching failed messages,
-  its bulk controls are disabled and no dialog or request may be created.
+  the backend limit of 50 are not partially submitted. The error-group response
+  exposes `bulkActionSupported` from the raw stored error-code nullness and keeps
+  null and non-null values as separate aggregates. Only the display-only
+  `UNKNOWN（错误码为空）` group derived from a null stored value is unavailable;
+  a literal upstream error code `UNKNOWN` remains a distinct actionable group
+  and is submitted unchanged to the existing bulk API. While send targets are
+  loading, when target loading fails, when loaded targets are incomplete, or
+  when a group has zero or more than 50 matching failed messages, its bulk
+  controls are disabled and no dialog or request may be created.
 - `/admin/alerts`: resolve one alert, or start a 30-minute global notification
   mute from one alert row. The mute target and consequence name its global
   scope; the selected alert remains visible only as the initiating context.

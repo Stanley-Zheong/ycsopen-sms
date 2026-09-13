@@ -141,6 +141,7 @@ public class MessageReceiptErrorOperationsService {
         OperationFilter checked = filter.checked();
         return jdbc.query("""
                 SELECT COALESCE(t.error_code, 'UNKNOWN') AS normalized_code,
+                       CASE WHEN t.error_code IS NULL THEN FALSE ELSE TRUE END AS bulk_action_supported,
                        COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED') AS platform_category,
                        COALESCE(psm.severity, 'WARN') AS severity,
                        COALESCE(psm.retryable, FALSE) AS retryable,
@@ -180,12 +181,13 @@ public class MessageReceiptErrorOperationsService {
                    AND (? IS NULL OR t.channel_id=?)
                    AND (? IS NULL OR t.created_at>=?)
                    AND (? IS NULL OR t.created_at<=?)
-                 GROUP BY COALESCE(t.error_code, 'UNKNOWN'), COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED'),
+                 GROUP BY t.error_code, COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED'),
                           COALESCE(psm.severity, 'WARN'), COALESCE(psm.retryable, FALSE)
                  ORDER BY total_count DESC, last_seen_at DESC
                  LIMIT ?
                 """, (rs, row) -> new ErrorGroupRow(rs.getString("normalized_code"),
-                rs.getString("platform_category"), rs.getString("severity"), rs.getBoolean("retryable"),
+                rs.getBoolean("bulk_action_supported"), rs.getString("platform_category"),
+                rs.getString("severity"), rs.getBoolean("retryable"),
                 rs.getInt("total_count"), rs.getInt("tenant_count"), rs.getInt("channel_count"),
                 timestamp(rs.getTimestamp("first_seen_at")), timestamp(rs.getTimestamp("last_seen_at"))),
                 checked.tenantId(), checked.tenantId(), checked.errorCode(), checked.errorCode(),
@@ -583,9 +585,9 @@ public class MessageReceiptErrorOperationsService {
                              String rawPayloadSummary, String receiptDigest, String carrier, String province,
                              String city, LocalDateTime reportTime) { }
 
-    public record ErrorGroupRow(String normalizedCode, String platformCategory, String severity, boolean retryable,
-                                int totalCount, int tenantCount, int channelCount, LocalDateTime firstSeenAt,
-                                LocalDateTime lastSeenAt) { }
+    public record ErrorGroupRow(String normalizedCode, boolean bulkActionSupported, String platformCategory,
+                                String severity, boolean retryable, int totalCount, int tenantCount,
+                                int channelCount, LocalDateTime firstSeenAt, LocalDateTime lastSeenAt) { }
 
     public record ActionRequest(String actionId, String reason) {
         ActionRequest checked() {

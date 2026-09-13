@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-13T17:02:24Z",
+  "recordedAt": "2026-09-13T18:03:53Z",
   "baseCommit": "66d9cde07e957e9aa5597a434dec5e2fb6c1a8fd",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
   "flaky": 0,
-  "durationMs": 5469,
+  "durationMs": 5423,
   "project": "local-google-chrome",
   "engine": "Chromium/151.0.7922.34 headless_shell",
   "runtime": {
@@ -18,19 +18,19 @@
   "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4220 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
   "sourceSha256": {
     "docs/frontend页面实现规范.md": "b75671a1848b157f6fe9a8621cca989b393bc4d1930eed78547548babd53c601",
-    ".planning/changes/issue-91-action-reason-context/SPEC.md": "09036d95d5bdaaa4108c751561f4cf4ae573b3559ae496c830873531e9956054",
-    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "83ce8521e2d127746d2fd7e7c8473f5dc43582b886848c55972861f1cd3696a7",
-    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "16579c66183b2d79a12b162c97f1b4a92d5802b5471edb31304aa858d004170b",
+    ".planning/changes/issue-91-action-reason-context/SPEC.md": "d0bc85ae09998d662ceb735cd6afc02279cd80aef707be97647d5d968852aac6",
+    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "25c660a0c9d96780768e12e6614fd97cfa9cca1ceed128d872eccd8967c8b8e0",
+    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "e319813eff7bd5932d8e7b9476f397b714ae65f00878186d58e5c1c1b209465e",
     "web/src/components/common/ActionReasonDialog.tsx": "1785383b93cbe5adb8f8281cb1b1d3287488ebd621988b7c3503dcc99d5120e6",
     "web/src/components/common/ModalDialog.tsx": "b81de4095c707f9743f928049af12d31b7e65b3d5b801f49974d7a4099d2559b",
     "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "1fd2cfad970776fef0910fdf341f657893e8b71e65e83bf8c5faef0476b41366",
     "web/src/pages/admin/billing/AdminRechargeReviewPage.tsx": "67b2bf8b292c354bf6cd988f727298d94595d298bf21ea2651ee83ff7aba92b4",
     "web/src/pages/admin/bulk/AdminSendJobsPage.tsx": "fc512dc7e9ac896be09ba87061132d229a547dfd7a7bafe837ef502273e080e0",
-    "web/src/pages/admin/records/MessageOperationsPage.tsx": "e143c9500078ed6810ded393db450d7f874b9503abdff5dbbd83dc8fa6a8ba36",
+    "web/src/pages/admin/records/MessageOperationsPage.tsx": "bb064b96d9fedefe9bba4f2e98d26985c1155da92ddd939bc476a7d7379384fd",
     "web/src/pages/admin/uplinks/AdminUplinksPage.tsx": "97e1a98f88abc504e70fb1e3dd04cc31cf195e890b920b7581745911e74aa9ea",
     "web/src/pages/admin/webhooks/AdminPushFailuresPage.tsx": "381f914d7b8dd0bc4b7ee88afa1f2d9fabbafd7b967abfcf150631f7ce8597f0",
     "web/src/styles/index.css": "203b0738a2a793621dbcbc383cf04b2adbfe4d5051718c125db5fe74541b8204",
-    "web/test/scripts/issue-91-action-reason-context.spec.ts": "4ad5c118443fc6c7477030591009f0af273ca41ec30f75e0b8a1f07fc4a511c0",
+    "web/test/scripts/issue-91-action-reason-context.spec.ts": "22086ea0e06974b5e630c87b3dc6a6e5e6c0629aa362e966166502ffd69fdba5",
     "web/test/unit/action-reason-dialog.test.tsx": "028fae2a5f170b1f20ad03d7e1f19c68ca692e857ea7787fbf3d524c709b2040"
   },
   "cases": [
@@ -38,7 +38,7 @@
       "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
       "playwrightId": "pw-issue-91-action-reason-context",
       "obligationId": "OBL-ISSUE-91-ACTION-REASON",
-      "durationMs": 5469,
+      "durationMs": 5423,
       "status": "passed"
     }
   ],
@@ -69,7 +69,8 @@
       "an error bulk action snapshots only failed messages matching the selected error-group row",
       "an error group without a matching failed message cannot open a bulk-action dialog",
       "an error group truncated by the independent send-list limit cannot open a bulk-action dialog",
-      "the display-only UNKNOWN group cannot become an API error-code value",
+      "the null-derived display-only UNKNOWN group cannot become an API error-code value",
+      "a literal UNKNOWN error-code group remains actionable and excludes null-code messages",
       "alert mute names its global notification scope and the selected alert as initiating context",
       "pending confirmation rejects Escape and background actions",
       "successful confirmation closes the modal"

@@ -29,6 +29,7 @@ const listLimitFillerSends = Array.from({ length: 148 }, (_, index) => ({
   errorCode: 'E98',
 }));
 const unknownCodeSend = { ...send, taskId: 600, messageId: 'MSG_UNKNOWN', errorCode: null };
+const literalUnknownCodeSend = { ...send, taskId: 601, messageId: 'MSG_LITERAL_UNKNOWN', errorCode: 'UNKNOWN' };
 const receipt = {
   receiptId: 501, messageId: 'MSG_FAILED', tenantId: 42, maskedMobile: '已保护', channelId: 7, providerMessageId: 'UP-1', receiptStatus: 'FAILED', sendStatus: 'FAILED', errorCode: 'E42', rawPayloadSummary: 'raw payload protected', receiptDigest: 'R-1', carrier: 'MOBILE', province: '广东', city: '深圳', reportTime: '2026-09-09T00:00:00',
 };
@@ -64,14 +65,16 @@ async function mockBusinessApis(page: Page) {
         ...truncatedGroupSends,
         unmatchedSend,
         unknownCodeSend,
+        literalUnknownCodeSend,
         send,
       ];
       else if (path === '/console/message-operations/receipts') data = [receipt];
       else if (path === '/console/message-operations/errors') data = [
-        { normalizedCode: 'E99', platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
-        { normalizedCode: 'E50', platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 50, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
-        { normalizedCode: 'UNKNOWN', platformCategory: 'FAILURE', severity: 'ERROR', retryable: false, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
-        { normalizedCode: 'E42', platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
+        { normalizedCode: 'E99', bulkActionSupported: true, platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
+        { normalizedCode: 'E50', bulkActionSupported: true, platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 50, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
+        { normalizedCode: 'UNKNOWN', bulkActionSupported: false, platformCategory: 'FAILURE', severity: 'ERROR', retryable: false, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
+        { normalizedCode: 'UNKNOWN', bulkActionSupported: true, platformCategory: 'FAILURE', severity: 'ERROR', retryable: false, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
+        { normalizedCode: 'E42', bulkActionSupported: true, platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
       ];
       else if (path === '/console/alerts/dashboard') data = { totalCount: 1, activeCount: 1, severeCount: 1, resolvedCount: 0 };
       else if (path === '/console/alerts/rules') data = [];
@@ -118,6 +121,7 @@ async function verifyAction(page: Page, input: {
   maxLength?: number;
   pendingBackgroundTriggerId?: string;
   triggerScope?: { testId: string; text: string };
+  triggerAriaLabel?: string;
   expectedRequestBody?: Record<string, unknown>;
   expectedConsequenceText?: string;
   retrySameActionIdAfterFailure?: boolean;
@@ -128,9 +132,11 @@ async function verifyAction(page: Page, input: {
   };
   page.on('request', captureMatchingRequest);
 
-  const actionTrigger = () => input.triggerScope
-    ? page.getByTestId(input.triggerScope.testId).filter({ hasText: input.triggerScope.text }).getByTestId(input.triggerId)
-    : page.getByTestId(input.triggerId);
+  const actionTrigger = () => input.triggerAriaLabel
+    ? page.getByRole('button', { name: input.triggerAriaLabel })
+    : input.triggerScope
+      ? page.getByTestId(input.triggerScope.testId).filter({ hasText: input.triggerScope.text }).getByTestId(input.triggerId)
+      : page.getByTestId(input.triggerId);
 
   await expect(page.getByTestId(input.reasonTestId)).toHaveCount(0);
   await expect(actionTrigger()).toBeVisible();
@@ -217,11 +223,13 @@ test('pw-issue-91-action-reason-context C-ISSUE-91-ACTION-REASON-CONTEXT OBL-ISS
   const truncatedRow = page.getByTestId('admin-message-receipt-error-details-row').filter({ hasText: 'E50' });
   await expect(truncatedRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toBeDisabled();
   await expect(truncatedRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toHaveAttribute('title', '目标未完整加载：已加载 49 条，共 50 条');
-  const unknownRow = page.getByTestId('admin-message-receipt-error-details-row').filter({ hasText: 'UNKNOWN' });
-  await expect(unknownRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toBeDisabled();
-  await expect(unknownRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toHaveAttribute('title', '错误码为空的 UNKNOWN 分组不支持批量操作');
+  const nullUnknownRow = page.getByTestId('admin-message-receipt-error-details-row').filter({ hasText: 'UNKNOWN（错误码为空）' });
+  await expect(nullUnknownRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toBeDisabled();
+  await expect(nullUnknownRow.getByTestId('admin-message-receipt-error-details-bulk-retry')).toHaveAttribute('title', '错误码为空的 UNKNOWN 分组不支持批量操作');
+  await expect(page.getByRole('button', { name: '批量重试错误码 UNKNOWN' })).toBeEnabled();
   await expect(page.getByTestId('admin-message-receipt-action-dialog')).toHaveCount(0);
   await verifyAction(page, { triggerId: 'admin-message-receipt-error-details-bulk-retry', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '错误码 E42', additionalTargetText: '1 条失败消息', reason: '错误组已具备重试条件', requestPath: '/console/message-operations/errors/actions', triggerScope: { testId: 'admin-message-receipt-error-details-row', text: 'E42' }, expectedRequestBody: { action: 'BULK_RETRY', errorCode: 'E42', messageIds: ['MSG_FAILED'] } });
+  await verifyAction(page, { triggerId: 'admin-message-receipt-error-details-bulk-retry', triggerAriaLabel: '批量重试错误码 UNKNOWN', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '错误码 UNKNOWN', additionalTargetText: '1 条失败消息', reason: '字面错误码允许重试', requestPath: '/console/message-operations/errors/actions', expectedRequestBody: { action: 'BULK_RETRY', errorCode: 'UNKNOWN', messageIds: ['MSG_LITERAL_UNKNOWN'] } });
 
   await page.goto('/admin/alerts');
   await verifyAction(page, { triggerId: 'admin-alert-engine-alert-resolve', idPrefix: 'admin-alert-engine-action', reasonTestId: 'admin-alert-engine-resolve-reason', targetText: '通道失败率过高', reason: '确认来源已恢复', requestPath: '/console/alerts/601/resolve', maxLength: 255 });

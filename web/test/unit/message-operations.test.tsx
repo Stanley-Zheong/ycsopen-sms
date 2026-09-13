@@ -60,6 +60,7 @@ function sendRow(overrides: Partial<api.SendRow> = {}): api.SendRow {
 function errorGroup(overrides: Partial<api.ErrorGroupRow> = {}): api.ErrorGroupRow {
   return {
     normalizedCode: 'E42',
+    bulkActionSupported: true,
     platformCategory: 'FAILURE',
     severity: 'ERROR',
     retryable: true,
@@ -323,9 +324,9 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(api.bulkErrorAction).not.toHaveBeenCalled();
   });
 
-  it('does not pass the display-only UNKNOWN group to the bulk API', async () => {
+  it('does not pass the null-derived UNKNOWN group to the bulk API', async () => {
     vi.mocked(api.listSends).mockResolvedValue([sendRow({ errorCode: null })]);
-    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup({ normalizedCode: 'UNKNOWN' })]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup({ normalizedCode: 'UNKNOWN', bulkActionSupported: false })]);
     renderPage('errors');
 
     const row = await screen.findByTestId('admin-message-receipt-error-details-row');
@@ -339,5 +340,31 @@ describe('Phase 27 message receipt error operations UI', () => {
     fireEvent.click(markProblem);
     expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
     expect(api.bulkErrorAction).not.toHaveBeenCalled();
+  });
+
+  it('submits a literal UNKNOWN error-code group without mixing null-code messages', async () => {
+    vi.mocked(api.listSends).mockResolvedValue([
+      sendRow({ taskId: 701, messageId: 'MSG_LITERAL_UNKNOWN', errorCode: 'UNKNOWN' }),
+      sendRow({ taskId: 702, messageId: 'MSG_NULL_CODE', errorCode: null }),
+    ]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([
+      errorGroup({ normalizedCode: 'UNKNOWN', bulkActionSupported: true }),
+    ]);
+    renderPage('errors');
+
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    await waitFor(() => expect(bulkRetry).toBeEnabled());
+    fireEvent.click(bulkRetry);
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '字面错误码允许重试' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+
+    await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(
+      expect.stringMatching(/^BULK-/),
+      'BULK_RETRY',
+      'UNKNOWN',
+      ['MSG_LITERAL_UNKNOWN'],
+      '字面错误码允许重试',
+    ));
   });
 });

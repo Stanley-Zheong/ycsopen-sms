@@ -260,6 +260,28 @@ class MessageReceiptErrorOperationsServiceTest {
                 });
     }
 
+    @Test
+    void errorGroupsSeparateNullPlaceholderFromLiteralUnknownCode() {
+        jdbc.update("""
+                INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                VALUES (42, 'MSG_NULL_CODE', 'null error code', 'FAILED', 7, NULL),
+                       (42, 'MSG_LITERAL_UNKNOWN', 'literal unknown code', 'FAILED', 7, 'UNKNOWN')
+                """);
+
+        var unknownGroups = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                        42L, null, null, null, null, null, null)).stream()
+                .filter(row -> "UNKNOWN".equals(row.normalizedCode()))
+                .toList();
+
+        assertThat(unknownGroups).hasSize(2);
+        assertThat(unknownGroups).filteredOn(row -> row.bulkActionSupported())
+                .singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(1));
+        assertThat(unknownGroups).filteredOn(row -> !row.bulkActionSupported())
+                .singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(1));
+    }
+
     private void seed() {
         jdbc.update("""
                 INSERT INTO message_submits(id, tenant_id, submit_id, request_digest, source_protocol, product_type,

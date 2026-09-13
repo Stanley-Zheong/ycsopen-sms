@@ -7,7 +7,7 @@ const submissions = [{ submissionId: 101, tenantId: 42, submitId: 'SUBMIT-1', me
 const sends = [{ taskId: 201, messageId: 'MSG_FAILED', tenantId: 42, submissionId: 101, maskedMobile: '已保护', contentSummary: '【签名】验证码...', sendStatus: 'FAILED', channelId: 7, providerMessageId: 'UP-1', carrier: 'MOBILE', province: '广东', city: '深圳', errorCode: 'E42', errorMessage: '供应商拒绝', cost: 0.05, retryCount: 0, outboxState: 'FAILED', sentAt: null, deliveredAt: null, createdAt: '2026-09-09T00:00:00', version: 3 }];
 const otherFailedSend = [{ ...sends[0], taskId: 202, messageId: 'MSG_OTHER', errorCode: 'E99' }];
 const receipts = [{ receiptId: 501, messageId: 'MSG_FAILED', tenantId: 42, maskedMobile: '已保护', channelId: 7, providerMessageId: 'UP-1', receiptStatus: 'FAILED', sendStatus: 'FAILED', errorCode: 'E42', rawPayloadSummary: 'raw payload protected', receiptDigest: 'R-1', carrier: 'MOBILE', province: '广东', city: '深圳', reportTime: '2026-09-09T00:00:00' }];
-const errors = [{ normalizedCode: 'E42', platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' }];
+const errors = [{ normalizedCode: 'E42', bulkActionSupported: true, platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' }];
 const otherError = [{ ...errors[0], normalizedCode: 'E99' }];
 
 async function mockMessageOperationsApis(page: Page, fixtures: { sendRows?: typeof sends; errorRows?: typeof errors } = {}) {
