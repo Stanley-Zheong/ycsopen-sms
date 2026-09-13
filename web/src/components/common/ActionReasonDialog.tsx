@@ -52,9 +52,13 @@ export default function ActionReasonDialog({
     }
   }, [pending]);
 
+  const requestCancel = () => {
+    if (!pending && !submitLatched.current) onCancel();
+  };
+
   return (
     <div className="action-reason-dialog-backdrop">
-      <ModalDialog labelledBy={titleId} onRequestClose={() => { if (!pending) onCancel(); }}>
+      <ModalDialog labelledBy={titleId} onRequestClose={requestCancel}>
         <form
           className="action-reason-dialog"
           data-testid={`${idPrefix}-dialog`}
@@ -90,7 +94,7 @@ export default function ActionReasonDialog({
             />
           </label>
           <div className="action-reason-dialog-actions">
-            <button type="button" className="button-secondary" data-testid={`${idPrefix}-cancel`} disabled={pending} onClick={onCancel}>取消</button>
+            <button type="button" className="button-secondary" data-testid={`${idPrefix}-cancel`} disabled={pending} onClick={requestCancel}>取消</button>
             <button type="submit" data-testid={`${idPrefix}-confirm`} disabled={!reason.trim() || pending}>{pending ? '提交中…' : confirmLabel}</button>
           </div>
         </form>

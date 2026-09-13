@@ -66,6 +66,9 @@ describe('ActionReasonDialog', () => {
     fireEvent.click(screen.getByTestId('test-action-confirm'));
     fireEvent.submit(screen.getByTestId('test-action-dialog'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(screen.getByTestId('modal'), { key: 'Escape' });
+    fireEvent.click(screen.getByTestId('test-action-cancel'));
+    expect(onCancel).toHaveBeenCalledTimes(1);
 
     rerender(
       <ActionReasonDialog

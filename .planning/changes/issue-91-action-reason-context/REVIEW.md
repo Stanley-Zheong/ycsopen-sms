@@ -11,10 +11,11 @@ multiplicity gaps. Those corrections passed independent review and the complete
 remote gate on `42e588fd81229e91d0aaebdab35e4e3e88232a3e`; Core's only failure
 was the deliberately open three-item TODO sentinel. A newer live review then
 found that a same-ID retry could edit its reason even though the idempotent
-backend retains the first audit value. Final review is reopened until the UI
-freezes both values and a newer head passes the remote gate. Existing API
-shapes, permissions, tenant boundaries, state transitions, and production audit
-contracts remain unchanged.
+backend retains the first audit value. Another asynchronous review found that
+Escape or cancel could close the dialog in the synchronous window between the
+submit latch and the owner's pending rerender. Final review is reopened until
+both corrections pass on a newer head. Existing API shapes, permissions, tenant
+boundaries, state transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
 or documentation issue. It also read back all 15 evidence source digests after
@@ -28,7 +29,10 @@ service lane and all other remote jobs except the expected TODO sentinel. The
 later immutable-reason correction has now passed another independent worktree
 readback: first-submit trimming, failed-state immutability, same-ID/same-reason
 retry, owner compatibility, browser/unit coverage, and all source digests were
-confirmed. A newer pull-request head still must pass the remote gate.
+confirmed. The synchronous close/cancel latch correction also passed independent
+shared-component and recharge-owner review, including failure-release behavior
+and both available modal close paths. A newer pull-request head still must pass
+the remote gate.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,
@@ -55,9 +59,10 @@ back exactly one matching balance-audit entry.
 
 - Pending submissions now reject Escape, cancel, close, and background actions.
 - Confirmation is synchronously latched before the owner mutation begins, so
-  pointer or keyboard double activation creates one request. Pending focus moves
-  to the read-only reason field and remains trapped in the dialog; a failed
-  request releases the latch for retry.
+  pointer or keyboard double activation creates one request. Close, Escape, and
+  cancel read the same latch, including before the pending prop rerenders.
+  Pending focus moves to the read-only reason field and remains trapped in the
+  dialog; a failed request releases the latch for retry.
 - Message-operation retries retain both the operation ID and the trimmed reason
   captured by the first submission. After a failure the reason stays read-only,
   preventing the displayed retry intent from drifting from the persisted audit.

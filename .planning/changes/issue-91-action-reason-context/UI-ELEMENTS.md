@@ -2,6 +2,8 @@
 
 Existing page permissions, row states, action APIs, and stable action-trigger
 selectors remain owned by Phases 27, 28, 29, 32, 35, and 36.
+All confirmation rows share a synchronous submission latch that blocks duplicate
+confirmation, Escape, and cancel before the owner rerenders its pending state.
 
 | Page ID/route | Role/permission | Region | Element/type | Data/validation/format | Action and API effect | States and feedback | data-testid | Obligation/requirement IDs | Behavior IDs | Catalog test/layer | Playwright ID |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
