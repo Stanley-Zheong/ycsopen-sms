@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 const backendTarget = process.env.VITE_BACKEND_TARGET ?? 'http://127.0.0.1:8080';
+const buildCommit = process.env.VITE_BUILD_COMMIT ?? process.env.GITHUB_SHA ?? 'local';
 
 if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(backendTarget)) {
   throw new Error('VITE_BACKEND_TARGET must be an HTTP loopback URL');
