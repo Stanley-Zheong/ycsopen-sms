@@ -43,6 +43,22 @@ WHERE t.tenant_no = 'DEV-TENANT'
       SELECT 1 FROM tenant_accounts a WHERE a.tenant_id = t.id
   );
 
+INSERT INTO tenant_recharge_records (
+    tenant_id, amount_mil, recharge_method, transaction_ref_hash,
+    transaction_ref_mask, evidence_text, status, submitter_actor
+)
+SELECT
+    t.id, 91000, 'OFFLINE',
+    '11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a',
+    'ISSU****0091', 'Issue 91 release acceptance fixture', 'PENDING',
+    'release-acceptance'
+FROM tenants t
+WHERE t.tenant_no = 'DEV-TENANT'
+  AND NOT EXISTS (
+      SELECT 1 FROM tenant_recharge_records r
+      WHERE r.transaction_ref_hash = '11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a'
+  );
+
 INSERT INTO signatures (
     tenant_id, biz_type, sign_code, sign_content, sign_type, usage_type,
     risk_level, audit_status, audit_time, audit_comment

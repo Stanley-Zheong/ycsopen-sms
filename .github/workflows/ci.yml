@@ -277,6 +277,8 @@ jobs:
       - name: Install Web acceptance dependencies
         run: npm --prefix web ci
       - name: Build Web assets for Docker image
+        env:
+          VITE_BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
         run: npm --prefix web run build
       - name: Verify runner Google Chrome
         run: /usr/bin/google-chrome --version

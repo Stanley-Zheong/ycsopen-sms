@@ -37,7 +37,7 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   }
 
   return (
-    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} onKeyDown={onKeyDown}>
+    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} data-testid="modal" onKeyDown={onKeyDown}>
       {children}
     </div>
   );

@@ -89,6 +89,7 @@ public class MessageReceiptErrorOperationsService {
                  WHERE (? IS NULL OR t.tenant_id=?)
                    AND (? IS NULL OR t.message_id=?)
                    AND (? IS NULL OR t.send_status=?)
+                   AND (? IS NULL OR t.error_code=?)
                    AND (? IS NULL OR t.channel_id=?)
                    AND (? IS NULL OR t.created_at>=?)
                    AND (? IS NULL OR t.created_at<=?)
@@ -104,7 +105,8 @@ public class MessageReceiptErrorOperationsService {
                 timestamp(rs.getTimestamp("send_time")), timestamp(rs.getTimestamp("deliver_time")),
                 timestamp(rs.getTimestamp("created_at")), rs.getInt("version")),
                 checked.tenantId(), checked.tenantId(), checked.messageId(), checked.messageId(),
-                checked.status(), checked.status(), checked.channelId(), checked.channelId(),
+                checked.status(), checked.status(), checked.errorCode(), checked.errorCode(),
+                checked.channelId(), checked.channelId(),
                 checked.startAt(), checked.startAt(), checked.endAt(), checked.endAt(), MAX_LIST_ROWS);
     }
 
@@ -141,33 +143,59 @@ public class MessageReceiptErrorOperationsService {
         OperationFilter checked = filter.checked();
         return jdbc.query("""
                 SELECT COALESCE(t.error_code, 'UNKNOWN') AS normalized_code,
+                       CASE WHEN t.error_code IS NULL THEN FALSE ELSE TRUE END AS bulk_action_supported,
                        COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED') AS platform_category,
                        COALESCE(psm.severity, 'WARN') AS severity,
                        COALESCE(psm.retryable, FALSE) AS retryable,
-                       COUNT(*) AS total_count,
+                       COUNT(DISTINCT t.id) AS total_count,
                        COUNT(DISTINCT t.tenant_id) AS tenant_count,
                        COUNT(DISTINCT t.channel_id) AS channel_count,
                        MIN(t.created_at) AS first_seen_at,
                        MAX(t.updated_at) AS last_seen_at
                   FROM message_tasks t
-             LEFT JOIN provider_status_mappings psm
-                    ON psm.status='ACTIVE'
-                   AND psm.provider_code=t.error_code
+             LEFT JOIN (
+                       SELECT provider_code,
+                              CASE WHEN COUNT(DISTINCT platform_category)=1
+                                   THEN MIN(platform_category)
+                                   ELSE 'UNKNOWN_REVIEW_REQUIRED'
+                              END AS platform_category,
+                              CASE MAX(CASE severity
+                                     WHEN 'CRITICAL' THEN 4
+                                     WHEN 'ERROR' THEN 3
+                                     WHEN 'WARN' THEN 2
+                                     ELSE 1
+                                   END)
+                                   WHEN 4 THEN 'CRITICAL'
+                                   WHEN 3 THEN 'ERROR'
+                                   WHEN 2 THEN 'WARN'
+                                   ELSE 'INFO'
+                              END AS severity,
+                              CASE WHEN MIN(CASE WHEN retryable THEN 1 ELSE 0 END)=1
+                                   THEN TRUE ELSE FALSE
+                              END AS retryable
+                         FROM provider_status_mappings
+                        WHERE status='ACTIVE'
+                        GROUP BY provider_code
+                       ) psm ON psm.provider_code=t.error_code
                  WHERE t.send_status='FAILED'
                    AND (? IS NULL OR t.tenant_id=?)
+                   AND (? IS NULL OR t.message_id=?)
+                   AND (? IS NULL OR t.send_status=?)
                    AND (? IS NULL OR t.error_code=?)
                    AND (? IS NULL OR t.channel_id=?)
                    AND (? IS NULL OR t.created_at>=?)
                    AND (? IS NULL OR t.created_at<=?)
-                 GROUP BY COALESCE(t.error_code, 'UNKNOWN'), COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED'),
+                 GROUP BY t.error_code, COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED'),
                           COALESCE(psm.severity, 'WARN'), COALESCE(psm.retryable, FALSE)
                  ORDER BY total_count DESC, last_seen_at DESC
                  LIMIT ?
                 """, (rs, row) -> new ErrorGroupRow(rs.getString("normalized_code"),
-                rs.getString("platform_category"), rs.getString("severity"), rs.getBoolean("retryable"),
+                rs.getBoolean("bulk_action_supported"), rs.getString("platform_category"),
+                rs.getString("severity"), rs.getBoolean("retryable"),
                 rs.getInt("total_count"), rs.getInt("tenant_count"), rs.getInt("channel_count"),
                 timestamp(rs.getTimestamp("first_seen_at")), timestamp(rs.getTimestamp("last_seen_at"))),
-                checked.tenantId(), checked.tenantId(), checked.errorCode(), checked.errorCode(),
+                checked.tenantId(), checked.tenantId(), checked.messageId(), checked.messageId(),
+                checked.status(), checked.status(), checked.errorCode(), checked.errorCode(),
                 checked.channelId(), checked.channelId(), checked.startAt(), checked.startAt(),
                 checked.endAt(), checked.endAt(), MAX_LIST_ROWS);
     }
@@ -562,9 +590,9 @@ public class MessageReceiptErrorOperationsService {
                              String rawPayloadSummary, String receiptDigest, String carrier, String province,
                              String city, LocalDateTime reportTime) { }
 
-    public record ErrorGroupRow(String normalizedCode, String platformCategory, String severity, boolean retryable,
-                                int totalCount, int tenantCount, int channelCount, LocalDateTime firstSeenAt,
-                                LocalDateTime lastSeenAt) { }
+    public record ErrorGroupRow(String normalizedCode, boolean bulkActionSupported, String platformCategory,
+                                String severity, boolean retryable, int totalCount, int tenantCount,
+                                int channelCount, LocalDateTime firstSeenAt, LocalDateTime lastSeenAt) { }
 
     public record ActionRequest(String actionId, String reason) {
         ActionRequest checked() {

@@ -77,20 +77,23 @@ test.beforeEach(async ({ page }) => {
     reviewedAt: null,
     createdAt: '2026-09-10T02:00:00',
   }]) }));
-  await page.route('**/api/v1/console/recharges/3/review', async (route) => route.fulfill({ json: response({
-    id: 3,
-    tenantId: 42,
-    amountMil: 300000,
-    rechargeMethod: 'WECHAT',
-    transactionRefMask: 'WX-R****0003',
-    evidenceText: '微信凭证',
-    status: 'APPROVED',
-    submitterActor: 'tenant-user',
-    reviewerActor: 'finance',
-    reviewReason: '到账一致',
-    reviewedAt: '2026-09-10T03:00:00',
-    createdAt: '2026-09-10T02:00:00',
-  }) }));
+  await page.route('**/api/v1/console/recharges/3/review', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ approved: true, reason: '到账凭证复核一致' });
+    await route.fulfill({ json: response({
+      id: 3,
+      tenantId: 42,
+      amountMil: 300000,
+      rechargeMethod: 'WECHAT',
+      transactionRefMask: 'WX-R****0003',
+      evidenceText: '微信凭证',
+      status: 'APPROVED',
+      submitterActor: 'tenant-user',
+      reviewerActor: 'finance',
+      reviewReason: '到账凭证复核一致',
+      reviewedAt: '2026-09-10T03:00:00',
+      createdAt: '2026-09-10T02:00:00',
+    }) });
+  });
 });
 
 test('pw-p36-tenant-recharge C-P36-TENANT-RECHARGE OBL-F-8-3-A', async ({ page }) => {
@@ -115,8 +118,12 @@ test('pw-p36-finance-review C-P36-FINANCE-REVIEW OBL-F-8-3-B', async ({ page }) 
   await page.goto('/admin/tenant-recharge-review');
   await expect(page.getByTestId('admin-tenant-recharge-operations-review-table')).toBeVisible();
   await expect(page.getByTestId('admin-tenant-recharge-operations-review-row')).toContainText('WX-R****0003');
-  await page.getByTestId('admin-tenant-recharge-operations-review-reason').fill('到账一致');
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-reason')).toHaveCount(0);
   await expect(page.getByTestId('admin-tenant-recharge-operations-review-reject')).toBeVisible();
   await page.getByTestId('admin-tenant-recharge-operations-review-approve').click();
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-action-target')).toContainText('机构 42');
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-action-confirm')).toBeDisabled();
+  await page.getByTestId('admin-tenant-recharge-operations-review-reason').fill('到账凭证复核一致');
+  await page.getByTestId('admin-tenant-recharge-operations-review-action-confirm').click();
   await expect(page.getByTestId('admin-tenant-recharge-operations-review-message')).toContainText('APPROVED');
 });

@@ -12,12 +12,23 @@ import {
   type UplinkRecord,
 } from '@/api/uplinkNormalizationApi';
 import { mutationErrorMessage } from '@/api/client';
+import ActionReasonDialog from '@/components/common/ActionReasonDialog';
 import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/uplink-normalization.css';
 
-const DEFAULT_REASON = '运营复核后处理';
 const EMPTY_UPLINK_FILTERS = { tenantId: '', phoneNumber: '', keyword: '', carrier: '', pushState: '', startTime: '', endTime: '' };
 const DEFAULT_MONITOR_FILTERS = { tenantId: '', state: 'PUSH_FAILED', destination: '' };
+
+type PendingAction =
+  | { kind: 'uplink-replay'; row: UplinkRecord }
+  | { kind: 'push-replay' | 'push-pause' | 'push-resume'; row: UplinkPushMonitorRow };
+
+const ACTION_LABELS: Record<PendingAction['kind'], string> = {
+  'uplink-replay': '重放上行',
+  'push-replay': '重放推送',
+  'push-pause': '暂停推送',
+  'push-resume': '恢复推送',
+};
 
 export default function AdminUplinksPage() {
   const queryClient = useQueryClient();
@@ -26,8 +37,8 @@ export default function AdminUplinksPage() {
   const [draftMonitorFilters, setDraftMonitorFilters] = useState(DEFAULT_MONITOR_FILTERS);
   const [monitorFilters, setMonitorFilters] = useState(draftMonitorFilters);
   const [selected, setSelected] = useState<UplinkRecord | null>(null);
-  const [uplinkReplayReason, setUplinkReplayReason] = useState(DEFAULT_REASON);
-  const [pushActionReason, setPushActionReason] = useState(DEFAULT_REASON);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [actionReason, setActionReason] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -41,6 +52,8 @@ export default function AdminUplinksPage() {
     await queryClient.invalidateQueries({ queryKey: ['uplink-push-monitor'] });
   };
   const ok = async (text: string) => {
+    setPendingAction(null);
+    setActionReason('');
     setMessage(text);
     setError('');
     await refresh();
@@ -59,22 +72,22 @@ export default function AdminUplinksPage() {
     onError: (failure) => fail(failure, '上行详情加载失败'),
   });
   const replay = useMutation({
-    mutationFn: (row: UplinkRecord) => replayAdminUplink(row.id, uplinkReplayReason),
+    mutationFn: ({ row, reason }: { row: UplinkRecord; reason: string }) => replayAdminUplink(row.id, reason),
     onSuccess: (result) => ok(`上行重放完成：${result.state}`),
     onError: (failure) => fail(failure, '上行重放失败'),
   });
   const replayPush = useMutation({
-    mutationFn: (row: UplinkPushMonitorRow) => replayUplinkPushEvent(row.eventId, pushActionReason),
+    mutationFn: ({ row, reason }: { row: UplinkPushMonitorRow; reason: string }) => replayUplinkPushEvent(row.eventId, reason),
     onSuccess: (result) => ok(`推送重放完成：${result.state}`),
     onError: (failure) => fail(failure, '推送重放失败'),
   });
   const pausePush = useMutation({
-    mutationFn: (row: UplinkPushMonitorRow) => pauseUplinkPushEvent(row.eventId, pushActionReason),
+    mutationFn: ({ row, reason }: { row: UplinkPushMonitorRow; reason: string }) => pauseUplinkPushEvent(row.eventId, reason),
     onSuccess: (result) => ok(`目的地暂停完成：${result.state}`),
     onError: (failure) => fail(failure, '目的地暂停失败'),
   });
   const resumePush = useMutation({
-    mutationFn: (row: UplinkPushMonitorRow) => resumeUplinkPushEvent(row.eventId, pushActionReason),
+    mutationFn: ({ row, reason }: { row: UplinkPushMonitorRow; reason: string }) => resumeUplinkPushEvent(row.eventId, reason),
     onSuccess: (result) => ok(`目的地恢复完成：${result.state}`),
     onError: (failure) => fail(failure, '目的地恢复失败'),
   });
@@ -83,6 +96,24 @@ export default function AdminUplinksPage() {
   const setMonitorFilter = (key: keyof typeof draftMonitorFilters, value: string) => setDraftMonitorFilters((current) => ({ ...current, [key]: value }));
   const applyFilters = () => setFilters(draftFilters);
   const applyMonitorFilters = () => setMonitorFilters(draftMonitorFilters);
+  const openAction = (action: PendingAction) => {
+    setPendingAction(action);
+    setActionReason('');
+    setError('');
+  };
+  const closeAction = () => {
+    setPendingAction(null);
+    setActionReason('');
+  };
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    const reason = actionReason.trim();
+    if (pendingAction.kind === 'uplink-replay') replay.mutate({ row: pendingAction.row, reason });
+    if (pendingAction.kind === 'push-replay') replayPush.mutate({ row: pendingAction.row, reason });
+    if (pendingAction.kind === 'push-pause') pausePush.mutate({ row: pendingAction.row, reason });
+    if (pendingAction.kind === 'push-resume') resumePush.mutate({ row: pendingAction.row, reason });
+  };
+  const actionPending = replay.isPending || replayPush.isPending || pausePush.isPending || resumePush.isPending;
 
   return (
     <section className="uplink-page" data-testid="admin-uplink-normalization-uplinks-page">
@@ -110,7 +141,6 @@ export default function AdminUplinksPage() {
 
       <header className="uplink-subheader">
         <h2>上行明细</h2>
-        <label>重放原因<input data-testid="admin-uplink-normalization-uplink-replay-reason" value={uplinkReplayReason} onChange={(event) => setUplinkReplayReason(event.target.value)} /></label>
       </header>
       <QueryPanel
         className="uplink-query-panel"
@@ -142,7 +172,7 @@ export default function AdminUplinksPage() {
                 <td>{row.receiveTime ?? '-'}</td>
                 <td>
                   <button type="button" data-testid="admin-uplink-normalization-uplink-detail" onClick={() => detail.mutate(row)}>详情</button>
-                  <button type="button" data-testid="admin-uplink-normalization-uplink-replay" onClick={() => replay.mutate(row)}>重放</button>
+                  <button type="button" data-testid="admin-uplink-normalization-uplink-replay" onClick={() => openAction({ kind: 'uplink-replay', row })}>重放</button>
                 </td>
               </tr>
             ))}
@@ -179,7 +209,6 @@ export default function AdminUplinksPage() {
             <h2>上行推送监控</h2>
             <p>从真实 webhook_delivery_events / attempts 读取成功、失败、重试与延迟证据。</p>
           </div>
-          <label>操作原因<input data-testid="admin-uplink-normalization-push-action-reason" value={pushActionReason} onChange={(event) => setPushActionReason(event.target.value)} /></label>
         </header>
         <QueryPanel
           submitLegacyTestId="admin-uplink-normalization-push-search"
@@ -200,9 +229,9 @@ export default function AdminUplinksPage() {
                 <td>{row.latencyMs}</td>
                 <td>{row.updatedAt ?? '-'}</td>
                 <td data-testid="admin-uplink-normalization-uplink-push-destination-action">
-                  <button type="button" data-testid="admin-uplink-normalization-push-replay" onClick={() => replayPush.mutate(row)}>重放</button>
-                  <button type="button" data-testid="admin-uplink-normalization-push-pause" onClick={() => pausePush.mutate(row)}>暂停</button>
-                  <button type="button" data-testid="admin-uplink-normalization-push-resume" onClick={() => resumePush.mutate(row)}>恢复</button>
+                  <button type="button" data-testid="admin-uplink-normalization-push-replay" onClick={() => openAction({ kind: 'push-replay', row })}>重放</button>
+                  <button type="button" data-testid="admin-uplink-normalization-push-pause" onClick={() => openAction({ kind: 'push-pause', row })}>暂停</button>
+                  <button type="button" data-testid="admin-uplink-normalization-push-resume" onClick={() => openAction({ kind: 'push-resume', row })}>恢复</button>
                 </td>
               </tr>
             ))}
@@ -214,6 +243,32 @@ export default function AdminUplinksPage() {
           <QueryField name="destination" label="目的地"><input data-testid="admin-uplink-normalization-push-filter-destination" value={draftMonitorFilters.destination} onChange={(event) => setMonitorFilter('destination', event.target.value)} /></QueryField>
         </QueryPanel>
       </section>
+
+      {pendingAction && (
+        <ActionReasonDialog
+          idPrefix="admin-uplink-normalization-action"
+          title={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          target={pendingAction.kind === 'uplink-replay'
+            ? `上行记录 #${pendingAction.row.id} · 机构 ${pendingAction.row.tenantId}`
+            : `推送事件 ${pendingAction.row.logicalId} · 机构 ${pendingAction.row.tenantId}`}
+          consequence={pendingAction.kind === 'uplink-replay'
+            ? '确认后将按原上行记录重新执行推送，不会更改保存的目的地。'
+            : pendingAction.kind === 'push-pause'
+              ? '确认后将暂停该目的地事件的后续投递。'
+              : pendingAction.kind === 'push-resume'
+                ? '确认后将恢复该事件的投递调度。'
+                : '确认后将按保存的目的地重新投递该事件。'}
+          reasonLabel={`${ACTION_LABELS[pendingAction.kind]}原因`}
+          reasonTestId={pendingAction.kind === 'uplink-replay' ? 'admin-uplink-normalization-uplink-replay-reason' : 'admin-uplink-normalization-push-action-reason'}
+          reason={actionReason}
+          placeholder="请填写本次操作的复核依据"
+          confirmLabel={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          pending={actionPending}
+          onReasonChange={setActionReason}
+          onCancel={closeAction}
+          onConfirm={confirmAction}
+        />
+      )}
     </section>
   );
 }

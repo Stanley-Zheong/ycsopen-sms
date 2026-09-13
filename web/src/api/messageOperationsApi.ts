@@ -69,6 +69,7 @@ export interface ReceiptRow {
 
 export interface ErrorGroupRow {
   normalizedCode: string;
+  bulkActionSupported: boolean;
   platformCategory: string;
   severity: string;
   retryable: boolean;

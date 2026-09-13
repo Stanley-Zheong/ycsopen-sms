@@ -37,22 +37,40 @@ test('OBL-F-7-8-A C-P46-CENTER pw-p46-export-center OBL-F-7-8-C C-P46-DOWNLOAD p
 });
 
 test('OBL-F-7-2-C C-P46-SEND-EXPORT pw-p46-send-export OBL-F-7-4-C C-P46-RECEIPT-EXPORT pw-p46-receipt-export', async ({ page }) => {
+  const exportRequests: URL[] = [];
   await mockEmptyDashboard(page);
   await page.route('**/api/v1/console/message-operations/submissions?**', (route) => route.fulfill({ json: apiResponse([]) }));
   await page.route('**/api/v1/console/message-operations/sends?**', (route) => route.fulfill({ json: apiResponse([]) }));
   await page.route('**/api/v1/console/message-operations/receipts?**', (route) => route.fulfill({ json: apiResponse([]) }));
   await page.route('**/api/v1/console/message-operations/errors?**', (route) => route.fulfill({ json: apiResponse([]) }));
-  await page.route('**/api/v1/console/message-operations/exports?**', (route) => route.fulfill({
-    json: apiResponse({ actionId: 'EXPORT-1', action: 'EXPORT_REQUEST', target: 'snapshot', status: 'COMPLETED', resultCode: 'EXPORT_REQUESTED', resultMessage: '导出任务:46，匹配行数:2' }),
-  }));
+  await page.route('**/api/v1/console/message-operations/exports?**', (route) => {
+    exportRequests.push(new URL(route.request().url()));
+    return route.fulfill({
+      json: apiResponse({ actionId: 'EXPORT-1', action: 'EXPORT_REQUEST', target: 'snapshot', status: 'COMPLETED', resultCode: 'EXPORT_REQUESTED', resultMessage: '导出任务:46，匹配行数:2' }),
+    });
+  });
   await loginAs(page, 'OPERATOR');
   await page.goto('/admin/send/details');
+  await page.getByTestId('query-panel-toggle').click();
+  await page.getByTestId('admin-message-receipt-filter-error-code').fill('E42');
+  await page.getByTestId('query-submit').click();
   await page.getByTestId('admin-secure-async-send-details-export').click();
+  await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('发送详单导出');
+  await expect(page.getByTestId('admin-message-receipt-action-consequence')).toContainText('错误码筛选 E42 不受该导出接口支持');
+  await page.getByTestId('admin-message-receipt-action-reason').fill('导出发送详单核查');
+  await page.getByTestId('admin-message-receipt-action-confirm').click();
   await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出任务');
+  expect(exportRequests[0].searchParams.get('exportType')).toBe('SEND_DETAIL');
+  expect(exportRequests[0].searchParams.has('errorCode')).toBe(false);
 
   await page.goto('/admin/receipt/details');
   await page.getByTestId('admin-secure-async-receipt-export').click();
+  await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('回执详单导出');
+  await page.getByTestId('admin-message-receipt-action-reason').fill('导出回执详单核查');
+  await page.getByTestId('admin-message-receipt-action-confirm').click();
   await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出任务');
+  expect(exportRequests[1].searchParams.get('exportType')).toBe('RECEIPT_DETAIL');
+  expect(exportRequests[1].searchParams.has('errorCode')).toBe(false);
 });
 
 test('OBL-F-7-9-B C-P46-UNSUBSCRIBE-EXPORT pw-p46-unsubscribe-export', async ({ page }) => {

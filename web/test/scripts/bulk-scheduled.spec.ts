@@ -56,7 +56,10 @@ async function mockAdminBulkApis(page: Page) {
   await page.route('**/api/v1/console/bulk/tasks', (route: Route) => route.fulfill({ json: apiResponse([task]) }));
   await page.route('**/api/v1/console/bulk/tasks?**', (route: Route) => route.fulfill({ json: apiResponse([task]) }));
   await page.route('**/api/v1/console/bulk/tasks/301', (route: Route) => route.fulfill({ json: apiResponse({ task, items: [{ itemId: 1, itemTrackingId: 'BIT-301-1', rowNo: 1, messageId: 'MSG_1', sendStatus: 'PENDING', validationStatus: 'VALID', validationReason: null, cost: 0.05, updatedAt: '2026-09-09T00:00:00' }] }) }));
-  await page.route('**/api/v1/console/bulk/tasks/301/pause', (route: Route) => route.fulfill({ json: apiResponse({ ...task, state: 'PAUSED' }) }));
+  await page.route('**/api/v1/console/bulk/tasks/301/pause', (route: Route) => {
+    expect(route.request().postDataJSON()).toEqual({ reason: '等待通道恢复' });
+    return route.fulfill({ json: apiResponse({ ...task, state: 'PAUSED' }) });
+  });
 }
 
 test.describe('Phase 29 bulk scheduled task operations', () => {
@@ -101,7 +104,12 @@ test.describe('Phase 29 bulk scheduled task operations', () => {
     await page.goto('/admin/send/jobs');
     await expect(page.getByTestId('admin-bulk-scheduled-send-jobs-page')).toBeVisible();
     await expect(page.getByTestId('admin-bulk-scheduled-send-jobs-control')).toContainText('BULK-301');
+    await expect(page.getByTestId('admin-bulk-scheduled-send-jobs-reason')).toHaveCount(0);
     await page.getByTestId('admin-bulk-scheduled-send-jobs-pause').click();
+    await expect(page.getByTestId('admin-bulk-scheduled-send-jobs-action-target')).toContainText('BULK-301');
+    await expect(page.getByTestId('admin-bulk-scheduled-send-jobs-action-confirm')).toBeDisabled();
+    await page.getByTestId('admin-bulk-scheduled-send-jobs-reason').fill('等待通道恢复');
+    await page.getByTestId('admin-bulk-scheduled-send-jobs-action-confirm').click();
     await expect(page.getByTestId('admin-bulk-scheduled-operation-message')).toContainText('PAUSED');
   });
 });

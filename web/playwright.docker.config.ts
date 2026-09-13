@@ -12,7 +12,11 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
-  reporter: [['line'], ['html', { open: 'never' }]],
+  reporter: [
+    ['line'],
+    ['json', { outputFile: 'test-results/docker-release-report.json' }],
+    ['html', { open: 'never' }],
+  ],
   use: {
     baseURL: `http://127.0.0.1:${webPort}`,
     trace: 'retain-on-failure',

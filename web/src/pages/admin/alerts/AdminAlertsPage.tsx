@@ -13,6 +13,7 @@ import {
   type AlertRecord,
 } from '@/api/alertEngineApi';
 import { mutationErrorMessage } from '@/api/client';
+import ActionReasonDialog from '@/components/common/ActionReasonDialog';
 import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/alert-engine.css';
 
@@ -31,14 +32,16 @@ const defaultRule = {
   status: 'ACTIVE',
 };
 
+type PendingAlertAction = { kind: 'resolve' | 'mute'; row: AlertRecord };
+
 export default function AdminAlertsPage() {
   const queryClient = useQueryClient();
   const [ruleDraft, setRuleDraft] = useState(defaultRule);
   const [historyFilterDraft, setHistoryFilterDraft] = useState({ status: '', severity: '' });
   const [historyFilter, setHistoryFilter] = useState({ status: '', severity: '' });
   const [activeTab, setActiveTab] = useState<'ALL' | 'ACTIVE' | 'SEVERE'>('ALL');
-  const [resolveReason, setResolveReason] = useState('确认来源已恢复');
-  const [muteReason, setMuteReason] = useState('运营临时静音');
+  const [pendingAction, setPendingAction] = useState<PendingAlertAction | null>(null);
+  const [actionReason, setActionReason] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -55,7 +58,11 @@ export default function AdminAlertsPage() {
       queryClient.invalidateQueries({ queryKey: ['alert-deliveries'] }),
     ]);
   };
-  const ok = async (text: string) => {
+  const ok = async (text: string, closeReasonAction = false) => {
+    if (closeReasonAction) {
+      setPendingAction(null);
+      setActionReason('');
+    }
     setMessage(text);
     setError('');
     await refresh();
@@ -94,13 +101,13 @@ export default function AdminAlertsPage() {
     onError: (failure) => fail(failure, '告警确认失败'),
   });
   const resolve = useMutation({
-    mutationFn: (row: AlertRecord) => resolveAlert(row.id, resolveReason),
-    onSuccess: () => ok('告警已解决'),
+    mutationFn: ({ row, reason }: { row: AlertRecord; reason: string }) => resolveAlert(row.id, reason),
+    onSuccess: () => ok('告警已解决', true),
     onError: (failure) => fail(failure, '告警解决失败'),
   });
   const mute = useMutation({
-    mutationFn: (row: AlertRecord) => muteAlert(row.id, 30, muteReason),
-    onSuccess: () => ok('告警通知已静音'),
+    mutationFn: ({ row, reason }: { row: AlertRecord; reason: string }) => muteAlert(row.id, 30, reason),
+    onSuccess: () => ok('告警通知已静音', true),
     onError: (failure) => fail(failure, '告警静音失败'),
   });
 
@@ -112,6 +119,21 @@ export default function AdminAlertsPage() {
   }, [activeTab, history.data]);
 
   const setRule = (field: keyof typeof ruleDraft, value: string) => setRuleDraft((current) => ({ ...current, [field]: value }));
+  const openAction = (kind: PendingAlertAction['kind'], row: AlertRecord) => {
+    setPendingAction({ kind, row });
+    setActionReason('');
+    setError('');
+  };
+  const closeAction = () => {
+    setPendingAction(null);
+    setActionReason('');
+  };
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    const reason = actionReason.trim();
+    if (pendingAction.kind === 'resolve') resolve.mutate({ row: pendingAction.row, reason });
+    else mute.mutate({ row: pendingAction.row, reason });
+  };
 
   return (
     <section className="alert-engine-page" data-testid="admin-alert-engine-page">
@@ -171,8 +193,6 @@ export default function AdminAlertsPage() {
           <button type="button" onClick={() => setActiveTab('ACTIVE')}>活跃</button>
           <button type="button" onClick={() => setActiveTab('SEVERE')}>严重</button>
         </div>
-        <label>解决原因<input data-testid="admin-alert-engine-resolve-reason" value={resolveReason} onChange={(event) => setResolveReason(event.target.value)} /></label>
-        <label>静音原因<input data-testid="admin-alert-engine-mute-reason" value={muteReason} onChange={(event) => setMuteReason(event.target.value)} /></label>
         <QueryPanel
           onSubmit={() => setHistoryFilter({ ...historyFilterDraft })}
           onRefresh={() => void refresh()}
@@ -200,9 +220,9 @@ export default function AdminAlertsPage() {
                         <td data-testid="admin-alert-engine-dashboard-alert-action">
                           <button type="button" data-testid="admin-alert-engine-alert-acknowledge" onClick={() => acknowledge.mutate(row)}>确认</button>
                           <button type="button" data-testid="admin-alert-engine-alert-history-acknowledge" onClick={() => acknowledge.mutate(row)}>历史确认</button>
-                          <button type="button" data-testid="admin-alert-engine-alert-resolve" onClick={() => resolve.mutate(row)}>解决</button>
-                          <button type="button" data-testid="admin-alert-engine-alert-mute" onClick={() => mute.mutate(row)}>静音</button>
-                          <button type="button" data-testid="admin-alert-engine-alert-history-mute" onClick={() => mute.mutate(row)}>历史静音</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-resolve" onClick={() => openAction('resolve', row)}>解决</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-mute" onClick={() => openAction('mute', row)}>静音</button>
+                          <button type="button" data-testid="admin-alert-engine-alert-history-mute" onClick={() => openAction('mute', row)}>历史静音</button>
                         </td>
                       </tr>
                     ))}
@@ -254,6 +274,29 @@ export default function AdminAlertsPage() {
           </tbody>
         </table>
       </section>
+
+      {pendingAction && (
+        <ActionReasonDialog
+          idPrefix="admin-alert-engine-action"
+          title={`确认${pendingAction.kind === 'resolve' ? '解决告警' : '全局静音告警通知'}`}
+          target={pendingAction.kind === 'resolve'
+            ? `告警 #${pendingAction.row.id} · ${pendingAction.row.title}`
+            : `全局告警通知 · 由告警 #${pendingAction.row.id} · ${pendingAction.row.title} 发起`}
+          consequence={pendingAction.kind === 'resolve'
+            ? '确认后该告警将进入已解决状态，原因会写入解决记录。'
+            : '确认后 30 分钟内所有新告警通知都会被全局抑制，所选告警会标记静音，原因会写入全局静音记录。'}
+          reasonLabel={pendingAction.kind === 'resolve' ? '解决原因' : '静音原因'}
+          reasonTestId={pendingAction.kind === 'resolve' ? 'admin-alert-engine-resolve-reason' : 'admin-alert-engine-mute-reason'}
+          reason={actionReason}
+          placeholder={pendingAction.kind === 'resolve' ? '请填写问题已解决的复核依据' : '请填写临时静音的业务依据'}
+          maxLength={255}
+          confirmLabel={pendingAction.kind === 'resolve' ? '确认解决' : '确认静音'}
+          pending={resolve.isPending || mute.isPending}
+          onReasonChange={setActionReason}
+          onCancel={closeAction}
+          onConfirm={confirmAction}
+        />
+      )}
     </section>
   );
 }
