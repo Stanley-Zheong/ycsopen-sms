@@ -5,8 +5,8 @@
 | Surface | Command | Result |
 | --- | --- | --- |
 | Dependency install | `npm --prefix web ci` | PASS; lockfile install completed. The audit reported 7 existing dependency advisories. |
-| Focused affected UI tests | From `web/`: `npm test -- test/unit/action-reason-dialog.test.tsx test/unit/tenant-recharge.test.tsx test/unit/uplink-normalization.test.tsx test/unit/message-operations.test.tsx test/unit/alert-engine.test.tsx test/unit/webhook-delivery.test.tsx test/unit/bulk-scheduled.test.tsx` | PASS, 7 files / 29 tests. Shared-component and recharge-owner cases prove that Escape and cancel cannot close the dialog in the synchronous latch window before `pending` rerenders. The message-operation cases prove that an explicit retry after an ambiguous failure reuses the selected operation ID and first submitted reason, while the reason stays read-only. The error-group cases prove that aggregate/list count mismatches and the null-derived `UNKNOWN` group fail closed, while a literal `UNKNOWN` code submits only its matching failed message. The final full run below includes the same focused coverage. |
-| Full UI unit tests | `npm --prefix web test` | PASS, 49 files / 171 tests after the latest executable diff was frozen. Existing jsdom connection messages and React Router future warnings did not fail the run. |
+| Focused affected UI tests | From `web/`: `npm test -- test/unit/action-reason-dialog.test.tsx test/unit/tenant-recharge.test.tsx test/unit/uplink-normalization.test.tsx test/unit/message-operations.test.tsx test/unit/alert-engine.test.tsx test/unit/webhook-delivery.test.tsx test/unit/bulk-scheduled.test.tsx` | PASS, 7 files / 30 tests. Shared-component and recharge-owner cases prove that Escape and cancel cannot close the dialog in the synchronous latch window before `pending` rerenders. The message-operation cases prove that an explicit retry after an ambiguous failure reuses the selected operation ID and first submitted reason, while the reason stays read-only. The error-group cases prove that aggregate/list count mismatches and the null-derived `UNKNOWN` group fail closed, while a literal `UNKNOWN` code submits only its matching failed message and a message/status-filtered target list shares its filter with the aggregate. The final full run below includes the same focused coverage. |
+| Full UI unit tests | `npm --prefix web test` | PASS, 49 files / 172 tests after the latest executable diff was frozen. Existing jsdom connection messages and React Router future warnings did not fail the run. |
 | Production build | `npm --prefix web run build` | PASS; Vite emitted only its existing large-chunk advisory. |
 | Changed-file lint | From `web/`: `npx --yes --prefix web eslint` over all changed TypeScript and TSX files with `--max-warnings 0` | PASS. |
 | Isolated Issue #91 interaction | See the exact command in `EVIDENCE/playwright-action-reason-report.json`. | PASS, 1/1 in actual `Chromium/151.0.7922.34` after the latest executable diff was frozen; the case traverses all nine affected routes and checks visibility, context, validation, cancellation, double-activation request deduplication, same-ID/same-reason retry and reason immutability after an ambiguous failure, pending focus containment and dismissal locking, truthful export scope, selected error-group payload binding, empty/truncated/null-derived-group disabling, literal-`UNKNOWN` action binding, global mute scope, and success close. The unit cases above isolate the narrower synchronous pre-pending dismissal window. |
@@ -16,14 +16,14 @@
 | Latest-main integration | Rebase onto `66d9cde07e957e9aa5597a434dec5e2fb6c1a8fd`, conflict review, the affected checks below, and the Issue #91 acceptance command recorded in evidence | PASS; incoming #93 also extended the release seed, release script, and Docker Chrome spec. The integration preserves both account-status and action-reason fixtures/cases; Docker discovery lists all three cases, and isolated Chromium acceptance passed 1/1 on the updated base. |
 | Docker release seed identity | `bash -n scripts/verify-docker-release` and review against the release migration's `UNIQUE(version_id, prefix)` key | PASS; the fixture assertion now counts `1380013` only within `DEV-PREFIX-2026-09`, while still requiring exactly one release row. |
 | Affected backend seed and service tests | `mvn -f core/pom.xml -Dtest=ReleaseAcceptanceSeedMigrationTest,TenantRechargeOperationsMigrationTest,TenantRechargeServiceTest test` | PASS, 6/6; this covers additive and repeatable release-fixture creation, the recharge state transition, and persisted audit behavior used by Docker acceptance. |
-| Error aggregation service tests | From the repository root: `mvn -f core/pom.xml -Dtest=MessageReceiptErrorOperationsServiceTest test` | PASS, 8/8. The added cases prove that two active provider/protocol mappings with the same provider code do not multiply task counts, conflicting taxonomy collapses to the conservative category/highest severity/non-retryable result, and null versus literal `UNKNOWN` error codes remain distinct groups with the correct bulk-action capability. |
+| Error aggregation service tests | From the repository root: `mvn -f core/pom.xml -Dtest=MessageReceiptErrorOperationsServiceTest test` | PASS, 9/9. The added cases prove that message/status filters scope loaded sends and error aggregates identically, a non-`FAILED` status produces no error group, two active provider/protocol mappings with the same provider code do not multiply task counts, conflicting taxonomy collapses conservatively, and null versus literal `UNKNOWN` error codes remain distinct groups with the correct bulk-action capability. |
 | Docker acceptance discovery | `npm --prefix web run test:docker-release -- --list` | PASS, 3 tests discovered; the existing Issue #60 identity case, incoming Issue #90 account-status case, and Issue #91 real-service action-reason case coexist. |
-| Real-service installed-Chrome acceptance | Pull-request CI run [34770568655](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34770568655), `Docker release / Google Chrome`, commit `fcb5038684fd8c80985b10002765856cc5e73a95` | PASS. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `a0fd1f37da190fb417fd588990314d843e1b7aae2058ac4821369cb424ed3ac9`, `5fa4227b27bbbea40fa4afa1b37cd90fc43c6f9cadf95b863ad8e629c53ff4cf`, and `aa0de2e40e840f2e72a81b62a08462e16470faeff7b00a98c9a946f6022ddd8a`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 984 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. |
+| Real-service installed-Chrome acceptance | Pull-request CI run [34773792381](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34773792381), `Docker release / Google Chrome`, commit `332570a283ab89e16516f980e7884e2554d13504` | HISTORICAL PASS before the latest filter/trace correction. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `32d7d1a15ec20b921a7904f4462cfd4cdc537e89ae4cf4fac941c28a01ca3b77`, `ff05a6aaef8cb46024e4a2b982e1f36bfc3442f78d4358830f85c6fc2998731c`, and `ee94e99d0c29e9469b59c7dbbf0f051be84bbf8d567bef64b450e39d16f089f5`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 985 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. A current-commit replacement run is required before closure. |
 
 ## Executed boundaries
 
-- The final post-closure `mvn -f core/pom.xml test` compiled all backend source
-  and executed 984 tests, ending with 7 failures, 4 errors, and 33 skipped. The
+- The post-closure `mvn -f core/pom.xml test` on head `58a4ca0` compiled all
+  backend source and executed 984 tests, ending with 7 failures, 4 errors, and 33 skipped. The
   release sentinel passed after observing the completed TODO list. Every
   remaining failure is a host/baseline boundary in untouched code: four Phase
   01 process-harness failures cannot find a system Ruby, Phase 08 has one
@@ -63,13 +63,12 @@ and tests remain authoritative for those unchanged surfaces.
 The Docker release suite now contains a second, complementary acceptance lane:
 installed Google Chrome traverses all nine routes against real Web/Core services
 and approves one test-owned recharge fixture with persisted reason and balance
-audit readback. Pull-request run `34770568655` passed this lane in fresh,
-upgrade, and restart environments on the current executable code commit recorded
-above, including the retry-identity, taxonomy-aggregation, immutable-reason, and
-synchronous pre-pending dismissal corrections. The intentionally open TODO
-sentinel was the only failed remote Core assertion. Live review then reached
-this exact head with no author-actionable finding, so the completion checklist
-was closed for the final Core rerun.
+audit readback. Pull-request run `34773792381` passed this lane in fresh,
+upgrade, and restart environments on commit `332570a`, including the retry-
+identity, taxonomy-aggregation, immutable-reason, synchronous pre-pending
+dismissal, and null/literal-`UNKNOWN` corrections. The newer filter-domain and
+atomic-trace correction requires a replacement run on its exact commit. The
+TODO sentinel remains deliberately open until that run and live review pass.
 
 ## Post-closure backend rerun
 

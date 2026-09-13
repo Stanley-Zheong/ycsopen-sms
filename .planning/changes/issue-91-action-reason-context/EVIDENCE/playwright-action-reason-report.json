@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-13T18:03:53Z",
+  "recordedAt": "2026-09-13T18:30:33Z",
   "baseCommit": "66d9cde07e957e9aa5597a434dec5e2fb6c1a8fd",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
   "flaky": 0,
-  "durationMs": 5423,
+  "durationMs": 5279,
   "project": "local-google-chrome",
   "engine": "Chromium/151.0.7922.34 headless_shell",
   "runtime": {
@@ -18,9 +18,9 @@
   "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4220 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
   "sourceSha256": {
     "docs/frontend页面实现规范.md": "b75671a1848b157f6fe9a8621cca989b393bc4d1930eed78547548babd53c601",
-    ".planning/changes/issue-91-action-reason-context/SPEC.md": "d0bc85ae09998d662ceb735cd6afc02279cd80aef707be97647d5d968852aac6",
-    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "25c660a0c9d96780768e12e6614fd97cfa9cca1ceed128d872eccd8967c8b8e0",
-    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "e319813eff7bd5932d8e7b9476f397b714ae65f00878186d58e5c1c1b209465e",
+    ".planning/changes/issue-91-action-reason-context/SPEC.md": "78a2b6d68f2b7e6ac93a6069cf3eb31041f4e75f76369b3eeaca8c528910abf9",
+    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "f9de58d52b5c02c9cc31f986be2e686754a4225b88fac6bdda14ab3f540470a2",
+    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "357d95ed2b2713922ab17105f37b729c0838bffef7a43be3aa6d84d0e9bc7c68",
     "web/src/components/common/ActionReasonDialog.tsx": "1785383b93cbe5adb8f8281cb1b1d3287488ebd621988b7c3503dcc99d5120e6",
     "web/src/components/common/ModalDialog.tsx": "b81de4095c707f9743f928049af12d31b7e65b3d5b801f49974d7a4099d2559b",
     "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "1fd2cfad970776fef0910fdf341f657893e8b71e65e83bf8c5faef0476b41366",
@@ -38,7 +38,7 @@
       "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
       "playwrightId": "pw-issue-91-action-reason-context",
       "obligationId": "OBL-ISSUE-91-ACTION-REASON",
-      "durationMs": 5423,
+      "durationMs": 5279,
       "status": "passed"
     }
   ],

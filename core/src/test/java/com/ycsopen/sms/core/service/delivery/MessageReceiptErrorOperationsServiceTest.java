@@ -282,6 +282,41 @@ class MessageReceiptErrorOperationsServiceTest {
                 .satisfies(row -> assertThat(row.totalCount()).isEqualTo(1));
     }
 
+    @Test
+    void errorGroupsApplyTheSameMessageAndStatusScopeAsSendTargets() {
+        jdbc.update("""
+                INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                VALUES (42, 'MSG_OTHER_E42', 'another failed message', 'FAILED', 7, 'E42')
+                """);
+        for (int index = 0; index < 201; index++) {
+            jdbc.update("""
+                    INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                    VALUES (42, ?, 'newer unrelated error', 'FAILED', 7, 'E99')
+                    """, "MSG_OTHER_CODE_" + index);
+        }
+
+        var oneMessage = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, "MSG_FAILED", "FAILED", null, "E42", null, null));
+        var incompatibleStatus = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, "MSG_FAILED", "SENT", null, "E42", null, null));
+        var errorCodeFilter = new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, null, "FAILED", null, "E42", null, null);
+        var filteredSends = service.sends(errorCodeFilter);
+        var filteredGroups = service.errorGroups(errorCodeFilter);
+
+        assertThat(oneMessage).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.normalizedCode()).isEqualTo("E42");
+                    assertThat(row.totalCount()).isEqualTo(1);
+                });
+        assertThat(incompatibleStatus).isEmpty();
+        assertThat(filteredSends)
+                .extracting(MessageReceiptErrorOperationsService.SendRow::messageId)
+                .containsExactlyInAnyOrder("MSG_FAILED", "MSG_OTHER_E42");
+        assertThat(filteredGroups).singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(filteredSends.size()));
+    }
+
     private void seed() {
         jdbc.update("""
                 INSERT INTO message_submits(id, tenant_id, submit_id, request_digest, source_protocol, product_type,

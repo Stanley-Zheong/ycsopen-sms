@@ -89,6 +89,7 @@ public class MessageReceiptErrorOperationsService {
                  WHERE (? IS NULL OR t.tenant_id=?)
                    AND (? IS NULL OR t.message_id=?)
                    AND (? IS NULL OR t.send_status=?)
+                   AND (? IS NULL OR t.error_code=?)
                    AND (? IS NULL OR t.channel_id=?)
                    AND (? IS NULL OR t.created_at>=?)
                    AND (? IS NULL OR t.created_at<=?)
@@ -104,7 +105,8 @@ public class MessageReceiptErrorOperationsService {
                 timestamp(rs.getTimestamp("send_time")), timestamp(rs.getTimestamp("deliver_time")),
                 timestamp(rs.getTimestamp("created_at")), rs.getInt("version")),
                 checked.tenantId(), checked.tenantId(), checked.messageId(), checked.messageId(),
-                checked.status(), checked.status(), checked.channelId(), checked.channelId(),
+                checked.status(), checked.status(), checked.errorCode(), checked.errorCode(),
+                checked.channelId(), checked.channelId(),
                 checked.startAt(), checked.startAt(), checked.endAt(), checked.endAt(), MAX_LIST_ROWS);
     }
 
@@ -177,6 +179,8 @@ public class MessageReceiptErrorOperationsService {
                        ) psm ON psm.provider_code=t.error_code
                  WHERE t.send_status='FAILED'
                    AND (? IS NULL OR t.tenant_id=?)
+                   AND (? IS NULL OR t.message_id=?)
+                   AND (? IS NULL OR t.send_status=?)
                    AND (? IS NULL OR t.error_code=?)
                    AND (? IS NULL OR t.channel_id=?)
                    AND (? IS NULL OR t.created_at>=?)
@@ -190,7 +194,8 @@ public class MessageReceiptErrorOperationsService {
                 rs.getString("severity"), rs.getBoolean("retryable"),
                 rs.getInt("total_count"), rs.getInt("tenant_count"), rs.getInt("channel_count"),
                 timestamp(rs.getTimestamp("first_seen_at")), timestamp(rs.getTimestamp("last_seen_at"))),
-                checked.tenantId(), checked.tenantId(), checked.errorCode(), checked.errorCode(),
+                checked.tenantId(), checked.tenantId(), checked.messageId(), checked.messageId(),
+                checked.status(), checked.status(), checked.errorCode(), checked.errorCode(),
                 checked.channelId(), checked.channelId(), checked.startAt(), checked.startAt(),
                 checked.endAt(), checked.endAt(), MAX_LIST_ROWS);
     }

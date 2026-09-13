@@ -14,7 +14,8 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-91-action-reason-context | A reason input is absent until an authorized operator chooses a concrete state-changing action. The resulting modal names the action and target, explains the effect, blocks interaction with underlying page actions, and provides an empty required reason field. Cancel closes the modal without a request. Confirm is disabled while the trimmed reason is empty. Confirmation is synchronously latched so a double click or repeated keyboard activation produces one request; that same latch blocks close and cancel immediately, before the owner can rerender with `pending=true`. While a request is pending, focus remains inside the modal and confirm, cancel, keyboard dismissal, and background action replacement remain blocked; a failed request releases the latch for an explicit retry of the same selected operation. Message-operation retry reuses both its idempotency ID and the first submitted reason snapshot, which remains read-only until cancellation or success. Confirmation submits the entered reason to the selected action and target. | Isolated browser coverage traverses recharge review, uplink replay and push control, message/receipt/error operations, alert resolve and global mute, failed-push control, and admin send-task control. Each page has no detached reason field before action selection; each sampled action opens the correct modal, exposes its target/effect, blocks an empty confirmation, and sends exactly the entered reason only after confirmation. Shared-component and page-owner unit tests prove synchronous duplicate, Escape, and cancel suppression before pending rerender; browser tests prove stable retry identity and reason plus pending focus/dismissal locks. Docker acceptance uses installed Google Chrome against the real Web/Core services to prove all affected routes start without detached reason fields, then performs one recharge approval and reads back its persisted reason and balance audit. |
+| issue-91-action-reason-context | A reason input is absent until an authorized operator chooses a concrete state-changing action. The resulting modal names the action and target, explains the effect, blocks interaction with underlying page actions, and provides an empty required reason field. Cancel closes the modal without a request. Confirm is disabled while the trimmed reason is empty. Confirmation is synchronously latched so a double click or repeated keyboard activation produces one request; that same latch blocks close and cancel immediately, before the owner can rerender with `pending=true`. While a request is pending, focus remains inside the modal and confirm, cancel, keyboard dismissal, and background action replacement remain blocked; a failed request releases the latch for an explicit retry of the same selected operation. Message-operation retry reuses both its idempotency ID and the first submitted reason snapshot, which remains read-only until cancellation or success. Confirmation submits the entered reason to the selected action and target. | Isolated browser coverage traverses recharge review, uplink replay and push control, message/receipt/error operations, alert resolve and global mute, failed-push control, and admin send-task control. Each page has no detached reason field before action selection; each sampled action opens the correct modal, exposes its target/effect, blocks an empty confirmation, and sends exactly the entered reason only after confirmation. Shared-component and page-owner unit tests prove synchronous duplicate, Escape, and cancel suppression before pending rerender; browser tests prove stable retry identity and reason plus pending focus/dismissal locks. |
+| issue-91-action-reason-real-service | The packaged Web/Core release exposes the same contextual-reason entry points and persists the submitted reason through the owning backend action. | Installed Google Chrome loads all nine affected routes against real Web/Core services without detached reason fields, performs one test-owned recharge approval with one request under double activation, and reads back the persisted review reason and matching balance audit. |
 
 ## Scope
 
@@ -43,10 +44,15 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
   null and non-null values as separate aggregates. Only the display-only
   `UNKNOWN（错误码为空）` group derived from a null stored value is unavailable;
   a literal upstream error code `UNKNOWN` remains a distinct actionable group
-  and is submitted unchanged to the existing bulk API. While send targets are
-  loading, when target loading fails, when loaded targets are incomplete, or
-  when a group has zero or more than 50 matching failed messages, its bulk
-  controls are disabled and no dialog or request may be created.
+  and is submitted unchanged to the existing bulk API. The send-target query
+  and the error-group aggregate apply the same tenant, message ID, status,
+  error-code, channel, and time predicates. Because error groups contain only
+  failed tasks, a non-`FAILED` status filter returns no error groups; a message
+  ID filter limits both the loaded target list and its aggregate count to that
+  message. While send targets are loading, when target loading fails, when
+  loaded targets are incomplete, or when a group has zero or more than 50
+  matching failed messages, its bulk controls are disabled and no dialog or
+  request may be created.
 - `/admin/alerts`: resolve one alert, or start a 30-minute global notification
   mute from one alert row. The mute target and consequence name its global
   scope; the selected alert remains visible only as the initiating context.

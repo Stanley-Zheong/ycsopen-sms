@@ -17,10 +17,19 @@ submit latch and the owner's pending rerender. Both corrections now pass on
 `fcb5038684fd8c80985b10002765856cc5e73a95`. A later current-head review found
 that the null-derived display label `UNKNOWN` collided with a valid literal
 upstream code and also detected an expired browser-evidence source digest. The
-current worktree separates those aggregates with an explicit capability flag,
-tests both cases, and reseals the browser evidence. Final review remains open
-until the corrected head passes the remote gate. Existing permissions, tenant
-boundaries, state transitions, and production audit contracts remain unchanged.
+correction separates those aggregates with an explicit capability flag, tests
+both cases, and reseals the browser evidence. Pull-request run `34773792381`
+passed Web, both portable gates, Phase 03 real integration, and installed-Chrome
+Docker fresh/upgrade/restart on commit `332570a`; Core executed 985 tests and
+failed only the deliberately open TODO sentinel. The next live review found two
+further gaps: message/status filters were applied to loaded send targets but not
+to the aggregate used by the completeness guard, and the Docker browser case
+reused the isolated UI obligation without its own atomic matrix/UI trace. The
+current worktree applies the complete filter domain to both queries, proves the
+message and non-failed-status cases, and assigns the real-service case its own
+behavior, obligation, matrix row, and UI trace. A current-commit remote run and
+live review remain open. Existing permissions, tenant boundaries, state
+transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
 or documentation issue. It also read back all 15 evidence source digests after
@@ -42,6 +51,20 @@ jobs on that correction; Core executed 984 tests and failed only the deliberatel
 open TODO sentinel. Live asynchronous review then covered the full diff through
 that exact head and reported no author-actionable issue, allowing the completion
 checklist to close before the final Core rerun.
+
+The null/literal-`UNKNOWN` correction passed a further independent readback. The
+reviewer confirmed raw SQL grouping, distinct task counts, H2/MySQL syntax,
+record serialization, null-safe frontend target binding, separate row identity,
+backend/unit/Chromium coverage, and all 15 resealed source digests. The later
+filter-domain and atomic-trace correction has passed its focused backend/UI
+tests, full UI suite, build, lint, affected Chromium suite, planning-validator
+self-test, and 15-digest readback. Its first independent review found that the
+send-target query still omitted the error-code predicate and could lose the
+selected group behind its 200-row limit. The follow-up adds the missing
+predicate and a service case with 201 newer messages from another error group;
+the reviewer reran the 9-test service suite, read back all 15 digests, and
+reported PASS with no further finding. The remote executable boundary remains a
+prerequisite for closing the TODO sentinel.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,
@@ -106,12 +129,20 @@ back exactly one matching balance-audit entry.
   the null-derived placeholder, while a literal `UNKNOWN` action sends that
   exact code and excludes null-code messages. Backend, unit, and Chromium tests
   cover both rows.
+- Error aggregates now apply the same message ID and status predicates as the
+  loaded send targets, and send targets now apply the same error-code predicate
+  as the aggregate. A message-specific query therefore compares one target with
+  a one-task aggregate, any non-`FAILED` status yields no failure group, and 201
+  newer messages from another error code cannot displace the selected targets
+  from the 200-row send window. Backend and UI unit tests cover these scope
+  rules.
 - Alert mute confirmation now names global alert notification as the target,
   keeps the chosen alert only as initiating context, and states that all new
   alert notifications are suppressed for 30 minutes.
-- Docker acceptance now includes all nine routes in installed Google Chrome
-  against real Web/Core services, plus a test-owned recharge approval with
-  double-click request counting and persisted reason/balance-audit readback.
+- Docker acceptance now has its own atomic behavior, obligation, matrix row,
+  and UI trace. It includes all nine routes in installed Google Chrome against
+  real Web/Core services, plus a test-owned recharge approval with double-click
+  request counting and persisted reason/balance-audit readback.
 
 ## Tool boundary
 

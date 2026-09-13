@@ -207,6 +207,31 @@ describe('Phase 27 message receipt error operations UI', () => {
     await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '错误组已具备重试条件'));
   });
 
+  it('keeps message-filtered send targets and error aggregates in the same scope', async () => {
+    vi.mocked(api.listSends).mockImplementation(async (filter) => filter.messageId === 'MSG_FAILED'
+      ? [sendRow()]
+      : [sendRow(), sendRow({ taskId: 202, messageId: 'MSG_OTHER_E42' })]);
+    vi.mocked(api.listErrorGroups).mockImplementation(async (filter) => [
+      errorGroup({ totalCount: filter.messageId === 'MSG_FAILED' ? 1 : 2 }),
+    ]);
+    renderPage('errors');
+
+    expect(await screen.findByTestId('admin-message-receipt-error-details-page')).toBeVisible();
+    fireEvent.change(screen.getByTestId('admin-message-receipt-filter-message'), { target: { value: 'MSG_FAILED' } });
+    fireEvent.change(screen.getByTestId('admin-message-receipt-filter-status'), { target: { value: 'FAILED' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => {
+      expect(api.listSends).toHaveBeenCalledWith(expect.objectContaining({ messageId: 'MSG_FAILED', status: 'FAILED' }));
+      expect(api.listErrorGroups).toHaveBeenCalledWith(expect.objectContaining({ messageId: 'MSG_FAILED', status: 'FAILED' }));
+    });
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    await waitFor(() => expect(bulkRetry).toBeEnabled());
+    fireEvent.click(bulkRetry);
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('错误码 E42 · 1 条失败消息');
+  });
+
   it('binds each bulk action to the selected error group and its matching failed messages', async () => {
     vi.mocked(api.listSends).mockResolvedValue([
       sendRow(),
