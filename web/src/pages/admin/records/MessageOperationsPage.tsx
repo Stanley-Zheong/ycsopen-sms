@@ -19,6 +19,7 @@ import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/message-operations.css';
 
 type Section = 'submissions' | 'sends' | 'receipts' | 'errors';
+const MAX_BULK_SELECTION = 50;
 
 const SECTION_LABELS: Record<Section, string> = {
   submissions: '提交详情',
@@ -30,7 +31,7 @@ const SECTION_LABELS: Record<Section, string> = {
 const DEFAULT_FILTER: OperationFilter = { tenantId: '42', messageId: '', status: '', errorCode: '' };
 
 type PendingAction =
-  | { kind: 'export'; section: Section; filter: OperationFilter }
+  | { kind: 'export'; section: Section; filter: OperationFilter; ignoredErrorCode?: string }
   | { kind: 'resend' | 'appeal'; messageId: string }
   | { kind: 'correct' | 'replay'; receiptId: number; messageId: string }
   | { kind: 'bulk-retry' | 'mark-problem'; errorCode: string; messageIds: string[] };
@@ -52,6 +53,22 @@ function newActionId(prefix: string) {
   return `${prefix}-${Date.now()}`;
 }
 
+function exportAction(section: Section, filter: OperationFilter): PendingAction {
+  const { errorCode, ...effectiveFilter } = filter;
+  return {
+    kind: 'export',
+    section,
+    filter: effectiveFilter,
+    ignoredErrorCode: errorCode || undefined,
+  };
+}
+
+function exportDataset(section: Section): string {
+  if (section === 'sends') return '发送详单导出';
+  if (section === 'receipts') return '回执详单导出';
+  return '消息运营导出（发送、回执与提交记录）';
+}
+
 function actionTarget(action: PendingAction): string {
   switch (action.kind) {
     case 'export': {
@@ -61,7 +78,7 @@ function actionTarget(action: PendingAction): string {
         action.filter.status ? `状态 ${action.filter.status}` : '',
         action.filter.errorCode ? `错误码 ${action.filter.errorCode}` : '',
       ].filter(Boolean);
-      return `${SECTION_LABELS[action.section]}当前筛选结果 · ${scope.length ? scope.join(' · ') : '全部记录'}`;
+      return `${exportDataset(action.section)} · ${scope.length ? scope.join(' · ') : '全部记录'}`;
     }
     case 'resend':
     case 'appeal': return `消息 ${action.messageId}`;
@@ -74,7 +91,15 @@ function actionTarget(action: PendingAction): string {
 
 function actionConsequence(action: PendingAction): string {
   switch (action.kind) {
-    case 'export': return '确认后将按当前已应用筛选条件登记安全异步导出请求。';
+    case 'export': {
+      const datasetNote = action.section === 'errors'
+        ? '该数据集不包含错误聚合行。'
+        : '';
+      const errorCodeNote = action.ignoredErrorCode
+        ? `当前页面的错误码筛选 ${action.ignoredErrorCode} 不受该导出接口支持，不会应用于导出。`
+        : '';
+      return `确认后将按上述实际数据集和筛选范围登记安全异步导出请求。${datasetNote}${errorCodeNote}`;
+    }
     case 'resend': return '确认后将为该失败消息创建一次新的发送尝试。';
     case 'appeal': return '确认后将为该失败消息登记运营申诉记录。';
     case 'correct': return '确认后将保留原始回执，并新增一条送达纠正记录。';
@@ -174,7 +199,7 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   };
   const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', errorCode: string) => {
     const messageIds = failedMessageIdsByErrorCode.get(errorCode) ?? [];
-    if (sends.isFetching || sends.isError || messageIds.length === 0) return;
+    if (sends.isFetching || sends.isError || messageIds.length === 0 || messageIds.length > MAX_BULK_SELECTION) return;
     openAction({ kind, errorCode, messageIds: [...messageIds] });
   };
   const closeAction = () => {
@@ -208,9 +233,9 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           <h1>消息、回执与错误运营</h1>
           <p className="page-description">按租户、状态、消息和错误码追踪提交、发送、回执、错误聚合，并执行有原因、有幂等键的运营动作。</p>
         </div>
-        {section === 'sends' && <button type="button" data-testid="admin-secure-async-send-details-export" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
-        {section === 'receipts' && <button type="button" data-testid="admin-secure-async-receipt-export" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
-        {section !== 'sends' && section !== 'receipts' && <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
+        {section === 'sends' && <button type="button" data-testid="admin-secure-async-send-details-export" onClick={() => openAction(exportAction(section, filter))}>请求安全异步导出</button>}
+        {section === 'receipts' && <button type="button" data-testid="admin-secure-async-receipt-export" onClick={() => openAction(exportAction(section, filter))}>请求安全异步导出</button>}
+        {section !== 'sends' && section !== 'receipts' && <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => openAction(exportAction(section, filter))}>请求安全异步导出</button>}
       </header>
 
       {message && <p role="status" className="message-operations-alert success" data-testid="admin-message-receipt-operation-message">{message}</p>}
@@ -287,14 +312,23 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
             <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th><th>动作</th></tr></thead>
             <tbody>{(errors.data ?? []).map((row) => {
               const messageIds = failedMessageIdsByErrorCode.get(row.normalizedCode) ?? [];
-              const bulkDisabled = sends.isFetching || sends.isError || messageIds.length === 0;
+              const bulkDisabled = sends.isFetching || sends.isError || messageIds.length === 0 || messageIds.length > MAX_BULK_SELECTION;
+              const bulkUnavailableReason = sends.isFetching
+                ? '失败消息仍在加载'
+                : sends.isError
+                  ? '失败消息加载失败'
+                  : messageIds.length === 0
+                    ? '没有匹配的失败消息'
+                    : messageIds.length > MAX_BULK_SELECTION
+                      ? `匹配 ${messageIds.length} 条，超过单次 ${MAX_BULK_SELECTION} 条限制`
+                      : undefined;
               return (
                 <tr key={row.normalizedCode} data-testid="admin-message-receipt-error-details-row">
                   <td>{row.normalizedCode}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
                   <td>
                     <div className="message-operations-actions">
-                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode)}>批量重试</button>
-                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode)}>标记问题</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode)}>批量重试</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode)}>标记问题</button>
                     </div>
                   </td>
                 </tr>

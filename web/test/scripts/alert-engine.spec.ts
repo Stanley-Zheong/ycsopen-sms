@@ -98,6 +98,9 @@ test.describe('Phase 35 alert engine console', () => {
     await page.goto('/admin/alerts');
     await expect(page.getByTestId('admin-alert-engine-alert-delivery-attempts')).toContainText('EMAIL');
     await page.getByTestId('admin-alert-engine-alert-history-mute').click();
+    await expect(page.getByTestId('admin-alert-engine-action-target')).toContainText('全局告警通知');
+    await expect(page.getByTestId('admin-alert-engine-action-target')).toContainText('由告警 #501');
+    await expect(page.getByTestId('admin-alert-engine-action-consequence')).toContainText('30 分钟内所有新告警通知都会被全局抑制');
     await page.getByTestId('admin-alert-engine-mute-reason').fill('运营临时静音');
     await page.getByTestId('admin-alert-engine-action-confirm').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警通知已静音');

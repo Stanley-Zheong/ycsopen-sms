@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import ModalDialog from '@/components/common/ModalDialog';
 
 export default function ActionReasonDialog({
@@ -35,6 +36,19 @@ export default function ActionReasonDialog({
   const targetId = `${idPrefix}-target-description`;
   const consequenceId = `${idPrefix}-consequence`;
   const reasonId = `${idPrefix}-reason-field`;
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
+  const submitLatched = useRef(false);
+  const observedPending = useRef(pending);
+
+  useEffect(() => {
+    if (pending) {
+      observedPending.current = true;
+      reasonRef.current?.focus();
+    } else if (observedPending.current) {
+      submitLatched.current = false;
+      observedPending.current = false;
+    }
+  }, [pending]);
 
   return (
     <div className="action-reason-dialog-backdrop">
@@ -42,9 +56,17 @@ export default function ActionReasonDialog({
         <form
           className="action-reason-dialog"
           data-testid={`${idPrefix}-dialog`}
+          aria-busy={pending}
           onSubmit={(event) => {
             event.preventDefault();
-            if (reason.trim() && !pending) onConfirm();
+            if (!reason.trim() || pending || submitLatched.current) return;
+            submitLatched.current = true;
+            try {
+              onConfirm();
+            } catch (failure) {
+              submitLatched.current = false;
+              throw failure;
+            }
           }}
         >
           <h2 id={titleId}>{title}</h2>
@@ -52,11 +74,13 @@ export default function ActionReasonDialog({
           <p id={consequenceId} data-testid={`${idPrefix}-consequence`}>{consequence}</p>
           <label htmlFor={reasonId}>{reasonLabel} <span aria-hidden="true">*</span>
             <textarea
+              ref={reasonRef}
               id={reasonId}
               data-testid={reasonTestId}
               rows={4}
               maxLength={maxLength}
               required
+              readOnly={pending}
               aria-describedby={`${targetId} ${consequenceId}`}
               value={reason}
               placeholder={placeholder}

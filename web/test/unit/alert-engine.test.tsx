@@ -94,6 +94,9 @@ describe('Phase 35 alert engine console UI', () => {
     fireEvent.click(screen.getByTestId('admin-alert-engine-action-confirm'));
     await waitFor(() => expect(api.resolveAlert).toHaveBeenCalledWith(501, '确认来源已恢复'));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-mute'));
+    expect(screen.getByTestId('admin-alert-engine-action-target')).toHaveTextContent('全局告警通知');
+    expect(screen.getByTestId('admin-alert-engine-action-target')).toHaveTextContent('由告警 #501');
+    expect(screen.getByTestId('admin-alert-engine-action-consequence')).toHaveTextContent('30 分钟内所有新告警通知都会被全局抑制');
     fireEvent.change(screen.getByTestId('admin-alert-engine-mute-reason'), { target: { value: '运营临时静音' } });
     fireEvent.click(screen.getByTestId('admin-alert-engine-action-confirm'));
     await waitFor(() => expect(api.muteAlert).toHaveBeenCalledWith(501, 30, '运营临时静音'));

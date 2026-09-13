@@ -60,7 +60,10 @@ async function mockBusinessApis(page: Page) {
       else if (path.startsWith('/console/dashboard/complaint-ratio/')) data = [];
     } else if (path === '/console/recharges/3/review') data = { ...recharge, status: 'APPROVED', reviewerActor: 'admin', reviewReason: request.postDataJSON().reason };
     else if (path === '/console/uplinks/101/replay' || path.startsWith('/console/uplinks/push-monitor/501/')) data = { eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'OK', resultMessage: '完成' };
-    else if (path === '/console/message-operations/exports') data = actionResult('EXPORT_REQUEST', 'snapshot');
+    else if (path === '/console/message-operations/exports') {
+      expect(new URL(request.url()).searchParams.has('errorCode')).toBe(false);
+      data = actionResult('EXPORT_REQUEST', 'snapshot');
+    }
     else if (path === '/console/message-operations/sends/MSG_FAILED/resend') data = actionResult('RESEND', 'MSG_FAILED');
     else if (path === '/console/message-operations/receipts/501/correct') data = actionResult('RECEIPT_CORRECT', 'MSG_FAILED');
     else if (path === '/console/message-operations/errors/actions') data = { actionId: 'BULK-1', action: 'BULK_RETRY', total: 1, completed: 1, failed: 0, results: [] };
@@ -89,6 +92,7 @@ async function verifyAction(page: Page, input: {
   pendingBackgroundTriggerId?: string;
   triggerScope?: { testId: string; text: string };
   expectedRequestBody?: Record<string, unknown>;
+  expectedConsequenceText?: string;
 }) {
   const matchingRequests: Request[] = [];
   const captureMatchingRequest = (request: Request) => {
@@ -107,6 +111,7 @@ async function verifyAction(page: Page, input: {
   await expect(page.getByTestId(`${input.idPrefix}-target`)).toContainText(input.targetText);
   if (input.additionalTargetText) await expect(page.getByTestId(`${input.idPrefix}-target`)).toContainText(input.additionalTargetText);
   await expect(page.getByTestId(`${input.idPrefix}-consequence`)).not.toHaveText('');
+  if (input.expectedConsequenceText) await expect(page.getByTestId(`${input.idPrefix}-consequence`)).toContainText(input.expectedConsequenceText);
   await expect(page.getByTestId(`${input.idPrefix}-confirm`)).toBeDisabled();
   if (input.maxLength) await expect(page.getByTestId(input.reasonTestId)).toHaveAttribute('maxlength', String(input.maxLength));
 
@@ -120,13 +125,18 @@ async function verifyAction(page: Page, input: {
   await page.getByTestId(input.reasonTestId).fill(`  ${input.reason}  `);
   expect(matchingRequests).toHaveLength(0);
   const requestPromise = page.waitForRequest((request: Request) => new URL(request.url()).pathname === `/api/v1${input.requestPath}`);
-  await page.getByTestId(`${input.idPrefix}-confirm`).click();
+  if (input.pendingBackgroundTriggerId) await page.getByTestId(`${input.idPrefix}-confirm`).dblclick();
+  else await page.getByTestId(`${input.idPrefix}-confirm`).click();
   const request = await requestPromise;
   expect(request.postDataJSON().reason).toBe(input.reason);
   if (input.expectedRequestBody) expect(request.postDataJSON()).toEqual(expect.objectContaining(input.expectedRequestBody));
   expect(matchingRequests).toHaveLength(1);
   if (input.pendingBackgroundTriggerId) {
     await expect(page.getByTestId(`${input.idPrefix}-confirm`)).toBeDisabled();
+    await expect(page.getByTestId(input.reasonTestId)).toHaveAttribute('readonly', '');
+    await expect(page.getByTestId(input.reasonTestId)).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByTestId(input.reasonTestId)).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.getByTestId(`${input.idPrefix}-dialog`)).toBeVisible();
     await expect(page.getByTestId(input.pendingBackgroundTriggerId).click({ timeout: 250 })).rejects.toThrow();
@@ -148,7 +158,10 @@ test('pw-issue-91-action-reason-context C-ISSUE-91-ACTION-REASON-CONTEXT OBL-ISS
   await verifyAction(page, { triggerId: 'admin-uplink-normalization-push-pause', idPrefix: 'admin-uplink-normalization-action', reasonTestId: 'admin-uplink-normalization-push-action-reason', targetText: 'UPLINK:101', reason: '目的地维护暂停', requestPath: '/console/uplinks/push-monitor/501/pause' });
 
   await page.goto('/admin/submission/details');
-  await verifyAction(page, { triggerId: 'admin-message-receipt-export-request', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '提交详情当前筛选结果', additionalTargetText: '机构 42', reason: '导出用于问题排查', requestPath: '/console/message-operations/exports' });
+  await page.getByTestId('query-panel-toggle').click();
+  await page.getByTestId('admin-message-receipt-filter-error-code').fill('E42');
+  await page.getByTestId('query-submit').click();
+  await verifyAction(page, { triggerId: 'admin-message-receipt-export-request', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '消息运营导出（发送、回执与提交记录）', additionalTargetText: '机构 42', expectedConsequenceText: '错误码筛选 E42 不受该导出接口支持，不会应用于导出', reason: '导出用于问题排查', requestPath: '/console/message-operations/exports' });
 
   await page.goto('/admin/send/details');
   await verifyAction(page, { triggerId: 'admin-message-receipt-send-details-resend', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: 'MSG_FAILED', reason: '供应商失败重试', requestPath: '/console/message-operations/sends/MSG_FAILED/resend', triggerScope: { testId: 'admin-message-receipt-send-details-row', text: 'MSG_FAILED' } });
@@ -164,7 +177,7 @@ test('pw-issue-91-action-reason-context C-ISSUE-91-ACTION-REASON-CONTEXT OBL-ISS
 
   await page.goto('/admin/alerts');
   await verifyAction(page, { triggerId: 'admin-alert-engine-alert-resolve', idPrefix: 'admin-alert-engine-action', reasonTestId: 'admin-alert-engine-resolve-reason', targetText: '通道失败率过高', reason: '确认来源已恢复', requestPath: '/console/alerts/601/resolve', maxLength: 255 });
-  await verifyAction(page, { triggerId: 'admin-alert-engine-alert-mute', idPrefix: 'admin-alert-engine-action', reasonTestId: 'admin-alert-engine-mute-reason', targetText: '通道失败率过高', reason: '运营临时静音', requestPath: '/console/alerts/601/mute', maxLength: 255 });
+  await verifyAction(page, { triggerId: 'admin-alert-engine-alert-mute', idPrefix: 'admin-alert-engine-action', reasonTestId: 'admin-alert-engine-mute-reason', targetText: '全局告警通知', additionalTargetText: '由告警 #601', expectedConsequenceText: '30 分钟内所有新告警通知都会被全局抑制', reason: '运营临时静音', requestPath: '/console/alerts/601/mute', maxLength: 255 });
 
   await page.goto('/admin/push/failures');
   await verifyAction(page, { triggerId: 'admin-webhook-delivery-push-failures-replay', idPrefix: 'admin-webhook-delivery-action', reasonTestId: 'admin-webhook-delivery-action-reason', targetText: 'STATUS:MSG_1:FAILED', reason: '修复目的地后重放', requestPath: '/console/webhook-deliveries/701/replay' });

@@ -278,11 +278,13 @@ export default function AdminAlertsPage() {
       {pendingAction && (
         <ActionReasonDialog
           idPrefix="admin-alert-engine-action"
-          title={`确认${pendingAction.kind === 'resolve' ? '解决告警' : '静音告警'}`}
-          target={`告警 #${pendingAction.row.id} · ${pendingAction.row.title}`}
+          title={`确认${pendingAction.kind === 'resolve' ? '解决告警' : '全局静音告警通知'}`}
+          target={pendingAction.kind === 'resolve'
+            ? `告警 #${pendingAction.row.id} · ${pendingAction.row.title}`
+            : `全局告警通知 · 由告警 #${pendingAction.row.id} · ${pendingAction.row.title} 发起`}
           consequence={pendingAction.kind === 'resolve'
             ? '确认后该告警将进入已解决状态，原因会写入解决记录。'
-            : '确认后该告警的通知将全局静音 30 分钟，原因会写入静音记录。'}
+            : '确认后 30 分钟内所有新告警通知都会被全局抑制，所选告警会标记静音，原因会写入全局静音记录。'}
           reasonLabel={pendingAction.kind === 'resolve' ? '解决原因' : '静音原因'}
           reasonTestId={pendingAction.kind === 'resolve' ? 'admin-alert-engine-resolve-reason' : 'admin-alert-engine-mute-reason'}
           reason={actionReason}

@@ -48,7 +48,7 @@ test.describe('Phase 27 message receipt error operations', () => {
     await expect(page.getByTestId('admin-message-receipt-submission-details-page')).toBeVisible();
     await expect(page.getByTestId('admin-message-receipt-submission-details-trace')).toContainText('SUBMIT-1');
     await page.getByTestId('admin-message-receipt-export-request').click();
-    await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('提交详情当前筛选结果');
+    await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('消息运营导出（发送、回执与提交记录）');
     await page.getByTestId('admin-message-receipt-action-reason').fill('导出用于问题排查');
     await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出请求已登记');

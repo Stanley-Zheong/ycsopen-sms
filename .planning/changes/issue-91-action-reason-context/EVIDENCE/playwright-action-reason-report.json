@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-13T14:28:23Z",
+  "recordedAt": "2026-09-13T14:57:28Z",
   "baseCommit": "13b430877912cd9217645134b6bb9c83e948674b",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
   "flaky": 0,
-  "durationMs": 4971,
+  "durationMs": 7027,
   "project": "local-google-chrome",
   "engine": "Chromium/151.0.7922.34 headless_shell",
   "runtime": {
@@ -15,30 +15,30 @@
     "playwright": "1.62.1",
     "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell"
   },
-  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4205 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
+  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4208 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
   "sourceSha256": {
-    "docs/frontend页面实现规范.md": "6e07dbf2ca6df7a8a22d4b573e669c6a018563a0a31ad1c0ef90d43628ecfd31",
-    ".planning/changes/issue-91-action-reason-context/SPEC.md": "5e07e65e13794ef928249f127dab6242a9dab0202170b22cff1705a5b0ef0780",
-    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "427346f1639d3d31773b363c74eff1c0d7b42e1a1cc49ec6bf2333d3e3fb0d74",
-    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "e85575cf8b01db64d3a6b834254aa8825ba6306ef5d8a773c1b71246788f305a",
-    "web/src/components/common/ActionReasonDialog.tsx": "327991dfe86bd8d2dda7b7256494aec5c85d8fa2ac1b3fa6e7100a4b863bcfeb",
+    "docs/frontend页面实现规范.md": "753ddcc2def77a26a8cc7a6300eb7e3b44b7ec4f1ed9971a499b3e45bbf8fedc",
+    ".planning/changes/issue-91-action-reason-context/SPEC.md": "cc7d6bf6d051d13830f43aaa27c1ca1b567a98de60465b5e81e6933862b269a0",
+    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "c2d69cb737d463b3d432540373b18a743616448b019672c887529563d100cbd3",
+    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "1f7a918a8bb1351ac57ea2927ae4c27fde2a374961a8c45245a92ca9a21aab91",
+    "web/src/components/common/ActionReasonDialog.tsx": "0450c6f441d83a3c039cdde13a1f8b5cc091f85fed2a9da446bb117c96c2d680",
     "web/src/components/common/ModalDialog.tsx": "b81de4095c707f9743f928049af12d31b7e65b3d5b801f49974d7a4099d2559b",
-    "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "13930733f4cd2d115cdf4a1fcf45c4d3199363c9c62aa7291f282dbafd25d42b",
+    "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "1fd2cfad970776fef0910fdf341f657893e8b71e65e83bf8c5faef0476b41366",
     "web/src/pages/admin/billing/AdminRechargeReviewPage.tsx": "67b2bf8b292c354bf6cd988f727298d94595d298bf21ea2651ee83ff7aba92b4",
     "web/src/pages/admin/bulk/AdminSendJobsPage.tsx": "fc512dc7e9ac896be09ba87061132d229a547dfd7a7bafe837ef502273e080e0",
-    "web/src/pages/admin/records/MessageOperationsPage.tsx": "b8c82b594db51b3dff1250a52f2f4d25c98e9d5541a3d86c55daa0bcff21fda7",
+    "web/src/pages/admin/records/MessageOperationsPage.tsx": "7b01733cc991085877c75545ebf3c57e835a7bed3a3df28732344f3ab9a58b8b",
     "web/src/pages/admin/uplinks/AdminUplinksPage.tsx": "97e1a98f88abc504e70fb1e3dd04cc31cf195e890b920b7581745911e74aa9ea",
     "web/src/pages/admin/webhooks/AdminPushFailuresPage.tsx": "381f914d7b8dd0bc4b7ee88afa1f2d9fabbafd7b967abfcf150631f7ce8597f0",
     "web/src/styles/index.css": "203b0738a2a793621dbcbc383cf04b2adbfe4d5051718c125db5fe74541b8204",
-    "web/test/scripts/issue-91-action-reason-context.spec.ts": "3fe41ec0a67a6391ab35898fc11ec70058a5eca97de108cf435178174c2fcf58",
-    "web/test/unit/action-reason-dialog.test.tsx": "3100dec721df47adcc6530f9359c0bc13a41d62d7e83687f69cfed3cc17a956c"
+    "web/test/scripts/issue-91-action-reason-context.spec.ts": "5ea5f445a5ccc731c234d7add349dccd93c6da9dccea6609d614c3650d1e8a6b",
+    "web/test/unit/action-reason-dialog.test.tsx": "d30661e98033866f69bf7f026abbd7e64820374f732446dd042a3b75eb01877c"
   },
   "cases": [
     {
       "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
       "playwrightId": "pw-issue-91-action-reason-context",
       "obligationId": "OBL-ISSUE-91-ACTION-REASON",
-      "durationMs": 4971,
+      "durationMs": 7027,
       "status": "passed"
     }
   ],
@@ -61,10 +61,12 @@
       "trimmed-empty confirmation is disabled",
       "reason length follows the owning API limit",
       "cancel closes the modal without an action request",
-      "confirm sends exactly one request containing the trimmed operator reason",
-      "export confirmation snapshots and displays the applied filters",
+      "pointer double activation sends exactly one request containing the trimmed operator reason",
+      "pending confirmation keeps focus inside the dialog on the read-only reason field",
+      "export confirmation names the actual dataset, snapshots applied filters, and excludes unsupported error-code filtering",
       "an error bulk action snapshots only failed messages matching the selected error-group row",
       "an error group without a matching failed message cannot open a bulk-action dialog",
+      "alert mute names its global notification scope and the selected alert as initiating context",
       "pending confirmation rejects Escape and background actions",
       "successful confirmation closes the modal"
     ]

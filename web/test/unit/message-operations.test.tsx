@@ -101,13 +101,43 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(await screen.findByTestId('admin-message-receipt-submission-details-page')).toBeVisible();
     expect(await screen.findByTestId('admin-message-receipt-submission-details-trace')).toHaveTextContent('SUBMIT-1');
     expect(screen.queryByTestId('admin-message-receipt-action-reason')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('admin-message-receipt-filter-error-code'), { target: { value: 'E42' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     fireEvent.click(screen.getByTestId('admin-message-receipt-export-request'));
-    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('提交详情当前筛选结果');
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('消息运营导出（发送、回执与提交记录）');
     expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('机构 42');
+    expect(screen.getByTestId('admin-message-receipt-action-target')).not.toHaveTextContent('错误码 E42');
+    expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('错误码筛选 E42 不受该导出接口支持，不会应用于导出');
     fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '导出用于问题排查' } });
     fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
-    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledWith(expect.objectContaining({ tenantId: '42' }), expect.stringMatching(/^EXPORT-/), '导出用于问题排查', 'MESSAGE_OPERATIONS'));
+    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledWith({ tenantId: '42', messageId: '', status: '' }, expect.stringMatching(/^EXPORT-/), '导出用于问题排查', 'MESSAGE_OPERATIONS'));
     expect(await screen.findByTestId('admin-message-receipt-operation-message')).toHaveTextContent('导出请求已登记');
+  });
+
+  it.each([
+    { section: 'submissions' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', excludesGroups: false },
+    { section: 'sends' as const, triggerId: 'admin-secure-async-send-details-export', dataset: '发送详单导出', exportType: 'SEND_DETAIL', excludesGroups: false },
+    { section: 'receipts' as const, triggerId: 'admin-secure-async-receipt-export', dataset: '回执详单导出', exportType: 'RECEIPT_DETAIL', excludesGroups: false },
+    { section: 'errors' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', excludesGroups: true },
+  ])('describes the real $section export dataset and excludes unsupported error-code filtering', async ({ section, triggerId, dataset, exportType, excludesGroups }) => {
+    renderPage(section);
+    expect(await screen.findByTestId(`admin-message-receipt-${section === 'submissions' ? 'submission' : section.slice(0, -1)}-details-page`)).toBeVisible();
+    fireEvent.change(screen.getByTestId('admin-message-receipt-filter-error-code'), { target: { value: 'E99' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+    fireEvent.click(screen.getByTestId(triggerId));
+
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent(dataset);
+    expect(screen.getByTestId('admin-message-receipt-action-target')).not.toHaveTextContent('错误码 E99');
+    expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('错误码筛选 E99 不受该导出接口支持，不会应用于导出');
+    if (excludesGroups) expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('不包含错误聚合行');
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '核对实际导出范围' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledWith(
+      { tenantId: '42', messageId: '', status: '' },
+      expect.stringMatching(/^EXPORT-/),
+      '核对实际导出范围',
+      exportType,
+    ));
   });
 
   it('resends and appeals eligible failed messages without exposing plaintext mobile', async () => {
@@ -212,6 +242,27 @@ describe('Phase 27 message receipt error operations UI', () => {
       expect(bulkRetry).toBeDisabled();
       expect(markProblem).toBeDisabled();
     });
+
+    fireEvent.click(bulkRetry);
+    fireEvent.click(markProblem);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+    expect(api.bulkErrorAction).not.toHaveBeenCalled();
+  });
+
+  it('does not partially submit an error group above the backend bulk limit', async () => {
+    vi.mocked(api.listSends).mockResolvedValue(Array.from({ length: 51 }, (_, index) => sendRow({
+      taskId: 300 + index,
+      messageId: `MSG_E42_${index}`,
+    })));
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup({ totalCount: 51 })]);
+    renderPage('errors');
+
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    const markProblem = within(row).getByTestId('admin-message-receipt-error-details-mark-problem');
+    await waitFor(() => expect(bulkRetry).toBeDisabled());
+    expect(markProblem).toBeDisabled();
+    expect(bulkRetry).toHaveAttribute('title', '匹配 51 条，超过单次 50 条限制');
 
     fireEvent.click(bulkRetry);
     fireEvent.click(markProblem);

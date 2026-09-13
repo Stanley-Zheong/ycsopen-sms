@@ -63,6 +63,8 @@ describe('ActionReasonDialog', () => {
       />,
     );
     fireEvent.click(screen.getByTestId('test-action-confirm'));
+    fireEvent.click(screen.getByTestId('test-action-confirm'));
+    fireEvent.submit(screen.getByTestId('test-action-dialog'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
 
     rerender(
@@ -84,9 +86,33 @@ describe('ActionReasonDialog', () => {
     );
     expect(screen.getByTestId('test-action-confirm')).toBeDisabled();
     expect(screen.getByTestId('test-action-cancel')).toBeDisabled();
+    expect(screen.getByTestId('test-action-reason')).toHaveAttribute('readonly');
+    expect(screen.getByTestId('test-action-reason')).toHaveFocus();
+    fireEvent.keyDown(screen.getByTestId('modal'), { key: 'Tab' });
+    expect(screen.getByTestId('test-action-reason')).toHaveFocus();
     fireEvent.submit(screen.getByTestId('test-action-dialog'));
     fireEvent.keyDown(screen.getByTestId('modal'), { key: 'Escape' });
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <ActionReasonDialog
+        idPrefix="test-action"
+        title="确认暂停任务"
+        target="任务 BULK-301 · 机构 42"
+        consequence="暂停后不再派发新的子消息。"
+        reasonLabel="暂停原因"
+        reasonTestId="test-action-reason"
+        reason="人工暂停复核"
+        placeholder="请填写暂停依据"
+        confirmLabel="确认暂停"
+        pending={false}
+        onReasonChange={onReasonChange}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('test-action-confirm'));
+    expect(onConfirm).toHaveBeenCalledTimes(2);
   });
 });

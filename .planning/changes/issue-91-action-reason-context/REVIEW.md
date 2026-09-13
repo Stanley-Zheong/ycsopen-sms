@@ -2,11 +2,17 @@
 
 ## Review outcome
 
-Independent affected-slice review passed with no remaining actionable findings.
-The review covered the durable interaction contract, shared dialog, all six
-owning page modules, focused unit tests, and cross-route Playwright coverage.
-Existing API payload shapes, permissions, tenant boundaries, state transitions,
-and audit contracts are unchanged.
+Live pull-request review reopened the affected slice after finding interaction
+and target-description gaps. The corrections below are implemented and locally
+verified; final review remains open until the installed-Google-Chrome real-service
+lane passes on the corrected pull-request head. Existing API shapes, permissions,
+tenant boundaries, state transitions, and production audit contracts remain
+unchanged.
+
+Independent pre-push review of the corrected worktree found no actionable code
+or documentation issue. That review deliberately leaves the real-service Docker
+lane as a remote verification boundary rather than treating local mocks as a
+substitute.
 
 The first remote CI run also exposed that the Docker Web prebuild used the
 pull-request merge SHA even though the release check and checkout use the PR
@@ -22,10 +28,16 @@ release row.
 ## Findings resolved
 
 - Pending submissions now reject Escape, cancel, close, and background actions.
+- Confirmation is synchronously latched before the owner mutation begins, so
+  pointer or keyboard double activation creates one request. Pending focus moves
+  to the read-only reason field and remains trapped in the dialog; a failed
+  request releases the latch for retry.
 - Recharge-review and alert reasons respect their 255-character persistence
   limit; other owners keep the shared 500-character default.
-- Export actions snapshot the applied filters, display that target in the
-  dialog, and submit the same snapshot.
+- Export actions identify the real backend dataset for all four message tabs,
+  remove unsupported error-code filtering from the submitted snapshot, and
+  explicitly disclose that exclusion. The error tab also states that combined
+  message-operations exports do not contain error aggregation rows.
 - The reason field's accessible description includes both target and effect.
 - Unrelated alert save, evaluate, or acknowledge completions cannot close a
   newly opened resolve or mute dialog.
@@ -39,7 +51,13 @@ release row.
   loaded failed messages with that row's code, and stay disabled during target
   loading, after target-query failure, or when no target matches. Unit and
   Chromium tests cover multiple groups, exact payload selection, loading,
-  query failure, and empty-target behavior.
+  query failure, empty-target, and over-50 backend-limit behavior.
+- Alert mute confirmation now names global alert notification as the target,
+  keeps the chosen alert only as initiating context, and states that all new
+  alert notifications are suppressed for 30 minutes.
+- Docker acceptance now includes all nine routes in installed Google Chrome
+  against real Web/Core services, plus a test-owned recharge approval with
+  double-click request counting and persisted reason/balance-audit readback.
 
 ## Tool boundary
 
@@ -47,4 +65,5 @@ The repository-required tool-less Claude review was attempted with the complete
 tracked and untracked diff, but the CLI stopped before reading it with
 `Not logged in · Please run /login`. This is recorded as an authentication
 boundary, not as a successful review. Independent pre-push review and the
-executable gates in `VERIFICATION.md` provide the completed review evidence.
+executable gates in `VERIFICATION.md` provide the replacement review evidence
+once the reopened remote gate completes.
