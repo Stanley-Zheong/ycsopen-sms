@@ -29,6 +29,14 @@ class ReleaseAcceptanceSeedMigrationTest {
             assertThat(count(connection, "SELECT COUNT(*) FROM templates WHERE template_code='DEV-VERIFY-CODE'"))
                     .isOne();
             assertThat(count(connection, """
+                    SELECT COUNT(*) FROM tenant_recharge_records r
+                    JOIN tenants t ON t.id=r.tenant_id
+                    WHERE t.tenant_no='DEV-TENANT'
+                      AND r.transaction_ref_mask='ISSU****0091'
+                      AND r.amount_mil=91000 AND r.status='PENDING'
+                    """))
+                    .isOne();
+            assertThat(count(connection, """
                     SELECT COUNT(*) FROM tenant_accounts a
                     JOIN tenants t ON t.id=a.tenant_id
                     WHERE t.tenant_no='DEV-TENANT'
@@ -62,12 +70,25 @@ class ReleaseAcceptanceSeedMigrationTest {
                     SET balance=1200, frozen_amount=300, status='DISABLED', version=4
                     WHERE tenant_id=(SELECT id FROM tenants WHERE tenant_no='DEV-TENANT')
                     """);
+            connection.createStatement().executeUpdate("""
+                    UPDATE tenant_recharge_records
+                    SET status='APPROVED', reviewer_actor='operator-managed',
+                        review_reason='preserve review', reviewed_at=CURRENT_TIMESTAMP
+                    WHERE transaction_ref_mask='ISSU****0091'
+                    """);
 
             ScriptUtils.executeSqlScript(connection, RELEASE_SEED);
 
             assertThat(count(connection, "SELECT COUNT(*) FROM channels WHERE channel_name='DEV-CMPP-PRIMARY'"))
                     .isOne();
             assertThat(count(connection, "SELECT COUNT(*) FROM templates WHERE template_code='DEV-VERIFY-CODE'"))
+                    .isOne();
+            assertThat(count(connection, """
+                    SELECT COUNT(*) FROM tenant_recharge_records
+                    WHERE transaction_ref_mask='ISSU****0091'
+                      AND status='APPROVED' AND reviewer_actor='operator-managed'
+                      AND review_reason='preserve review'
+                    """))
                     .isOne();
             assertThat(count(connection, """
                     SELECT COUNT(*) FROM tenant_accounts a
@@ -98,6 +119,7 @@ class ReleaseAcceptanceSeedMigrationTest {
                 "CREATE TABLE role_permissions(role_id BIGINT, permission_id BIGINT, PRIMARY KEY(role_id, permission_id))",
                 "CREATE TABLE tenants(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_no VARCHAR(32) UNIQUE, short_name VARCHAR(20), full_name VARCHAR(100), unified_social_credit_code VARCHAR(18), verification_status VARCHAR(32), lifecycle_status VARCHAR(32), created_by VARCHAR(64))",
                 "CREATE TABLE tenant_accounts(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT UNIQUE, balance BIGINT DEFAULT 0, frozen_amount BIGINT DEFAULT 0, status VARCHAR(32) DEFAULT 'NORMAL', version INT DEFAULT 0)",
+                "CREATE TABLE tenant_recharge_records(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT NOT NULL, amount_mil BIGINT NOT NULL, recharge_method VARCHAR(32) NOT NULL, transaction_ref_hash CHAR(64) NOT NULL UNIQUE, transaction_ref_mask VARCHAR(64) NOT NULL, evidence_text VARCHAR(500) NOT NULL, status VARCHAR(32) NOT NULL DEFAULT 'PENDING', submitter_actor VARCHAR(64) NOT NULL, reviewer_actor VARCHAR(64), review_reason VARCHAR(255), reviewed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
                 "CREATE TABLE signatures(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT, biz_type VARCHAR(20), sign_code VARCHAR(32), sign_content VARCHAR(64), sign_type VARCHAR(20), usage_type VARCHAR(20), risk_level VARCHAR(20), audit_status VARCHAR(20), audit_time TIMESTAMP, audit_comment VARCHAR(500), UNIQUE(tenant_id, sign_code))",
                 "CREATE TABLE templates(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT, biz_type VARCHAR(20), template_code VARCHAR(32), template_name VARCHAR(50), template_type VARCHAR(20), content VARCHAR(500), signature_id BIGINT, param_check_rule VARCHAR(255), description VARCHAR(255), audit_status VARCHAR(32), audit_time TIMESTAMP, audit_comment VARCHAR(500), is_system_template BOOLEAN, UNIQUE(tenant_id, template_code))",
                 "CREATE TABLE channels(id BIGINT AUTO_INCREMENT PRIMARY KEY, channel_name VARCHAR(64), protocol VARCHAR(20), operator VARCHAR(20), host VARCHAR(128), port INT, sp_id VARCHAR(32), service_id VARCHAR(16), src_id VARCHAR(32), max_connections INT, window_size INT, price DECIMAL(10,4), priority INT, active_window VARCHAR(64), extra_config VARCHAR(500), status VARCHAR(20))",

@@ -14,6 +14,11 @@ or documentation issue. That review deliberately leaves the real-service Docker
 lane as a remote verification boundary rather than treating local mocks as a
 substitute.
 
+After rebasing onto `66d9cde`, a second independent review passed the additive
+resolution of Issue #90 and Issue #91 changes in the shared release seed,
+release script, and Docker browser spec. It confirmed all three release browser
+cases remain discoverable and the H2 seed test protects both fixtures.
+
 The first remote CI run also exposed that the Docker Web prebuild used the
 pull-request merge SHA even though the release check and checkout use the PR
 head. The workflow now passes that head explicitly as `VITE_BUILD_COMMIT`;

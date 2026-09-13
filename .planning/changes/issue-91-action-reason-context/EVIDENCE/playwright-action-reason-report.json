@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-13T14:57:28Z",
-  "baseCommit": "13b430877912cd9217645134b6bb9c83e948674b",
+  "recordedAt": "2026-09-13T15:05:40Z",
+  "baseCommit": "66d9cde07e957e9aa5597a434dec5e2fb6c1a8fd",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
   "flaky": 0,
-  "durationMs": 7027,
+  "durationMs": 4754,
   "project": "local-google-chrome",
   "engine": "Chromium/151.0.7922.34 headless_shell",
   "runtime": {
@@ -15,7 +15,7 @@
     "playwright": "1.62.1",
     "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell"
   },
-  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4208 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
+  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4210 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
   "sourceSha256": {
     "docs/frontend页面实现规范.md": "753ddcc2def77a26a8cc7a6300eb7e3b44b7ec4f1ed9971a499b3e45bbf8fedc",
     ".planning/changes/issue-91-action-reason-context/SPEC.md": "cc7d6bf6d051d13830f43aaa27c1ca1b567a98de60465b5e81e6933862b269a0",
@@ -38,7 +38,7 @@
       "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
       "playwrightId": "pw-issue-91-action-reason-context",
       "obligationId": "OBL-ISSUE-91-ACTION-REASON",
-      "durationMs": 7027,
+      "durationMs": 4754,
       "status": "passed"
     }
   ],
