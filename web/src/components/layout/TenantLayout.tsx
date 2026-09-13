@@ -35,11 +35,6 @@ export default function TenantLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const groups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => !item.roles || item.roles.includes(userType as TenantUserType)),
-  })).filter((group) => group.items.length > 0);
-
   return (
     <div className="layout">
       <nav className="sidebar">

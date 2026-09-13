@@ -86,14 +86,6 @@ export default function AdminLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  const groups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => (
-      (!item.roles || item.roles.includes(userType as PlatformUserType))
-      && (!item.permissions || item.permissions.every(access.can))
-    )),
-  })).filter((group) => group.items.length > 0);
-
   return (
     <div className="layout">
       <nav className="sidebar">
