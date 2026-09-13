@@ -13,8 +13,9 @@ was the deliberately open three-item TODO sentinel. A newer live review then
 found that a same-ID retry could edit its reason even though the idempotent
 backend retains the first audit value. Another asynchronous review found that
 Escape or cancel could close the dialog in the synchronous window between the
-submit latch and the owner's pending rerender. Final review is reopened until
-both corrections pass on a newer head. Existing API shapes, permissions, tenant
+submit latch and the owner's pending rerender. Both corrections now pass on
+`fcb5038684fd8c80985b10002765856cc5e73a95`. Current-head live review found no
+remaining author-actionable issue. Existing API shapes, permissions, tenant
 boundaries, state transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
@@ -31,8 +32,12 @@ readback: first-submit trimming, failed-state immutability, same-ID/same-reason
 retry, owner compatibility, browser/unit coverage, and all source digests were
 confirmed. The synchronous close/cancel latch correction also passed independent
 shared-component and recharge-owner review, including failure-release behavior
-and both available modal close paths. A newer pull-request head still must pass
-the remote gate.
+and both available modal close paths. Pull-request run `34770568655` passed the
+Web, portable-contract, Phase 03 real-integration, and installed-Chrome Docker
+jobs on that correction; Core executed 984 tests and failed only the deliberately
+open TODO sentinel. Live asynchronous review then covered the full diff through
+that exact head and reported no author-actionable issue, allowing the completion
+checklist to close before the final Core rerun.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,

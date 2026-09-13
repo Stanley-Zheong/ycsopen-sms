@@ -18,19 +18,18 @@
 | Affected backend seed and service tests | `mvn -f core/pom.xml -Dtest=ReleaseAcceptanceSeedMigrationTest,TenantRechargeOperationsMigrationTest,TenantRechargeServiceTest test` | PASS, 6/6; this covers additive and repeatable release-fixture creation, the recharge state transition, and persisted audit behavior used by Docker acceptance. |
 | Error aggregation service tests | `mvn -f core/pom.xml -Dtest=MessageReceiptErrorOperationsServiceTest test` | PASS, 7/7. The added case proves that two active provider/protocol mappings with the same provider code do not multiply task counts and that conflicting taxonomy collapses to the conservative category, highest severity, and non-retryable result. |
 | Docker acceptance discovery | `npm --prefix web run test:docker-release -- --list` | PASS, 3 tests discovered; the existing Issue #60 identity case, incoming Issue #90 account-status case, and Issue #91 real-service action-reason case coexist. |
-| Real-service installed-Chrome acceptance | Pull-request CI run [34768234208](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34768234208), `Docker release / Google Chrome`, commit `42e588fd81229e91d0aaebdab35e4e3e88232a3e` | PASS. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `f744bb39ec69d3d468565d312b9d29804973e18a48223a74629b7356ccc69bf9`, `abc679d26845368690b3db843b95b19ba146a1153d8d88baa0c5f8c4b53c7394`, and `d106bb69dc61ee3a5c8f68df647d082052a36fbbc693c59bce4e33e8860d3b27`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 984 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. |
+| Real-service installed-Chrome acceptance | Pull-request CI run [34770568655](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34770568655), `Docker release / Google Chrome`, commit `fcb5038684fd8c80985b10002765856cc5e73a95` | PASS. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `a0fd1f37da190fb417fd588990314d843e1b7aae2058ac4821369cb424ed3ac9`, `5fa4227b27bbbea40fa4afa1b37cd90fc43c6f9cadf95b863ad8e629c53ff4cf`, and `aa0de2e40e840f2e72a81b62a08462e16470faeff7b00a98c9a946f6022ddd8a`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 984 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. |
 
 ## Executed boundaries
 
-- `mvn -f core/pom.xml test` compiled all backend source and executed 980 tests,
-  but the repository-wide run ended with 8 failures, 4 errors, and 33 skipped.
-  One failure was the release sentinel observing this change's intentionally
-  open TODO list. The remaining failures are host/baseline boundaries in
-  untouched code: Phase 01 process-harness tests cannot find a system Ruby,
-  Phase 08 cannot reap owned descendants under this host's PID 1, and two
-  production migration-composition tests lack the required migration runtime
-  configuration. A post-closure rerun is recorded below after the TODO sentinel
-  is cleared.
+- The final post-closure `mvn -f core/pom.xml test` compiled all backend source
+  and executed 984 tests, ending with 7 failures, 4 errors, and 33 skipped. The
+  release sentinel passed after observing the completed TODO list. Every
+  remaining failure is a host/baseline boundary in untouched code: four Phase
+  01 process-harness failures cannot find a system Ruby, Phase 08 has one
+  failure and two errors because this host's PID 1 does not reap owned
+  descendants, and the production migration-composition suite has two failures
+  and two errors because migration runtime configuration is unavailable.
 - `bash skills/code-review/scripts/precheck.sh --base origin/main` passed all
   whitespace checks, then stopped because its repository-wide Java scan found
   direct console writes already present on `origin/main`. The focused backend
@@ -64,21 +63,22 @@ and tests remain authoritative for those unchanged surfaces.
 The Docker release suite now contains a second, complementary acceptance lane:
 installed Google Chrome traverses all nine routes against real Web/Core services
 and approves one test-owned recharge fixture with persisted reason and balance
-audit readback. Pull-request run `34768234208` passed this lane in fresh,
-upgrade, and restart environments on the final executable code commit recorded
-above, after retry-identity and taxonomy-aggregation review corrections. Later
-live review reopened retry-reason immutability and synchronous pre-pending
-dismissal, so a newer pull-request head must repeat the authoritative gate before
-merge.
+audit readback. Pull-request run `34770568655` passed this lane in fresh,
+upgrade, and restart environments on the current executable code commit recorded
+above, including the retry-identity, taxonomy-aggregation, immutable-reason, and
+synchronous pre-pending dismissal corrections. The intentionally open TODO
+sentinel was the only failed remote Core assertion. Live review then reached
+this exact head with no author-actionable finding, so the completion checklist
+was closed for the final Core rerun.
 
 ## Post-closure backend rerun
 
-On the earlier pull-request head, after all seven TODO items were closed,
+After all seven TODO items were closed on the final worktree,
 `mvn -f core/pom.xml test` executed 984 tests with 7 failures, 4 errors, and 33
 skipped. The release-sentinel failure tied to this change disappeared. The
-remaining result matches the untouched host/baseline boundaries above: four
-Phase 01 failures, one Phase 08 failure plus two errors, and two
+remaining result exactly matches the untouched host/baseline boundaries above:
+four Phase 01 failures, one Phase 08 failure plus two errors, and two
 migration-composition failures plus two errors. Pull-request CI is the
-authoritative clean host and passed all 984 tests except the sentinel before it
-was closed. Live review subsequently reopened the TODOs, so a post-closure rerun
-on the final head is required here before merge.
+authoritative clean host; its pre-closure Core run passed all product assertions
+and failed only the TODO sentinel, and the post-closure run must pass before
+merge.
