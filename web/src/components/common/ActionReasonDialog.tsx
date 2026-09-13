@@ -13,6 +13,7 @@ export default function ActionReasonDialog({
   maxLength = 500,
   confirmLabel,
   pending,
+  reasonReadOnly = false,
   onReasonChange,
   onCancel,
   onConfirm,
@@ -28,6 +29,7 @@ export default function ActionReasonDialog({
   maxLength?: number;
   confirmLabel: string;
   pending: boolean;
+  reasonReadOnly?: boolean;
   onReasonChange: (reason: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -80,7 +82,7 @@ export default function ActionReasonDialog({
               rows={4}
               maxLength={maxLength}
               required
-              readOnly={pending}
+              readOnly={pending || reasonReadOnly}
               aria-describedby={`${targetId} ${consequenceId}`}
               value={reason}
               placeholder={placeholder}

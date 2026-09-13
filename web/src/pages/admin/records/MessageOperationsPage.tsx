@@ -35,7 +35,7 @@ type ActionSelection =
   | { kind: 'resend' | 'appeal'; messageId: string }
   | { kind: 'correct' | 'replay'; receiptId: number; messageId: string }
   | { kind: 'bulk-retry' | 'mark-problem'; errorCode: string; messageIds: string[] };
-type PendingAction = ActionSelection & { actionId: string };
+type PendingAction = ActionSelection & { actionId: string; submittedReason?: string };
 
 const ACTION_LABELS: Record<PendingAction['kind'], string> = {
   export: '请求安全异步导出',
@@ -247,7 +247,11 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   };
   const confirmAction = () => {
     if (!pendingAction) return;
-    const actionReason = reason.trim();
+    const actionReason = pendingAction.submittedReason ?? reason.trim();
+    if (pendingAction.submittedReason === undefined) {
+      setPendingAction({ ...pendingAction, submittedReason: actionReason });
+      setReason(actionReason);
+    }
     if (pendingAction.kind === 'export') exportRequest.mutate({ actionFilter: pendingAction.filter, actionId: pendingAction.actionId, actionReason, actionSection: pendingAction.section });
     if (pendingAction.kind === 'resend') resend.mutate({ messageId: pendingAction.messageId, actionId: pendingAction.actionId, actionReason });
     if (pendingAction.kind === 'appeal') appeal.mutate({ messageId: pendingAction.messageId, actionId: pendingAction.actionId, actionReason });
@@ -402,6 +406,7 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           placeholder="请填写本次操作的复核依据"
           confirmLabel={`确认${ACTION_LABELS[pendingAction.kind]}`}
           pending={actionPending}
+          reasonReadOnly={pendingAction.submittedReason !== undefined}
           onReasonChange={setReason}
           onCancel={closeAction}
           onConfirm={confirmAction}

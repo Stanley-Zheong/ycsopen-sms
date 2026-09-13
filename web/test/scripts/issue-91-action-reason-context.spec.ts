@@ -160,12 +160,14 @@ async function verifyAction(page: Page, input: {
   if (input.expectedRequestBody) expect(request.postDataJSON()).toEqual(expect.objectContaining(input.expectedRequestBody));
   if (input.retrySameActionIdAfterFailure) {
     const firstActionId = request.postDataJSON().actionId;
+    const firstReason = request.postDataJSON().reason;
     expect(matchingRequests).toHaveLength(1);
     await expect(page.getByTestId(`${input.idPrefix}-confirm`)).toBeEnabled();
+    await expect(page.getByTestId(input.reasonTestId)).toHaveAttribute('readonly', '');
     const retryRequestPromise = page.waitForRequest((candidate: Request) => new URL(candidate.url()).pathname === `/api/v1${input.requestPath}`);
     await page.getByTestId(`${input.idPrefix}-confirm`).click();
     const retryRequest = await retryRequestPromise;
-    expect(retryRequest.postDataJSON().reason).toBe(input.reason);
+    expect(retryRequest.postDataJSON().reason).toBe(firstReason);
     expect(retryRequest.postDataJSON().actionId).toBe(firstActionId);
     expect(matchingRequests).toHaveLength(2);
   } else {

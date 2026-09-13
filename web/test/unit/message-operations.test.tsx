@@ -127,12 +127,15 @@ describe('Phase 27 message receipt error operations UI', () => {
 
     await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledTimes(1));
     const firstActionId = vi.mocked(api.requestMessageExport).mock.calls[0][1];
+    const firstReason = vi.mocked(api.requestMessageExport).mock.calls[0][2];
     expect(await screen.findByTestId('admin-message-receipt-operation-error')).toHaveTextContent('导出请求失败');
     await waitFor(() => expect(screen.getByTestId('admin-message-receipt-action-confirm')).toBeEnabled());
+    expect(screen.getByTestId('admin-message-receipt-action-reason')).toHaveAttribute('readonly');
     fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
 
     await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledTimes(2));
     expect(vi.mocked(api.requestMessageExport).mock.calls[1][1]).toBe(firstActionId);
+    expect(vi.mocked(api.requestMessageExport).mock.calls[1][2]).toBe(firstReason);
     expect(await screen.findByTestId('admin-message-receipt-operation-message')).toHaveTextContent('导出请求已登记');
   });
 

@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-13T16:09:06Z",
+  "recordedAt": "2026-09-13T16:45:34Z",
   "baseCommit": "66d9cde07e957e9aa5597a434dec5e2fb6c1a8fd",
   "result": "PASS",
   "expected": 1,
   "unexpected": 0,
   "flaky": 0,
-  "durationMs": 4938,
+  "durationMs": 5263,
   "project": "local-google-chrome",
   "engine": "Chromium/151.0.7922.34 headless_shell",
   "runtime": {
@@ -15,22 +15,22 @@
     "playwright": "1.62.1",
     "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell"
   },
-  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4215 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
+  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4217 YCSOPEN_E2E_ISOLATED=1 npx playwright test issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=json",
   "sourceSha256": {
     "docs/frontend页面实现规范.md": "b75671a1848b157f6fe9a8621cca989b393bc4d1930eed78547548babd53c601",
-    ".planning/changes/issue-91-action-reason-context/SPEC.md": "03e05f5a40119d23932ca0b1ae215dfc138f27152ff247f353186c294d3c9a0a",
-    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "aef6e80c056a8233ba36de0c183d459a4336909975c03c34c65e14c4dd0d74ac",
-    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "1122ddd45ba5ff34501d7c611f6a6409e23201065425b2661893cc0012cb5355",
-    "web/src/components/common/ActionReasonDialog.tsx": "0450c6f441d83a3c039cdde13a1f8b5cc091f85fed2a9da446bb117c96c2d680",
+    ".planning/changes/issue-91-action-reason-context/SPEC.md": "a2e392ed3699eef91b9820037b7ff8a46ac011e5a15a841507c223acaabbad36",
+    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "9bc9fe6d0643014f4855dc041074ac70c6623ef8540404ef4dfd1f5e7c962a2a",
+    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "ae4b180576babdc39f7434bfdad95e128e4f250e5b4dc0641cb7da575fe4adb6",
+    "web/src/components/common/ActionReasonDialog.tsx": "a0d692d86647b65e747b151ca4c812a7b4b79d40a402c57d0727fe70c578252a",
     "web/src/components/common/ModalDialog.tsx": "b81de4095c707f9743f928049af12d31b7e65b3d5b801f49974d7a4099d2559b",
     "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "1fd2cfad970776fef0910fdf341f657893e8b71e65e83bf8c5faef0476b41366",
     "web/src/pages/admin/billing/AdminRechargeReviewPage.tsx": "67b2bf8b292c354bf6cd988f727298d94595d298bf21ea2651ee83ff7aba92b4",
     "web/src/pages/admin/bulk/AdminSendJobsPage.tsx": "fc512dc7e9ac896be09ba87061132d229a547dfd7a7bafe837ef502273e080e0",
-    "web/src/pages/admin/records/MessageOperationsPage.tsx": "3d3c47f8b4f6484c8084efe473a875746b8114989a494748088802935c7af954",
+    "web/src/pages/admin/records/MessageOperationsPage.tsx": "e143c9500078ed6810ded393db450d7f874b9503abdff5dbbd83dc8fa6a8ba36",
     "web/src/pages/admin/uplinks/AdminUplinksPage.tsx": "97e1a98f88abc504e70fb1e3dd04cc31cf195e890b920b7581745911e74aa9ea",
     "web/src/pages/admin/webhooks/AdminPushFailuresPage.tsx": "381f914d7b8dd0bc4b7ee88afa1f2d9fabbafd7b967abfcf150631f7ce8597f0",
     "web/src/styles/index.css": "203b0738a2a793621dbcbc383cf04b2adbfe4d5051718c125db5fe74541b8204",
-    "web/test/scripts/issue-91-action-reason-context.spec.ts": "750aa885594b418e0afb6cde01dd1f1fe1a3fc75cf09370751fb24dd0769638e",
+    "web/test/scripts/issue-91-action-reason-context.spec.ts": "4ad5c118443fc6c7477030591009f0af273ca41ec30f75e0b8a1f07fc4a511c0",
     "web/test/unit/action-reason-dialog.test.tsx": "d30661e98033866f69bf7f026abbd7e64820374f732446dd042a3b75eb01877c"
   },
   "cases": [
@@ -38,7 +38,7 @@
       "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
       "playwrightId": "pw-issue-91-action-reason-context",
       "obligationId": "OBL-ISSUE-91-ACTION-REASON",
-      "durationMs": 4938,
+      "durationMs": 5263,
       "status": "passed"
     }
   ],
@@ -62,7 +62,8 @@
       "reason length follows the owning API limit",
       "cancel closes the modal without an action request",
       "pointer double activation sends exactly one request containing the trimmed operator reason",
-      "an explicit retry after an ambiguous failure reuses the selected operation actionId",
+      "an explicit retry after an ambiguous failure reuses the selected operation actionId and first submitted reason snapshot",
+      "the first submitted reason stays read-only until the operation is cancelled or succeeds",
       "pending confirmation keeps focus inside the dialog on the read-only reason field",
       "export confirmation names the actual dataset, snapshots applied filters, and excludes unsupported error-code filtering",
       "an error bulk action snapshots only failed messages matching the selected error-group row",

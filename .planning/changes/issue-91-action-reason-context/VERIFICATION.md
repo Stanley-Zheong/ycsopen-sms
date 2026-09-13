@@ -5,11 +5,11 @@
 | Surface | Command | Result |
 | --- | --- | --- |
 | Dependency install | `npm --prefix web ci` | PASS; lockfile install completed. The audit reported 7 existing dependency advisories. |
-| Focused affected UI tests | From `web/`: `npm test -- test/unit/action-reason-dialog.test.tsx test/unit/tenant-recharge.test.tsx test/unit/uplink-normalization.test.tsx test/unit/message-operations.test.tsx test/unit/alert-engine.test.tsx test/unit/webhook-delivery.test.tsx test/unit/bulk-scheduled.test.tsx` | PASS, 7 files / 27 tests. The message-operation cases prove that an explicit retry after an ambiguous failure reuses the selected operation ID. The error-group cases prove that aggregate/list count mismatches and the display-only `UNKNOWN` group fail closed without an API call. The final full run below includes the same focused coverage. |
+| Focused affected UI tests | From `web/`: `npm test -- test/unit/action-reason-dialog.test.tsx test/unit/tenant-recharge.test.tsx test/unit/uplink-normalization.test.tsx test/unit/message-operations.test.tsx test/unit/alert-engine.test.tsx test/unit/webhook-delivery.test.tsx test/unit/bulk-scheduled.test.tsx` | PASS, 7 files / 27 tests. The message-operation cases prove that an explicit retry after an ambiguous failure reuses the selected operation ID and first submitted reason, while the reason stays read-only. The error-group cases prove that aggregate/list count mismatches and the display-only `UNKNOWN` group fail closed without an API call. The final full run below includes the same focused coverage. |
 | Full UI unit tests | `npm --prefix web test` | PASS, 49 files / 169 tests after the executable diff was frozen. Existing jsdom connection messages and React Router future warnings did not fail the run. |
 | Production build | `npm --prefix web run build` | PASS; Vite emitted only its existing large-chunk advisory. |
 | Changed-file lint | From `web/`: `npx --yes --prefix web eslint` over all changed TypeScript and TSX files with `--max-warnings 0` | PASS. |
-| Isolated Issue #91 interaction | See the exact command in `EVIDENCE/playwright-action-reason-report.json`. | PASS, 1/1 in actual `Chromium/151.0.7922.34` after the executable diff was frozen; the case traverses all nine affected routes and checks visibility, context, validation, cancellation, double-activation request deduplication, same-ID retry after an ambiguous failure, pending focus containment, truthful export scope, selected error-group payload binding, empty/truncated/`UNKNOWN` group disabling, global mute scope, and success close. |
+| Isolated Issue #91 interaction | See the exact command in `EVIDENCE/playwright-action-reason-report.json`. | PASS, 1/1 in actual `Chromium/151.0.7922.34` after the executable diff was frozen; the case traverses all nine affected routes and checks visibility, context, validation, cancellation, double-activation request deduplication, same-ID/same-reason retry and reason immutability after an ambiguous failure, pending focus containment, truthful export scope, selected error-group payload binding, empty/truncated/`UNKNOWN` group disabling, global mute scope, and success close. |
 | Affected phase Playwright regression | Same accepted Chromium environment; `npm --prefix web run test:e2e` over `tenant-recharge.spec.ts`, `uplink-normalization.spec.ts`, `message-operations.spec.ts`, `alert-engine.spec.ts`, `webhook-delivery.spec.ts`, `bulk-scheduled.spec.ts`, `secure-async-export.spec.ts`, and `issue-91-action-reason-context.spec.ts`, `--workers=1 --reporter=line` | PASS, 27/27 after the executable diff was frozen. Ancillary unmocked dashboard requests emitted non-blocking Vite proxy connection messages; every business API exercised by the cases was intercepted. |
 | Planning validator self-test | `/tmp/issue79-ruby.bBM4HQ/bin/ruby .planning/tools/test-planning-validators.rb` | PASS. A temporary user-space Ruby was used because the base image has no system Ruby. |
 | Docker Web build identity | `VITE_BUILD_COMMIT=1111111111111111111111111111111111111111 npm --prefix web run build` followed by an exact meta-tag readback | PASS; the workflow now injects the checked-out pull-request head instead of the synthetic pull-request merge SHA. |
@@ -66,15 +66,18 @@ installed Google Chrome traverses all nine routes against real Web/Core services
 and approves one test-owned recharge fixture with persisted reason and balance
 audit readback. Pull-request run `34768234208` passed this lane in fresh,
 upgrade, and restart environments on the final executable code commit recorded
-above, after retry-identity and taxonomy-aggregation review corrections.
+above, after retry-identity and taxonomy-aggregation review corrections. Later
+live review reopened retry-reason immutability, so a newer pull-request head must
+repeat the authoritative gate before merge.
 
 ## Post-closure backend rerun
 
-After all seven TODO items were closed on the final worktree,
+On the earlier pull-request head, after all seven TODO items were closed,
 `mvn -f core/pom.xml test` executed 984 tests with 7 failures, 4 errors, and 33
 skipped. The release-sentinel failure tied to this change disappeared. The
 remaining result matches the untouched host/baseline boundaries above: four
 Phase 01 failures, one Phase 08 failure plus two errors, and two
 migration-composition failures plus two errors. Pull-request CI is the
 authoritative clean host and passed all 984 tests except the sentinel before it
-was closed.
+was closed. Live review subsequently reopened the TODOs, so a post-closure rerun
+on the final head is required here before merge.

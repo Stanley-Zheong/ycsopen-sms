@@ -9,8 +9,11 @@ findings were resolved, and commit
 live review then found message-operation retry identity and taxonomy join
 multiplicity gaps. Those corrections passed independent review and the complete
 remote gate on `42e588fd81229e91d0aaebdab35e4e3e88232a3e`; Core's only failure
-was the deliberately open three-item TODO sentinel. Existing API shapes,
-permissions, tenant boundaries, state transitions, and production audit
+was the deliberately open three-item TODO sentinel. A newer live review then
+found that a same-ID retry could edit its reason even though the idempotent
+backend retains the first audit value. Final review is reopened until the UI
+freezes both values and a newer head passes the remote gate. Existing API
+shapes, permissions, tenant boundaries, state transitions, and production audit
 contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
@@ -21,8 +24,11 @@ new independent readback. That readback has now passed on the current worktree:
 the reviewer confirmed stable retry identity, conservative one-row taxonomy
 collapse, H2/MySQL SQL compatibility, focused test coverage, and all 15 source
 digests. Pull-request run `34768234208` then passed the installed-Chrome real
-service lane and all other remote jobs except the expected TODO sentinel, so the
-final TODOs can close.
+service lane and all other remote jobs except the expected TODO sentinel. The
+later immutable-reason correction has now passed another independent worktree
+readback: first-submit trimming, failed-state immutability, same-ID/same-reason
+retry, owner compatibility, browser/unit coverage, and all source digests were
+confirmed. A newer pull-request head still must pass the remote gate.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,
@@ -52,6 +58,9 @@ back exactly one matching balance-audit entry.
   pointer or keyboard double activation creates one request. Pending focus moves
   to the read-only reason field and remains trapped in the dialog; a failed
   request releases the latch for retry.
+- Message-operation retries retain both the operation ID and the trimmed reason
+  captured by the first submission. After a failure the reason stays read-only,
+  preventing the displayed retry intent from drifting from the persisted audit.
 - Recharge-review and alert reasons respect their 255-character persistence
   limit; other owners keep the shared 500-character default.
 - Export actions identify the real backend dataset for all four message tabs,
