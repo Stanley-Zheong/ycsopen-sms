@@ -2,19 +2,18 @@
 
 ## Review outcome
 
-Live pull-request review reopened the affected slice after finding interaction
-and target-description gaps. The corrections below are implemented and locally
-verified. The installed-Google-Chrome real-service lane passed on commit
-`5385e4a24638efbdde4dbdcab30e317a0075698a`, after which live review found two
-additional error-group completeness and value-mapping gaps. Final review is
-therefore reopened until those corrections pass on a newer pull-request head.
-Existing API shapes, permissions, tenant boundaries, state transitions, and
-production audit contracts remain unchanged.
+Live pull-request review reopened the affected slice after finding interaction,
+target-description, error-group completeness, and value-mapping gaps. All
+findings below are resolved. The corrected commit
+`982d206095fc59a33cc545434c62a63abb8ac10b` passed the installed-Google-Chrome
+real-service lane and every remote job except the deliberately open TODO
+sentinel. Existing API shapes, permissions, tenant boundaries, state
+transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
-or documentation issue. That review deliberately leaves the real-service Docker
-lane as a remote verification boundary rather than treating local mocks as a
-substitute.
+or documentation issue. It also read back all 15 evidence source digests after
+the final isolated browser run. The subsequent real-service Docker result
+closes the review's remote verification boundary.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,
@@ -64,6 +63,11 @@ back exactly one matching balance-audit entry.
   loading, after target-query failure, or when no target matches. Unit and
   Chromium tests cover multiple groups, exact payload selection, loading,
   query failure, empty-target, and over-50 backend-limit behavior.
+- Error-group bulk controls additionally compare the aggregate group count with
+  the complete loaded target count, so the independent 200-row send-list limit
+  cannot produce a partial submission. The display-only `UNKNOWN` group is also
+  unavailable because it represents a null database value that the existing
+  bulk API cannot accept losslessly. Unit and Chromium tests cover both guards.
 - Alert mute confirmation now names global alert notification as the target,
   keeps the chosen alert only as initiating context, and states that all new
   alert notifications are suppressed for 30 minutes.
@@ -76,6 +80,6 @@ back exactly one matching balance-audit entry.
 The repository-required tool-less Claude review was attempted with the complete
 tracked and untracked diff, but the CLI stopped before reading it with
 `Not logged in · Please run /login`. This is recorded as an authentication
-boundary, not as a successful review. Independent pre-push review and the
+boundary, not as a successful review. The independent pre-push review and the
 executable gates in `VERIFICATION.md` provide the completed replacement review
 evidence.

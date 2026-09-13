@@ -17,7 +17,7 @@
 | Docker release seed identity | `bash -n scripts/verify-docker-release` and review against the release migration's `UNIQUE(version_id, prefix)` key | PASS; the fixture assertion now counts `1380013` only within `DEV-PREFIX-2026-09`, while still requiring exactly one release row. |
 | Affected backend seed and service tests | `mvn -f core/pom.xml -Dtest=ReleaseAcceptanceSeedMigrationTest,TenantRechargeOperationsMigrationTest,TenantRechargeServiceTest test` | PASS, 6/6; this covers additive and repeatable release-fixture creation, the recharge state transition, and persisted audit behavior used by Docker acceptance. |
 | Docker acceptance discovery | `npm --prefix web run test:docker-release -- --list` | PASS, 3 tests discovered; the existing Issue #60 identity case, incoming Issue #90 account-status case, and Issue #91 real-service action-reason case coexist. |
-| Real-service installed-Chrome acceptance | Pull-request CI run [34764991552](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34764991552), `Docker release / Google Chrome`, commit `5385e4a24638efbdde4dbdcab30e317a0075698a` | PASS. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome. The three JSON report SHA-256 values are `17796caa0d9266faed956c17efc684aab3f6e93a93b15ed609c965f82a5016fe`, `cc2f251d0d55f2c7f3afd45053354a7a52ffb4bbf050f5211683327270574a2a`, and `446b89417ca7b0aa908372e2b1d6494b8b70dfa3a9097bc509d28f31dc647a0f`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. |
+| Real-service installed-Chrome acceptance | Pull-request CI run [34766200938](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34766200938), `Docker release / Google Chrome`, commit `982d206095fc59a33cc545434c62a63abb8ac10b` | PASS. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `d284f1a8dbb626c34adcb402f78e42fdb7c371bcffb241937560d9c8432e5d67`, `e95401d42e99dc9d83c6bfff531bb4f1af64d8a8a21890ca760d6d5149ff6ec2`, and `bd5a678e7628e6349b57703f893b0325e8290be522f52c5b410b51775723c182`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 983 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. |
 
 ## Executed boundaries
 
@@ -63,10 +63,8 @@ and tests remain authoritative for those unchanged surfaces.
 The Docker release suite now contains a second, complementary acceptance lane:
 installed Google Chrome traverses all nine routes against real Web/Core services
 and approves one test-owned recharge fixture with persisted reason and balance
-audit readback. Pull-request run `34764991552` passed this lane in fresh, upgrade,
-and restart environments on the exact code commit recorded above. Later review
-reopened the error-group UI guard, so a newer pull-request head must repeat this
-gate before merge.
+audit readback. Pull-request run `34766200938` passed this lane in fresh, upgrade,
+and restart environments on the corrected code commit recorded above.
 
 ## Post-closure backend rerun
 
