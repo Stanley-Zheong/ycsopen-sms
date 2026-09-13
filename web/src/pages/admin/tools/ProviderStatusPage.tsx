@@ -10,9 +10,22 @@ import {
   type NormalizedStatus,
 } from '@/api/providerStatusApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/provider-status.css';
+
+interface NormalizeCriteria {
+  providerName: string;
+  protocol: string;
+  providerCode: string;
+}
+
+const DEFAULT_NORMALIZE_CRITERIA: NormalizeCriteria = {
+  providerName: 'YTO',
+  protocol: 'HTTP',
+  providerCode: 'DELIVRD',
+};
 
 export default function ProviderStatusPage() {
   const userType = useAuthStore((state) => state.userType);
@@ -30,9 +43,8 @@ export default function ProviderStatusPage() {
   const [versionNo, setVersionNo] = useState('ST20260909');
   const [sourceName, setSourceName] = useState('供应商文档');
   const [rowsText, setRowsText] = useState('YTO,HTTP,DELIVRD,SUCCESS,true,true,false,INFO,确认送达');
-  const [providerName, setProviderName] = useState('YTO');
-  const [protocol, setProtocol] = useState('HTTP');
-  const [providerCode, setProviderCode] = useState('DELIVRD');
+  const [draftCriteria, setDraftCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
+  const [appliedCriteria, setAppliedCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
   const [normalized, setNormalized] = useState<NormalizedStatus | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -73,7 +85,11 @@ export default function ProviderStatusPage() {
     onError: (failure) => onError(failure, '状态码导入失败'),
   });
   const normalizeMutation = useMutation({
-    mutationFn: () => normalizeStatus(providerName, protocol, providerCode),
+    mutationFn: (criteria: NormalizeCriteria) => normalizeStatus(
+      criteria.providerName,
+      criteria.protocol,
+      criteria.providerCode,
+    ),
     onSuccess: (result) => {
       setNormalized(result);
       setMessage(`归一化完成：${result.platformCategory} / final=${result.finalState} / billable=${result.billable} / retry=${result.retryable}`);
@@ -82,7 +98,7 @@ export default function ProviderStatusPage() {
     onError: (failure) => onError(failure, '归一化失败'),
   });
   const exportMutation = useMutation({
-    mutationFn: () => requestStatusExport(providerName, protocol),
+    mutationFn: () => requestStatusExport(appliedCriteria.providerName, appliedCriteria.protocol),
     onSuccess: (result) => {
       setMessage(`导出请求已登记：${result.requestId}，匹配 ${result.matchedRows} 条`);
       setError('');
@@ -117,21 +133,53 @@ export default function ProviderStatusPage() {
         </div>
       </section>
 
-      <section className="card">
-        <h2>归一化试算</h2>
-        <div className="provider-status-form">
-          <label>供应商<input data-testid="admin-provider-status-taxonomy-provider" value={providerName} onChange={(event) => setProviderName(event.target.value)} /></label>
-          <label>协议<select data-testid="admin-provider-status-taxonomy-protocol" value={protocol} onChange={(event) => setProtocol(event.target.value)}><option value="HTTP">HTTP</option><option value="CMPP">CMPP</option><option value="SGIP">SGIP</option><option value="SMGP">SMGP</option></select></label>
-          <label>状态码<input data-testid="admin-provider-status-taxonomy-provider-code" value={providerCode} onChange={(event) => setProviderCode(event.target.value)} /></label>
-          <button type="button" data-testid="admin-provider-status-taxonomy-normalize" disabled={!canRead} onClick={() => normalizeMutation.mutate()}>归一化</button>
-        </div>
-        {normalized && (
+      <QueryPanel
+        onSubmit={() => {
+          const criteria = { ...draftCriteria };
+          setAppliedCriteria(criteria);
+          normalizeMutation.mutate(criteria);
+        }}
+        onReset={() => {
+          setDraftCriteria(DEFAULT_NORMALIZE_CRITERIA);
+          setAppliedCriteria(DEFAULT_NORMALIZE_CRITERIA);
+          setNormalized(null);
+        }}
+        submitLegacyTestId="admin-provider-status-taxonomy-normalize"
+        submitDisabled={!canRead}
+        result={normalized ? (
           <div data-testid="admin-provider-status-taxonomy-normalized-result">
             {normalized.platformCategory} / final={String(normalized.finalState)} / billable={String(normalized.billable)} / retry={String(normalized.retryable)}
             <span data-testid="admin-provider-status-taxonomy-unknown-fallback"> 来源：{normalized.source} {normalized.advice}</span>
           </div>
-        )}
-      </section>
+        ) : null}
+      >
+        <QueryField name="provider" label="供应商">
+          <input
+            data-testid="admin-provider-status-taxonomy-provider"
+            value={draftCriteria.providerName}
+            onChange={(event) => setDraftCriteria({ ...draftCriteria, providerName: event.target.value })}
+          />
+        </QueryField>
+        <QueryField name="protocol" label="协议">
+          <select
+            data-testid="admin-provider-status-taxonomy-protocol"
+            value={draftCriteria.protocol}
+            onChange={(event) => setDraftCriteria({ ...draftCriteria, protocol: event.target.value })}
+          >
+            <option value="HTTP">HTTP</option>
+            <option value="CMPP">CMPP</option>
+            <option value="SGIP">SGIP</option>
+            <option value="SMGP">SMGP</option>
+          </select>
+        </QueryField>
+        <QueryField name="provider-code" label="状态码">
+          <input
+            data-testid="admin-provider-status-taxonomy-provider-code"
+            value={draftCriteria.providerCode}
+            onChange={(event) => setDraftCriteria({ ...draftCriteria, providerCode: event.target.value })}
+          />
+        </QueryField>
+      </QueryPanel>
 
       <section className="card" data-testid="admin-provider-status-status-codes-version-history">
         <h2>版本历史</h2>

@@ -49,16 +49,39 @@ label { display: inline-grid; gap: 4px; color: var(--color-text); }
 .sidebar button { width: 100%; margin-top: 16px; }
 .content { min-width: 0; flex: 1; padding: 24px; }
 .card { margin-bottom: 16px; padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: 0 1px 2px var(--color-card-shadow); }
-.query-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.query-panel-heading strong { font-size: 16px; }
+.query-panel, .query-panel-form { display: grid; min-width: 0; max-width: 100%; gap: 16px; }
+.query-panel-form { margin: 0; }
+.query-panel-heading, .query-panel-actions { display: flex; align-items: center; gap: 8px; }
+.query-panel-heading { justify-content: space-between; }
+.query-panel-heading strong { color: var(--color-text); font-size: 16px; }
+.query-panel-fields { display: flex; min-width: 0; flex-wrap: wrap; align-items: end; gap: 12px 16px; }
+.query-panel-field-grid { display: grid; min-width: 812px; flex: 1 1 0; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 12px 16px; }
 .query-panel-fields[hidden] { display: none; }
-.query-panel-field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 280px)); gap: 16px; align-items: end; }
-.query-panel-field { min-width: 0; }
+.query-panel-field { display: grid; min-width: 0; grid-template-columns: minmax(88px, auto) minmax(160px, 240px); align-items: center; justify-content: start; gap: 12px; }
+.query-panel-field > label { color: var(--color-muted); font-size: 14px; text-align: right; white-space: nowrap; }
 .query-panel-control { min-width: 0; }
-.query-panel-actions { display: flex; gap: 8px; margin-top: 16px; }
-.query-panel-toggle { min-height: 40px; }
-@media (max-width: 1200px) { .query-panel-field-grid { grid-template-columns: repeat(2, minmax(0, 280px)); } }
-@media (max-width: 900px) { .query-panel-field-grid { grid-template-columns: minmax(0, 280px); } }
+.query-panel-control > input, .query-panel-control > select, .query-panel-control > textarea { box-sizing: border-box; width: 100%; }
+.query-panel .query-panel-control > input,
+.query-panel .query-panel-control > select:not([multiple]),
+.query-panel .query-panel-control > textarea {
+  height: 40px;
+  min-height: 40px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  line-height: 22px;
+}
+.query-panel-actions { justify-content: flex-end; margin-left: auto; white-space: nowrap; }
+.query-panel-actions > button { height: 40px; min-height: 40px; }
+.query-panel-toggle { min-width: 72px; }
+.query-panel-result { min-width: 0; max-width: 100%; overflow-x: auto; }
+
+@media (max-width: 1200px) {
+  .query-panel-field-grid { min-width: 536px; grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .query-panel-field-grid { min-width: 260px; grid-template-columns: minmax(260px, 1fr); }
+}
 [role="dialog"].card { position: fixed; inset: 50% auto auto 50%; z-index: 900; width: min(720px, calc(100vw - 48px)); max-height: calc(100vh - 48px); margin: 0; overflow: auto; transform: translate(-50%, -50%); box-shadow: 0 0 0 100vmax rgb(18 50 80 / 35%), 0 16px 48px var(--color-shadow); }
 
 table.ratio-table { width: 100%; border-collapse: collapse; }

@@ -10,6 +10,7 @@ import {
   type AttributionResult,
 } from '@/api/numberAttributionApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/number-attribution.css';
@@ -126,18 +127,33 @@ export default function NumberAttributionPage() {
         </table>
       </section>
 
-      <section className="card" data-testid="admin-number-attribution-lookup-panel">
-        <h2>归属查询</h2>
-        <label>手机号<input data-testid="admin-number-attribution-mobile" value={mobile} onChange={(event) => setMobile(event.target.value)} /></label>
-        <label><input data-testid="admin-number-attribution-force-provider-failure" type="checkbox" checked={forceFailure} onChange={(event) => setForceFailure(event.target.checked)} /> 模拟携转服务失败</label>
-        <button type="button" data-testid="admin-number-attribution-lookup" disabled={!canRead} onClick={() => lookupMutation.mutate()}>查询归属</button>
-        {lookupResult && (
+      <QueryPanel
+        onSubmit={() => lookupMutation.mutate()}
+        onReset={() => { setMobile('13912345678'); setForceFailure(false); setLookupResult(null); }}
+        legacyPanelTestId="admin-number-attribution-lookup-panel"
+        submitLegacyTestId="admin-number-attribution-lookup"
+        submitDisabled={!canRead}
+        result={lookupResult && (
           <div data-testid="admin-number-attribution-result">
             <strong>{lookupResult.carrier}</strong> / {lookupResult.prefixCarrier} / {lookupResult.province}{lookupResult.city}
             <span data-testid="admin-number-attribution-fallback-source"> 来源：{lookupResult.source} {lookupResult.sourceName}</span>
           </div>
         )}
-      </section>
+      >
+        <QueryField name="mobile" label="手机号">
+          <input data-testid="admin-number-attribution-mobile" value={mobile} onChange={(event) => setMobile(event.target.value)} />
+        </QueryField>
+        <QueryField name="provider-mode" label="携转服务">
+          <select
+            data-testid="admin-number-attribution-force-provider-failure"
+            value={forceFailure ? 'failure' : 'normal'}
+            onChange={(event) => setForceFailure(event.target.value === 'failure')}
+          >
+            <option value="normal">正常调用</option>
+            <option value="failure">模拟失败</option>
+          </select>
+        </QueryField>
+      </QueryPanel>
 
       <section className="card" data-testid="admin-number-attribution-portability-portability-page">
         <h2>携号转网缓存</h2>

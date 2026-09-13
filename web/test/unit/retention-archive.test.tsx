@@ -70,14 +70,18 @@ describe('Phase 47 retention archive UI', () => {
     renderPage();
 
     expect(await screen.findByTestId('admin-retention-archive-page')).toBeVisible();
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.getByTestId('query-fields')).toContainElement(screen.getByTestId('admin-retention-archive-filter-tenant'));
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-submit'));
     await waitFor(() => expect(screen.getByTestId('admin-retention-archive-policy-card')).toHaveTextContent('message_tasks'));
     expect(await screen.findByText('2026-01')).toBeVisible();
 
     fireEvent.click(screen.getByTestId('admin-retention-archive-policy-save'));
     await waitFor(() => expect(api.saveArchivePolicy).toHaveBeenCalledWith('MESSAGE_TASKS', { retentionDays: 730, hotMonths: 3 }));
 
+    fireEvent.change(screen.getByTestId('admin-retention-archive-scan-tenant'), { target: { value: '42' } });
     fireEvent.click(screen.getByTestId('admin-retention-archive-scan'));
-    await waitFor(() => expect(api.scanArchive).toHaveBeenCalledWith('MESSAGE_TASKS', ''));
+    await waitFor(() => expect(api.scanArchive).toHaveBeenCalledWith('MESSAGE_TASKS', '42'));
 
     fireEvent.click(screen.getByTestId('admin-retention-archive-manifest-verify'));
     await waitFor(() => expect(api.verifyArchiveManifest).toHaveBeenCalledWith(47));

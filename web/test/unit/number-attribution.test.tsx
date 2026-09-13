@@ -97,6 +97,9 @@ describe('Phase 19 number attribution and portability UI', () => {
     renderWithProviders(<NumberAttributionPage />);
 
     await screen.findByTestId('admin-number-attribution-portability-attribution-page');
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.getByTestId('query-fields')).toContainElement(screen.getByTestId('admin-number-attribution-mobile'));
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-submit'));
     expect(await screen.findByTestId('admin-prefixes-version-row')).toHaveTextContent('V20260909');
     expect(await screen.findByTestId('admin-number-portability-row')).toHaveTextContent('139****0001');
 

@@ -8,6 +8,7 @@ import {
 } from '@/api/trialPrepaidApi';
 import { approveContract } from '@/api/contractPricingApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/trial-prepaid.css';
@@ -25,6 +26,8 @@ export default function TrialPrepaidAdminPage() {
   const canWrite = admin || access.can(TRIAL_PREPAID_PERMISSIONS.write);
   const queryClient = useQueryClient();
   const [tenantId, setTenantId] = useState('42');
+  const [auditTenantDraft, setAuditTenantDraft] = useState('42');
+  const [auditTenantApplied, setAuditTenantApplied] = useState('42');
   const [quota, setQuota] = useState('500');
   const [startAt, setStartAt] = useState('2026-09-09T00:00');
   const [endAt, setEndAt] = useState('2026-09-23T00:00');
@@ -37,10 +40,11 @@ export default function TrialPrepaidAdminPage() {
   const [attachmentRef, setAttachmentRef] = useState('oss://contracts/HT-2026-0001.pdf');
   const [creditLimitMil, setCreditLimitMil] = useState('1000000');
   const [billingPeriod, setBillingPeriod] = useState('MONTHLY');
-  const auditKey = protectedQueryKey('trial-prepaid-balance-audits', tenantId);
+  const auditTenantId = auditTenantApplied ? Number(auditTenantApplied) : null;
+  const auditKey = protectedQueryKey('trial-prepaid-balance-audits', auditTenantId);
   const audits = useQuery({
     queryKey: auditKey,
-    queryFn: () => listBalanceAudits(tenantId ? Number(tenantId) : null),
+    queryFn: () => listBalanceAudits(auditTenantId),
     enabled: platformRole && canRead,
     retry: false,
   });
@@ -76,7 +80,7 @@ export default function TrialPrepaidAdminPage() {
     },
   });
   const balanceAuditExportMutation = useMutation({
-    mutationFn: () => requestBalanceAuditExport(tenantId ? Number(tenantId) : null),
+    mutationFn: () => requestBalanceAuditExport(auditTenantId),
     onSuccess: (job) => {
       setMessage(`余额审计导出任务已创建：${job.id}`);
       setError('');
@@ -146,28 +150,49 @@ export default function TrialPrepaidAdminPage() {
         </div>
       </section>
 
-      <section className="card" data-testid="admin-balance-audit">
+      <section data-testid="admin-balance-audit">
         <h2>余额审计</h2>
         <button type="button" data-testid="admin-secure-async-balance-audit-export" disabled={!canRead} onClick={() => balanceAuditExportMutation.mutate()}>请求安全异步导出</button>
-        {audits.isError && <p role="alert" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}
-        <table className="ratio-table" data-testid="admin-trial-prepaid-balance-audit-table">
-          <thead>
-            <tr><th>机构</th><th>业务单</th><th>类型</th><th>金额(厘)</th><th>余额前/后</th><th>冻结前/后</th><th>版本</th><th>操作人</th><th>时间</th></tr>
-          </thead>
-          <tbody>{(audits.data ?? []).map((row) => (
-            <tr key={`${row.businessDocId}-${row.mutationType}-${row.createdAt}`} data-testid="admin-trial-prepaid-balance-audit-row">
-              <td>{row.tenantId}</td>
-              <td>{row.businessDocId}</td>
-              <td>{row.mutationType}</td>
-              <td>{row.amountMil}</td>
-              <td>{row.beforeBalanceMil}/{row.afterBalanceMil}</td>
-              <td>{row.beforeFrozenMil}/{row.afterFrozenMil}</td>
-              <td>{row.accountVersion}</td>
-              <td>{row.actor}</td>
-              <td>{displayTime(row.createdAt)}</td>
-            </tr>
-          ))}</tbody>
-        </table>
+        <QueryPanel
+          onSubmit={() => setAuditTenantApplied(auditTenantDraft)}
+          onReset={() => {
+            setAuditTenantDraft('');
+            setAuditTenantApplied('');
+          }}
+          result={(
+            <>
+              {audits.isError && <p role="alert" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}
+              <table className="ratio-table" data-testid="admin-trial-prepaid-balance-audit-table">
+                <thead>
+                  <tr><th>机构</th><th>业务单</th><th>类型</th><th>金额(厘)</th><th>余额前/后</th><th>冻结前/后</th><th>版本</th><th>操作人</th><th>时间</th></tr>
+                </thead>
+                <tbody>{(audits.data ?? []).map((row) => (
+                  <tr key={`${row.businessDocId}-${row.mutationType}-${row.createdAt}`} data-testid="admin-trial-prepaid-balance-audit-row">
+                    <td>{row.tenantId}</td>
+                    <td>{row.businessDocId}</td>
+                    <td>{row.mutationType}</td>
+                    <td>{row.amountMil}</td>
+                    <td>{row.beforeBalanceMil}/{row.afterBalanceMil}</td>
+                    <td>{row.beforeFrozenMil}/{row.afterFrozenMil}</td>
+                    <td>{row.accountVersion}</td>
+                    <td>{row.actor}</td>
+                    <td>{displayTime(row.createdAt)}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </>
+          )}
+        >
+          <QueryField name="balance-audit-tenant" label="机构 ID">
+            <input
+              type="number"
+              min="1"
+              data-testid="admin-trial-prepaid-balance-audit-tenant-filter"
+              value={auditTenantDraft}
+              onChange={(event) => setAuditTenantDraft(event.target.value)}
+            />
+          </QueryField>
+        </QueryPanel>
       </section>
     </section>
   );

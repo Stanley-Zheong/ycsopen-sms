@@ -13,7 +13,10 @@ import {
   type TerminationRequestView,
 } from '@/api/tenantTerminationApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/tenant-termination.css';
+
+const INITIAL_TERMINATION_FILTER = { tenantId: '42', status: '' };
 
 function statusLabel(status: string): string {
   return ({
@@ -42,7 +45,8 @@ function displayTime(value: string | null | undefined): string {
 export default function AdminTenantTerminationPage() {
   const queryClient = useQueryClient();
   const [tenantId, setTenantId] = useState('42');
-  const [status, setStatus] = useState('');
+  const [draftFilter, setDraftFilter] = useState(INITIAL_TERMINATION_FILTER);
+  const [filter, setFilter] = useState(INITIAL_TERMINATION_FILTER);
   const [reason, setReason] = useState('VOLUNTARY');
   const [requestEvidence, setRequestEvidence] = useState('termination-ticket:T-4901');
   const [opinion, setOpinion] = useState('finance and operation clearance accepted');
@@ -50,8 +54,8 @@ export default function AdminTenantTerminationPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const terminations = useQuery({
-    queryKey: ['tenant-terminations', tenantId, status],
-    queryFn: () => listTenantTerminations({ tenantId, status }),
+    queryKey: ['tenant-terminations', filter.tenantId, filter.status],
+    queryFn: () => listTenantTerminations(filter),
     retry: false,
   });
   const inventory = useQuery({
@@ -176,37 +180,65 @@ export default function AdminTenantTerminationPage() {
         </section>
       </section>
 
-      <section className="card tenant-termination-card">
-        <h2>终止请求列表</h2>
-        <label>状态过滤
-          <select data-testid="admin-tenant-cooperation-tenant-termination-status-filter" value={status} onChange={(event) => setStatus(event.target.value)}>
+      <QueryPanel
+        className="tenant-termination-card"
+        onSubmit={() => {
+          setSelected(null);
+          setFilter(draftFilter);
+        }}
+        onReset={() => {
+          setSelected(null);
+          setDraftFilter(INITIAL_TERMINATION_FILTER);
+          setFilter(INITIAL_TERMINATION_FILTER);
+        }}
+        result={(
+          <section>
+            <h2>终止请求列表</h2>
+            <table className="tenant-termination-table" data-testid="admin-tenant-cooperation-tenant-termination-table">
+              <thead>
+                <tr>
+                  <th>请求ID</th><th>机构</th><th>原因</th><th>状态</th><th>申请人</th><th>审批人</th><th>生效时间</th><th>动作</th>
+                </tr>
+              </thead>
+              <tbody>{rows.map((row) => (
+                <tr key={row.id} data-testid="admin-tenant-cooperation-tenant-termination-row">
+                  <td>{row.id}</td>
+                  <td>{row.tenantId}</td>
+                  <td>{reasonLabel(row.reason)}</td>
+                  <td data-testid="admin-tenant-cooperation-tenant-termination-row-status">{statusLabel(row.requestStatus)}</td>
+                  <td>{row.requestedBy}</td>
+                  <td>{row.approvedBy ?? '-'}</td>
+                  <td>{displayTime(row.effectiveAt)}</td>
+                  <td><button type="button" data-testid="admin-tenant-cooperation-tenant-termination-detail" onClick={() => loadDetail.mutate(row)}>查看证据</button></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="tenant-id" label="机构ID">
+          <input
+            type="number"
+            min="1"
+            data-testid="admin-tenant-cooperation-tenant-termination-tenant-filter"
+            value={draftFilter.tenantId}
+            onChange={(event) => setDraftFilter({ ...draftFilter, tenantId: event.target.value })}
+          />
+        </QueryField>
+        <QueryField name="status" label="状态过滤">
+          <select
+            data-testid="admin-tenant-cooperation-tenant-termination-status-filter"
+            value={draftFilter.status}
+            onChange={(event) => setDraftFilter({ ...draftFilter, status: event.target.value })}
+          >
             <option value="">全部</option>
             <option value="BLOCKED_CLEARANCE">清算阻塞</option>
             <option value="PENDING_ADMIN_APPROVAL">待审批</option>
             <option value="APPROVED">已审批</option>
             <option value="EFFECTIVE">已生效</option>
           </select>
-        </label>
-        <table className="tenant-termination-table" data-testid="admin-tenant-cooperation-tenant-termination-table">
-          <thead>
-            <tr>
-              <th>请求ID</th><th>机构</th><th>原因</th><th>状态</th><th>申请人</th><th>审批人</th><th>生效时间</th><th>动作</th>
-            </tr>
-          </thead>
-          <tbody>{rows.map((row) => (
-            <tr key={row.id} data-testid="admin-tenant-cooperation-tenant-termination-row">
-              <td>{row.id}</td>
-              <td>{row.tenantId}</td>
-              <td>{reasonLabel(row.reason)}</td>
-              <td data-testid="admin-tenant-cooperation-tenant-termination-row-status">{statusLabel(row.requestStatus)}</td>
-              <td>{row.requestedBy}</td>
-              <td>{row.approvedBy ?? '-'}</td>
-              <td>{displayTime(row.effectiveAt)}</td>
-              <td><button type="button" data-testid="admin-tenant-cooperation-tenant-termination-detail" onClick={() => loadDetail.mutate(row)}>查看证据</button></td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </section>
+        </QueryField>
+      </QueryPanel>
 
       <section className="card tenant-termination-card">
         <h2>参与方清单</h2>

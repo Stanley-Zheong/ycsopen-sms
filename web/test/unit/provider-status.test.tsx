@@ -91,13 +91,21 @@ describe('Phase 20 provider status taxonomy UI', () => {
     await screen.findByTestId('admin-provider-status-taxonomy-status-codes-page');
     expect(await screen.findByTestId('admin-provider-status-taxonomy-status-codes-version-row')).toHaveTextContent('ST20260909');
     expect(await screen.findByTestId('admin-provider-status-taxonomy-status-codes-row')).toHaveTextContent('DELIVRD');
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.getByTestId('query-fields')).toContainElement(screen.getByTestId('admin-provider-status-taxonomy-provider'));
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-submit'));
 
     fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-status-codes-import'));
     await waitFor(() => expect(providerStatusApi.importStatusMappings).toHaveBeenCalled());
-    fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-normalize'));
+    fireEvent.change(screen.getByTestId('admin-provider-status-taxonomy-provider'), { target: { value: 'NEW' } });
+    fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-status-codes-export'));
+    await waitFor(() => expect(providerStatusApi.requestStatusExport).toHaveBeenLastCalledWith('YTO', 'HTTP'));
+
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(providerStatusApi.normalizeStatus).toHaveBeenCalledWith('NEW', 'HTTP', 'DELIVRD'));
     await waitFor(() => expect(screen.getByTestId('admin-provider-status-taxonomy-normalized-result')).toHaveTextContent('SUCCESS'));
     expect(screen.getByTestId('admin-provider-status-taxonomy-unknown-fallback')).toHaveTextContent('MAPPED');
     fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-status-codes-export'));
-    await waitFor(() => expect(providerStatusApi.requestStatusExport).toHaveBeenCalled());
+    await waitFor(() => expect(providerStatusApi.requestStatusExport).toHaveBeenLastCalledWith('NEW', 'HTTP'));
   });
 });

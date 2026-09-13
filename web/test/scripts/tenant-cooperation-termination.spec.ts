@@ -39,6 +39,8 @@ const baseRequest = {
   compensationJson: null,
 };
 
+const filteredRequest = { ...baseRequest, id: 50, tenantId: 43 };
+
 const participants = [
   { id: 1, requestId: 49, tenantId: 42, participantCode: 'HTTP_ACCEPTANCE', participantName: 'HTTP 接收入口', participantState: 'READY_TO_REVOKE', blockerCount: 1, evidenceJson: '{"rule":"new submissions rejected by tenant lifecycle"}' },
   { id: 2, requestId: 49, tenantId: 42, participantCode: 'API_KEYS', participantName: 'API Key', participantState: 'REVOKED', blockerCount: 0, evidenceJson: '{"activeOrRetainedCount":0}' },
@@ -66,7 +68,10 @@ const inventory = [
 
 async function mockTerminationApis(page: Page) {
   await mockEmptyDashboard(page);
-  await page.route('**/api/v1/console/tenant-terminations?**', (route: Route) => route.fulfill({ json: apiResponse([baseRequest]) }));
+  await page.route('**/api/v1/console/tenant-terminations?**', (route: Route) => {
+    const tenantId = new URL(route.request().url()).searchParams.get('tenantId');
+    return route.fulfill({ json: apiResponse(tenantId === '43' ? [filteredRequest] : [baseRequest]) });
+  });
   await page.route('**/api/v1/console/tenant-terminations/participants', (route: Route) => route.fulfill({ json: apiResponse(inventory) }));
   await page.route('**/api/v1/console/tenant-terminations', async (route: Route) => {
     if (route.request().method() === 'POST') {
@@ -90,6 +95,11 @@ async function mockTerminationApis(page: Page) {
     participants,
     audits: [{ id: 2, requestId: 49, tenantId: 42, action: 'REFRESH_CLEARANCE', actor: '7', resultStatus: 'PENDING_ADMIN_APPROVAL', evidenceJson: '{"financeClearance":true}', createdAt: '2026-09-10T08:05:00' }],
   }) }));
+  await page.route('**/api/v1/console/tenant-terminations/50/refresh-clearance', (route: Route) => route.fulfill({ json: apiResponse({
+    request: { ...filteredRequest, requestStatus: 'PENDING_ADMIN_APPROVAL', clearanceSnapshotJson: JSON.stringify(clearancePassed) },
+    participants: participants.map((item) => ({ ...item, requestId: 50, tenantId: 43 })),
+    audits: [],
+  }) }));
   await page.route('**/api/v1/console/tenant-terminations/49/approve', (route: Route) => route.fulfill({ json: apiResponse({
     request: { ...baseRequest, requestStatus: 'APPROVED', approvedBy: '7', approvedAt: '2026-09-10T08:06:00', clearanceSnapshotJson: JSON.stringify(clearancePassed) },
     participants,
@@ -108,6 +118,11 @@ test('OBL-F-2-10-A C-P49-REQUEST pw-p49-request OBL-FLOW-12-1-TERMINATION C-P49-
   await page.goto('/admin/tenant/terminations');
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-page')).toBeVisible();
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-request')).toBeVisible();
+  const filteredRequest = page.waitForRequest((request) => request.url().includes('/tenant-terminations?')
+    && request.url().includes('tenantId=43'));
+  await page.getByTestId('admin-tenant-cooperation-tenant-termination-tenant-filter').fill('43');
+  await page.getByTestId('query-submit').click();
+  await filteredRequest;
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-tenant-id')).toHaveValue('42');
   await page.getByTestId('admin-tenant-cooperation-tenant-termination-submit').click();
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-message')).toContainText('终止请求已创建');
@@ -137,4 +152,18 @@ test('OBL-STATE-TENANT-TERMINATE C-P49-APPROVE pw-p49-approve OBL-F-2-10-C C-P49
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-message')).toContainText('终止已生效');
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-participants')).toContainText('REVOKED');
   await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-timeline')).toContainText('EFFECT');
+});
+
+test('pw-issue-77-termination-filter-clears-stale-selection', async ({ page }) => {
+  await mockTerminationApis(page);
+  await loginAs(page, 'ADMIN');
+  await page.goto('/admin/tenant/terminations');
+  await page.getByTestId('admin-tenant-cooperation-tenant-termination-detail').click();
+
+  await page.getByTestId('admin-tenant-cooperation-tenant-termination-tenant-filter').fill('43');
+  await page.getByTestId('query-submit').click();
+  await expect(page.getByTestId('admin-tenant-cooperation-tenant-termination-table')).toContainText('43');
+  const refreshForFilteredRequest = page.waitForRequest((request) => request.url().endsWith('/tenant-terminations/50/refresh-clearance'));
+  await page.getByTestId('admin-tenant-cooperation-tenant-termination-refresh-clearance').click();
+  await refreshForFilteredRequest;
 });

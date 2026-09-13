@@ -9,6 +9,7 @@ import {
   type FeeWarningEpisode,
 } from '@/api/feeWarningCreditApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/alert-engine.css';
 
 const defaultDraft = {
@@ -29,12 +30,15 @@ function displayChannels(value: string | string[]) {
 export default function AdminFeeWarningPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState(defaultDraft);
+  const [queryTenantDraft, setQueryTenantDraft] = useState(defaultDraft.tenantId);
+  const [queryTenantApplied, setQueryTenantApplied] = useState(defaultDraft.tenantId);
   const [approvalReason, setApprovalReason] = useState('允许本次提交');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const tenantId = Number(draft.tenantId || 0);
-  const rules = useQuery({ queryKey: ['fee-warning-rules', tenantId], queryFn: () => listFeeWarningRules(tenantId), retry: false });
-  const episodes = useQuery({ queryKey: ['fee-warning-episodes', tenantId], queryFn: () => listFeeWarningEpisodes(tenantId), retry: false });
+  const queryTenantId = queryTenantApplied ? Number(queryTenantApplied) : undefined;
+  const rules = useQuery({ queryKey: ['fee-warning-rules', queryTenantId], queryFn: () => listFeeWarningRules(queryTenantId), retry: false });
+  const episodes = useQuery({ queryKey: ['fee-warning-episodes', queryTenantId], queryFn: () => listFeeWarningEpisodes(queryTenantId), retry: false });
 
   async function refresh() {
     await Promise.all([
@@ -78,7 +82,6 @@ export default function AdminFeeWarningPage() {
           <h1>费用预警与授信管控</h1>
           <p className="page-description">按真实余额、预计可用天数和后付费授信比例触发唯一 episode，并记录通知投递证据。</p>
         </div>
-        <button type="button" onClick={() => void refresh()} data-testid="admin-fee-warning-refresh">刷新</button>
       </header>
 
       {message && <p role="status" className="alert-engine-message success" data-testid="admin-fee-warning-message">{message}</p>}
@@ -111,26 +114,47 @@ export default function AdminFeeWarningPage() {
         </div>
       </section>
 
-      <section className="card" data-testid="admin-fee-warning-current-rules">
-        <h2>当前规则</h2>
-        {rules.isLoading && <p data-testid="admin-fee-warning-rules-loading">正在加载规则…</p>}
-        {rules.isError && <p role="alert" data-testid="admin-fee-warning-rules-error">规则加载失败。</p>}
-        <table className="alert-engine-table" data-testid="admin-fee-warning-rules-table">
-          <thead><tr><th>名称</th><th>指标</th><th>阈值</th><th>动作</th><th>状态</th><th>通知</th></tr></thead>
-          <tbody>
-            {(rules.data ?? []).map((row) => (
-              <tr key={row.id} data-testid="admin-fee-warning-rule-row">
-                <td>{row.ruleName}</td>
-                <td>{row.metricType}</td>
-                <td>{row.thresholdValue}</td>
-                <td>{row.action}</td>
-                <td>{row.status}</td>
-                <td>{displayChannels(row.notifyChannels)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <QueryPanel
+        onSubmit={() => setQueryTenantApplied(queryTenantDraft)}
+        onReset={() => {
+          setQueryTenantDraft('');
+          setQueryTenantApplied('');
+        }}
+        onRefresh={() => void refresh()}
+        refreshLegacyTestId="admin-fee-warning-refresh"
+        result={(
+          <section className="card" data-testid="admin-fee-warning-current-rules">
+            <h2>当前规则</h2>
+            {rules.isLoading && <p data-testid="admin-fee-warning-rules-loading">正在加载规则…</p>}
+            {rules.isError && <p role="alert" data-testid="admin-fee-warning-rules-error">规则加载失败。</p>}
+            <table className="alert-engine-table" data-testid="admin-fee-warning-rules-table">
+              <thead><tr><th>名称</th><th>指标</th><th>阈值</th><th>动作</th><th>状态</th><th>通知</th></tr></thead>
+              <tbody>
+                {(rules.data ?? []).map((row) => (
+                  <tr key={row.id} data-testid="admin-fee-warning-rule-row">
+                    <td>{row.ruleName}</td>
+                    <td>{row.metricType}</td>
+                    <td>{row.thresholdValue}</td>
+                    <td>{row.action}</td>
+                    <td>{row.status}</td>
+                    <td>{displayChannels(row.notifyChannels)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="fee-warning-tenant" label="机构 ID">
+          <input
+            type="number"
+            min="1"
+            data-testid="admin-fee-warning-query-tenant-id"
+            value={queryTenantDraft}
+            onChange={(event) => setQueryTenantDraft(event.target.value)}
+          />
+        </QueryField>
+      </QueryPanel>
 
       <section className="card" data-testid="admin-fee-warning-fee-warning-credit-action">
         <h2>预警 episode 与授信动作</h2>

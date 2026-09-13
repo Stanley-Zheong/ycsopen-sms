@@ -7,6 +7,7 @@ import {
   type ExportJob,
 } from '@/api/secureAsyncExportApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/secure-async-export.css';
 
 function displayTime(value: string | null): string {
@@ -20,14 +21,13 @@ function statusLabel(value: string): string {
 
 export default function AdminExportCenterPage() {
   const queryClient = useQueryClient();
-  const [tenantId, setTenantId] = useState('');
-  const [exportType, setExportType] = useState('');
-  const [status, setStatus] = useState('');
+  const [draftFilter, setDraftFilter] = useState({ tenantId: '', exportType: '', status: '' });
+  const [filter, setFilter] = useState(draftFilter);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const jobs = useQuery({
-    queryKey: ['secure-async-exports', tenantId, exportType, status],
-    queryFn: () => listSecureExports({ tenantId, exportType, status }),
+    queryKey: ['secure-async-exports', filter.tenantId, filter.exportType, filter.status],
+    queryFn: () => listSecureExports(filter),
     retry: false,
   });
   const retry = useMutation({
@@ -83,41 +83,70 @@ export default function AdminExportCenterPage() {
         <article><strong>EXCEL/CSV/JSON/PDF</strong><span>支持格式</span></article>
       </section>
 
-      <section className="card secure-export-filters">
-        <label>机构ID<input data-testid="admin-secure-async-export-center-filter-tenant" value={tenantId} onChange={(event) => setTenantId(event.target.value)} /></label>
-        <label>导出类型<input data-testid="admin-secure-async-export-center-filter-type" value={exportType} onChange={(event) => setExportType(event.target.value)} placeholder="SEND_DETAIL" /></label>
-        <label>状态<input data-testid="admin-secure-async-export-center-filter-status" value={status} onChange={(event) => setStatus(event.target.value)} placeholder="COMPLETED" /></label>
-        <button type="button" data-testid="admin-secure-async-export-center-refresh" onClick={() => void queryClient.invalidateQueries({ queryKey: ['secure-async-exports'] })}>刷新</button>
-      </section>
-
-      <section className="card">
-        <h2>导出任务</h2>
-        <table className="secure-export-table" data-testid="admin-secure-async-export-center-table">
-          <thead>
-            <tr>
-              <th>任务ID</th><th>名称</th><th>类型</th><th>格式</th><th>状态</th><th>进度</th><th>记录数</th><th>大小</th><th>创建时间</th><th>失败原因</th><th>动作</th>
-            </tr>
-          </thead>
-          <tbody>{items.map((job) => (
-            <tr key={job.id} data-testid="admin-secure-async-export-center-row">
-              <td>{job.id}</td>
-              <td>{job.jobName}</td>
-              <td>{job.exportType}</td>
-              <td>{job.format}</td>
-              <td>{statusLabel(job.status)}</td>
-              <td>{job.progress}%</td>
-              <td>{job.recordCount}</td>
-              <td>{job.fileSizeBytes ?? '-'}</td>
-              <td>{displayTime(job.createdAt)}</td>
-              <td>{job.failureReason ?? '-'}</td>
-              <td>
-                <button type="button" data-testid="admin-secure-async-export-center-download" disabled={job.status !== 'COMPLETED'} onClick={() => download.mutate(job)}>下载加密包</button>
-                <button type="button" data-testid="admin-secure-async-export-center-retry" disabled={job.status !== 'FAILED'} onClick={() => retry.mutate(job)}>重试</button>
-              </td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </section>
+      <QueryPanel
+        onSubmit={() => setFilter(draftFilter)}
+        onReset={() => {
+          const emptyFilter = { tenantId: '', exportType: '', status: '' };
+          setDraftFilter(emptyFilter);
+          setFilter(emptyFilter);
+        }}
+        onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['secure-async-exports'] })}
+        refreshLegacyTestId="admin-secure-async-export-center-refresh"
+        result={(
+          <section>
+            <h2>导出任务</h2>
+            <table className="secure-export-table" data-testid="admin-secure-async-export-center-table">
+              <thead>
+                <tr>
+                  <th>任务ID</th><th>名称</th><th>类型</th><th>格式</th><th>状态</th><th>进度</th><th>记录数</th><th>大小</th><th>创建时间</th><th>失败原因</th><th>动作</th>
+                </tr>
+              </thead>
+              <tbody>{items.map((job) => (
+                <tr key={job.id} data-testid="admin-secure-async-export-center-row">
+                  <td>{job.id}</td>
+                  <td>{job.jobName}</td>
+                  <td>{job.exportType}</td>
+                  <td>{job.format}</td>
+                  <td>{statusLabel(job.status)}</td>
+                  <td>{job.progress}%</td>
+                  <td>{job.recordCount}</td>
+                  <td>{job.fileSizeBytes ?? '-'}</td>
+                  <td>{displayTime(job.createdAt)}</td>
+                  <td>{job.failureReason ?? '-'}</td>
+                  <td>
+                    <button type="button" data-testid="admin-secure-async-export-center-download" disabled={job.status !== 'COMPLETED'} onClick={() => download.mutate(job)}>下载加密包</button>
+                    <button type="button" data-testid="admin-secure-async-export-center-retry" disabled={job.status !== 'FAILED'} onClick={() => retry.mutate(job)}>重试</button>
+                  </td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="tenant-id" label="机构ID">
+          <input
+            data-testid="admin-secure-async-export-center-filter-tenant"
+            value={draftFilter.tenantId}
+            onChange={(event) => setDraftFilter({ ...draftFilter, tenantId: event.target.value })}
+          />
+        </QueryField>
+        <QueryField name="export-type" label="导出类型">
+          <input
+            data-testid="admin-secure-async-export-center-filter-type"
+            value={draftFilter.exportType}
+            onChange={(event) => setDraftFilter({ ...draftFilter, exportType: event.target.value })}
+            placeholder="SEND_DETAIL"
+          />
+        </QueryField>
+        <QueryField name="status" label="状态">
+          <input
+            data-testid="admin-secure-async-export-center-filter-status"
+            value={draftFilter.status}
+            onChange={(event) => setDraftFilter({ ...draftFilter, status: event.target.value })}
+            placeholder="COMPLETED"
+          />
+        </QueryField>
+      </QueryPanel>
     </section>
   );
 }

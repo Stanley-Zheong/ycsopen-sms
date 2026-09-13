@@ -1,6 +1,10 @@
 .secure-export-page {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 16px;
+  overflow-x: hidden;
 }
 
 .secure-export-header {
@@ -31,19 +35,6 @@
 
 .secure-export-cards span {
   color: #637083;
-}
-
-.secure-export-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: end;
-}
-
-.secure-export-filters label {
-  display: grid;
-  gap: 6px;
-  min-width: 160px;
 }
 
 .secure-export-table {

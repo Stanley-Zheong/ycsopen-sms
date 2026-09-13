@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { fetchComplaintRatio, fetchComplaintRatioCases, pauseComplaintRatioTarget } from '@/api/dashboard';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import type { ComplaintRatioCase, ComplaintRatioItem } from '@/types/api';
 import { formatRatioAsPerMille } from '@lib/format';
 
@@ -30,7 +31,9 @@ function defaultMonth() {
 /** Phase45 complaint-ratio dashboard: source-backed ratio, data-quality, drill-down and exact intervention controls. */
 export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatioPanelProps) {
   const [month, setMonth] = useState(defaultMonth);
+  const [draftMonth, setDraftMonth] = useState(defaultMonth);
   const [showAll, setShowAll] = useState(false);
+  const [draftShowAll, setDraftShowAll] = useState(false);
   const [drilldown, setDrilldown] = useState<DrilldownState | null>(null);
   const [intervention, setIntervention] = useState<InterventionState | null>(null);
   const query = useQuery({
@@ -106,9 +109,22 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
   );
 
   return (
-    <section className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
-        <div>
+    <>
+      <QueryPanel
+      onSubmit={() => { setMonth(draftMonth); setShowAll(draftShowAll); }}
+      onReset={() => {
+        const baselineMonth = defaultMonth();
+        setDraftMonth(baselineMonth);
+        setMonth(baselineMonth);
+        setDraftShowAll(false);
+        setShowAll(false);
+      }}
+      onRefresh={() => { void query.refetch(); }}
+      legacyPanelTestId={dimension === 'channel'
+        ? 'admin-complaint-ratio-dashboard-complaint-ratio-period'
+        : 'admin-complaint-ratio-dashboard-complaint-ratio-period-tenant'}
+      result={(
+        <>
           <h3>{title}</h3>
           {dimension === 'channel' ? (
             <p data-testid="admin-complaint-ratio-dashboard-complaint-ratio-threshold">
@@ -119,37 +135,49 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
               {thresholdSummary}
             </p>
           )}
-        </div>
-        {dimension === 'channel' ? (
-          <div data-testid="admin-complaint-ratio-dashboard-complaint-ratio-period">
-            <PeriodControls title={title} month={month} showAll={showAll} fetching={query.isFetching} onMonth={setMonth} onToggleAll={() => setShowAll((value) => !value)} onRefresh={() => query.refetch()} />
-          </div>
-        ) : (
-          <div data-testid="admin-complaint-ratio-dashboard-complaint-ratio-period-tenant">
-            <PeriodControls title={title} month={month} showAll={showAll} fetching={query.isFetching} onMonth={setMonth} onToggleAll={() => setShowAll((value) => !value)} onRefresh={() => query.refetch()} />
-          </div>
-        )}
-      </div>
-      {query.isLoading && <p>加载中…</p>}
-      {query.isError && <p role="alert">加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
-      {!query.isLoading && !query.isError && rows.length === 0 && <p style={{ color: '#888' }}>暂无数据</p>}
-      {rows.length > 0 && dimension === 'channel' && (
-        <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-channel">
-          {tableContent}
-        </table>
+          {query.isLoading && <p>加载中…</p>}
+          {query.isError && <p role="alert">加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
+          {!query.isLoading && !query.isError && rows.length === 0 && <p style={{ color: '#888' }}>暂无数据</p>}
+          {rows.length > 0 && dimension === 'channel' && (
+            <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-channel">
+              {tableContent}
+            </table>
+          )}
+          {rows.length > 0 && dimension === 'tenant' && (
+            <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-tenant">
+              {tableContent}
+            </table>
+          )}
+          {pauseMutation.data && (
+            <p role="status">
+              干预完成：{pauseMutation.data.dimensionType}:{pauseMutation.data.dimensionId} {pauseMutation.data.status}
+              {' '}证据：{pauseMutation.data.sourceKey}
+            </p>
+          )}
+          {pauseMutation.isError && <p role="alert">干预失败：请检查权限、网络、数据质量或目标状态后重试。</p>}
+        </>
       )}
-      {rows.length > 0 && dimension === 'tenant' && (
-        <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-tenant">
-          {tableContent}
-        </table>
-      )}
-      {pauseMutation.data && (
-        <p role="status">
-          干预完成：{pauseMutation.data.dimensionType}:{pauseMutation.data.dimensionId} {pauseMutation.data.status}
-          {' '}证据：{pauseMutation.data.sourceKey}
-        </p>
-      )}
-      {pauseMutation.isError && <p role="alert">干预失败：请检查权限、网络、数据质量或目标状态后重试。</p>}
+      >
+        <QueryField name={`${dimension}-month`} label="月份">
+          <input
+            aria-label={`${title}月份`}
+            data-testid={`admin-complaint-ratio-dashboard-${dimension}-month`}
+            type="month"
+            value={draftMonth}
+            onChange={(event) => setDraftMonth(event.target.value)}
+          />
+        </QueryField>
+        <QueryField name={`${dimension}-range`} label="显示范围">
+          <select
+            data-testid={`admin-complaint-ratio-dashboard-${dimension}-range`}
+            value={draftShowAll ? 'all' : 'top'}
+            onChange={(event) => setDraftShowAll(event.target.value === 'all')}
+          >
+            <option value="top">显示 Top 10</option>
+            <option value="all">显示全部</option>
+          </select>
+        </QueryField>
+      </QueryPanel>
       {drilldown && (
         <DrilldownDialog
           title={title}
@@ -174,39 +202,6 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
           }}
         />
       )}
-    </section>
-  );
-}
-
-function PeriodControls({
-  title,
-  month,
-  showAll,
-  fetching,
-  onMonth,
-  onToggleAll,
-  onRefresh,
-}: {
-  title: string;
-  month: string;
-  showAll: boolean;
-  fetching: boolean;
-  onMonth: (value: string) => void;
-  onToggleAll: () => void;
-  onRefresh: () => void;
-}) {
-  return (
-    <>
-      <label>
-        月份
-        <input aria-label={`${title}月份`} type="month" value={month} onChange={(event) => onMonth(event.target.value)} />
-      </label>
-      <button type="button" onClick={onToggleAll}>
-        {showAll ? '显示 Top 10' : '显示全部'}
-      </button>
-      <button type="button" onClick={onRefresh}>
-        {fetching ? '刷新中' : '刷新'}
-      </button>
     </>
   );
 }

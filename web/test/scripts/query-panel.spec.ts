@@ -24,9 +24,11 @@ async function expectActionsAtRightOfFieldRow(panel: Locator, name: string, hasR
   const controlBox = await panel.getByTestId(`query-input-${name}`).boundingBox();
   const submit = fields.getByTestId('query-submit');
   const submitBox = await submit.boundingBox();
+  const trailingActionBox = await fields.getByTestId('query-actions').locator('button').last().boundingBox();
   expect(fieldsBox, 'query fields have a layout box').not.toBeNull();
   expect(controlBox, `${name} control has a layout box`).not.toBeNull();
   expect(submitBox, 'search button has a layout box').not.toBeNull();
+  expect(trailingActionBox, 'trailing query action has a layout box').not.toBeNull();
   expect(Math.min(controlBox!.y + controlBox!.height, submitBox!.y + submitBox!.height)
     - Math.max(controlBox!.y, submitBox!.y)).toBeGreaterThan(0);
   expect(submitBox!.x).toBeGreaterThanOrEqual(fieldsBox!.x + (fieldsBox!.width * 2 / 3) - 1);
@@ -36,11 +38,11 @@ async function expectActionsAtRightOfFieldRow(panel: Locator, name: string, hasR
     const resetBox = await reset.boundingBox();
     expect(resetBox, 'reset button has a layout box').not.toBeNull();
     expect(Math.abs(submitBox!.y - resetBox!.y)).toBeLessThanOrEqual(1);
-    expect(Math.abs((resetBox!.x + resetBox!.width) - (fieldsBox!.x + fieldsBox!.width))).toBeLessThanOrEqual(1);
+    expect(Math.abs(submitBox!.y - trailingActionBox!.y)).toBeLessThanOrEqual(1);
   } else {
     await expect(fields.getByTestId('query-reset')).toHaveCount(0);
-    expect(Math.abs((submitBox!.x + submitBox!.width) - (fieldsBox!.x + fieldsBox!.width))).toBeLessThanOrEqual(1);
   }
+  expect(Math.abs((trailingActionBox!.x + trailingActionBox!.width) - (fieldsBox!.x + fieldsBox!.width))).toBeLessThanOrEqual(1);
 }
 
 async function expectActionsOnNextRowAtRight(panel: Locator, name: string) {
@@ -49,14 +51,17 @@ async function expectActionsOnNextRowAtRight(panel: Locator, name: string) {
   const controlBox = await panel.getByTestId(`query-input-${name}`).boundingBox();
   const submitBox = await fields.getByTestId('query-submit').boundingBox();
   const resetBox = await fields.getByTestId('query-reset').boundingBox();
+  const trailingActionBox = await fields.getByTestId('query-actions').locator('button').last().boundingBox();
   expect(fieldsBox, 'query fields have a layout box').not.toBeNull();
   expect(controlBox, `${name} control has a layout box`).not.toBeNull();
   expect(submitBox, 'search button has a layout box').not.toBeNull();
   expect(resetBox, 'reset button has a layout box').not.toBeNull();
+  expect(trailingActionBox, 'trailing query action has a layout box').not.toBeNull();
   expect(submitBox!.y).toBeGreaterThanOrEqual(controlBox!.y + controlBox!.height);
   expect(Math.abs(submitBox!.y - resetBox!.y)).toBeLessThanOrEqual(1);
   expect(submitBox!.x).toBeGreaterThan(fieldsBox!.x);
-  expect(Math.abs((resetBox!.x + resetBox!.width) - (fieldsBox!.x + fieldsBox!.width))).toBeLessThanOrEqual(1);
+  expect(Math.abs(submitBox!.y - trailingActionBox!.y)).toBeLessThanOrEqual(1);
+  expect(Math.abs((trailingActionBox!.x + trailingActionBox!.width) - (fieldsBox!.x + fieldsBox!.width))).toBeLessThanOrEqual(1);
 }
 
 async function expectAllControlsEmpty(panel: Locator, names: string[]) {
@@ -115,14 +120,14 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
   await panel.getByTestId('query-input-verification-status').locator('select').selectOption('PENDING');
   await panel.getByTestId('query-input-operating-status').locator('select').selectOption('NORMAL');
   await panel.getByTestId('query-submit').click();
-  await expect(panel.getByTestId('query-result-table')).toContainText('阿尔法机构1');
-  await expect(panel.getByTestId('query-result-table')).not.toContainText('贝塔机构');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-table')).toContainText('阿尔法机构1');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-table')).not.toContainText('贝塔机构');
   await page.getByTestId('admin-tenant-qualification-tenants-next').click();
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 2 / 2 页');
 
   await panel.getByTestId('query-reset').click();
   await expectAllControlsEmpty(panel, fields);
-  await expect(panel.getByTestId('query-result-table')).toContainText('贝塔机构');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-table')).toContainText('贝塔机构');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 / 2 页');
 
 });

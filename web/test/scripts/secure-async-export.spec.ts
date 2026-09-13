@@ -29,6 +29,7 @@ test('OBL-F-7-8-A C-P46-CENTER pw-p46-export-center OBL-F-7-8-C C-P46-DOWNLOAD p
   await expect(page.getByTestId('admin-secure-async-export-center-cards')).toContainText('EXCEL/CSV/JSON/PDF');
   await expect(page.getByTestId('admin-secure-async-export-center-download')).toHaveCount(2);
   await expect(page.getByTestId('admin-secure-async-export-center-retry')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   await page.getByTestId('admin-secure-async-export-center-download').first().click();
   await expect(page.getByTestId('admin-secure-async-export-center-message')).toContainText('已获取加密下载包');
   await page.getByTestId('admin-secure-async-export-center-retry').nth(1).click();

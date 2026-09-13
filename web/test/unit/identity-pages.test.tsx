@@ -330,8 +330,8 @@ describe('Phase 5 identity administration pages', () => {
     renderPage(<LoginHistoryPage />);
 
     const history = await screen.findByTestId('shared-console-identity-profile-login-history');
-    expect(within(history).getByText('admin')).toBeVisible();
-    expect(within(history).getByText('192.0.2.10')).toBeVisible();
+    expect(await within(history).findByText('admin')).toBeVisible();
+    expect(await within(history).findByText('192.0.2.10')).toBeVisible();
     expect(seen.some((request) => request.method === 'GET' && request.url === '/console/login-history')).toBe(true);
     expect(latestHistoryParams).toEqual({ all: true, page: 0, size: 20 });
   });

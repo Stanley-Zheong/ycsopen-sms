@@ -11,7 +11,10 @@ import {
   type ArchiveManifest,
 } from '@/api/retentionArchiveApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/retention-archive.css';
+
+const INITIAL_MANIFEST_FILTER = { dataDomain: 'MESSAGE_TASKS', tenantId: '', status: '' };
 
 function display(value: string | null): string {
   if (!value) return '-';
@@ -25,16 +28,17 @@ function statusLabel(value: string): string {
 export default function AdminRetentionArchivePage() {
   const queryClient = useQueryClient();
   const [dataDomain, setDataDomain] = useState('MESSAGE_TASKS');
-  const [tenantId, setTenantId] = useState('');
-  const [status, setStatus] = useState('');
+  const [scanTenantId, setScanTenantId] = useState('');
+  const [draftFilter, setDraftFilter] = useState({ ...INITIAL_MANIFEST_FILTER });
+  const [filter, setFilter] = useState({ ...INITIAL_MANIFEST_FILTER });
   const [retentionDays, setRetentionDays] = useState(730);
   const [hotMonths, setHotMonths] = useState(3);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const policies = useQuery({ queryKey: ['archive-policies'], queryFn: listArchivePolicies, retry: false });
   const manifests = useQuery({
-    queryKey: ['archive-manifests', dataDomain, tenantId, status],
-    queryFn: () => listArchiveManifests({ dataDomain, tenantId, status }),
+    queryKey: ['archive-manifests', filter.dataDomain, filter.tenantId, filter.status],
+    queryFn: () => listArchiveManifests(filter),
     retry: false,
   });
   const activePolicy = useMemo(() => policies.data?.find((item) => item.dataDomain === dataDomain), [policies.data, dataDomain]);
@@ -54,7 +58,7 @@ export default function AdminRetentionArchivePage() {
     onError: (failure) => onError(failure, '归档策略保存失败'),
   });
   const scan = useMutation({
-    mutationFn: () => scanArchive(dataDomain, tenantId),
+    mutationFn: () => scanArchive(dataDomain, scanTenantId),
     onSuccess: (manifest) => void onSuccess(`归档扫描完成：${manifest.id} / ${manifest.rowCount} 条`),
     onError: (failure) => onError(failure, '归档扫描失败'),
   });
@@ -106,11 +110,37 @@ export default function AdminRetentionArchivePage() {
 
         <section className="card" data-testid="admin-retention-archive-scan-card">
           <h2>热冷归档扫描</h2>
-          <label>机构ID<input data-testid="admin-retention-archive-filter-tenant" value={tenantId} onChange={(event) => setTenantId(event.target.value)} /></label>
-          <label>清单状态<input data-testid="admin-retention-archive-filter-status" value={status} onChange={(event) => setStatus(event.target.value)} placeholder="COMPLETED" /></label>
+          <label>机构ID<input data-testid="admin-retention-archive-scan-tenant" value={scanTenantId} onChange={(event) => setScanTenantId(event.target.value)} /></label>
           <button type="button" data-testid="admin-retention-archive-scan" onClick={() => scan.mutate()} disabled={scan.isPending}>扫描并归档</button>
         </section>
       </section>
+
+      <QueryPanel
+        onSubmit={() => setFilter({ ...draftFilter })}
+        onReset={() => { setDraftFilter({ ...INITIAL_MANIFEST_FILTER }); setFilter({ ...INITIAL_MANIFEST_FILTER }); }}
+      >
+        <QueryField name="archive-domain" label="数据域">
+          <select
+            data-testid="admin-retention-archive-filter-domain"
+            value={draftFilter.dataDomain}
+            onChange={(event) => setDraftFilter((current) => ({ ...current, dataDomain: event.target.value }))}
+          >
+            {(policies.data ?? [{ dataDomain: 'MESSAGE_TASKS' }]).map((policy) => <option key={policy.dataDomain} value={policy.dataDomain}>{policy.dataDomain}</option>)}
+          </select>
+        </QueryField>
+        <QueryField name="archive-tenant" label="机构 ID">
+          <input data-testid="admin-retention-archive-filter-tenant" value={draftFilter.tenantId} onChange={(event) => setDraftFilter((current) => ({ ...current, tenantId: event.target.value }))} />
+        </QueryField>
+        <QueryField name="archive-status" label="清单状态">
+          <select data-testid="admin-retention-archive-filter-status" value={draftFilter.status} onChange={(event) => setDraftFilter((current) => ({ ...current, status: event.target.value }))}>
+            <option value="">全部</option>
+            <option value="COMPLETED">已归档</option>
+            <option value="FAILED">失败</option>
+            <option value="CORRUPTED">已损坏</option>
+            <option value="RESTORED">已恢复</option>
+          </select>
+        </QueryField>
+      </QueryPanel>
 
       <section className="card">
         <h2>归档清单</h2>

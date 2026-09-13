@@ -13,6 +13,7 @@ interface QueryPanelProps {
   children: ReactNode;
   onSubmit: () => void;
   onReset: () => void;
+  onRefresh?: () => void;
   result?: ReactNode;
   additionalActions?: ReactNode;
   initiallyExpanded?: boolean;
@@ -20,7 +21,9 @@ interface QueryPanelProps {
   className?: string;
   legacyPanelTestId?: string;
   submitLegacyTestId?: string;
+  submitDisabled?: boolean;
   resetLegacyTestId?: string;
+  refreshLegacyTestId?: string;
 }
 
 interface QueryFieldProps {
@@ -62,14 +65,17 @@ export function QueryPanel({
   children,
   onSubmit,
   onReset,
+  onRefresh,
   result,
   additionalActions,
   initiallyExpanded = false,
-  submitLabel = '搜索',
+  submitLabel = '查询',
   className = '',
   legacyPanelTestId,
   submitLegacyTestId,
+  submitDisabled = false,
   resetLegacyTestId,
+  refreshLegacyTestId,
 }: QueryPanelProps) {
   const [columns, setColumns] = useState(queryColumnCount);
   const fieldCount = Children.count(children);
@@ -125,15 +131,20 @@ export function QueryPanel({
             {children}
           </div>
           <div className="query-panel-actions" data-testid="query-actions">
-            <button type="submit" data-testid="query-submit">
+            <button type="submit" data-testid="query-submit" disabled={submitDisabled}>
               {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>{submitLabel}</span> : submitLabel}
             </button>
-            {fieldCount > 1 && (
+            {(fieldCount > 1 || Boolean(resetLegacyTestId)) && (
               <button type="button" className="button-secondary" data-testid="query-reset" onClick={onReset}>
                 {resetLegacyTestId ? <span data-testid={resetLegacyTestId}>重置</span> : '重置'}
               </button>
             )}
             {additionalActions}
+            {onRefresh && (
+              <button type="button" className="button-secondary" data-testid="query-refresh" onClick={onRefresh}>
+                {refreshLegacyTestId ? <span data-testid={refreshLegacyTestId}>刷新</span> : '刷新'}
+              </button>
+            )}
           </div>
         </div>
       </form>

@@ -73,7 +73,9 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/uplink');
     await expect(page.getByTestId('admin-uplink-normalization-uplinks-page')).toBeVisible();
+    await page.getByTestId('query-panel').first().getByTestId('query-panel-toggle').click();
     await page.getByTestId('admin-uplink-normalization-uplinks-filter-keyword').fill('帮助');
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
     await expect(page.getByTestId('admin-uplink-normalization-uplinks-row')).toContainText('138****8000');
     await page.getByTestId('admin-uplink-normalization-uplink-detail').click();
     await expect(page.getByTestId('admin-uplink-normalization-detail-drawer')).toContainText('回复帮助');
