@@ -115,10 +115,10 @@ export function QueryPanel({
           aria-hidden={!expanded}
           hidden={!expanded}
         >
-          <div className="query-panel-field-grid">
+          <div className="query-panel-field-grid" data-testid="query-fields">
             {children}
           </div>
-          <div className="query-panel-actions">
+          <div className="query-panel-actions" data-testid="query-actions">
             <button type="submit" data-testid="query-submit">
               {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>搜索</span> : '搜索'}
             </button>
