@@ -87,6 +87,9 @@ ycsopen:
     timeout-ms: ${YCSOPEN_PLATFORM_NOTIFICATION_TIMEOUT_MS:800}
 
 management:
+  health:
+    redis:
+      enabled: false
   info:
     env:
       enabled: true

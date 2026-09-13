@@ -3,6 +3,7 @@ package com.ycsopen.sms.core.service.complaint;
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.service.risk.BlacklistRiskControlService;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ComplaintCaseService {
     private final JdbcTemplate jdbc;
     private final BlacklistPort blacklistPort;
 
+    @Autowired
     public ComplaintCaseService(JdbcTemplate jdbc, BlacklistRiskControlService blacklistService) {
         this(jdbc, (tenantId, mobile, actor, reason) -> blacklistService.createEntry(
                 new BlacklistRiskControlService.BlacklistEntryCreateRequest(

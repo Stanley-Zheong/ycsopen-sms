@@ -70,7 +70,7 @@ public class QualificationInspectionService {
         tenant.setInspectionStatus(Tenant.InspectionStatus.COMPLETED);
         tenant.setInspectionCompanyName(facts.companyName().trim());
         tenant.setInspectionCreditCode(facts.creditCode());
-        tenant.setInspectionConfidence(facts.confidence());
+        tenant.setInspectionConfidence(java.math.BigDecimal.valueOf(facts.confidence()));
         tenant.setInspectionProviderRequestId(facts.requestId());
         tenant.setInspectionCompletedAt(LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC));
         return tenants.saveAndFlush(tenant);

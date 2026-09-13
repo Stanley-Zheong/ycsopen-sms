@@ -2,6 +2,7 @@ package com.ycsopen.sms.core.common.security;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.ObjectProvider;
@@ -34,6 +35,7 @@ public class HmacSignatureVerifier {
         this.redis = null;
     }
 
+    @Autowired
     public HmacSignatureVerifier(ObjectProvider<StringRedisTemplate> redis) {
         this.redis = redis.getIfAvailable();
     }

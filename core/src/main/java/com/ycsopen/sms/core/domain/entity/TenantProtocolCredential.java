@@ -9,7 +9,8 @@ import lombok.Setter;
 public class TenantProtocolCredential {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(name="tenant_id", nullable=false) private Long tenantId;
-    @Column(columnDefinition="enum('CMPP','HTTP')") private String protocol = "CMPP";
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition="enum('CMPP','HTTP')") private Protocol protocol = Protocol.CMPP;
     private String spid;
     @Column(name="endpoint_host") private String endpointHost;
     @Column(name="endpoint_port") private Integer endpointPort;
@@ -17,6 +18,10 @@ public class TenantProtocolCredential {
     @Column(name="max_connections") private Integer maxConnections = 4;
     @Column(name="tps_limit") private Integer tpsLimit = 100;
     @Column(name="window_size") private Integer windowSize = 8;
-    @Column(columnDefinition="enum('ACTIVE','REVOKED')") private String status = "ACTIVE";
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition="enum('ACTIVE','REVOKED')") private Status status = Status.ACTIVE;
     @Column(name="revoked_at") private java.time.LocalDateTime revokedAt;
+
+    public enum Protocol { CMPP, HTTP }
+    public enum Status { ACTIVE, REVOKED }
 }
