@@ -100,6 +100,17 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   const sends = useQuery({ queryKey: ['message-ops-sends', filter], queryFn: () => listSends(filter), ...queryOptions });
   const receipts = useQuery({ queryKey: ['message-ops-receipts', filter], queryFn: () => listReceipts(filter), ...queryOptions });
   const errors = useQuery({ queryKey: ['message-ops-errors', filter], queryFn: () => listErrorGroups(filter), ...queryOptions });
+  const failedMessageIdsByErrorCode = useMemo(() => {
+    const grouped = new Map<string, string[]>();
+    for (const row of sends.data ?? []) {
+      if (row.sendStatus !== 'FAILED') continue;
+      const errorCode = row.errorCode ?? 'UNKNOWN';
+      const messageIds = grouped.get(errorCode) ?? [];
+      if (!messageIds.includes(row.messageId)) messageIds.push(row.messageId);
+      grouped.set(errorCode, messageIds);
+    }
+    return grouped;
+  }, [sends.data]);
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['message-ops-submissions'] });
@@ -161,11 +172,11 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     setReason('');
     setError('');
   };
-  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem') => openAction({
-    kind,
-    errorCode: filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
-    messageIds: (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId),
-  });
+  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', errorCode: string) => {
+    const messageIds = failedMessageIdsByErrorCode.get(errorCode) ?? [];
+    if (sends.isFetching || sends.isError || messageIds.length === 0) return;
+    openAction({ kind, errorCode, messageIds: [...messageIds] });
+  };
   const closeAction = () => {
     setPendingAction(null);
     setReason('');
@@ -272,17 +283,23 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
       {section === 'errors' && (
         <section className="card">
           <h2>错误详情</h2>
-          <div className="message-operations-actions">
-            <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" onClick={() => openBulkAction('bulk-retry')}>批量重试</button>
-            <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" onClick={() => openBulkAction('mark-problem')}>标记问题</button>
-          </div>
           <table className="message-operations-table" data-testid="admin-message-receipt-error-details-table">
-            <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th></tr></thead>
-            <tbody>{(errors.data ?? []).map((row) => (
-              <tr key={row.normalizedCode} data-testid="admin-message-receipt-error-details-row">
-                <td>{row.normalizedCode}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
-              </tr>
-            ))}</tbody>
+            <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th><th>动作</th></tr></thead>
+            <tbody>{(errors.data ?? []).map((row) => {
+              const messageIds = failedMessageIdsByErrorCode.get(row.normalizedCode) ?? [];
+              const bulkDisabled = sends.isFetching || sends.isError || messageIds.length === 0;
+              return (
+                <tr key={row.normalizedCode} data-testid="admin-message-receipt-error-details-row">
+                  <td>{row.normalizedCode}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
+                  <td>
+                    <div className="message-operations-actions">
+                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode)}>批量重试</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode)}>标记问题</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}</tbody>
           </table>
         </section>
       )}

@@ -24,6 +24,11 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
 - `/admin/submission/details`, `/admin/send/details`,
   `/admin/receipt/details`, and `/admin/error/details`: export, resend, appeal,
   receipt correction/replay, bulk retry, and problem marking.
+- Error bulk actions belong to the error-group row whose action was chosen. The
+  dialog and request use that row's error code and only currently loaded failed
+  messages with the same code. While send targets are loading, when target
+  loading fails, or when a group has no matching failed message, its bulk
+  controls are disabled and no dialog or request may be created.
 - `/admin/alerts`: resolve or mute one alert. Acknowledge remains an immediate
   action because it has no reason parameter.
 - `/admin/push/failures`: replay, pause, or resume one failed delivery.

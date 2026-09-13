@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '@/api/messageOperationsApi';
@@ -30,20 +30,58 @@ function renderPage(initialSection: 'submissions' | 'sends' | 'receipts' | 'erro
   );
 }
 
+function sendRow(overrides: Partial<api.SendRow> = {}): api.SendRow {
+  return {
+    taskId: 201,
+    messageId: 'MSG_FAILED',
+    tenantId: 42,
+    submissionId: 101,
+    maskedMobile: '已保护',
+    contentSummary: '【签名】验证码...',
+    sendStatus: 'FAILED',
+    channelId: 7,
+    providerMessageId: 'UP-1',
+    carrier: 'MOBILE',
+    province: '广东',
+    city: '深圳',
+    errorCode: 'E42',
+    errorMessage: '供应商拒绝',
+    cost: 0.05,
+    retryCount: 0,
+    outboxState: 'FAILED',
+    sentAt: null,
+    deliveredAt: null,
+    createdAt: '2026-09-09T00:00:00',
+    version: 3,
+    ...overrides,
+  };
+}
+
+function errorGroup(overrides: Partial<api.ErrorGroupRow> = {}): api.ErrorGroupRow {
+  return {
+    normalizedCode: 'E42',
+    platformCategory: 'FAILURE',
+    severity: 'ERROR',
+    retryable: true,
+    totalCount: 1,
+    tenantCount: 1,
+    channelCount: 1,
+    firstSeenAt: '2026-09-09T00:00:00',
+    lastSeenAt: '2026-09-09T00:00:00',
+    ...overrides,
+  };
+}
+
 describe('Phase 27 message receipt error operations UI', () => {
   beforeEach(() => {
     vi.mocked(api.listSubmissions).mockResolvedValue([
       { submissionId: 101, tenantId: 42, submitId: 'SUBMIT-1', messageId: 'MSG_FAILED', sourceProtocol: 'HTTP', productType: 'NOTIFY', submissionStatus: 'ACCEPTED', sendStatus: 'FAILED', templateId: 11, signatureId: 12, errorCode: 'E42', errorMessage: '供应商拒绝', createdAt: '2026-09-09T00:00:00' },
     ]);
-    vi.mocked(api.listSends).mockResolvedValue([
-      { taskId: 201, messageId: 'MSG_FAILED', tenantId: 42, submissionId: 101, maskedMobile: '已保护', contentSummary: '【签名】验证码...', sendStatus: 'FAILED', channelId: 7, providerMessageId: 'UP-1', carrier: 'MOBILE', province: '广东', city: '深圳', errorCode: 'E42', errorMessage: '供应商拒绝', cost: 0.05, retryCount: 0, outboxState: 'FAILED', sentAt: null, deliveredAt: null, createdAt: '2026-09-09T00:00:00', version: 3 },
-    ]);
+    vi.mocked(api.listSends).mockResolvedValue([sendRow()]);
     vi.mocked(api.listReceipts).mockResolvedValue([
       { receiptId: 501, messageId: 'MSG_FAILED', tenantId: 42, maskedMobile: '已保护', channelId: 7, providerMessageId: 'UP-1', receiptStatus: 'FAILED', sendStatus: 'FAILED', errorCode: 'E42', rawPayloadSummary: 'raw payload protected', receiptDigest: 'R-1', carrier: 'MOBILE', province: '广东', city: '深圳', reportTime: '2026-09-09T00:00:00' },
     ]);
-    vi.mocked(api.listErrorGroups).mockResolvedValue([
-      { normalizedCode: 'E42', platformCategory: 'FAILURE', severity: 'ERROR', retryable: true, totalCount: 1, tenantCount: 1, channelCount: 1, firstSeenAt: '2026-09-09T00:00:00', lastSeenAt: '2026-09-09T00:00:00' },
-    ]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup()]);
     vi.mocked(api.resendMessage).mockResolvedValue({ actionId: 'RESEND-1', action: 'RESEND', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RETRY_CREATED', resultMessage: '301' });
     vi.mocked(api.appealMessage).mockResolvedValue({ actionId: 'APPEAL-1', action: 'APPEAL', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'APPEAL_RECORDED', resultMessage: null });
     vi.mocked(api.correctReceipt).mockResolvedValue({ actionId: 'CORRECT-1', action: 'RECEIPT_CORRECT', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RECEIPT_CORRECTED', resultMessage: null });
@@ -111,5 +149,73 @@ describe('Phase 27 message receipt error operations UI', () => {
     fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '错误组已具备重试条件' } });
     fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
     await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '错误组已具备重试条件'));
+  });
+
+  it('binds each bulk action to the selected error group and its matching failed messages', async () => {
+    vi.mocked(api.listSends).mockResolvedValue([
+      sendRow(),
+      sendRow({ taskId: 202, messageId: 'MSG_OTHER', errorCode: 'E99' }),
+      sendRow({ taskId: 203, messageId: 'MSG_SENT', errorCode: 'E42', sendStatus: 'SENT' }),
+    ]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([
+      errorGroup({ normalizedCode: 'E99' }),
+      errorGroup(),
+    ]);
+    renderPage('errors');
+
+    const rows = await screen.findAllByTestId('admin-message-receipt-error-details-row');
+    const e42Row = rows.find((row) => within(row).queryByText('E42'));
+    const e99Row = rows.find((row) => within(row).queryByText('E99'));
+    expect(e42Row).toBeDefined();
+    expect(e99Row).toBeDefined();
+
+    fireEvent.click(within(e42Row!).getByTestId('admin-message-receipt-error-details-bulk-retry'));
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('错误码 E42 · 1 条失败消息');
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '仅重试 E42' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '仅重试 E42'));
+
+    fireEvent.click(within(e99Row!).getByTestId('admin-message-receipt-error-details-mark-problem'));
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('错误码 E99 · 1 条失败消息');
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '仅标记 E99' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^PROBLEM-/), 'MARK_PROBLEM', 'E99', ['MSG_OTHER'], '仅标记 E99'));
+  });
+
+  it('keeps bulk controls disabled while targets load and when no failed message matches', async () => {
+    let resolveSends!: (rows: api.SendRow[]) => void;
+    vi.mocked(api.listSends).mockReturnValue(new Promise((resolve) => { resolveSends = resolve; }));
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup()]);
+    renderPage('errors');
+
+    const bulkRetry = await screen.findByTestId('admin-message-receipt-error-details-bulk-retry');
+    expect(bulkRetry).toBeDisabled();
+    fireEvent.click(bulkRetry);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+
+    await act(async () => resolveSends([]));
+    await waitFor(() => expect(bulkRetry).toBeDisabled());
+    fireEvent.click(bulkRetry);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+    expect(api.bulkErrorAction).not.toHaveBeenCalled();
+  });
+
+  it('keeps both bulk controls disabled when target loading fails', async () => {
+    vi.mocked(api.listSends).mockRejectedValue(new Error('send target lookup failed'));
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup()]);
+    renderPage('errors');
+
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    const markProblem = within(row).getByTestId('admin-message-receipt-error-details-mark-problem');
+    await waitFor(() => {
+      expect(bulkRetry).toBeDisabled();
+      expect(markProblem).toBeDisabled();
+    });
+
+    fireEvent.click(bulkRetry);
+    fireEvent.click(markProblem);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+    expect(api.bulkErrorAction).not.toHaveBeenCalled();
   });
 });

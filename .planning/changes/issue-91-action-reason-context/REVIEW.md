@@ -33,6 +33,13 @@ release row.
   only on visual stacking.
 - Browser tests prove interaction behavior through roles and stable test IDs;
   they do not treat a CSS class assertion as interaction evidence.
+- Pull-request review found that the original error-page bulk controls could
+  label the dialog with one error code while submitting failed messages from
+  other groups. The controls now live on each error-group row, snapshot only
+  loaded failed messages with that row's code, and stay disabled during target
+  loading, after target-query failure, or when no target matches. Unit and
+  Chromium tests cover multiple groups, exact payload selection, loading,
+  query failure, and empty-target behavior.
 
 ## Tool boundary
 
