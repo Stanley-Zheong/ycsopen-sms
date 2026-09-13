@@ -107,7 +107,8 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
 
   return (
     <section className="message-operations-page" data-testid="admin-message-receipt-operations-page">
-      <nav aria-label="面包屑">数据详单 / {SECTION_LABELS[section]}</nav>
+      <nav aria-label="面包屑">数据详单 / 详单总览 / {SECTION_LABELS[section]}</nav>
+      <h1>详单总览</h1>
       {section === 'submissions' && <p className="message-operations-section-marker" data-testid="admin-message-receipt-submission-details-page">提交详情页面</p>}
       {section === 'sends' && <p className="message-operations-section-marker" data-testid="admin-message-receipt-send-details-page">发送详情页面</p>}
       {section === 'receipts' && <p className="message-operations-section-marker" data-testid="admin-message-receipt-receipt-details-page">回执详情页面</p>}

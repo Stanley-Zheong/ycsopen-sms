@@ -43,7 +43,6 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/content-safety', label: '内容审核', roles: ['ADMIN', 'OPERATOR'], permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read] },
   { to: '/admin/frequency/rules', label: '频控规则', roles: ['ADMIN', 'OPERATOR'], permissions: [FREQUENCY_PERMISSIONS.menu, FREQUENCY_PERMISSIONS.read] },
   { to: '/admin/number-attribution', label: '号码归属', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
-  { to: '/admin/number-portability', label: '携号转网', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
   { to: '/admin/prefixes', label: '号段管理', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read] },
   { to: '/admin/status-codes', label: '状态码映射', roles: ['ADMIN', 'OPERATOR'], permissions: [PROVIDER_STATUS_PERMISSIONS.menu, PROVIDER_STATUS_PERMISSIONS.read] },
   { to: '/admin/tenant-trial-contracts', label: '试用配置', roles: ['ADMIN', 'OPERATOR'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read] },
@@ -201,7 +200,7 @@ export default function AdminLayout() {
               {item.label}
             </NavLink>
           ) : item.to === '/admin/statistics' ? (
-            <NavLink key={item.to} to={item.to} data-testid="admin-financial-source-channel-statistics-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink key={item.to} to={item.to} data-testid="admin-statistics-overview-nav-menu" className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           ) : item.to === '/admin/statistics/resources' ? (
@@ -249,7 +248,9 @@ export default function AdminLayout() {
               {item.label}
             </NavLink>
           ) : (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'active' : '')}>
+            <NavLink key={item.to} to={item.to}
+              data-testid={item.to === '/admin/records' ? 'admin-message-operations-records-nav-menu' : item.to === '/admin/tools' ? 'admin-tools-overview-nav-menu' : undefined}
+              className={({ isActive }) => (isActive ? 'active' : '')}>
               {item.label}
             </NavLink>
           )

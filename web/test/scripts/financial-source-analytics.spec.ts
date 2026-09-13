@@ -80,7 +80,7 @@ test('pw-p39-finance-analytics C-P39-FINANCE-ANALYTICS OBL-F-8-8-A pw-p39-channe
   await page.getByTestId('admin-financial-source-financial-analytics-apply').click();
   await expect(page.getByTestId('admin-financial-source-financial-analytics-row')).toContainText('SMS_STANDARD_V1');
   await expect(page.getByTestId('admin-financial-source-financial-analytics-row')).toContainText('-0.020');
-  await page.goto('/admin/statistics');
+  await page.goto('/admin/finance');
   await expect(page.getByTestId('admin-financial-source-channel-statistics-page')).toBeVisible();
   await expect(page.getByTestId('admin-financial-source-channel-statistics-row')).toContainText('7');
 });

@@ -7,6 +7,7 @@ import DashboardPage from '@/pages/admin/dashboard/DashboardPage';
 import ApiStatusPage from '@/pages/admin/dashboard/ApiStatusPage';
 import DashboardConfigurationPage from '@/pages/admin/dashboard/DashboardConfigurationPage';
 import ResourceStatisticsPage from '@/pages/admin/dashboard/ResourceStatisticsPage';
+import AdminStatisticsOverviewPage from '@/pages/admin/dashboard/AdminStatisticsOverviewPage';
 import TenantListPage from '@/pages/admin/tenants/TenantListPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
 import SendPage from '@/pages/tenant/send/SendPage';
@@ -38,6 +39,7 @@ import BlacklistRiskControlPage from '@/pages/admin/risk/BlacklistRiskControlPag
 import ContentSafetyPage from '@/pages/admin/risk/ContentSafetyPage';
 import FrequencyRulesPage from '@/pages/admin/risk/FrequencyRulesPage';
 import NumberAttributionPage from '@/pages/admin/tools/NumberAttributionPage';
+import AdminToolsOverviewPage from '@/pages/admin/tools/AdminToolsOverviewPage';
 import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
@@ -134,8 +136,8 @@ export const router = createBrowserRouter([
       { path: '/admin/tenant-risk', element: <AdminTenantRiskPage /> },
       { path: '/admin/uplink', element: <AdminUplinksPage /> },
       { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
-      { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
-      { path: '/admin/statistics', element: <AdminFinancialAnalyticsPage /> },
+      { path: 'records', element: <MessageOperationsPage initialSection="submissions" /> },
+      { path: '/admin/statistics', element: <AdminStatisticsOverviewPage /> },
       { path: '/admin/statistics/resources', element: <ResourceStatisticsPage /> },
       { path: '/admin/custom/reports', element: <AdminCustomReportsPage /> },
       { path: '/admin/export-center', element: <AdminExportCenterPage /> },
@@ -145,7 +147,7 @@ export const router = createBrowserRouter([
       { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
       { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },
-      { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
+      { path: 'tools', element: <AdminToolsOverviewPage /> },
       { path: 'system', element: <Navigate to="users" replace /> },
       { path: '/admin/system/users', element: <UserManagementPage /> },
       { path: '/admin/system/roles', element: <RoleManagementPage /> },

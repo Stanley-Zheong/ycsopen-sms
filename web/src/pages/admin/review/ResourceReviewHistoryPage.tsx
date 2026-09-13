@@ -108,9 +108,7 @@ export default function ResourceReviewHistoryPage() {
         {rowsQuery.isLoading && <p role="status">正在加载统一审核历史…</p>}
         {rowsQuery.isError && <p role="alert">统一审核历史加载失败。</p>}
         {!rowsQuery.isLoading && rows.length === 0 && <p>暂无审核历史。</p>}
-        {rows.length > 0 && (
-          <>
-            <table data-testid="admin-resource-review-history-review-table" className="ratio-table">
+        {!rowsQuery.isLoading && <table data-testid="admin-resource-review-history-review-table" className="ratio-table">
               <thead>
                 <tr><th>决定</th><th>资源</th><th>机构</th><th>状态</th><th>审核人</th><th>原因</th><th>时间</th><th>操作</th></tr>
               </thead>
@@ -128,7 +126,9 @@ export default function ResourceReviewHistoryPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+        </table>}
+        {rows.length > 0 && (
+          <>
             <div className="review-history-pagination" data-testid="admin-resource-review-history-review-pagination">
               <button
                 type="button"

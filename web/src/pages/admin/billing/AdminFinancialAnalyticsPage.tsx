@@ -72,8 +72,9 @@ export default function AdminFinancialAnalyticsPage() {
   };
 
   return (
-    <div>
-      <h1>财务来源分析</h1>
+    <div data-testid="admin-finance-overview-page">
+      <nav aria-label="面包屑">财务中心 / 财务总览</nav>
+      <h1>财务总览</h1>
       <section className="card" data-testid="admin-financial-source-financial-analytics-page">
         <h2>成本 / 收入 / 毛利</h2>
         <div className="form-grid">

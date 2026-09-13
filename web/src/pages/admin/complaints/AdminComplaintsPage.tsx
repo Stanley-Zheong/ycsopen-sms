@@ -280,7 +280,7 @@ export default function AdminComplaintsPage() {
       {cases.isError && <p role="alert" data-testid="admin-complaint-case-complaints-load-error">投诉案件加载失败。</p>}
 
       <section className="card">
-        <h2>投诉案件</h2>
+        <h2>投诉列表</h2>
         <table className="alert-engine-table" data-testid="admin-complaint-case-complaints-table">
           <thead>
             <tr><th>来源</th><th>摘要</th><th>归因质量</th><th>状态</th><th>处置资源</th><th>要求</th><th>动作</th></tr>
