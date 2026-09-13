@@ -18,6 +18,8 @@ describe('QueryPanel', () => {
     const toggle = within(panel).getByTestId('query-panel-toggle');
 
     expect(fields).not.toBeVisible();
+    expect(within(fields).getByTestId('query-fields')).toBeInTheDocument();
+    expect(within(fields).getByTestId('query-actions')).toBeInTheDocument();
     expect(within(panel).getByTestId('query-submit')).not.toBeVisible();
     expect(within(panel).getByTestId('query-reset')).not.toBeVisible();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');

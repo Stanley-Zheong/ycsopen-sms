@@ -70,13 +70,88 @@ test('pw-p15-review-history C-P15-REVIEW-HISTORY OBL-IA-ADMIN-REVIEW-HISTORY', a
   await page.goto('/admin/review-history');
   await expect(page.getByTestId('admin-resource-review-history-review-page')).toBeVisible();
   await expect(page.getByTestId('admin-resource-review-history-review-filters')).toBeVisible();
+  await page.getByTestId('query-panel-toggle').click();
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('资源类型').selectOption('SIGNATURE');
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('开始时间').fill('2026-09-09T00:00');
   await page.getByTestId('admin-resource-review-history-review-filters').getByLabel('结束时间').fill('2026-09-09T23:59');
+  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-resource-review-history-review-table')).toContainText('SIGNATURE:1');
   await expect(page.getByTestId('admin-resource-review-history-review-pagination')).toContainText('第 1 页，每页 50 条');
   await expect(page.getByTestId('admin-resource-review-history-review-page-prev')).toBeDisabled();
   await expect(page.getByTestId('admin-resource-review-history-review-page-next')).toBeDisabled();
   await page.getByTestId('admin-resource-review-history-review-detail-open').nth(1).click();
   await expect(page.getByTestId('admin-resource-review-history-review-detail-drawer')).toContainText('TEMPLATE:1');
+});
+
+test('pw-issue-80-review-history-empty-table C-ISSUE-80-REVIEW-HISTORY-EMPTY OBL-ISSUE-80-REVIEW-HISTORY-EMPTY', async ({ page }) => {
+  await page.route('**/api/v1/console/review-history**', async (route) => {
+    const requestUrl = new URL(route.request().url());
+    const result = requestUrl.searchParams.get('keyword') === 'YCSIG' ? rows.slice(0, 1) : [];
+    await route.fulfill({ json: response(result) });
+  });
+  await page.goto('/admin/review-history');
+
+  const queryPanel = page.getByTestId('query-panel');
+  await expect(queryPanel).toBeVisible();
+  await queryPanel.getByTestId('query-panel-toggle').click();
+  const queryActions = queryPanel.getByTestId('query-actions');
+  await expect(queryActions.getByTestId('query-submit')).toBeVisible();
+  await expect(queryActions.getByTestId('query-reset')).toBeVisible();
+  const controlHeights = await queryPanel.getByTestId('query-fields').locator('input, select').evaluateAll(
+    (controls) => controls.map((control) => control.getBoundingClientRect().height),
+  );
+  expect(controlHeights).toHaveLength(8);
+  expect(controlHeights.every((height) => height >= 38 && height <= 42)).toBe(true);
+  const actionHeights = await queryActions.locator('button').evaluateAll(
+    (buttons) => buttons.map((button) => button.getBoundingClientRect().height),
+  );
+  expect(actionHeights.every((height) => height >= 38 && height <= 42)).toBe(true);
+
+  const keywordInput = queryPanel.getByTestId('query-input-keyword').locator('input');
+  let draftRequestCount = 0;
+  page.on('request', (request) => {
+    if (request.url().includes('/console/review-history') && request.url().includes('keyword=YCSIG')) {
+      draftRequestCount += 1;
+    }
+  });
+  await keywordInput.fill('YCSIG');
+  await page.waitForTimeout(150);
+  expect(draftRequestCount).toBe(0);
+  await Promise.all([
+    page.waitForRequest((request) => request.url().includes('/console/review-history')
+      && request.url().includes('keyword=YCSIG') && request.url().includes('page=0')),
+    queryActions.getByTestId('query-submit').click(),
+  ]);
+  const table = page.getByTestId('data-table');
+  await expect(table).toContainText('SIGNATURE:1');
+
+  await queryActions.getByTestId('query-reset').click();
+  await expect(keywordInput).toHaveValue('');
+
+  await expect(table).toBeVisible();
+  await expect(table.getByRole('columnheader')).toHaveText([
+    '决定', '资源', '机构', '状态', '审核人', '原因', '时间', '操作',
+  ]);
+  const empty = table.getByTestId('table-empty');
+  await expect(empty).toContainText('暂无审核记录');
+  await expect(empty.locator('td')).toHaveAttribute('colspan', '8');
+
+  const geometry = await page.evaluate(() => {
+    const actions = document.querySelector<HTMLElement>('[data-testid="query-actions"]')!;
+    const header = document.querySelector<HTMLElement>('[data-testid="data-table"] thead')!;
+    const emptyRow = document.querySelector<HTMLElement>('[data-testid="table-empty"]')!;
+    const actionsBox = actions.getBoundingClientRect();
+    const headerBox = header.getBoundingClientRect();
+    const emptyBox = emptyRow.getBoundingClientRect();
+    return {
+      actionsBeforeHeader: actionsBox.bottom <= headerBox.top,
+      headerBeforeEmpty: headerBox.bottom <= emptyBox.top,
+      pageHasNoHorizontalScroll: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    };
+  });
+  expect(geometry).toEqual({
+    actionsBeforeHeader: true,
+    headerBeforeEmpty: true,
+    pageHasNoHorizontalScroll: true,
+  });
 });
