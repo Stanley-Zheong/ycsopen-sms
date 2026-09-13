@@ -8,6 +8,11 @@ owning page modules, focused unit tests, and cross-route Playwright coverage.
 Existing API payload shapes, permissions, tenant boundaries, state transitions,
 and audit contracts are unchanged.
 
+The first remote CI run also exposed that the Docker Web prebuild used the
+pull-request merge SHA even though the release check and checkout use the PR
+head. The workflow now passes that head explicitly as `VITE_BUILD_COMMIT`;
+the release identity assertion remains strict.
+
 ## Findings resolved
 
 - Pending submissions now reject Escape, cancel, close, and background actions.

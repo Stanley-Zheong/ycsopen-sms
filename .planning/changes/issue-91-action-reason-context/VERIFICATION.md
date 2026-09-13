@@ -12,6 +12,7 @@
 | Issue #91 acceptance | See the exact command in `EVIDENCE/playwright-action-reason-report.json`. | PASS, 1/1 in actual `Chromium/151.0.7922.34` after the executable diff was frozen; the case traverses all nine affected routes and checks visibility, context, validation, cancellation, pending-state locking, payload binding, and success close. |
 | Affected phase Playwright regression | Same accepted Chromium environment; `npm --prefix web run test:e2e` over `tenant-recharge.spec.ts`, `uplink-normalization.spec.ts`, `message-operations.spec.ts`, `alert-engine.spec.ts`, `webhook-delivery.spec.ts`, `bulk-scheduled.spec.ts`, `secure-async-export.spec.ts`, and `issue-91-action-reason-context.spec.ts`, `--workers=1 --reporter=line` | PASS, 27/27 after the executable diff was frozen. Ancillary unmocked dashboard requests emitted non-blocking Vite proxy connection messages; every business API exercised by the cases was intercepted. |
 | Planning validator self-test | `/tmp/issue79-ruby.bBM4HQ/bin/ruby .planning/tools/test-planning-validators.rb` | PASS. A temporary user-space Ruby was used because the base image has no system Ruby. |
+| Docker Web build identity | `VITE_BUILD_COMMIT=1111111111111111111111111111111111111111 npm --prefix web run build` followed by an exact meta-tag readback | PASS; the workflow now injects the checked-out pull-request head instead of the synthetic pull-request merge SHA. |
 
 ## Executed boundaries
 
@@ -32,6 +33,13 @@
   tracked and untracked diff but exited before reading the patch with
   `Not logged in · Please run /login`. This authentication boundary is not
   represented as a successful Claude review.
+- The first pull-request CI run exposed two non-product failures. `Web / Node
+  20` timed out after five seconds in the untouched `identity-pages` test while
+  the other 157 tests passed. `Docker release / Google Chrome` correctly
+  rejected a Web build stamped with the synthetic pull-request merge SHA rather
+  than the checked-out head. The workflow identity injection was corrected
+  without weakening that release assertion; the replacement CI result is the
+  authoritative remote gate.
 
 ## Acceptance scope
 
