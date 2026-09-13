@@ -1,6 +1,15 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 type ApiResult = { status: number; body: unknown };
+
+async function loginAsAdmin(page: Page) {
+  const loginResponse = await page.goto('/login');
+  expect(loginResponse?.status()).toBe(200);
+  await page.getByTestId('shared-auth-login-username').fill('admin');
+  await page.getByTestId('shared-auth-login-password').fill('Admin@123456');
+  await page.getByTestId('admin-console-identity-auth-login-submit').click();
+  await expect(page).toHaveURL(/\/admin\/dashboard$/);
+}
 
 test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE-60-DASHBOARD OBL-ISSUE-60-SEED OBL-ISSUE-60-IDENTITY', async ({ page }) => {
   const environment = (globalThis as typeof globalThis & {
@@ -16,13 +25,7 @@ test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE
     }
   });
 
-  const loginResponse = await page.goto('/login');
-  expect(loginResponse?.status()).toBe(200);
-  await page.getByTestId('shared-auth-login-username').fill('admin');
-  await page.getByTestId('shared-auth-login-password').fill('Admin@123456');
-  await page.getByTestId('admin-console-identity-auth-login-submit').click();
-
-  await expect(page).toHaveURL(/\/admin\/dashboard$/);
+  await loginAsAdmin(page);
   await expect(page.getByTestId('admin-dashboard-page')).toBeVisible();
   await expect.poll(() => dashboardFailures).toEqual([]);
 
@@ -65,4 +68,13 @@ test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE
   expect(prefixes.data.some((version) => version.versionNo === 'DEV-PREFIX-2026-09')).toBe(true);
   expect(coreInfo.build?.commit).toBe(buildCommit);
   await expect(page.locator('meta[name="ycsopen-build-commit"]')).toHaveAttribute('content', buildCommit!);
+});
+
+test('pw-issue-90-release-tenant-status-action C-ISSUE-90-RELEASE-TENANT-ACCOUNT OBL-ISSUE-90-RELEASE-TENANT-ACCOUNT', async ({ page }) => {
+  await loginAsAdmin(page);
+  await page.goto('/admin/tenants');
+
+  const releaseTenant = page.getByRole('row').filter({ hasText: 'DEV-TENANT' });
+  await expect(releaseTenant).toBeVisible();
+  await expect(releaseTenant.getByTestId('admin-tenant-qualification-tenants-status-action')).toBeVisible();
 });

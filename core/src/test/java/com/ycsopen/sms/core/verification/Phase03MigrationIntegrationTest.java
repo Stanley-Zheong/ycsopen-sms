@@ -104,6 +104,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("phase03-integration")
 @EnabledIfSystemProperty(named = "phase03.integration.enabled", matches = "true")
 class Phase03MigrationIntegrationTest {
+    private static final String PHASE03_FLYWAY_TARGET = "1201";
     private static final String PRODUCTION_MIGRATION_CONFIG_PROPERTY =
             "ycsopen.phase03.migration.config";
     private static final String PRODUCTION_MIGRATION_CONFIG_SIGNATURE_PROPERTY =
@@ -145,6 +146,8 @@ class Phase03MigrationIntegrationTest {
         registry.add("spring.datasource.password", mysql::password);
         // V1 contains the literal template marker ${var} in a SQL comment.
         registry.add("spring.flyway.placeholder-replacement", () -> "false");
+        // This proof owns only the Phase 3 V1200/V1201 expansion boundary.
+        registry.add("spring.flyway.target", () -> PHASE03_FLYWAY_TARGET);
     }
 
     @AfterAll
@@ -2101,7 +2104,7 @@ class Phase03MigrationIntegrationTest {
                 java.nio.charset.StandardCharsets.UTF_8)) {
             System.setOut(discarded);
             Flyway.configure().dataSource(dataSource).locations("classpath:db/migration")
-                    .placeholderReplacement(false).load().migrate();
+                    .placeholderReplacement(false).target(PHASE03_FLYWAY_TARGET).load().migrate();
         } finally {
             System.setOut(original);
         }
