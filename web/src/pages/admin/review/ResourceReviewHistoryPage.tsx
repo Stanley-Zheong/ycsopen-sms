@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import {
   getResourceReviewHistoryDetail,
   listResourceReviewHistory,
@@ -24,12 +25,14 @@ const EMPTY_FILTERS: ResourceReviewHistoryFilters = {
   page: 0,
   pageSize: 50,
 };
+const REVIEW_HISTORY_COLUMN_COUNT = 8;
 
 export default function ResourceReviewHistoryPage() {
   const userType = useAuthStore((state) => state.userType);
   const roleAllowed = userType === 'ADMIN' || userType === 'OPERATOR';
   const access = useIdentityAccess(isPlatformRole(userType) && roleAllowed);
   const canRead = userType === 'ADMIN' || (userType === 'OPERATOR' && access.can(REVIEW_HISTORY_PERMISSIONS.read));
+  const [draft, setDraft] = useState<ResourceReviewHistoryFilters>(EMPTY_FILTERS);
   const [filters, setFilters] = useState<ResourceReviewHistoryFilters>(EMPTY_FILTERS);
   const [detailTarget, setDetailTarget] = useState<ResourceReviewHistoryItem | null>(null);
 
@@ -47,8 +50,9 @@ export default function ResourceReviewHistoryPage() {
   });
   const rows = rowsQuery.data ?? [];
   const detail = detailQuery.data ?? detailTarget;
+  const rowsLoading = (userType === 'OPERATOR' && access.isLoading) || rowsQuery.isPending;
   const setFilter = (key: keyof Omit<ResourceReviewHistoryFilters, 'page' | 'pageSize'>, value: string) => {
-    setFilters({ ...filters, [key]: value, page: 0 });
+    setDraft({ ...draft, [key]: value });
   };
   const canGoPrevious = filters.page > 0;
   const canGoNext = rows.length === filters.pageSize;
@@ -67,53 +71,44 @@ export default function ResourceReviewHistoryPage() {
         </div>
       </header>
 
-      <section data-testid="admin-resource-review-history-review-filters" className="review-history-filters">
-        <label>资源类型
-          <select value={filters.resourceType} onChange={(event) => setFilter('resourceType', event.target.value)}>
-            <option value="">全部</option>
-            <option value="SIGNATURE">签名</option>
-            <option value="TEMPLATE">模板</option>
-            <option value="EXEMPTION">豁免</option>
-          </select>
-        </label>
-        <label>机构
-          <input value={filters.tenantId} onChange={(event) => setFilter('tenantId', event.target.value)} />
-        </label>
-        <label>状态
-          <input value={filters.decisionState} onChange={(event) => setFilter('decisionState', event.target.value)} />
-        </label>
-        <label>审核人
-          <input value={filters.actor} onChange={(event) => setFilter('actor', event.target.value)} />
-        </label>
-        <label>风险
-          <select value={filters.riskLevel} onChange={(event) => setFilter('riskLevel', event.target.value)}>
-            <option value="">全部</option>
-            <option value="LOW">低</option>
-            <option value="MEDIUM">中</option>
-            <option value="HIGH">高</option>
-          </select>
-        </label>
-        <label>关键词
-          <input value={filters.keyword} onChange={(event) => setFilter('keyword', event.target.value)} />
-        </label>
-        <label>开始时间
-          <input type="datetime-local" value={filters.createdFrom} onChange={(event) => setFilter('createdFrom', event.target.value)} />
-        </label>
-        <label>结束时间
-          <input type="datetime-local" value={filters.createdTo} onChange={(event) => setFilter('createdTo', event.target.value)} />
-        </label>
-      </section>
-
-      <section className="card">
-        {rowsQuery.isLoading && <p role="status">正在加载统一审核历史…</p>}
-        {rowsQuery.isError && <p role="alert">统一审核历史加载失败。</p>}
-        {!rowsQuery.isLoading && rows.length === 0 && <p>暂无审核历史。</p>}
-        {!rowsQuery.isLoading && <table data-testid="admin-resource-review-history-review-table" className="ratio-table">
+      <QueryPanel
+        legacyPanelTestId="admin-resource-review-history-review-filters"
+        submitLegacyTestId="admin-resource-review-history-review-query"
+        resetLegacyTestId="admin-resource-review-history-review-reset"
+        onSubmit={() => setFilters({ ...draft, page: 0, pageSize: EMPTY_FILTERS.pageSize })}
+        onReset={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+        result={(
+          <div data-testid="admin-resource-review-history-review-table" className="review-history-table-region">
+            <table data-testid="data-table" className="ratio-table review-history-table" aria-label="审核历史记录">
               <thead>
-                <tr><th>决定</th><th>资源</th><th>机构</th><th>状态</th><th>审核人</th><th>原因</th><th>时间</th><th>操作</th></tr>
+                <tr>
+                  <th scope="col">决定</th>
+                  <th scope="col">资源</th>
+                  <th scope="col">机构</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">审核人</th>
+                  <th scope="col">原因</th>
+                  <th scope="col">时间</th>
+                  <th scope="col">操作</th>
+                </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rowsLoading && (
+                  <tr className="review-history-status">
+                    <td colSpan={REVIEW_HISTORY_COLUMN_COUNT} role="status">正在加载统一审核历史…</td>
+                  </tr>
+                )}
+                {!rowsLoading && rowsQuery.isError && (
+                  <tr className="review-history-status error">
+                    <td colSpan={REVIEW_HISTORY_COLUMN_COUNT} role="alert">统一审核历史加载失败。</td>
+                  </tr>
+                )}
+                {rowsQuery.isSuccess && rows.length === 0 && (
+                  <tr data-testid="table-empty" className="review-history-empty">
+                    <td colSpan={REVIEW_HISTORY_COLUMN_COUNT}>暂无审核记录</td>
+                  </tr>
+                )}
+                {rowsQuery.isSuccess && rows.map((row) => (
                   <tr key={row.decisionId} data-testid="admin-resource-review-history-review-row">
                     <td>{row.decisionId}</td>
                     <td>{row.resourceType} / {row.resourceCode} / {row.resourceVersion}</td>
@@ -126,31 +121,66 @@ export default function ResourceReviewHistoryPage() {
                   </tr>
                 ))}
               </tbody>
-        </table>}
-        {rows.length > 0 && (
-          <>
-            <div className="review-history-pagination" data-testid="admin-resource-review-history-review-pagination">
-              <button
-                type="button"
-                data-testid="admin-resource-review-history-review-page-prev"
-                disabled={!canGoPrevious}
-                onClick={() => setFilters({ ...filters, page: Math.max(0, filters.page - 1) })}
-              >
-                上一页
-              </button>
-              <span>第 {filters.page + 1} 页，每页 {filters.pageSize} 条</span>
-              <button
-                type="button"
-                data-testid="admin-resource-review-history-review-page-next"
-                disabled={!canGoNext}
-                onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-              >
-                下一页
-              </button>
-            </div>
-          </>
+            </table>
+            {rowsQuery.isSuccess && rows.length > 0 && (
+              <div className="review-history-pagination" data-testid="admin-resource-review-history-review-pagination">
+                <button
+                  type="button"
+                  data-testid="admin-resource-review-history-review-page-prev"
+                  disabled={!canGoPrevious}
+                  onClick={() => setFilters({ ...filters, page: Math.max(0, filters.page - 1) })}
+                >
+                  上一页
+                </button>
+                <span>第 {filters.page + 1} 页，每页 {filters.pageSize} 条</span>
+                <button
+                  type="button"
+                  data-testid="admin-resource-review-history-review-page-next"
+                  disabled={!canGoNext}
+                  onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
+                >
+                  下一页
+                </button>
+              </div>
+            )}
+          </div>
         )}
-      </section>
+      >
+        <QueryField name="resource-type" label="资源类型">
+          <select data-testid="admin-resource-review-history-review-resource-type" value={draft.resourceType} onChange={(event) => setFilter('resourceType', event.target.value)}>
+            <option value="">全部</option>
+            <option value="SIGNATURE">签名</option>
+            <option value="TEMPLATE">模板</option>
+            <option value="EXEMPTION">豁免</option>
+          </select>
+        </QueryField>
+        <QueryField name="tenant-id" label="机构">
+          <input data-testid="admin-resource-review-history-review-tenant-id" value={draft.tenantId} onChange={(event) => setFilter('tenantId', event.target.value)} />
+        </QueryField>
+        <QueryField name="state" label="状态">
+          <input data-testid="admin-resource-review-history-review-state" value={draft.decisionState} onChange={(event) => setFilter('decisionState', event.target.value)} />
+        </QueryField>
+        <QueryField name="reviewed-by" label="审核人">
+          <input data-testid="admin-resource-review-history-review-reviewed-by" value={draft.actor} onChange={(event) => setFilter('actor', event.target.value)} />
+        </QueryField>
+        <QueryField name="risk-level" label="风险">
+          <select data-testid="admin-resource-review-history-review-risk-level" value={draft.riskLevel} onChange={(event) => setFilter('riskLevel', event.target.value)}>
+            <option value="">全部</option>
+            <option value="LOW">低</option>
+            <option value="MEDIUM">中</option>
+            <option value="HIGH">高</option>
+          </select>
+        </QueryField>
+        <QueryField name="keyword" label="关键词">
+          <input data-testid="admin-resource-review-history-review-keyword" value={draft.keyword} onChange={(event) => setFilter('keyword', event.target.value)} />
+        </QueryField>
+        <QueryField name="created-from" label="开始时间">
+          <input data-testid="admin-resource-review-history-review-created-from" type="datetime-local" value={draft.createdFrom} onChange={(event) => setFilter('createdFrom', event.target.value)} />
+        </QueryField>
+        <QueryField name="created-to" label="结束时间">
+          <input data-testid="admin-resource-review-history-review-created-to" type="datetime-local" value={draft.createdTo} onChange={(event) => setFilter('createdTo', event.target.value)} />
+        </QueryField>
+      </QueryPanel>
 
       {detailTarget && detail && (
         <ModalDialog labelledBy="review-history-detail-title" onRequestClose={() => setDetailTarget(null)}>
