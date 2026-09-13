@@ -1,6 +1,7 @@
 .alert-engine-page {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .alert-engine-header,
@@ -79,4 +80,106 @@
   border-bottom: 1px solid #e2e8f0;
   padding: 8px;
   text-align: left;
+}
+
+.complaint-intake-form {
+  display: grid;
+  gap: 16px;
+}
+
+.complaint-section-card {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.complaint-field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.alert-engine-page .complaint-field-grid label {
+  min-width: 0;
+  margin: 0;
+}
+
+.complaint-field-grid input,
+.complaint-field-grid select,
+.complaint-form-actions button {
+  height: 40px;
+  min-height: 40px;
+}
+
+.complaint-form-actions {
+  display: flex;
+  min-width: 0;
+  align-self: end;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.complaint-table-wrap {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.complaint-table {
+  table-layout: fixed;
+}
+
+.complaint-table-source { width: 8%; }
+.complaint-table-summary { width: 14%; }
+.complaint-table-quality { width: 9%; }
+.complaint-table-status { width: 8%; }
+.complaint-table-resource { width: 22%; }
+.complaint-table-requirement { width: 13%; }
+.complaint-table-actions-column { width: 26%; }
+
+.complaint-table th {
+  background: var(--color-table-header);
+  white-space: nowrap;
+}
+
+.complaint-table th,
+.complaint-table td {
+  padding: 12px;
+  vertical-align: top;
+}
+
+.complaint-table-truncate {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.complaint-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.complaint-table-actions button {
+  min-height: 32px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.complaint-table-state {
+  padding: 32px 16px !important;
+  color: var(--color-muted);
+  text-align: center !important;
+}
+
+@media (max-width: 1100px) {
+  .complaint-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .complaint-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

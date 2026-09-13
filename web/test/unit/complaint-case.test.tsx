@@ -74,8 +74,11 @@ describe('Phase 41 complaint case management UI', () => {
     expect(await screen.findByTestId('admin-complaint-case-complaints-page')).toBeVisible();
     expect(await screen.findByTestId('admin-complaint-case-complaints-attribution-quality')).toHaveTextContent('COMPLETE');
     expect(screen.getByTestId('admin-complaint-case-complaints-remediation-resource')).toHaveTextContent('signature:8');
+    expect(screen.getByTitle('REGULATOR')).toHaveClass('complaint-table-truncate');
+    expect(screen.getByTitle('COMPLETE')).toHaveClass('complaint-table-truncate');
+    expect(screen.getByTitle('PENDING')).toHaveClass('complaint-table-truncate');
 
-    fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-create'));
+    fireEvent.click(screen.getByTestId('form-submit'));
     await waitFor(() => expect(api.createComplaintCase).toHaveBeenCalledWith(expect.objectContaining({
       source: 'REGULATOR',
       tenantId: 7,
@@ -95,6 +98,31 @@ describe('Phase 41 complaint case management UI', () => {
     await waitFor(() => expect(api.closeComplaintCase).toHaveBeenCalledWith(1, expect.objectContaining({ opinion: '复核关闭' })));
 
     expect(screen.getByTestId('admin-complaint-case-complaints-state-action')).toHaveTextContent('PENDING');
+  });
+
+  it('renders ordered complaint cards and a structured empty table', async () => {
+    vi.mocked(api.listComplaintCases).mockResolvedValue([]);
+    renderWithQuery(<AdminComplaintsPage />);
+
+    const cardIds = [
+      'admin-complaint-case-complaints-intake-card',
+      'admin-complaint-case-complaints-attribution-card',
+      'admin-complaint-case-complaints-evidence-card',
+      'admin-complaint-case-complaints-list-card',
+    ];
+    const cardTitles = ['投诉登记', '归因与要求', '处理证据', '投诉列表'];
+    const cards = cardIds.map((cardId) => screen.getByTestId(cardId));
+
+    cards.forEach((card, index) => {
+      expect(card).toHaveClass('card');
+      expect(card).toHaveTextContent(cardTitles[index]);
+      if (index > 0) {
+        expect(cards[index - 1].compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      }
+    });
+    expect(screen.getByTestId('entity-form')).toContainElement(screen.getByTestId('form-actions'));
+    expect(screen.getByTestId('data-table')).toHaveTextContent('来源摘要归因质量状态处置资源要求动作');
+    expect(await screen.findByTestId('table-empty')).toHaveTextContent('暂无投诉记录');
   });
 
   it('runs row actions against the selected complaint and derived remediation target', async () => {
