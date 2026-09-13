@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-1-A","result":"PASS","evidence":["ShortLinkSafetyServiceTest","shortlink-safety.spec.ts"],"summary":"Tenant creates a pending short link from a valid public URL, approved domain and <=365 day validity."}

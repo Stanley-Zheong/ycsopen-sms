@@ -1,0 +1,97 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/send/details", "/admin/receipt/details", "/admin/export-center", "/tenant/unsubscribes", "/admin/balance-audit"],
+    "test_ids": [
+      "admin-secure-async-send-details-export",
+      "admin-secure-async-receipt-export",
+      "admin-secure-async-export-center-page",
+      "admin-secure-async-export-center-download",
+      "tenant-secure-async-unsubscribes-export",
+      "admin-secure-async-balance-audit-export",
+      "admin-secure-async-export-center-retry"
+    ],
+    "sources": [
+      { "path": ".planning/phases/46-secure-async-export/UI-ELEMENTS.md", "sha256": "e8d7b2a11878d8d8020bed07ab6ba75dc0c3ccf40d461fa075fc59d850ae2759" }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      { "path": ".planning/phases/46-secure-async-export/design-output/secure-async-export.pen", "sha256": "736bc27d36305f79e0bd038b4c9c87ab7186a4441b6a5b9240369fd105c7f7ed" }
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/send/details", "/admin/receipt/details", "/admin/export-center", "/tenant/unsubscribes", "/admin/balance-audit"],
+    "test_ids": [
+      "admin-secure-async-send-details-export",
+      "admin-secure-async-receipt-export",
+      "admin-secure-async-export-center-page",
+      "admin-secure-async-export-center-download",
+      "tenant-secure-async-unsubscribes-export",
+      "admin-secure-async-balance-audit-export",
+      "admin-secure-async-export-center-retry"
+    ],
+    "sources": [
+      { "path": ".planning/phases/46-secure-async-export/design-output/prototype.html", "sha256": "f1cacdb48116b0446d92f395d16d80b1f82427f5157d8ee2aacdc1d4594e314e" }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-secure-async-send-details-export",
+      "admin-secure-async-receipt-export",
+      "admin-secure-async-export-center-page",
+      "admin-secure-async-export-center-download",
+      "tenant-secure-async-unsubscribes-export",
+      "admin-secure-async-balance-audit-export",
+      "admin-secure-async-export-center-retry"
+    ],
+    "sources": [
+      { "path": ".planning/phases/46-secure-async-export/design-output/prototype.spec.ts", "sha256": "991f556e469decb59996832370b8ef64fe68c2729ed7f91062c4c4d5400a33c1" }
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/send/details", "/admin/receipt/details", "/admin/export-center", "/tenant/unsubscribes", "/admin/balance-audit"],
+    "test_ids": [
+      "admin-secure-async-send-details-export",
+      "admin-secure-async-receipt-export",
+      "admin-secure-async-export-center-page",
+      "admin-secure-async-export-center-download",
+      "tenant-secure-async-unsubscribes-export",
+      "admin-secure-async-balance-audit-export",
+      "admin-secure-async-export-center-retry"
+    ],
+    "sources": [
+      { "path": "web/src/router/routes.tsx", "sha256": "0c36534e3ecf584e338aef4b7c6b7905df90fd374c7ae6433f02e329839bfbfd" },
+      { "path": "web/src/pages/admin/exports/AdminExportCenterPage.tsx", "sha256": "2b2cd3728ef681d4981b6c078e32ea78ed370d5c357fe4bb9d5da4df8ba97654" },
+      { "path": "web/src/pages/admin/records/MessageOperationsPage.tsx", "sha256": "e03e072b00638b905421ec6b835ddfdb2920cc496d825057695a5c5925782cfb" },
+      { "path": "web/src/pages/tenant/unsubscribes/TenantUnsubscribesPage.tsx", "sha256": "431a48a394601c51b1075042d1b41ae498a15d3ebee152a935cbb88e9a65babc" },
+      { "path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "2d067e4d0e9bf40d8ec189d4c5722b1e353bc6ffc194924295db56af003172e8" }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-secure-async-send-details-export",
+      "admin-secure-async-receipt-export",
+      "admin-secure-async-export-center-page",
+      "admin-secure-async-export-center-download",
+      "tenant-secure-async-unsubscribes-export",
+      "admin-secure-async-balance-audit-export",
+      "admin-secure-async-export-center-retry"
+    ],
+    "sources": [
+      { "path": "web/test/scripts/secure-async-export.spec.ts", "sha256": "e4c83845764e7ca68775516cc3ceccf3f6786f9515f02ade11950c2b3d776eb1" }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json",
+    "commit": "907c782158ff17dac8078fa33f98dbc2d8a42a08",
+    "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-execution.json",
+      "sha256": "b42a9a9e9ca5bbecb3eafcbfb1484c3d58a4f5837a57f171182a4a312a0ecf54"
+    }
+  }
+}

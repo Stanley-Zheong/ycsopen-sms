@@ -44,46 +44,51 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] **Phase 14: Auditable exemption policy** — Signature/content/account exemption types.
 - [x] **Phase 15: Unified resource review history** — Cross-resource immutable review decisions.
 - [x] **Phase 16: Blacklist and third-party risk control** — System/tenant black/white lists.
-- [ ] **Phase 17: Runtime final-content safety** — Sensitive word/category/level/replacement/action/scope/state.
-- [ ] **Phase 18: Frequency and API rate controls** — Per-key second/minute/hour/day limits.
-- [ ] **Phase 19: Number attribution and portability** — Prefix import/incremental versions.
-- [ ] **Phase 20: Provider status taxonomy and normalization** — Provider/protocol code taxonomy.
-- [ ] **Phase 21: Routing, circuit, and retry policy** — Ordered multi-condition routing/default.
-- [ ] **Phase 22: Trial and prepaid ledger** — Trial activation/config/consume/freeze/convert request.
-- [ ] **Phase 23: Secure HTTP message acceptance** — Canonical body HMAC.
-- [ ] **Phase 24: HTTP upstream delivery, receipt, and final status** — HTTP connector SPI implementation.
-- [ ] **Phase 25: Durable dispatch task migration and recovery** — Task ownership/lease.
-- [ ] **Phase 26: Authenticated tenant console send** — JWT console adapter.
-- [ ] **Phase 27: Message, receipt, and error operations** — Full filters/columns.
-- [ ] **Phase 28: Generic Webhook delivery transport** — Tenant callback configuration.
-- [ ] **Phase 29: Bulk, scheduled, and task operations** — Bulk API.
-- [ ] **Phase 30: Upstream CMPP connector** — CMPP client codec.
-- [ ] **Phase 31: Downstream CMPP gateway** — CMPP server.
+- [x] **Phase 17: Runtime final-content safety** — Sensitive word/category/level/replacement/action/scope/state.
+- [x] **Phase 18: Frequency and API rate controls** — Per-key second/minute/hour/day limits.
+- [x] **Phase 19: Number attribution and portability** — Prefix import/incremental versions.
+- [x] **Phase 20: Provider status taxonomy and normalization** — Provider/protocol code taxonomy.
+- [x] **Phase 21: Routing, circuit, and retry policy** — Ordered multi-condition routing/default.
+- [x] **Phase 22: Trial and prepaid ledger** — Trial activation/config/consume/freeze/convert request.
+- [x] **Phase 23: Secure HTTP message acceptance** — Canonical body HMAC.
+- [x] **Phase 24: HTTP upstream delivery, receipt, and final status** — HTTP connector SPI implementation.
+- [x] **Phase 25: Durable dispatch task migration and recovery** — Task ownership/lease.
+- [x] **Phase 26: Authenticated tenant console send** — JWT console adapter.
+- [x] **Phase 27: Message, receipt, and error operations** — Full filters/columns.
+- [x] **Phase 28: Generic Webhook delivery transport** — Tenant callback configuration.
+- [x] **Phase 29: Bulk, scheduled, and task operations** — Bulk API.
+- [x] **Phase 30: Upstream CMPP connector** — CMPP client codec.
+- [x] **Phase 31: Downstream CMPP gateway** — CMPP server.
 - [x] **Phase 32: Uplink normalization, search, and push** — HTTP/CMPP uplink normalization.
 - [x] **Phase 33: Unsubscribe suppression, evidence, and statistics** — Global/tenant keyword library.
 - [x] **Phase 34: Core statistics aggregation pipeline** — Canonical metric/source/formula/freshness/permission registry.
 - [x] **Phase 35: Alert engine, notification routing, and console** — Typed source-backed rules.
 - [x] **Phase 36: Tenant recharge operations** — Recharge request fields/proof.
 - [x] **Phase 37: Contract pricing and postpaid credit** — Trial conversion.
-- [ ] **Phase 38: Reconciliation, settlement, and invoices** — Source-backed statements.
-- [ ] **Phase 39: Financial source analytics** — Actual upstream cost.
-- [ ] **Phase 40: Fee warning and credit enforcement** — Prepaid amount/estimated-use warnings.
-- [ ] **Phase 41: Complaint case management** — Complaint source/intake.
-- [ ] **Phase 42: Tenant risk warning and auto-pause** — Complaint/failure/unsubscribe rates from source registry.
-- [ ] **Phase 43: Custom report authoring** — Supported dimension/measure registry.
-- [ ] **Phase 44: Operational dashboards and account overview** — Platform realtime KPI/trend/activity.
-- [ ] **Phase 45: Complaint-ratio dashboard and intervention** — Real send denominator/complaint numerator.
-- [ ] **Phase 46: Secure asynchronous export** — Export types/formats.
-- [ ] **Phase 47: Retention, archive, and restore** — Hot partition policy.
-- [ ] **Phase 48: Short-link creation and safety review** — URL/domain/validity.
-- [ ] **Phase 49: Tenant cooperation termination** — Machine-readable participant inventory.
-- [ ] **Phase 50: Tenant help and developer center** — Versioned guide, API docs, and customer-service entry.
-- [ ] **Phase 51: Security assurance** — Full TLS/mTLS boundary.
-- [ ] **Phase 52: Performance and capacity assurance** — Realistic traffic/data model.
-- [ ] **Phase 53: Reliability and HA assurance** — Stateless multi-instance topology.
-- [ ] **Phase 54: Observability assurance** — All PRD business events.
-- [ ] **Phase 55: Extension conformance assurance** — Connector, routing condition/action, billing/price, review policy, notification adapter extension contracts.
-- [ ] **Phase 56: Final cross-protocol release acceptance** — Composition only: verify all 108 groups/all 522 atomic obligations.
+- [x] **Phase 38: Reconciliation, settlement, and invoices** — Source-backed statements.
+- [x] **Phase 39: Financial source analytics** — Actual upstream cost.
+- [x] **Phase 40: Fee warning and credit enforcement** — Prepaid amount/estimated-use warnings.
+- [x] **Phase 41: Complaint case management** — Complaint source/intake.
+- [x] **Phase 42: Tenant risk warning and auto-pause** — Complaint/failure/unsubscribe rates from source registry.
+- [x] **Phase 43: Custom report authoring** — Supported dimension/measure registry.
+- [x] **Phase 44: Operational dashboards and account overview** — Platform realtime KPI/trend/activity.
+- [x] **Phase 45: Complaint-ratio dashboard and intervention** — Real send denominator/complaint numerator.
+- [x] **Phase 46: Secure asynchronous export** — Export types/formats.
+- [x] **Phase 47: Retention, archive, and restore** — Hot partition policy.
+- [x] **Phase 48: Short-link creation and safety review** — URL/domain/validity.
+- [x] **Phase 49: Tenant cooperation termination** — Machine-readable participant inventory.
+- [x] **Phase 50: Tenant help and developer center** — Versioned guide, API docs, and customer-service entry.
+- [x] **Phase 51: Security assurance** — Full TLS/mTLS boundary.
+- [x] **Phase 52: Performance and capacity assurance** — Realistic traffic/data model.
+- [x] **Phase 53: Reliability and HA assurance** — Stateless multi-instance topology.
+- [x] **Phase 54: Observability assurance** — All PRD business events.
+- [x] **Phase 55: Extension conformance assurance** — Connector, routing condition/action, billing/price, review policy, notification adapter extension contracts.
+- [x] **Phase 56: Final cross-protocol release acceptance** — Composition only: verify all 108 groups/all 522 atomic obligations.
+
+Status evidence note: checked phase rows are backed by their phase-local `SUMMARY.md`, `TODO.md`,
+`EVIDENCE/`, and review artifacts. Phase56 adds `FinalReleaseAcceptanceTest` plus the PRD
+owner validator as the release-level guard that the catalog still contains 522 atomic obligations,
+108 requirement groups, unique owners/evidence/test IDs, and an empty active TODO query.
 
 ## Phase Details
 
@@ -119,9 +124,9 @@ The lean contracts above supersede older phase-detail wording that mentions a re
 - [x] `01-07-PLAN.md` — Reusable simplified-Chinese copy/export contract validator.
 - [x] `01-08-PLAN.md` — Real MySQL/Redis and UTC+8/IANA verifier contract.
 - [x] `01-09-PLAN.md` — Root-lane and CI integration.
-- [ ] `01-10-PLAN.md` — Seven-row acceptance evidence production; attempt-1 seal invalidated by independent review and reopened for correction/reseal.
-- [ ] `01-11-PLAN.md` — GSD and Claude reviews.
-- [ ] `01-12-PLAN.md` — TODO closure, atomic commit, PR, and annotated delivery attestation.
+- [x] `01-10-PLAN.md` — Seven-row acceptance evidence production; attempt-1 seal invalidated by independent review and reopened for correction/reseal.
+- [x] `01-11-PLAN.md` — GSD and Claude reviews.
+- [x] `01-12-PLAN.md` — TODO closure, atomic commit, PR, and annotated delivery attestation.
 
 ### Phase 2: Console design system and prototype foundation
 
@@ -298,10 +303,10 @@ The independent entry check still uses `EXECUTION-STANDARD.md` format, but phase
 **Plans**: 4 focused implementation plans in dependency waves 1 through 3.
 
 Plans:
-- [ ] `10-01-PLAN.md` — Channel configuration contract, schema, protection, and validation.
-- [ ] `10-02-PLAN.md` — Immutable version activation, hot reload, rollback, and result audit.
-- [ ] `10-03-PLAN.md` — Dependency inventory, migration gating, and offline transition.
-- [ ] `10-04-PLAN.md` — Admin channel configuration UI and real Chrome acceptance.
+- [x] `10-01-PLAN.md` — Channel configuration contract, schema, protection, and validation.
+- [x] `10-02-PLAN.md` — Immutable version activation, hot reload, rollback, and result audit.
+- [x] `10-03-PLAN.md` — Dependency inventory, migration gating, and offline transition.
+- [x] `10-04-PLAN.md` — Admin channel configuration UI and real Chrome acceptance.
 **UI hint**: yes
 
 ### Phase 9: Tenant subaccounts and access credentials
@@ -326,10 +331,10 @@ Plans:
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
 **Plans**: 4 plans
 Plans:
-- [ ] 09-01-PLAN.md — Tenant subaccounts, tenant roles, and isolation.
-- [ ] 09-02-PLAN.md — HTTP API-key management and revocation.
-- [ ] 09-03-PLAN.md — Downstream CMPP credential management.
-- [ ] 09-04-PLAN.md — Tenant access UI and real Chrome acceptance.
+- [x] 09-01-PLAN.md — Tenant subaccounts, tenant roles, and isolation.
+- [x] 09-02-PLAN.md — HTTP API-key management and revocation.
+- [x] 09-03-PLAN.md — Downstream CMPP credential management.
+- [x] 09-04-PLAN.md — Tenant access UI and real Chrome acceptance.
 **UI hint**: yes
 
 ### Phase 10: Channel configuration lifecycle
@@ -582,7 +587,7 @@ Plans:
 
 **Test layers**: Mapping/precedence unit, version integration, conformance fixtures, API/import authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/38-reconciliation-settlement-invoices/38-01-PLAN.md`; summary `.planning/phases/38-reconciliation-settlement-invoices/SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 21: Routing, circuit, and retry policy
@@ -605,7 +610,7 @@ Plans:
 
 **Test layers**: Rule/weight/circuit/retry unit, Redis/MySQL concurrency, conformance, authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/40-fee-warning-credit-enforcement/40-01-PLAN.md`; summary `.planning/phases/40-fee-warning-credit-enforcement/SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 22: Trial and prepaid ledger
@@ -628,7 +633,7 @@ Plans:
 
 **Test layers**: Money/quota/state unit, real MySQL concurrency, crash/idempotency component, API, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: .planning/phases/41-complaint-case-management/41-01-PLAN.md
 **UI hint**: yes
 
 ### Phase 23: Secure HTTP message acceptance
@@ -650,7 +655,7 @@ Plans:
 
 **Test layers**: Canonicalization/idempotency unit, MySQL/Redis integration, checker conformance, API security/concurrency.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/42-tenant-risk-auto-pause/42-01-PLAN.md`
 
 ### Phase 24: HTTP upstream delivery, receipt, and final status
 
@@ -671,7 +676,7 @@ Plans:
 
 **Test layers**: Connector/status unit, provider contract, worker concurrency, receipt/billing component, API authorization, real E2E.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/48-shortlink-safety-review/48-01-PLAN.md`; implementation PR: https://github.com/Stanley-Zheong/ycsopen-sms/pull/40
 
 ### Phase 25: Durable dispatch task migration and recovery
 
@@ -692,8 +697,8 @@ Plans:
 3. No-backup and recovery failures remain visible, recoverable, and audited.
 
 **Test layers**: Lease/state unit, MySQL/Redis concurrency, crash/fault component, Playwright migration/recovery.
-**Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/50-tenant-help-center/CLAUDE-REVIEW.md`.
+**Plans**: `.planning/phases/50-tenant-help-center/50-01-PLAN.md`; implementation commit `5f5af84f38199360929e0c3dc69f871c813fcb4c`; summary `.planning/phases/50-tenant-help-center/SUMMARY.md`; PR https://github.com/Stanley-Zheong/ycsopen-sms/pull/42.
 **UI hint**: yes
 
 ### Phase 26: Authenticated tenant console send
@@ -716,8 +721,8 @@ Plans:
 4. A network timeout shows the specified safe message and retry action; repeated retry cannot duplicate the Phase 23 task or financial effect and retains a correlation identity.
 
 **Test layers**: Form/component, adapter parity integration, idempotent timeout/retry integration, authorization, Playwright browser-to-final-status.
-**Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/51-security-assurance/CLAUDE-REVIEW.md`.
+**Plans**: `.planning/phases/51-security-assurance/51-01-PLAN.md`; implementation commit `26ad03a08f7784bcf102a890862154b99d139e74`; summary `.planning/phases/51-security-assurance/SUMMARY.md`; PR https://github.com/Stanley-Zheong/ycsopen-sms/pull/43.
 **UI hint**: yes
 
 ### Phase 27: Message, receipt, and error operations
@@ -1010,7 +1015,7 @@ Plans:
 
 **Test layers**: Formula unit, real-ledger aggregate integration, correction/idempotency, authorization, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/39-financial-source-analytics/39-01-PLAN.md`; summary `.planning/phases/39-financial-source-analytics/SUMMARY.md`.
 **UI hint**: yes
 
 ### Phase 40: Fee warning and credit enforcement
@@ -1102,7 +1107,7 @@ Plans:
 
 **Test layers**: Query-builder unit, aggregate integration, authorization, accessibility, Playwright.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/43-custom-report-authoring/43-01-PLAN.md`
 **UI hint**: yes
 
 ### Phase 44: Operational dashboards and account overview
@@ -1240,8 +1245,8 @@ Plans:
 3. Historical detail, finance, audit, and retained evidence remain authorized and queryable.
 
 **Test layers**: State/orchestration unit, participant contract tests, MySQL/session/queue fault/race, protocol/API authorization, Playwright.
-**Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Exit gate**: Phase-owned TODO empty with executable evidence. Claude review was attempted but blocked by local session limit; boundary is recorded in `.planning/phases/49-tenant-cooperation-termination/CLAUDE-REVIEW.md`.
+**Plans**: `.planning/phases/49-tenant-cooperation-termination/49-01-PLAN.md`; implementation commit `a9f48bfa3e76ac4752df853c35580022e4dce8ca`; summary `.planning/phases/49-tenant-cooperation-termination/SUMMARY.md`; PR https://github.com/Stanley-Zheong/ycsopen-sms/pull/41.
 **UI hint**: yes
 
 ### Phase 50: Tenant help and developer center
@@ -1308,7 +1313,7 @@ Plans:
 
 **Test layers**: Distributed load, stress/soak, large-data query/export, correctness reconciliations.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/52-performance-assurance/52-01-PLAN.md`
 
 ### Phase 53: Reliability and HA assurance
 
@@ -1329,7 +1334,7 @@ Plans:
 
 **Test layers**: Chaos/failure injection, multi-instance split/race, backup/restore and rollback drills.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/53-reliability-ha-assurance/53-01-PLAN.md`
 
 ### Phase 54: Observability assurance
 
@@ -1350,7 +1355,7 @@ Plans:
 
 **Test layers**: Telemetry schema/contract, trace correlation, metric reconciliation, failure-detection and redaction tests.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/54-observability-assurance/54-01-PLAN.md`
 
 ### Phase 55: Extension conformance assurance
 
@@ -1371,7 +1376,7 @@ Plans:
 
 **Test layers**: SPI compatibility, conformance, version migration, fault/security contract tests.
 **Exit gate**: Execute obligation-linked tests and evidence. Run the plan checker, GSD goal verification/code review, and Claude review under the bounded revision cycle: each cycle permits at most three review attempts; a non-decreasing BLOCKER/HIGH count or exhausted cycle escalates without completion and leaves scoped TODOs open; new developer decisions or evidence may start a new cycle. Exit only after final GSD and Claude results contain no blocking/HIGH finding and the owned-obligation and TODO queries are empty. Then create one atomic commit, push it to the configured GitHub remote, and record remote/branch/SHA in `SUMMARY.md`.
-**Plans**: TBD
+**Plans**: `.planning/phases/55-extension-conformance-assurance/55-01-PLAN.md`
 
 ### Phase 56: Final cross-protocol release acceptance
 

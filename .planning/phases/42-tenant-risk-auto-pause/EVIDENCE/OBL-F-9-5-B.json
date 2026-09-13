@@ -1,0 +1,1 @@
+{"status":"PASS","phase":42,"obligation":"OBL-F-9-5-B","evidence":["TenantRiskAutoPauseServiceTest.zeroDenominatorCreatesUnknownEpisodeWithoutMisleadingSafeRateOrPause","TenantRiskAutoPauseService.evaluate"]}

@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-2-A","result":"PASS","evidence":["ShortLinkSafetyServiceTest"],"summary":"Automated review checks blacklist/filing/age/malicious/private-network/redirect evidence without arbitrary outbound fetch."}

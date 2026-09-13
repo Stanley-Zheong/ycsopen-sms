@@ -50,6 +50,15 @@ export interface ConversionRequest {
   status: string;
 }
 
+export interface BalanceAuditExportJob {
+  id: number;
+  requestId: string;
+  exportType: string;
+  format: string;
+  status: string;
+  recordCount: number;
+}
+
 function data<T>(res: { data: ApiResponse<T> }): T {
   return res.data.data;
 }
@@ -78,6 +87,12 @@ export async function listConsumption(tenantId: number | null, businessType = ''
 
 export async function listBalanceAudits(tenantId: number | null): Promise<BalanceAuditEntry[]> {
   return data(await apiClient.get<ApiResponse<BalanceAuditEntry[]>>('/console/trial-prepaid/balance-audits', {
+    params: { tenantId },
+  }));
+}
+
+export async function requestBalanceAuditExport(tenantId: number | null): Promise<BalanceAuditExportJob> {
+  return data(await apiClient.post<ApiResponse<BalanceAuditExportJob>>('/console/trial-prepaid/balance-audits/export-request', null, {
     params: { tenantId },
   }));
 }

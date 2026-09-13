@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-2-C","result":"PASS","evidence":["ShortLinkSafetyServiceTest","PublicShortLinkSafePage","shortlink-safety.spec.ts"],"summary":"Pending, rejected, expired and offline states return safe platform pages without target redirect."}

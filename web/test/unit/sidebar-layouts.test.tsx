@@ -49,11 +49,13 @@ afterEach(() => {
 });
 
 describe('Admin and Tenant sidebar integration', () => {
-  it('groups every routed Admin detail page and preserves existing leaf selectors', () => {
-    renderAdmin('/admin/submission/details');
+  it('groups the consolidated Admin detail page and removes duplicate detail links', () => {
+    renderAdmin('/admin/records');
 
     expect(screen.getByTestId('admin-console-navigation-message-details-group-toggle')).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByTestId('admin-message-operations-submission-details-nav-menu')).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByTestId('admin-message-operations-submission-details-nav-menu')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-message-operations-send-details-nav-menu')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-message-operations-receipt-details-nav-menu')).not.toBeInTheDocument();
     expect(screen.getByTestId('admin-channel-health-nav-menu')).toBeInTheDocument();
     expect(screen.getByTestId('admin-tenant-qualification-tenants-nav-menu')).toBeInTheDocument();
 

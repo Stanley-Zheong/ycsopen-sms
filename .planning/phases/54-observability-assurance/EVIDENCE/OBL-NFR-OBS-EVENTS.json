@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-NFR-OBS-EVENTS",
+  "owner": "observability-assurance",
+  "status": "PASS",
+  "evidence": [
+    "BusinessEventRegistryTest.registryCoversEveryPrdBusinessEventExactlyOnce",
+    "BusinessEventRegistryTest.everyEventCarriesCorrelationTraceAndTenantContext",
+    "BusinessEventRegistryTest.piiFieldsAreMaskedAndRawProtectedValuesAreNotPublic",
+    "observability-targeted.log",
+    "observability-source-check.log"
+  ],
+  "verified_behavior": "The PRD 7.1 business-event set is executable as a Java registry contract with correlation identity, trace identity, tenant context, and declared sensitive-field protection."
+}

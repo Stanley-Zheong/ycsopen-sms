@@ -1,0 +1,24 @@
+{
+  "obligation": "OBL-NFR-PERF-HEALTH",
+  "requirement": "REQ-NFR-PERFORMANCE",
+  "result": "PASS",
+  "case": "C-P52-HEALTH",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "ChannelHealthServiceTest",
+        "ChannelPoolServiceTest",
+        "ChannelCandidateEligibilityServiceTest"
+      ],
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-targeted.log",
+      "sha256": "a5fe47eaa5ed4233f0589386891590070d8356c7d77ed968e75ff881a5fd52b4"
+    }
+  ],
+  "covered_controls": [
+    "channel heartbeat state",
+    "candidate eligibility",
+    "healthy-channel selection"
+  ],
+  "boundary": "Cadence is validated through service behavior and PRD/source evidence, not through a deployed scheduler probe."
+}

@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-NFR-ARCHIVE-ENCRYPT",
+  "status": "PASS",
+  "evidence": ["archive_manifests.archive_ciphertext", "checksum_sha256", "encryption_key_version", "RetentionArchiveService.verify"],
+  "notes": "Archive payloads are AES/GCM encrypted, checksummed, key-versioned, legal-hold aware and corruption detectable."
+}

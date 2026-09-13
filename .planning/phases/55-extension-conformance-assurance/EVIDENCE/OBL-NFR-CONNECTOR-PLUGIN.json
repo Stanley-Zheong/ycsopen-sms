@@ -1,0 +1,15 @@
+{
+  "obligation": "OBL-NFR-CONNECTOR-PLUGIN",
+  "owner": "extension-conformance-assurance",
+  "status": "PASS",
+  "evidence": [
+    "ExtensionPointRegistryTest.registryCoversDeclaredExtensionClasses",
+    "ExtensionPointRegistryTest.everyExtensionHasLoadableContractAndConformanceTest",
+    "ChannelConnectivityConformanceTest",
+    "HttpSmsUpstreamProviderClientTest",
+    "CmppClientSessionTest",
+    "HttpPlatformNotificationSpiTest",
+    "extension-targeted.log"
+  ],
+  "verified_behavior": "Connector and adapter extension points are declared with loadable contracts, reference implementations, conformance tests, and protected core message boundaries."
+}

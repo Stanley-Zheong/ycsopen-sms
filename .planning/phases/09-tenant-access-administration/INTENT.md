@@ -2,7 +2,7 @@
 
 ## Status
 
-Open
+Closed
 
 ## Goal
 
@@ -12,12 +12,12 @@ tenant boundary.
 
 ## Deliverables
 
-- [ ] Tenant administrator/subaccount API and role isolation — Evidence: `EVIDENCE/OBL-F-1-3-A.json`, `EVIDENCE/OBL-F-1-3-B.json`, `EVIDENCE/OBL-F-2-7-A.json`
-- [ ] HTTP API-key policy, one-time secret handoff, encryption, and revocation — Evidence: `EVIDENCE/OBL-F-2-6-A.json`, `EVIDENCE/OBL-F-2-6-B.json`
-- [ ] CMPP credential request, safe metadata, encryption, and revocation — Evidence: `EVIDENCE/OBL-F-2-6-C.json`
-- [ ] Complete credential data contract and no-plaintext proof — Evidence: `EVIDENCE/OBL-DATA-10-6-ACCESS.json`
-- [ ] Three Chrome-only production pages with documented test IDs and real Playwright cases — Evidence: `EVIDENCE/ui-contract.json`, `EVIDENCE/playwright-execution.json`
-- [ ] Independent GSD and Claude reviews pass; scoped TODO query is empty — Evidence: `09-VERIFICATION.md`, `09-REVIEW.md`, `CLAUDE-REVIEW.md`
+- Completed: Tenant administrator/subaccount API and role isolation — Evidence: `EVIDENCE/OBL-F-1-3-A.json`, `EVIDENCE/OBL-F-1-3-B.json`, `EVIDENCE/OBL-F-2-7-A.json`
+- Completed: HTTP API-key policy, one-time secret handoff, encryption, and revocation — Evidence: `EVIDENCE/OBL-F-2-6-A.json`, `EVIDENCE/OBL-F-2-6-B.json`
+- Completed: CMPP credential request, safe metadata, encryption, and revocation — Evidence: `EVIDENCE/OBL-F-2-6-C.json`
+- Completed: Complete credential data contract and no-plaintext proof — Evidence: `EVIDENCE/OBL-DATA-10-6-ACCESS.json`
+- Completed: Three Chrome-only production pages with documented test IDs and real Playwright cases — Evidence: `EVIDENCE/ui-contract.json`, `EVIDENCE/playwright-execution.json`
+- Completed: Independent GSD and Claude reviews pass; scoped TODO query is empty — Evidence: `09-VERIFICATION.md`, `09-REVIEW.md`, `CLAUDE-REVIEW.md`
 
 ## Plans
 
@@ -31,4 +31,3 @@ tenant boundary.
 Planned commands are the exact backend/frontend suites in the plan files,
 real installed-Chrome Playwright, the production UI validator, the phase entry
 validator, and the scoped TODO query. No duration or schedule estimate is used.
-

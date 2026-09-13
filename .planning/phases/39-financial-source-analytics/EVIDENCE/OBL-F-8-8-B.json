@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-8-8-B","phase":39,"owner":"financial-source-analytics","status":"implemented","evidence":["FinancialSourceAnalyticsService.drilldown","financial-source-analytics.spec.ts","UI-ELEMENTS.md"]}

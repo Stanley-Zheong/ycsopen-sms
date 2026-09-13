@@ -1,0 +1,10 @@
+{
+  "command": "npm --prefix web exec -- playwright test retention-archive.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/47-retention-archive-restore/EVIDENCE/playwright-retention-archive-report.json",
+  "commit": "abf51555efe6fee490b818dd3e9be23d02df82a6",
+  "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P47-POLICY",
+    "C-P47-RESTORE"
+  ]
+}

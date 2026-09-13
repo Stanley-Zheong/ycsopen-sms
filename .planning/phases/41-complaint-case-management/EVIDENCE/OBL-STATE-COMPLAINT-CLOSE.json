@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-COMPLAINT-CLOSE","phase":41,"owner":"complaint-case-management","status":"implemented","evidence":["ComplaintCaseService.close","complaint-case.spec.ts"]}

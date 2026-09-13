@@ -1,0 +1,114 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/tenant-risk"
+    ],
+    "test_ids": [
+      "admin-tenant-risk-rules-page",
+      "admin-tenant-risk-tenant-risk-pause-detail",
+      "admin-tenant-risk-tenant-risk-recovery",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/42-tenant-risk-auto-pause/UI-ELEMENTS.md",
+        "sha256": "6fd9abfa99be8b37d2b6f69fc255697e6c952252d3728e0783ae67e1c53a7e2c"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/42-tenant-risk-auto-pause/design-output/tenant-risk-auto-pause.pen",
+        "sha256": "4f5dadf96db07142ba2a2fc3ac9ef1f68a359ed95979fe45dca01850095b4c12"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/tenant-risk"
+    ],
+    "test_ids": [
+      "admin-tenant-risk-rules-page",
+      "admin-tenant-risk-tenant-risk-pause-detail",
+      "admin-tenant-risk-tenant-risk-recovery",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/42-tenant-risk-auto-pause/design-output/prototype.html",
+        "sha256": "d5263709b83dae3c5cf579baffab77cf271c78632fe9c3e6d1c81ec9ce3349f4"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-tenant-risk-rules-page",
+      "admin-tenant-risk-tenant-risk-pause-detail",
+      "admin-tenant-risk-tenant-risk-recovery",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/42-tenant-risk-auto-pause/design-output/prototype.spec.ts",
+        "sha256": "de275cd55b46769b156563640de57c592c6c0ae6de1193c10c01a62d6eb5b645"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/tenant-risk"
+    ],
+    "test_ids": [
+      "admin-tenant-risk-rules-page",
+      "admin-tenant-risk-tenant-risk-pause-detail",
+      "admin-tenant-risk-tenant-risk-recovery",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "fe3a2bb281fe639cfe7efbed80cd569c3679e7fcabeda8fa0bed16812767280d"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "f5b0988b2ac63dfe360a3040125fb49b4f3c329433728323b71b977e0a571358"
+      },
+      {
+        "path": "web/src/pages/admin/risk/AdminTenantRiskPage.tsx",
+        "sha256": "7d707d10875a19d97c5f3ed83c253c808a23312026f6df35e2ebc20770af41ff"
+      },
+      {
+        "path": "web/src/api/tenantRiskAutoPauseApi.ts",
+        "sha256": "292f38c6801dc1a9a41155334441a294245cff0cf8058e2c9c0738376919ad2b"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-tenant-risk-rules-page",
+      "admin-tenant-risk-tenant-risk-pause-detail",
+      "admin-tenant-risk-tenant-risk-recovery",
+      "admin-complaint-ratio-dashboard-complaint-ratio-tenant"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/tenant-risk-auto-pause.spec.ts",
+        "sha256": "7505caea87825589c45301530c772de719c933758427e9513653e2b9b4d244ac"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test tenant-risk-auto-pause.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/42-tenant-risk-auto-pause/EVIDENCE/playwright-tenant-risk-auto-pause-report.json",
+      "sha256": "ac1c2c9bd02695a099773ab281f29be0cf89579c3b17f5bf693d16ddf1702e6c"
+    }
+  }
+}

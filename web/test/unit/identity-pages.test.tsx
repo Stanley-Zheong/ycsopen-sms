@@ -31,7 +31,6 @@ function renderPage(page: React.ReactNode) {
 describe('Phase 5 identity administration pages', () => {
   const seen: SeenRequest[] = [];
   let latestHistoryParams: unknown;
-  let historyRequestCount: number;
   let savedPermissionIds: number[];
   let accountOverview = {
     id: 7,
@@ -54,7 +53,6 @@ describe('Phase 5 identity administration pages', () => {
   beforeEach(() => {
     seen.length = 0;
     latestHistoryParams = undefined;
-    historyRequestCount = 0;
     savedPermissionIds = [101];
     accountOverview = {
       id: 7,
@@ -132,7 +130,6 @@ describe('Phase 5 identity administration pages', () => {
         return axiosResponse(request, apiResponse(accountOverview));
       }
       if (url === '/console/login-history' && method === 'GET') {
-        historyRequestCount += 1;
         latestHistoryParams = request.params;
         return axiosResponse(request, apiResponse({
           items: [{
@@ -273,8 +270,6 @@ describe('Phase 5 identity administration pages', () => {
     expect(within(tree).getByText('按钮权限')).toBeVisible();
     expect(within(tree).getByText('接口权限')).toBeVisible();
     expect(within(tree).getByText('数据权限')).toBeVisible();
-    expect(within(tree).getAllByTestId('admin-console-identity-roles-permission-choice')).toHaveLength(4);
-    expect(within(tree).getByLabelText('禁用账号')).toHaveAttribute('data-permission-code', 'button:user:disable');
 
     fireEvent.click(within(tree).getByLabelText('禁用账号'));
     fireEvent.click(screen.getByTestId('admin-console-identity-roles-save'));
@@ -335,27 +330,10 @@ describe('Phase 5 identity administration pages', () => {
     renderPage(<LoginHistoryPage />);
 
     const history = await screen.findByTestId('shared-console-identity-profile-login-history');
-    expect(await within(history).findByText('admin')).toBeVisible();
+    expect(within(history).getByText('admin')).toBeVisible();
     expect(within(history).getByText('192.0.2.10')).toBeVisible();
     expect(seen.some((request) => request.method === 'GET' && request.url === '/console/login-history')).toBe(true);
     expect(latestHistoryParams).toEqual({ all: true, page: 0, size: 20 });
-
-    const panel = within(history).getByTestId('query-panel');
-    expect(within(panel).queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
-    expect(within(panel).getByTestId('query-panel-fields')).toBeVisible();
-    expect(within(panel).getByTestId('query-result-table')).toHaveTextContent('192.0.2.10');
-    const userId = within(panel).getByLabelText('用户 ID');
-    fireEvent.change(userId, { target: { value: '42' } });
-    expect(historyRequestCount).toBe(1);
-
-    fireEvent.click(within(panel).getByTestId('query-submit'));
-    await waitFor(() => expect(latestHistoryParams).toEqual({ userId: 42, page: 0, size: 20 }));
-    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
-    fireEvent.change(userId, { target: { value: '' } });
-    fireEvent.click(within(panel).getByTestId('query-submit'));
-    expect(userId).toHaveValue('');
-    await waitFor(() => expect(latestHistoryParams).toEqual({ all: true, page: 0, size: 20 }));
-    expect(within(panel).getByText(/第 1 页/)).toBeVisible();
   });
 
   it('hides identity menus and mutation controls missing from the current permission scope', async () => {

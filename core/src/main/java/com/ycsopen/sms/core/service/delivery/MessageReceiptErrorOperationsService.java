@@ -1,6 +1,9 @@
 package com.ycsopen.sms.core.service.delivery;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService.ExportCreateCommand;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -12,8 +15,10 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /** Phase 27: query and action boundary for message, receipt, and normalized error operations. */
 @Service
@@ -24,13 +29,23 @@ public class MessageReceiptErrorOperationsService {
     private final JdbcTemplate jdbc;
     private final DispatchTaskRecoveryService recovery;
     private final HttpMessageDeliveryService delivery;
+    private final SecureAsyncExportService exports;
+
+    @Autowired
+    public MessageReceiptErrorOperationsService(JdbcTemplate jdbc,
+                                                DispatchTaskRecoveryService recovery,
+                                                HttpMessageDeliveryService delivery,
+                                                SecureAsyncExportService exports) {
+        this.jdbc = jdbc;
+        this.recovery = recovery;
+        this.delivery = delivery;
+        this.exports = exports;
+    }
 
     public MessageReceiptErrorOperationsService(JdbcTemplate jdbc,
                                                 DispatchTaskRecoveryService recovery,
                                                 HttpMessageDeliveryService delivery) {
-        this.jdbc = jdbc;
-        this.recovery = recovery;
-        this.delivery = delivery;
+        this(jdbc, recovery, delivery, null);
     }
 
     @Transactional(readOnly = true)
@@ -273,19 +288,101 @@ public class MessageReceiptErrorOperationsService {
 
     @Transactional
     public ActionResult exportRequest(OperationFilter filter, ActionRequest request, String actor) {
+        return exportRequest(filter, request, actor, "MESSAGE_OPERATIONS");
+    }
+
+    @Transactional
+    public ActionResult exportRequest(OperationFilter filter, ActionRequest request, String actor, String exportType) {
         OperationFilter checkedFilter = filter.checked();
         ActionRequest checked = request.checked();
         String target = checkedFilter.messageId() == null ? "snapshot" : checkedFilter.messageId();
         String key = operationKey(checked.actionId(), "EXPORT_REQUEST", target);
         ActionResult duplicate = existing(key);
         if (duplicate != null) return duplicate;
-        int matchedRows = sends(checkedFilter).size() + receipts(checkedFilter).size() + submissions(checkedFilter).size();
+        String type = exportType(exportType);
+        List<Map<String, Object>> rows = exportRows(checkedFilter, type);
+        int matchedRows = rows.size();
+        Long exportJobId = null;
+        if (exports != null) {
+            var job = exports.create(new ExportCreateCommand(checked.actionId(), checkedFilter.tenantId(), type,
+                    "MESSAGE_OPERATIONS", jobName(type), actor(actor), "CSV",
+                    Map.of("messageId", checkedFilter.messageId() == null ? "" : checkedFilter.messageId(),
+                            "status", checkedFilter.status() == null ? "" : checkedFilter.status(),
+                            "channelId", checkedFilter.channelId() == null ? "" : checkedFilter.channelId(),
+                            "errorCode", checkedFilter.errorCode() == null ? "" : checkedFilter.errorCode()),
+                    List.of("created_at DESC", "id DESC"), "secure-async-export:create",
+                    List.of("mobile", "phone"), rows));
+            exportJobId = job.id();
+        }
         recordOperation(key, checked.actionId(), "EXPORT_REQUEST", checkedFilter.messageId(), null, null,
                 actor(actor), checked.reason(), "COMPLETED", "EXPORT_REQUESTED",
                 "导出请求已登记，匹配行数:" + matchedRows,
-                "{\"matchedRows\":" + matchedRows + ",\"fileGenerationOwner\":\"secure-async-export\"}");
+                "{\"matchedRows\":" + matchedRows + ",\"exportJobId\":" + (exportJobId == null ? "null" : exportJobId)
+                        + ",\"fileGenerationOwner\":\"secure-async-export\"}");
         return new ActionResult(checked.actionId(), "EXPORT_REQUEST", target, "COMPLETED",
-                "EXPORT_REQUESTED", String.valueOf(matchedRows));
+                "EXPORT_REQUESTED", "导出任务:" + (exportJobId == null ? "-" : exportJobId) + "，匹配行数:" + matchedRows);
+    }
+
+    private List<Map<String, Object>> exportRows(OperationFilter filter, String type) {
+        if ("SEND_DETAIL".equals(type)) {
+            return sends(filter).stream().map(row -> {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("task_id", row.taskId());
+                item.put("message_id", row.messageId());
+                item.put("tenant_id", row.tenantId());
+                item.put("masked_mobile", row.maskedMobile());
+                item.put("send_status", row.sendStatus());
+                item.put("channel_id", row.channelId());
+                item.put("error_code", row.errorCode());
+                item.put("created_at", row.createdAt());
+                return item;
+            }).toList();
+        }
+        if ("RECEIPT_DETAIL".equals(type)) {
+            return receipts(filter).stream().map(row -> {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("receipt_id", row.receiptId());
+                item.put("message_id", row.messageId());
+                item.put("tenant_id", row.tenantId());
+                item.put("masked_mobile", row.maskedMobile());
+                item.put("receipt_status", row.receiptStatus());
+                item.put("send_status", row.sendStatus());
+                item.put("error_code", row.errorCode());
+                item.put("report_time", row.reportTime());
+                return item;
+            }).toList();
+        }
+        List<Map<String, Object>> rows = new ArrayList<>();
+        rows.addAll(exportRows(filter, "SEND_DETAIL"));
+        rows.addAll(exportRows(filter, "RECEIPT_DETAIL"));
+        rows.addAll(submissions(filter).stream().map(row -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("submission_id", row.submissionId());
+            item.put("message_id", row.messageId());
+            item.put("tenant_id", row.tenantId());
+            item.put("status", row.submissionStatus());
+            item.put("send_status", row.sendStatus());
+            item.put("error_code", row.errorCode());
+            item.put("created_at", row.createdAt());
+            return item;
+        }).toList());
+        return rows;
+    }
+
+    private static String exportType(String requested) {
+        String value = optionalText(requested, 64);
+        if (value == null) return "MESSAGE_OPERATIONS";
+        String normalized = value.toUpperCase(Locale.ROOT);
+        return List.of("SEND_DETAIL", "RECEIPT_DETAIL", "MESSAGE_OPERATIONS").contains(normalized)
+                ? normalized : "MESSAGE_OPERATIONS";
+    }
+
+    private static String jobName(String exportType) {
+        return switch (exportType) {
+            case "SEND_DETAIL" -> "发送详单导出";
+            case "RECEIPT_DETAIL" -> "回执详单导出";
+            default -> "消息运营导出";
+        };
     }
 
     private void applyFinalState(long taskId, String status, String errorCode, String reason) {

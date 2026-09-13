@@ -1,0 +1,6 @@
+# Phase 43 Test Matrix
+
+| Obligation ID | Requirement IDs | Behavior ID | Catalog test/layer | Playwright ID | Page ID/route | data-testid | Case ID | Case | Command | Evidence |
+|---|---|---|---|---|---|---|---|---|---|---|
+| OBL-F-11-4-A | REQ-F-11-4 | custom-report-authoring-01 | T-F-11-4-A:playwright | pw-p43-custom-reports | admin-custom-reports `/admin/custom/reports` | admin-custom-report-custom-reports-page | C-P43-CUSTOM-REPORTS | User builds, previews, saves, and requests export for a supported custom report. | `npm --prefix web exec -- playwright test custom-report-authoring.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json` | `.planning/phases/43-custom-report-authoring/EVIDENCE/playwright-custom-report-report.json` |
+| OBL-F-11-4-B | REQ-F-11-4 | custom-report-authoring-01 | T-F-11-4-B:integration | pw-p43-results | admin-custom-reports `/admin/custom/reports` | admin-custom-report-custom-reports-results | C-P43-RESULTS | Preview uses aggregate registry rows, formula, freshness, quality, drilldown, tenant scope, and accessible table columns. | `mvn -f core/pom.xml -Dtest=CustomReportServiceTest test` | `.planning/phases/43-custom-report-authoring/EVIDENCE/OBL-F-11-4-B.json` |

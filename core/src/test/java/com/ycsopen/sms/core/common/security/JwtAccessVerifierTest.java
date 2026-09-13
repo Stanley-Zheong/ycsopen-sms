@@ -37,6 +37,7 @@ class JwtAccessVerifierTest {
 
         var access = new JwtAccessVerifier(users, roles, sessions).verify(claims);
 
+        assertThat(access.subject()).isEqualTo("7");
         assertThat(access.authorities()).extracting(Object::toString)
                 .containsExactlyInAnyOrder("ROLE_ADMIN", "account:read", "role:write");
     }

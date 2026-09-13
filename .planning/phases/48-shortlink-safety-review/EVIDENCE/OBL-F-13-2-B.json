@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-2-B","result":"PASS","evidence":["AdminShortLinkReviewPage","shortlink-safety.spec.ts"],"summary":"Operator review shows tenant, immutable target version, domain evidence, automated result, approve and reject actions."}

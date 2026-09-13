@@ -1,0 +1,37 @@
+{
+  "obligation": "OBL-DOD-05-PERFORMANCE",
+  "requirement": "REQ-NFR-PERFORMANCE",
+  "result": "PASS",
+  "case": "C-P52-DOD",
+  "evidence": [
+    {
+      "kind": "owner-validator",
+      "command": "/usr/bin/env ruby .planning/tools/validate-prd-obligations.rb --owner performance-assurance --assert-unique --assert-traced",
+      "result": "PASS",
+      "selected": 5
+    },
+    {
+      "kind": "junit-targeted",
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-targeted.log",
+      "sha256": "a5fe47eaa5ed4233f0589386891590070d8356c7d77ed968e75ff881a5fd52b4",
+      "tests_run": 37,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "kind": "junit-full",
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/full-backend.log",
+      "sha256": "19d07f0f110d43f4a3ae076f0a7203361c8cf3e287abe4cee2a1cb0ac5c9a863",
+      "tests_run": 952,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 33
+    }
+  ],
+  "known_boundaries": [
+    "local in-process load evidence only",
+    "no external provider throughput test",
+    "no deployed multi-node soak test"
+  ]
+}

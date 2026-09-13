@@ -120,12 +120,13 @@ public class MessageReceiptErrorOperationsController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long channelId,
             @RequestParam(required = false) String errorCode,
+            @RequestParam(required = false) String exportType,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startAt,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endAt,
             @RequestBody MessageReceiptErrorOperationsService.ActionRequest request,
             Authentication authentication) {
         return ApiResponse.ok(operations.exportRequest(filter(tenantId, messageId, status, channelId, errorCode,
-                startAt, endAt), request, actor(authentication)));
+                startAt, endAt), request, actor(authentication), exportType));
     }
 
     private static String actor(Authentication authentication) {

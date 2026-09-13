@@ -1,0 +1,112 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/fee/warning", "/tenant/balance"],
+    "test_ids": [
+      "admin-fee-warning-credit-page",
+      "admin-fee-warning-fee-warning-notification-targets",
+      "admin-fee-warning-fee-warning-credit-action",
+      "admin-fee-warning-fee-warning-enforcement-action",
+      "tenant-fee-warning-overview-low-balance-warning",
+      "admin-fee-warning-fee-warning-rule-save",
+      "admin-fee-warning-source-snapshot",
+      "admin-fee-warning-fee-warning-evaluate",
+      "admin-fee-warning-fee-warning-approve",
+      "tenant-fee-warning-overview-delivery-evidence"
+    ],
+    "sources": [
+      {"path": ".planning/phases/40-fee-warning-credit-enforcement/UI-ELEMENTS.md", "sha256": "740965e69b0ef2f060d9e1e9372a3ef9e4491d9e3aa7cd0ab2655eb1a7cdd2a1"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/40-fee-warning-credit-enforcement/design-output/fee-warning-credit-enforcement.pen", "sha256": "060a303fa369f29eb8a688e17a304ca4fa70ecf679036a37df1958b4b8be8c58"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/fee/warning", "/tenant/balance"],
+    "test_ids": [
+      "admin-fee-warning-credit-page",
+      "admin-fee-warning-fee-warning-notification-targets",
+      "admin-fee-warning-fee-warning-credit-action",
+      "admin-fee-warning-fee-warning-enforcement-action",
+      "tenant-fee-warning-overview-low-balance-warning",
+      "admin-fee-warning-fee-warning-rule-save",
+      "admin-fee-warning-source-snapshot",
+      "admin-fee-warning-fee-warning-evaluate",
+      "admin-fee-warning-fee-warning-approve",
+      "tenant-fee-warning-overview-delivery-evidence"
+    ],
+    "sources": [
+      {"path": ".planning/phases/40-fee-warning-credit-enforcement/design-output/prototype.html", "sha256": "a9c5cbe15b1f9ebd69e1a70fb6104bd67b2b7697150b56927e3cd5c0af8069c7"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-fee-warning-credit-page",
+      "admin-fee-warning-fee-warning-notification-targets",
+      "admin-fee-warning-fee-warning-credit-action",
+      "admin-fee-warning-fee-warning-enforcement-action",
+      "tenant-fee-warning-overview-low-balance-warning",
+      "admin-fee-warning-fee-warning-rule-save",
+      "admin-fee-warning-source-snapshot",
+      "admin-fee-warning-fee-warning-evaluate",
+      "admin-fee-warning-fee-warning-approve",
+      "tenant-fee-warning-overview-delivery-evidence"
+    ],
+    "sources": [
+      {"path": ".planning/phases/40-fee-warning-credit-enforcement/design-output/prototype.spec.ts", "sha256": "036e02e04e486cadb60b696e76c11ddb0763b784e59f7ec41942ad95d4622e5b"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/fee/warning", "/tenant/balance"],
+    "test_ids": [
+      "admin-fee-warning-credit-page",
+      "admin-fee-warning-fee-warning-notification-targets",
+      "admin-fee-warning-fee-warning-credit-action",
+      "admin-fee-warning-fee-warning-enforcement-action",
+      "tenant-fee-warning-overview-low-balance-warning",
+      "admin-fee-warning-fee-warning-rule-save",
+      "admin-fee-warning-source-snapshot",
+      "admin-fee-warning-fee-warning-evaluate",
+      "admin-fee-warning-fee-warning-approve",
+      "tenant-fee-warning-overview-delivery-evidence"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "a68b82b5b6797ab2557d8146c79c1946103e254188cc09e103865449bba16b33"},
+      {"path": "web/src/pages/admin/billing/AdminFeeWarningPage.tsx", "sha256": "598117c8097558b1f628c20e266af88b9db481cba899e34ca6977f2f47651482"},
+      {"path": "web/src/pages/tenant/billing/TenantFeeWarningPage.tsx", "sha256": "76f61eeff1fe2274e50389dd139c9216c5151a492241d2806081fd30c02e3a6c"},
+      {"path": "web/src/components/layout/AdminLayout.tsx", "sha256": "7a19ba5df22e5b37ac49dfac4b8da2cc2ac651578cc51ef1e36968fb3d08f796"},
+      {"path": "web/src/components/layout/TenantLayout.tsx", "sha256": "60079b203c7deec2fdbe9ad6294913563979d1854adc3fdc36d8640e2b136f08"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-fee-warning-credit-page",
+      "admin-fee-warning-fee-warning-notification-targets",
+      "admin-fee-warning-fee-warning-credit-action",
+      "admin-fee-warning-fee-warning-enforcement-action",
+      "tenant-fee-warning-overview-low-balance-warning",
+      "admin-fee-warning-fee-warning-rule-save",
+      "admin-fee-warning-source-snapshot",
+      "admin-fee-warning-fee-warning-evaluate",
+      "admin-fee-warning-fee-warning-approve",
+      "tenant-fee-warning-overview-delivery-evidence"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/fee-warning-credit.spec.ts", "sha256": "455b12b47c4f044b19c32921b320b828421a9ab1d8af37becfdb3fe8f6a126ac"}
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test fee-warning-credit.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/40-fee-warning-credit-enforcement/EVIDENCE/playwright-fee-warning-report.json",
+      "sha256": "374c457dbbc6155be0b59b95ad9718a72507671f58f5531ce33713f7e3454503"
+    }
+  }
+}

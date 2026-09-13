@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-2-10-D",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationService rejects repeated effect after a request becomes EFFECTIVE.",
+    "Termination detail returns retained request, participants and audit timeline after effect.",
+    "The implementation does not delete finance, archive, uplink, unsubscribe or audit history."
+  ]
+}

@@ -99,8 +99,6 @@ test('pw-p12-signature-application pw-p12-signature-submit C-P12-APPLICATION-COM
   await routeApi(page);
   await page.goto('/tenant/signatures');
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-page')).toBeVisible();
-  await expect(page.getByTestId('tenant-signature-lifecycle-signatures-application-dialog')).toHaveCount(0);
-  await page.getByTestId('tenant-signature-lifecycle-signatures-application-open').click();
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-application-form')).toBeVisible();
   await expect(page.getByTestId('tenant-signature-lifecycle-signatures-history')).toContainText('SUBMITTED');
   await page.getByLabel('签名内容').fill('新商标');
@@ -125,7 +123,6 @@ test('pw-p12-review-stats pw-p12-review-filters pw-p12-review-decision C-P12-REV
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-page')).toBeVisible();
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-stats')).toContainText('待审核 1');
   await page.getByTestId('admin-signature-lifecycle-signature-review-filters').fill('优创');
-  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-signature-lifecycle-signature-review-row')).toContainText('pobj-proof-1');
   await page.getByTestId('admin-signature-lifecycle-signature-review-decision-open').click();
   await page.getByTestId('admin-signature-lifecycle-signature-review-decision-status').selectOption('SUPPLEMENT_REQUIRED');

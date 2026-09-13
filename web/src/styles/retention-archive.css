@@ -1,0 +1,47 @@
+.retention-archive-page {
+  display: grid;
+  gap: 18px;
+}
+
+.retention-archive-header,
+.retention-archive-grid,
+.retention-archive-table {
+  width: 100%;
+}
+
+.retention-archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.retention-archive-alert {
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.retention-archive-alert.success {
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.retention-archive-alert.error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.retention-archive-table {
+  border-collapse: collapse;
+}
+
+.retention-archive-table th,
+.retention-archive-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.retention-archive-table button {
+  margin-right: 8px;
+}

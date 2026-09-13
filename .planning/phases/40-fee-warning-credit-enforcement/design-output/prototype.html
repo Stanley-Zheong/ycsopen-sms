@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Phase40 Fee Warning Prototype</title></head>
+<body>
+  <main>
+    <section data-route="/admin/fee/warning" data-testid="admin-fee-warning-credit-page">
+      <h1>费用预警与授信管控</h1>
+      <div data-testid="admin-fee-warning-fee-warning-notification-targets">["tenant:42","finance","operations"]</div>
+      <button data-testid="admin-fee-warning-fee-warning-rule-save">保存规则</button>
+      <button data-testid="admin-fee-warning-fee-warning-evaluate">按当前来源评估</button>
+      <table data-testid="admin-fee-warning-fee-warning-credit-action">
+        <tr><td>POSTPAID_CREDIT_RATIO</td><td>MANUAL_APPROVAL</td><td data-testid="admin-fee-warning-fee-warning-enforcement-action">PENDING</td></tr>
+      </table>
+      <pre data-testid="admin-fee-warning-source-snapshot">usedMil=900,estimatedAmountMil=50,creditLimitMil=1000,ratio=0.9500</pre>
+      <button data-testid="admin-fee-warning-fee-warning-approve">批准</button>
+    </section>
+    <section data-route="/tenant/balance" data-testid="tenant-fee-warning-overview-low-balance-warning">
+      <h1>余额与费用预警</h1>
+      <table><tr><td>PREPAID_AMOUNT</td><td>1000</td><td>WARN_ONLY</td></tr></table>
+      <div data-testid="tenant-fee-warning-overview-delivery-evidence">DELIVERED · alert #3001</div>
+    </section>
+  </main>
+</body>
+</html>

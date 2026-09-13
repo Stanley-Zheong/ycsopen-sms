@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as contractApi from '@/api/contractPricingApi';
+import * as operationalDashboardApi from '@/api/operationalDashboardApi';
 import * as trialPrepaidApi from '@/api/trialPrepaidApi';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
@@ -28,6 +29,11 @@ vi.mock('@/api/trialPrepaidApi', async (importOriginal) => {
     consumeTrial: vi.fn(),
     requestConversion: vi.fn(),
   };
+});
+
+vi.mock('@/api/operationalDashboardApi', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/operationalDashboardApi')>();
+  return { ...actual, getTenantOperationalOverview: vi.fn() };
 });
 
 function renderWithProviders(ui: ReactElement) {
@@ -99,6 +105,22 @@ describe('Phase 37 contract pricing and postpaid UI', () => {
       billingPeriod: 'MONTHLY',
       contractStatus: 'ACTIVE',
       approvedBy: 'operator',
+    });
+    vi.mocked(operationalDashboardApi.getTenantOperationalOverview).mockResolvedValue({
+      tenantId: 42,
+      balanceMil: 1000,
+      trialStatus: 'TRIAL_FROZEN',
+      contractStatus: 'ACTIVE',
+      todayMessages: 0,
+      successRate: 0,
+      serviceStatus: 'NORMAL',
+      source: {
+        registry: 'statistics_aggregates',
+        formula: 'success_count/send_count',
+        freshnessAt: '2026-09-10T09:00:00',
+        permissionScope: 'TENANT',
+        formulaVersion: 'v1',
+      },
     });
     useAuthStore.setState({
       accessToken: 'test-token',

@@ -1,0 +1,10 @@
+{
+  "obligation": "OBL-F-11-4-A",
+  "requirement": "REQ-F-11-4",
+  "owner": "custom-report-authoring",
+  "evidence": [
+    "web/test/scripts/custom-report-authoring.spec.ts",
+    "web/src/pages/admin/reports/AdminCustomReportsPage.tsx"
+  ],
+  "status": "verified"
+}

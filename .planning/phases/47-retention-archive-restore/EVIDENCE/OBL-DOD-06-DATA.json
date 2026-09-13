@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-DOD-06-DATA",
+  "status": "PASS",
+  "evidence": ["RetentionArchiveServiceTest", "retention-archive.spec.ts", "SecureAsyncExportService ARCHIVE_RESTORE"],
+  "notes": "Retention, protected archive encryption, restore, sampled access UI and archive export are covered together."
+}

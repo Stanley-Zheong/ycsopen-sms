@@ -153,6 +153,8 @@ export async function bulkErrorAction(actionId: string, action: string, errorCod
   }));
 }
 
-export async function requestMessageExport(filter: OperationFilter, actionId: string, reason: string): Promise<ActionResult> {
-  return data(await apiClient.post<ApiResponse<ActionResult>>('/console/message-operations/exports', { actionId, reason }, { params: params(filter) }));
+export async function requestMessageExport(filter: OperationFilter, actionId: string, reason: string, exportType = 'MESSAGE_OPERATIONS'): Promise<ActionResult> {
+  return data(await apiClient.post<ApiResponse<ActionResult>>('/console/message-operations/exports', { actionId, reason }, {
+    params: { ...params(filter), exportType },
+  }));
 }

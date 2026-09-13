@@ -21,12 +21,46 @@ export interface LoginResponse {
 
 /** F-11.9 通道/机构月度投诉占比看板单行数据。 */
 export interface ComplaintRatioItem {
+  statMonth?: string;
+  dimensionType?: 'CHANNEL' | 'TENANT';
   dimensionId: number;
   dimensionName: string | null;
   sendCount: number;
   complaintCount: number;
   ratio: number;
+  thresholdValue?: number;
+  thresholdConfigVersion?: string;
   overThreshold: boolean;
+  dataQuality?: 'COMPLETE' | 'ZERO_DENOMINATOR' | 'UNKNOWN' | string;
+  thresholdResult?: 'BREACHED' | 'NORMAL' | 'UNKNOWN' | string;
+  sourceRegistry?: string;
+  freshnessPolicy?: string;
+  calculatedAt?: string | null;
+  rank?: number;
+  interventionAvailable?: boolean;
+  alertSourceKey?: string;
+}
+
+export interface ComplaintRatioCase {
+  id: number;
+  source: string;
+  tenantId: number | null;
+  channelId: number | null;
+  messageId: string | null;
+  summary: string | null;
+  status: string;
+  attributionQuality: string;
+  createdAt: string;
+}
+
+export interface ComplaintRatioInterventionResult {
+  dimensionType: 'CHANNEL' | 'TENANT';
+  dimensionId: number;
+  status: string;
+  evidenceId: number;
+  alertRecordId: number | null;
+  sourceKey: string;
+  action: string;
 }
 
 export interface Tenant {

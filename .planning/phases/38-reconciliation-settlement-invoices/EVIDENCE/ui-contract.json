@@ -1,0 +1,127 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/reconciliation", "/tenant/statements"],
+    "test_ids": [
+      "admin-reconciliation-settlement-reconciliation-page",
+      "tenant-reconciliation-settlement-statements-confirm",
+      "tenant-reconciliation-settlement-statements-difference",
+      "admin-reconciliation-settlement-reconciliation-resolve",
+      "admin-reconciliation-settlement-settlements-page",
+      "admin-reconciliation-settlement-settlements-start",
+      "admin-reconciliation-settlement-settlements-complete",
+      "admin-reconciliation-settlement-settlements-received",
+      "tenant-reconciliation-settlement-invoices-page",
+      "tenant-reconciliation-settlement-statements-page",
+      "admin-reconciliation-settlement-reconciliation-generate",
+      "admin-reconciliation-settlement-invoices-issue",
+      "tenant-reconciliation-settlement-invoices-request"
+    ],
+    "sources": [
+      {"path": ".planning/phases/38-reconciliation-settlement-invoices/UI-ELEMENTS.md", "sha256": "4d7ad74dc82b6950f11bc5441ad3cee8a8f51124313137d1e9e916187c4ce401"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/38-reconciliation-settlement-invoices/design-output/reconciliation-settlement-invoices.pen", "sha256": "68bb7ff8bddeebc8124b8f6a27ab63eedef49980c6c281df918a281dff10f1dc"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/reconciliation", "/tenant/statements"],
+    "test_ids": [
+      "admin-reconciliation-settlement-reconciliation-page",
+      "tenant-reconciliation-settlement-statements-confirm",
+      "tenant-reconciliation-settlement-statements-difference",
+      "admin-reconciliation-settlement-reconciliation-resolve",
+      "admin-reconciliation-settlement-settlements-page",
+      "admin-reconciliation-settlement-settlements-start",
+      "admin-reconciliation-settlement-settlements-complete",
+      "admin-reconciliation-settlement-settlements-received",
+      "tenant-reconciliation-settlement-invoices-page",
+      "tenant-reconciliation-settlement-statements-page",
+      "admin-reconciliation-settlement-reconciliation-generate",
+      "admin-reconciliation-settlement-invoices-issue",
+      "tenant-reconciliation-settlement-invoices-request"
+    ],
+    "sources": [
+      {"path": ".planning/phases/38-reconciliation-settlement-invoices/design-output/prototype.html", "sha256": "9d3d38d9219a02c04a83daa0613de7a01b40abd062ecfb0056cafd6007a30f12"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-reconciliation-settlement-reconciliation-page",
+      "tenant-reconciliation-settlement-statements-confirm",
+      "tenant-reconciliation-settlement-statements-difference",
+      "admin-reconciliation-settlement-reconciliation-resolve",
+      "admin-reconciliation-settlement-settlements-page",
+      "admin-reconciliation-settlement-settlements-start",
+      "admin-reconciliation-settlement-settlements-complete",
+      "admin-reconciliation-settlement-settlements-received",
+      "tenant-reconciliation-settlement-invoices-page",
+      "tenant-reconciliation-settlement-statements-page",
+      "admin-reconciliation-settlement-reconciliation-generate",
+      "admin-reconciliation-settlement-invoices-issue",
+      "tenant-reconciliation-settlement-invoices-request"
+    ],
+    "sources": [
+      {"path": ".planning/phases/38-reconciliation-settlement-invoices/design-output/prototype.spec.ts", "sha256": "fc7789c18953965db0eb503c74feb94f7248a51407ee296654af10a28fbf3b7c"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/reconciliation", "/tenant/statements"],
+    "test_ids": [
+      "admin-reconciliation-settlement-reconciliation-page",
+      "tenant-reconciliation-settlement-statements-confirm",
+      "tenant-reconciliation-settlement-statements-difference",
+      "admin-reconciliation-settlement-reconciliation-resolve",
+      "admin-reconciliation-settlement-settlements-page",
+      "admin-reconciliation-settlement-settlements-start",
+      "admin-reconciliation-settlement-settlements-complete",
+      "admin-reconciliation-settlement-settlements-received",
+      "tenant-reconciliation-settlement-invoices-page",
+      "tenant-reconciliation-settlement-statements-page",
+      "admin-reconciliation-settlement-reconciliation-generate",
+      "admin-reconciliation-settlement-invoices-issue",
+      "tenant-reconciliation-settlement-invoices-request"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "076ecab19b5daef751319494f56c928451ffc0427a337c91122c59f67ce120e5"},
+      {"path": "web/src/pages/admin/billing/AdminReconciliationSettlementPage.tsx", "sha256": "bc8f146fe0e31449a2d1475ede758ad1ab1a2dd5e4bb80f1e1116ad48b77c615"},
+      {"path": "web/src/pages/tenant/billing/TenantStatementsInvoicesPage.tsx", "sha256": "c93d16a1d24073526b08c54d5d38f6172e86ee0a40f0589cf0619a2535dca8f5"},
+      {"path": "web/src/components/layout/AdminLayout.tsx", "sha256": "e23f48f3e24c79e5a83d219e174357d51846497583cede936a57f936b4b16815"},
+      {"path": "web/src/components/layout/TenantLayout.tsx", "sha256": "1796f5028e200a1528e3190c3415e75442f8f25fbbd9bf00ac49f068ef967991"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-reconciliation-settlement-reconciliation-page",
+      "tenant-reconciliation-settlement-statements-confirm",
+      "tenant-reconciliation-settlement-statements-difference",
+      "admin-reconciliation-settlement-reconciliation-resolve",
+      "admin-reconciliation-settlement-settlements-page",
+      "admin-reconciliation-settlement-settlements-start",
+      "admin-reconciliation-settlement-settlements-complete",
+      "admin-reconciliation-settlement-settlements-received",
+      "tenant-reconciliation-settlement-invoices-page",
+      "tenant-reconciliation-settlement-statements-page",
+      "admin-reconciliation-settlement-reconciliation-generate",
+      "admin-reconciliation-settlement-invoices-issue",
+      "tenant-reconciliation-settlement-invoices-request"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/reconciliation-settlement.spec.ts", "sha256": "f07072fce498fd348d5a95e749d4338c25ae3a49e8cf9d4e96f6c5c29c196ddd"}
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test reconciliation-settlement.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/38-reconciliation-settlement-invoices/EVIDENCE/playwright-reconciliation-settlement-report.json",
+      "sha256": "570048b518f7d6ed2d5f2725431f72a4ad67a70910c6d8ffebf50200a2f1cedc"
+    }
+  }
+}

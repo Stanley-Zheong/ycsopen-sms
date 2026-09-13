@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-FIELD-SHORTLINK-URL","result":"PASS","evidence":["ShortLinkSafetyServiceTest","tenant-shortlink-safety-shortlinks-form-url"],"summary":"Original URL is required, <=2000 chars, HTTP/HTTPS, and rejects private/internal targets."}

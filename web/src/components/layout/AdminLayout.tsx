@@ -66,7 +66,6 @@ const NAV_GROUPS: AdminNavGroup[] = [
       { to: '/admin/content-safety', label: '内容审核', roles: ['ADMIN', 'OPERATOR'], permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read], testId: 'admin-runtime-content-content-safety-nav-menu' },
       { to: '/admin/frequency/rules', label: '频控规则', roles: ['ADMIN', 'OPERATOR'], permissions: [FREQUENCY_PERMISSIONS.menu, FREQUENCY_PERMISSIONS.read], testId: 'admin-frequency-api-frequency-rules-nav-menu' },
       { to: '/admin/number-attribution', label: '号码归属', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-number-attribution-nav-menu' },
-      { to: '/admin/number-portability', label: '携号转网', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-number-portability-nav-menu' },
     ],
   },
   {
@@ -83,9 +82,6 @@ const NAV_GROUPS: AdminNavGroup[] = [
   {
     id: 'message-details', label: '数据详单', items: [
       { to: '/admin/records', label: '详单总览', roles: OPERATIONS },
-      { to: '/admin/submission/details', label: '提交详单', roles: OPERATIONS, testId: 'admin-message-operations-submission-details-nav-menu' },
-      { to: '/admin/send/details', label: '发送详单', roles: OPERATIONS, testId: 'admin-message-operations-send-details-nav-menu' },
-      { to: '/admin/receipt/details', label: '回执详单', roles: OPERATIONS, testId: 'admin-message-operations-receipt-details-nav-menu' },
       { to: '/admin/error/details', label: '错误详单', roles: OPERATIONS, testId: 'admin-message-operations-error-details-nav-menu' },
       { to: '/admin/bulk/details', label: '群发详单', roles: OPERATIONS, testId: 'admin-bulk-scheduled-bulk-details-nav-menu' },
     ],

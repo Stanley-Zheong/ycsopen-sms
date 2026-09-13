@@ -1,0 +1,9 @@
+ff2f1f5ec1e0f15ff8ea4c7b355feb94e4f8e2b57119421dd8685726cd7f2589  .planning/phases/55-extension-conformance-assurance/EVIDENCE/OBL-NFR-CONNECTOR-PLUGIN.json
+fbe4acd6d8a7d8fc20c623850bfb381a22f8d9437304dc3e8e1e965f8eabc2a9  .planning/phases/55-extension-conformance-assurance/EVIDENCE/OBL-NFR-INDEPENDENT-SCALE.json
+0009d6880727f5d3a0c5ca8f06186f0f7f3936d899d9180b290ba558a8d6da8a  .planning/phases/55-extension-conformance-assurance/EVIDENCE/OBL-NFR-POLICY-CONFIG.json
+975657a921a7da8b8a02e86ecf727efb404afae858b9257e32368071fba33e43  .planning/phases/55-extension-conformance-assurance/EVIDENCE/evidence-json-parse.log
+210ce6a8c87f1759296002952885266c9c38dc94d23a8182e86ccd697acdd257  .planning/phases/55-extension-conformance-assurance/EVIDENCE/extension-source-check.log
+00d0ad6fdd8f7e89faea47efda100f3700775be4b5b6c86a117d5e129a801470  .planning/phases/55-extension-conformance-assurance/EVIDENCE/extension-targeted.log
+71e293bef8024932818aa30169c07b6755efa85f87af41160bce38ffefa9d464  .planning/phases/55-extension-conformance-assurance/EVIDENCE/full-backend.log
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  .planning/phases/55-extension-conformance-assurance/EVIDENCE/git-diff-check.log
+e4110939360f48a3fb5ee5dd449a05415e60a1a2fcec6ab5ccfbe3e846974396  .planning/phases/55-extension-conformance-assurance/EVIDENCE/owner-validator.log

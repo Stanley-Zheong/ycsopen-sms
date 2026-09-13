@@ -1,13 +1,18 @@
 package com.ycsopen.sms.core.service.billing;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService;
+import com.ycsopen.sms.core.service.export.SecureAsyncExportService.ExportCreateCommand;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /** Phase 22: trial quota and prepaid ledger contract. Monetary values are stored in mil. */
@@ -16,9 +21,17 @@ public class TrialPrepaidLedgerService {
     private static final int DEFAULT_TRIAL_QUOTA = 500;
 
     private final JdbcTemplate jdbc;
+    private final SecureAsyncExportService exports;
+
+    @Autowired
+    public TrialPrepaidLedgerService(JdbcTemplate jdbc, SecureAsyncExportService exports) {
+        this.jdbc = jdbc;
+        this.exports = exports;
+    }
 
     public TrialPrepaidLedgerService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
+        this.exports = null;
     }
 
     @Transactional
@@ -216,6 +229,33 @@ public class TrialPrepaidLedgerService {
                 rs.getLong("after_balance_mil"), rs.getLong("before_frozen_mil"), rs.getLong("after_frozen_mil"),
                 rs.getInt("account_version"), rs.getString("actor"), rs.getTimestamp("created_at").toLocalDateTime()),
                 tenantId, tenantId);
+    }
+
+    @Transactional
+    public SecureAsyncExportService.ExportJob requestBalanceAuditExport(Long tenantId, String actor) {
+        actor(actor);
+        List<Map<String, Object>> rows = audits(tenantId).stream().map(row -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("tenant_id", row.tenantId());
+            item.put("business_doc_id", row.businessDocId());
+            item.put("mutation_type", row.mutationType());
+            item.put("amount_mil", row.amountMil());
+            item.put("before_balance_mil", row.beforeBalanceMil());
+            item.put("after_balance_mil", row.afterBalanceMil());
+            item.put("before_frozen_mil", row.beforeFrozenMil());
+            item.put("after_frozen_mil", row.afterFrozenMil());
+            item.put("account_version", row.accountVersion());
+            item.put("actor", row.actor());
+            item.put("created_at", row.createdAt());
+            return item;
+        }).toList();
+        if (exports == null) {
+            throw failure("SECURE_EXPORT_NOT_CONFIGURED", "安全异步导出中心未配置");
+        }
+        return exports.create(new ExportCreateCommand("BAL-" + UUID.randomUUID(), tenantId,
+                "BALANCE_AUDIT", "TRIAL_PREPAID_LEDGER", "余额审计导出", actor, "CSV",
+                Map.of("tenantId", tenantId == null ? "" : tenantId), List.of("created_at DESC", "id DESC"),
+                "secure-async-export:create", List.of(), rows));
     }
 
     PrepaidAccount creditForTest(long tenantId, long amountMil) {

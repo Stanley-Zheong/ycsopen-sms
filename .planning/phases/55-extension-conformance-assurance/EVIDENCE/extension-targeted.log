@@ -1,0 +1,84 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< com.ycsopen:ycsopen-sms-core >--------------------
+[INFO] Building ycsopen-sms-core 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ ycsopen-sms-core ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 62 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ycsopen-sms-core ---
+[INFO] Copying 5 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ ycsopen-sms-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.ycsopen.sms.core.notification.provider.HttpPlatformNotificationSpiTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.200 s -- in com.ycsopen.sms.core.notification.provider.HttpPlatformNotificationSpiTest
+[INFO] Running com.ycsopen.sms.core.cmpp.CmppClientSessionTest
+00:52:00.846 [main] WARN com.ycsopen.sms.core.cmpp.CmppSmsUpstreamProviderClient -- Rejecting invalid CMPP submit request: invalid CMPP destination
+00:52:00.854 [main] WARN com.ycsopen.sms.core.cmpp.CmppSmsUpstreamProviderClient -- CMPP submit outcome is unknown: code=CMPP_SUBMIT_UNKNOWN, message=CMPP 提交结果未知，保留任务声明等待重连确认
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.ycsopen.sms.core.cmpp.CmppClientSessionTest
+[INFO] Running com.ycsopen.sms.core.service.tenant.HttpQualificationInspectionSpiTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.144 s -- in com.ycsopen.sms.core.service.tenant.HttpQualificationInspectionSpiTest
+[INFO] Running com.ycsopen.sms.core.service.extension.ExtensionPointRegistryTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.extension.ExtensionPointRegistryTest
+[INFO] Running com.ycsopen.sms.core.service.message.MessageAcceptanceIdempotencyServiceTest
+00:52:01.016 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase23-1087336649934416;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:52:01.124 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Shutting down embedded database: url='jdbc:h2:mem:phase23-1087336649934416;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+00:52:01.125 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase23-1087336759440958;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:52:01.130 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Shutting down embedded database: url='jdbc:h2:mem:phase23-1087336759440958;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+00:52:01.131 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase23-1087336765145750;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:52:01.134 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Shutting down embedded database: url='jdbc:h2:mem:phase23-1087336765145750;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+00:52:01.135 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase23-1087336768893166;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:52:01.139 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Shutting down embedded database: url='jdbc:h2:mem:phase23-1087336768893166;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false'
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.128 s -- in com.ycsopen.sms.core.service.message.MessageAcceptanceIdempotencyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.message.MessageSubmitServiceTest
+PERFORMANCE_ASSURANCE total=1000 acceptedPerSecond=6027.37 p95Millis=0
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.853 s -- in com.ycsopen.sms.core.service.message.MessageSubmitServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.health.ChannelPoolServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.ycsopen.sms.core.service.channel.health.ChannelPoolServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.health.ChannelHealthServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in com.ycsopen.sms.core.service.channel.health.ChannelHealthServiceTest
+[INFO] Running com.ycsopen.sms.core.service.channel.ChannelConnectivityConformanceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.ycsopen.sms.core.service.channel.ChannelConnectivityConformanceTest
+[INFO] Running com.ycsopen.sms.core.service.review.ResourceReviewHistoryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.ycsopen.sms.core.service.review.ResourceReviewHistoryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.HttpMessageDeliveryServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.ycsopen.sms.core.service.delivery.HttpMessageDeliveryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.HttpSmsUpstreamProviderClientTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.ycsopen.sms.core.service.delivery.HttpSmsUpstreamProviderClientTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.DispatchTaskRecoveryServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.ycsopen.sms.core.service.delivery.DispatchTaskRecoveryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.routing.RoutingCircuitPolicyServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.ycsopen.sms.core.service.routing.RoutingCircuitPolicyServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.ContractPricingServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.ycsopen.sms.core.service.billing.ContractPricingServiceTest
+[INFO] Running com.ycsopen.sms.core.service.tool.ProviderStatusTaxonomyServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.ycsopen.sms.core.service.tool.ProviderStatusTaxonomyServiceTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 81, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.741 s
+[INFO] Finished at: 2026-09-11T00:52:02+08:00
+[INFO] ------------------------------------------------------------------------

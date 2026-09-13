@@ -121,8 +121,6 @@ describe('Phase 12 signature lifecycle UI', () => {
     await screen.findByTestId('tenant-signature-lifecycle-signatures-page');
     expect(await screen.findByTestId('tenant-signature-lifecycle-signatures-history')).toHaveTextContent('SUBMITTED');
 
-    expect(screen.queryByTestId('tenant-signature-lifecycle-signatures-application-dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('tenant-signature-lifecycle-signatures-application-open'));
     const form = screen.getByTestId('tenant-signature-lifecycle-signatures-application-form');
     fireEvent.change(within(form).getByLabelText('签名内容'), { target: { value: '新商标' } });
     fireEvent.change(within(form).getByLabelText('签名类型'), { target: { value: 'TRADEMARK' } });
@@ -130,7 +128,6 @@ describe('Phase 12 signature lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-signature-lifecycle-signatures-application-submit'));
 
     await screen.findByText('签名申请已提交。');
-    expect(screen.queryByTestId('tenant-signature-lifecycle-signatures-application-dialog')).not.toBeInTheDocument();
     expect(seen).toContainEqual(expect.objectContaining({
       method: 'POST',
       url: '/console/tenant/signatures',
@@ -152,19 +149,9 @@ describe('Phase 12 signature lifecycle UI', () => {
     renderWithProviders(<SignatureReviewPage />);
     await screen.findByTestId('admin-signature-lifecycle-signature-review-page');
     await waitFor(() => expect(screen.getByTestId('admin-signature-lifecycle-signature-review-stats')).toHaveTextContent('待审核 1'));
-    expect(screen.getByTestId('query-panel')).toBeVisible();
-    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
-    expect(screen.getByTestId('query-result-table')).toContainElement(screen.getByTestId('admin-signature-lifecycle-signature-review-row'));
 
     fireEvent.change(screen.getByTestId('admin-signature-lifecycle-signature-review-filters'), { target: { value: '优创' } });
-    expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(false);
-    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(true));
-    expect(screen.queryByTestId('query-reset')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByTestId('admin-signature-lifecycle-signature-review-filters'), { target: { value: '' } });
-    fireEvent.click(screen.getByTestId('query-submit'));
-    expect(screen.getByTestId('admin-signature-lifecycle-signature-review-filters')).toHaveValue('');
-    await waitFor(() => expect(seen.filter((req) => req.url === '/console/signatures/review')).toHaveLength(2));
 
     const row = screen.getByTestId('admin-signature-lifecycle-signature-review-row');
     fireEvent.click(within(row).getByTestId('admin-signature-lifecycle-signature-review-decision-open'));

@@ -1,0 +1,10 @@
+{
+  "command": "npm --prefix web exec -- playwright test custom-report-authoring.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+  "commit": "0000000000000000000000000000000000000000",
+  "config": "web/playwright.config.ts project=local-google-chrome",
+  "result": "PASS",
+  "cases": [
+    "C-P43-CUSTOM-REPORTS",
+    "C-P43-RESULTS"
+  ]
+}

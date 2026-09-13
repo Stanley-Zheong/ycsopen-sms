@@ -1,14 +1,46 @@
 import { apiClient } from './client';
-import type { ApiResponse, ComplaintRatioItem } from '@/types/api';
+import type {
+  ApiResponse,
+  ComplaintRatioCase,
+  ComplaintRatioInterventionResult,
+  ComplaintRatioItem,
+} from '@/types/api';
 
 /** F-11.9：拉取通道 / 机构维度的月度投诉占比排行，month 格式 YYYY-MM，缺省为当月。 */
 export async function fetchComplaintRatio(
   dimension: 'channel' | 'tenant',
   month?: string,
+  options?: { topN?: number; all?: boolean },
 ): Promise<ComplaintRatioItem[]> {
   const res = await apiClient.get<ApiResponse<ComplaintRatioItem[]>>(
     `/console/dashboard/complaint-ratio/${dimension}`,
-    { params: month ? { month } : {} },
+    { params: { ...(month ? { month } : {}), ...(options?.topN ? { topN: options.topN } : {}), ...(options?.all ? { all: true } : {}) } },
+  );
+  return res.data.data;
+}
+
+export async function fetchComplaintRatioCases(
+  dimension: 'channel' | 'tenant',
+  dimensionId: number,
+  month: string,
+): Promise<ComplaintRatioCase[]> {
+  const res = await apiClient.get<ApiResponse<ComplaintRatioCase[]>>(
+    `/console/dashboard/complaint-ratio/${dimension}/${dimensionId}/complaints`,
+    { params: { month } },
+  );
+  return res.data.data;
+}
+
+export async function pauseComplaintRatioTarget(
+  dimension: 'channel' | 'tenant',
+  dimensionId: number,
+  month: string,
+  reason: string,
+): Promise<ComplaintRatioInterventionResult> {
+  const res = await apiClient.post<ApiResponse<ComplaintRatioInterventionResult>>(
+    `/console/dashboard/complaint-ratio/${dimension}/${dimensionId}/pause`,
+    { reason },
+    { params: { month } },
   );
   return res.data.data;
 }

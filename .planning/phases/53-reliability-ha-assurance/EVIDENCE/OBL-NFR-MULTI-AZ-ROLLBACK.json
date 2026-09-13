@@ -1,0 +1,31 @@
+{
+  "obligation": "OBL-NFR-MULTI-AZ-ROLLBACK",
+  "requirement": "REQ-NFR-RELIABILITY",
+  "result": "PASS",
+  "case": "C-P53-ROLLBACK",
+  "evidence": [
+    {
+      "kind": "junit-targeted",
+      "tests": [
+        "PlatformConfigurationServiceTest.rollbackCopiesHistoryIntoANewVersion",
+        "ChannelConfigurationHotReloadTest.rollbackUsesOnlyRequestedEffectiveVersionPayloadNotCurrentMutableConfiguration",
+        "ChannelConfigurationHotReloadTest.rejectedVersionCannotBeUsedAsRollbackSource",
+        "ChannelConfigurationActivationFaultTest.rejectedAdapterResultKeepsPriorEffectiveVersionRetryable"
+      ],
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-targeted.log",
+      "sha256": "8d6a7c8f7178160bf72aa0a48550faab57fc7d280734e58ed5e85791fdcb58f9"
+    },
+    {
+      "kind": "prd-source-check",
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-source-check.log",
+      "sha256": "e706d902245d7b208fca942937b70cb48473031f60dbdd7106c4a9cd4bf4281f"
+    }
+  ],
+  "covered_controls": [
+    "rollback creates new safe version",
+    "failed activation retains prior effective version",
+    "rejected version cannot become rollback source",
+    "retry uses requested failed version payload"
+  ],
+  "boundary": "Does not execute a cloud multi-zone gray-release drill."
+}

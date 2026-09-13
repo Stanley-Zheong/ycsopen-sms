@@ -1,0 +1,24 @@
+{
+  "obligation": "OBL-NFR-PERF-DAILY",
+  "requirement": "REQ-NFR-PERFORMANCE",
+  "result": "PASS",
+  "case": "C-P52-DAILY",
+  "evidence": [
+    {
+      "kind": "prd-static-check",
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-prd-baseline.log",
+      "sha256": "a32d297e05cf304c1e7c90f2c0d1b455e9f958544155ab00927d2e57fbcc6428"
+    },
+    {
+      "kind": "junit",
+      "tests": [
+        "StatisticsAggregationServiceTest",
+        "MessageSubmitServiceTest"
+      ],
+      "path": ".planning/phases/52-performance-assurance/EVIDENCE/performance-targeted.log",
+      "sha256": "a5fe47eaa5ed4233f0589386891590070d8356c7d77ed968e75ff881a5fd52b4"
+    }
+  ],
+  "decision": "The 100000/day PRD value is a minimum capacity-planning floor and is independent from the 1000 TPS peak baseline.",
+  "boundary": "No deployed daily-volume soak test was added in this phase."
+}

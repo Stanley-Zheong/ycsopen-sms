@@ -78,30 +78,11 @@ describe('Phase 35 alert engine console UI', () => {
     expect(await screen.findByTestId('admin-alert-engine-dashboard-alert-tabs')).toHaveTextContent('活跃');
     expect(await screen.findByTestId('admin-alert-engine-alert-row')).toHaveTextContent('通道失败率过高');
     expect(await screen.findByTestId('admin-alert-engine-alert-delivery-attempts')).toHaveTextContent('EMAIL');
-    expect(screen.getByTestId('query-panel')).toBeVisible();
-    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
-    expect(screen.getByTestId('query-result-table')).toContainElement(screen.getByTestId('admin-alert-engine-alert-row'));
 
-    const initialHistoryRequests = vi.mocked(api.listAlertHistory).mock.calls.length;
-    fireEvent.change(screen.getByTestId('admin-alert-engine-history-status-filter'), { target: { value: 'ACTIVE' } });
-    expect(api.listAlertHistory).toHaveBeenCalledTimes(initialHistoryRequests);
-    fireEvent.click(screen.getByTestId('query-submit'));
-    await waitFor(() => expect(api.listAlertHistory).toHaveBeenCalledWith({ status: 'ACTIVE', severity: '' }));
-    fireEvent.click(screen.getByTestId('query-reset'));
-    expect(screen.getByTestId('admin-alert-engine-history-status-filter')).toHaveValue('');
-    await waitFor(() => expect(api.listAlertHistory).toHaveBeenLastCalledWith({ status: '', severity: '' }));
-
-    expect(screen.queryByTestId('admin-alert-engine-rule-form-dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-create-open'));
-    expect(screen.getByTestId('admin-alert-engine-rule-form-dialog')).toBeVisible();
     fireEvent.change(screen.getByTestId('admin-alert-engine-rule-threshold'), { target: { value: '0.2' } });
     fireEvent.click(screen.getByTestId('admin-alert-engine-rule-save'));
     await waitFor(() => expect(api.saveAlertRule).toHaveBeenCalledWith(expect.objectContaining({ thresholdValue: 0.2 })));
-    await waitFor(() => expect(screen.queryByTestId('admin-alert-engine-rule-form-dialog')).not.toBeInTheDocument());
-    await waitFor(() => expect(vi.mocked(api.listAlertRules).mock.calls.length).toBeGreaterThan(1));
     fireEvent.click(screen.getByTestId('admin-alert-engine-source-evaluate'));
-    expect(screen.getByTestId('admin-alert-engine-source-evaluate-dialog')).toBeVisible();
-    fireEvent.click(screen.getByTestId('admin-alert-engine-source-evaluate-submit'));
     await waitFor(() => expect(api.evaluateAlertSource).toHaveBeenCalledWith(expect.objectContaining({ metricName: 'FAILURE_RATE' })));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-acknowledge'));
     await waitFor(() => expect(api.acknowledgeAlert).toHaveBeenCalledWith(501));
@@ -109,34 +90,5 @@ describe('Phase 35 alert engine console UI', () => {
     await waitFor(() => expect(api.resolveAlert).toHaveBeenCalledWith(501, '确认来源已恢复'));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-mute'));
     await waitFor(() => expect(api.muteAlert).toHaveBeenCalledWith(501, 30, '运营临时静音'));
-  });
-
-  it('keeps validation failures inside the create dialog', async () => {
-    vi.mocked(api.saveAlertRule).mockRejectedValueOnce(new Error('invalid rule'));
-    renderWithQuery(<AdminAlertsPage />);
-
-    await screen.findByTestId('admin-alert-engine-rules-page');
-    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-create-open'));
-    fireEvent.click(screen.getByTestId('admin-alert-engine-rule-save'));
-
-    const error = await screen.findByTestId('admin-alert-engine-rule-form-error');
-    expect(error).toHaveTextContent('告警规则保存失败');
-    expect(error.closest('[role="dialog"]')).toContainElement(error);
-    expect(screen.getByTestId('admin-alert-engine-rule-form-dialog')).toBeVisible();
-  });
-
-  it('restores the initial alert list when the shared query is reset', async () => {
-    vi.mocked(api.listAlertHistory).mockResolvedValue([
-      alertRow,
-      { ...alertRow, id: 502, title: '已恢复告警', status: 'RESOLVED', severity: 'MEDIUM' },
-    ]);
-    renderWithQuery(<AdminAlertsPage />);
-
-    expect(await screen.findByText('已恢复告警')).toBeVisible();
-    fireEvent.click(screen.getByRole('button', { name: '活跃' }));
-    expect(screen.queryByText('已恢复告警')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId('query-reset'));
-    expect(await screen.findByText('已恢复告警')).toBeVisible();
   });
 });

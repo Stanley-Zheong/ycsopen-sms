@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-STATE-SHORTLINK-APPROVE","result":"PASS","evidence":["ShortLinkSafetyServiceTest","admin-shortlink-safety-shortlinks-approve"],"summary":"Pending links transition to APPROVED only after automated review PASS and human opinion."}

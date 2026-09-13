@@ -1,0 +1,32 @@
+{
+  "obligation": "OBL-NFR-FAILOVER-30S",
+  "requirement": "REQ-NFR-RELIABILITY",
+  "result": "PASS",
+  "case": "C-P53-FAILOVER",
+  "evidence": [
+    {
+      "kind": "junit-targeted",
+      "tests": [
+        "ChannelSelectorTest",
+        "RoutingCircuitPolicyServiceTest",
+        "DispatchTaskRecoveryServiceTest",
+        "ChannelHealthServiceTest",
+        "ChannelCandidateEligibilityServiceTest"
+      ],
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-targeted.log",
+      "sha256": "8d6a7c8f7178160bf72aa0a48550faab57fc7d280734e58ed5e85791fdcb58f9"
+    },
+    {
+      "kind": "prd-source-check",
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-source-check.log",
+      "sha256": "e706d902245d7b208fca942937b70cb48473031f60dbdd7106c4a9cd4bf4281f"
+    }
+  ],
+  "covered_controls": [
+    "paused channel excluded",
+    "open circuit excluded",
+    "fallback candidate selected",
+    "dispatch recovery migration records evidence"
+  ],
+  "boundary": "Local tests prove failover decision behavior; deployed elapsed-time SLA requires runtime monitoring."
+}

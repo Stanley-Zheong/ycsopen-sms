@@ -190,12 +190,10 @@ export default function RoleManagementPage() {
               <fieldset key={group.type} style={{ marginBottom: 12 }}>
                 <legend>{group.label}</legend>
                 {(permissions.data ?? []).filter((item) => item.status === 'ACTIVE' && item.resourceType === group.type).map((item) => (
-                  <div key={item.id} style={{ margin: '6px 0' }}>
-                    <label>
-                      <input data-testid="admin-console-identity-roles-permission-choice" data-permission-code={item.code} type="checkbox" aria-label={item.name} checked={selectedPermissionIds.includes(item.id)} onChange={() => togglePermission(item.id)} disabled={!access.can(IDENTITY_PERMISSIONS.saveRole)} />
-                      {item.name} <code>{item.code}</code>
-                    </label>
-                  </div>
+                  <label key={item.id} style={{ display: 'block', margin: '6px 0' }}>
+                    <input type="checkbox" aria-label={item.name} checked={selectedPermissionIds.includes(item.id)} onChange={() => togglePermission(item.id)} disabled={!access.can(IDENTITY_PERMISSIONS.saveRole)} />
+                    {' '}{item.name} <code>{item.code}</code>
+                  </label>
                 ))}
               </fieldset>
             ))}

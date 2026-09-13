@@ -109,11 +109,17 @@ public class Tenant {
     @Convert(converter = FixedWidthCharConverter.class)
     @Column(name = "inspection_credit_code", length = 18, columnDefinition = "char(18)")
     private String inspectionCreditCode;
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    @Column(name = "inspection_confidence", precision = 5, scale = 4,
-            columnDefinition = "decimal(5,4)")
+    @Column(name = "inspection_confidence", precision = 5, scale = 4, columnDefinition = "decimal(5,4)")
     private BigDecimal inspectionConfidence;
+
+    /** Compatibility overload for callers that provide the provider's primitive score. */
+    public void setInspectionConfidence(double confidence) {
+        this.inspectionConfidence = BigDecimal.valueOf(confidence);
+    }
+
+    public void setInspectionConfidence(BigDecimal confidence) {
+        this.inspectionConfidence = confidence;
+    }
     @Column(name = "inspection_provider_request_id", length = 100)
     private String inspectionProviderRequestId;
     @Column(name = "inspection_completed_at")
@@ -188,16 +194,6 @@ public class Tenant {
     public enum InspectionStatus { NOT_STARTED, COMPLETED, FAILED }
     public enum LifecycleStatus { SUBMITTED, TRIAL, TRIAL_FROZEN, SIGNED, FROZEN, TERMINATED }
     public enum BillingMode { PREPAID, POSTPAID }
-
-    public Double getInspectionConfidence() {
-        return inspectionConfidence == null ? null : inspectionConfidence.doubleValue();
-    }
-
-    public void setInspectionConfidence(Double value) {
-        inspectionConfidence = value == null
-                ? null
-                : BigDecimal.valueOf(value).setScale(4, RoundingMode.HALF_UP);
-    }
 
     /** Presence describes stored material without disclosing or decrypting its protected value. */
     @JsonIgnore

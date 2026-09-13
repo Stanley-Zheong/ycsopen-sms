@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 49 Tenant Cooperation Termination Prototype</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; background: #f8fafc; color: #0f172a; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <main data-route="/admin/tenant/terminations" data-testid="admin-tenant-cooperation-tenant-termination-page">
+    <h1>机构合作终止</h1>
+    <section class="grid">
+      <section class="card" data-testid="admin-tenant-cooperation-tenant-termination-request">
+        <h2>终止申请</h2>
+        <input data-testid="admin-tenant-cooperation-tenant-termination-tenant-id" value="42">
+        <select data-testid="admin-tenant-cooperation-tenant-termination-reason"><option>VOLUNTARY</option></select>
+        <textarea data-testid="admin-tenant-cooperation-tenant-termination-evidence">termination-ticket:T-4901</textarea>
+        <button data-testid="admin-tenant-cooperation-tenant-termination-submit">创建终止请求</button>
+      </section>
+      <section class="card" data-testid="admin-tenant-cooperation-tenant-termination-clearance">
+        <h2>清算检查</h2>
+        <p data-testid="admin-tenant-cooperation-tenant-termination-clearance-status">状态：阻塞</p>
+        <button data-testid="admin-tenant-cooperation-tenant-termination-refresh-clearance">刷新清算</button>
+      </section>
+      <section class="card" data-testid="admin-tenant-cooperation-tenant-termination-approval">
+        <h2>审批与生效</h2>
+        <p data-testid="admin-tenant-cooperation-tenant-termination-active-status">当前：待管理员审批</p>
+        <input data-testid="admin-tenant-cooperation-tenant-termination-approval-opinion" value="cleared">
+        <button data-testid="admin-tenant-cooperation-tenant-termination-approve">管理员审批</button>
+        <button data-testid="admin-tenant-cooperation-tenant-termination-effect">终止生效</button>
+      </section>
+    </section>
+    <table data-testid="admin-tenant-cooperation-tenant-termination-table">
+      <tr data-testid="admin-tenant-cooperation-tenant-termination-row">
+        <td>49</td><td data-testid="admin-tenant-cooperation-tenant-termination-row-status">已审批待生效</td>
+        <td><button data-testid="admin-tenant-cooperation-tenant-termination-detail">查看证据</button></td>
+      </tr>
+    </table>
+    <table data-testid="admin-tenant-cooperation-tenant-termination-participants">
+      <tr data-testid="admin-tenant-cooperation-tenant-termination-participant-row"><td>API_KEYS</td><td>REVOKED</td></tr>
+    </table>
+    <ol data-testid="admin-tenant-cooperation-tenant-termination-timeline">
+      <li data-testid="admin-tenant-cooperation-tenant-termination-timeline-item">EFFECT / retained evidence</li>
+    </ol>
+    <p data-testid="admin-tenant-cooperation-tenant-termination-message">终止已生效</p>
+    <p data-testid="admin-tenant-cooperation-tenant-termination-error">错误示例</p>
+    <a data-testid="admin-tenant-cooperation-tenant-termination-nav-menu" href="/admin/tenant/terminations">合作终止</a>
+  </main>
+</body>
+</html>

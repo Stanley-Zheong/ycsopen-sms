@@ -33,11 +33,11 @@
 - Consumes: the existing `--color-*` and `--radius-control` tokens, the existing 40px query-control contract, and the rendered `/admin/routing-policy` controls.
 - Produces: behavior `issue-73-primary-control-height`, Playwright case `C-ISSUE-73-PRIMARY-CONTROL-HEIGHT`, and a shared CSS rule that gives ordinary inputs, single-value selects, and textareas a 40px initial height.
 
-- [ ] **Step 1: Record the scoped production contract**
+- [x] **Step 1: Record the scoped production contract**
 
   Add the Issue #73 behavior, exclusions, representative route, selectors, and browser evidence command to the three `.planning/changes/issue-73-control-heights/` contract files.
 
-- [ ] **Step 2: Write the failing browser test**
+- [x] **Step 2: Write the failing browser test**
 
   Extend `web/test/scripts/control-sizing.spec.ts` with a real-DOM geometry assertion for these existing controls:
 
@@ -55,7 +55,7 @@
   }
   ```
 
-- [ ] **Step 3: Run the focused test and verify RED**
+- [x] **Step 3: Run the focused test and verify RED**
 
   Run from `web/`:
 
@@ -65,11 +65,11 @@
 
   Expected: FAIL because `admin-routing-circuit-routing-policy-import-input` renders at 72px while the input and select render at 40px.
 
-- [ ] **Step 4: Implement the shared CSS fix**
+- [x] **Step 4: Implement the shared CSS fix**
 
   In `web/src/styles/index.css`, include `textarea` in shared typography and field styling. Set ordinary non-choice inputs, single-value selects, and textareas to `height: 40px` and `min-height: 40px` from a selector specific enough to override page-local minimum heights. Keep textareas `resize: vertical`; exclude checkbox/radio and `select[multiple]` from the fixed initial height.
 
-- [ ] **Step 5: Run focused and full verification**
+- [x] **Step 5: Run focused and full verification**
 
   Run the focused Playwright case until it passes, then run:
 
@@ -84,6 +84,6 @@
 
   Record the executed browser command, result, runtime boundary, and SHA-256 checksums for the shared stylesheet and Playwright source in `EVIDENCE/playwright-control-height-report.json`.
 
-- [ ] **Step 6: Review and deliver**
+- [x] **Step 6: Review and deliver**
 
   Run the repository pre-push review over the complete semantic diff, resolve actionable findings, create one atomic commit named `fix(web): unify primary control heights`, push `fix/73-unify-control-heights`, open a PR with `Closes #73`, wait for required checks, and merge only if branch protection and repository checks allow it.

@@ -1,0 +1,87 @@
+.tenant-termination-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tenant-termination-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.tenant-termination-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tenant-termination-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tenant-termination-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.tenant-termination-card input,
+.tenant-termination-card select,
+.tenant-termination-card textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.tenant-termination-card textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.tenant-termination-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tenant-termination-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tenant-termination-table th,
+.tenant-termination-table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tenant-termination-alert {
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.tenant-termination-alert.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.tenant-termination-alert.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 1180px) {
+  .tenant-termination-grid {
+    grid-template-columns: 1fr;
+  }
+}

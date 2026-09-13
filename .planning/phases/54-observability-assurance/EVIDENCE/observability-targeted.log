@@ -1,0 +1,124 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------< com.ycsopen:ycsopen-sms-core >--------------------
+[INFO] Building ycsopen-sms-core 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ ycsopen-sms-core ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 62 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ ycsopen-sms-core ---
+[INFO] Copying 5 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ ycsopen-sms-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ ycsopen-sms-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.ycsopen.sms.core.web.controller.BlacklistRiskControlControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.ycsopen.sms.core.web.controller.BlacklistRiskControlControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ContentSafetyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.web.controller.ContentSafetyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.FrequencyRuleControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.web.controller.FrequencyRuleControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.SecurityEventControllerTest
+00:35:56.232 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+00:35:56.432 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.432 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.433 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.033 s -- in com.ycsopen.sms.core.web.controller.SecurityEventControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.RoutingCircuitPolicyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.ycsopen.sms.core.web.controller.RoutingCircuitPolicyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ProviderStatusTaxonomyControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.web.controller.ProviderStatusTaxonomyControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.DashboardControllerTest
+00:35:56.567 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.567 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.567 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+00:35:56.596 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.596 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.596 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+00:35:56.603 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.603 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.603 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.067 s -- in com.ycsopen.sms.core.web.controller.DashboardControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.NumberAttributionControllerSecurityContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.ycsopen.sms.core.web.controller.NumberAttributionControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.TrialPrepaidLedgerControllerSecurityContractTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.ycsopen.sms.core.web.controller.TrialPrepaidLedgerControllerSecurityContractTest
+[INFO] Running com.ycsopen.sms.core.web.controller.OperationalDashboardControllerTest
+00:35:56.703 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.703 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.704 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+00:35:56.715 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+00:35:56.715 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+00:35:56.715 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 s -- in com.ycsopen.sms.core.web.controller.OperationalDashboardControllerTest
+[INFO] Running com.ycsopen.sms.core.web.controller.ChannelHealthControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.ycsopen.sms.core.web.controller.ChannelHealthControllerTest
+[INFO] Running com.ycsopen.sms.core.common.security.logging.SecurityRedactionConverterTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.common.security.logging.SecurityRedactionConverterTest
+[INFO] Running com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerLoggingTest
+00:35:56.791 [main] ERROR security -- security_event event=UNEXPECTED_FAILURE category=UNEXPECTED correlation=invalid
+00:35:56.793 [main] WARN security -- security_event event=BUSINESS_REJECTION category=BUSINESS correlation=trace-business-1
+00:35:56.794 [main] ERROR security -- security_event event=UNEXPECTED_FAILURE category=UNEXPECTED correlation=trace-unexpected-2
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.ycsopen.sms.core.common.exception.GlobalExceptionHandlerLoggingTest
+[INFO] Running com.ycsopen.sms.core.service.statistics.StatisticsAggregationServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.164 s -- in com.ycsopen.sms.core.service.statistics.StatisticsAggregationServiceTest
+[INFO] Running com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.308 s -- in com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportServiceTest
+[INFO] Running com.ycsopen.sms.core.service.alert.AlertEngineServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in com.ycsopen.sms.core.service.alert.AlertEngineServiceTest
+[INFO] Running com.ycsopen.sms.core.service.observability.BusinessEventRegistryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.ycsopen.sms.core.service.observability.BusinessEventRegistryTest
+[INFO] Running com.ycsopen.sms.core.service.dashboard.OperationalDashboardServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.ycsopen.sms.core.service.dashboard.OperationalDashboardServiceTest
+[INFO] Running com.ycsopen.sms.core.service.complaint.ComplaintRatioDashboardServiceTest
+00:35:57.339 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372890629416;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.352 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372903543708;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.355 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372906568458;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.358 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372909400541;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.363 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372914536875;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.366 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372917293166;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.368 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:phase45-1086372919836416;MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.035 s -- in com.ycsopen.sms.core.service.complaint.ComplaintRatioDashboardServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.SecurityEventServiceTest
+00:35:57.373 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:a5b6f1ea-0877-4c4c-81e9-0ba152c8d54d;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.377 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:15a8ebbf-9cd5-43a0-8cae-5a1dac66787b;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.379 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:eb87bf8a-45d4-4d57-aecf-f78ca752a074;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.ycsopen.sms.core.service.audit.SecurityEventServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditInterceptorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.ycsopen.sms.core.service.audit.OperationAuditInterceptorTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditServiceTest
+00:35:57.400 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:8008de46-bb92-486e-8a28-71be4aaaacc8;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.403 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:58f4dfc5-72e3-45c4-af61-ee8a07eb60e9;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+00:35:57.452 [main] INFO org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory -- Starting embedded database: url='jdbc:h2:mem:b571270d-2823-4862-a167-bac2369e4320;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.ycsopen.sms.core.service.audit.OperationAuditServiceTest
+[INFO] Running com.ycsopen.sms.core.service.audit.OperationAuditSecurityTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.ycsopen.sms.core.service.audit.OperationAuditSecurityTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.MessageStatusQueryServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.ycsopen.sms.core.service.delivery.MessageStatusQueryServiceTest
+[INFO] Running com.ycsopen.sms.core.service.delivery.MessageReceiptErrorOperationsServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in com.ycsopen.sms.core.service.delivery.MessageReceiptErrorOperationsServiceTest
+[INFO] Running com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 s -- in com.ycsopen.sms.core.service.billing.BillingServiceTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 79, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.174 s
+[INFO] Finished at: 2026-09-11T00:35:57+08:00
+[INFO] ------------------------------------------------------------------------

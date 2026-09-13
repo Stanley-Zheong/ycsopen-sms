@@ -1,0 +1,6 @@
+# Phase 47 UI Elements
+
+| Page ID/route | Role/permission | Region | Element/type | Data/validation/format | Action and API effect | States and feedback | data-testid | Obligation/requirement IDs | Behavior IDs | Catalog test/layer | Playwright ID |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| admin-archive-policy `/admin/archive` | ADMIN/OPERATOR/FINANCE; retention-archive:read/write | policy card | card/form | data domain, source table, retention days, hot months, legal hold | GET/PUT `/console/archive/policies` manages two-year retention policy | loading/error/saved | admin-retention-archive-policy-card | OBL-NFR-RETENTION-TWO-YEAR; REQ-NFR-RETENTION | retention-archive-restore-01 | T-NFR-RETENTION-TWO-YEAR:integration | pw-p47-policy |
+| admin-archive-restore `/admin/archive` | ADMIN/OPERATOR/FINANCE; retention-archive:restore | manifest row action | button | verified manifest id and row count | POST `/console/archive/manifests/{id}/restore` restores verified records | disabled for corrupted; success/error result | admin-retention-archive-manifest-restore | OBL-NFR-ARCHIVE-RESTORE; REQ-NFR-RETENTION | retention-archive-restore-03 | T-NFR-ARCHIVE-RESTORE:fault | pw-p47-restore |

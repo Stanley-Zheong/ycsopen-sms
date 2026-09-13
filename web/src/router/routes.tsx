@@ -4,6 +4,10 @@ import TenantLayout from '@/components/layout/TenantLayout';
 import PlaceholderPage from '@/components/common/PlaceholderPage';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/admin/dashboard/DashboardPage';
+import ApiStatusPage from '@/pages/admin/dashboard/ApiStatusPage';
+import DashboardConfigurationPage from '@/pages/admin/dashboard/DashboardConfigurationPage';
+import ResourceStatisticsPage from '@/pages/admin/dashboard/ResourceStatisticsPage';
+import AdminStatisticsOverviewPage from '@/pages/admin/dashboard/AdminStatisticsOverviewPage';
 import TenantListPage from '@/pages/admin/tenants/TenantListPage';
 import OverviewPage from '@/pages/tenant/overview/OverviewPage';
 import SendPage from '@/pages/tenant/send/SendPage';
@@ -28,12 +32,14 @@ import SignatureReviewPage from '@/pages/admin/signatures/SignatureReviewPage';
 import SignatureLifecyclePage from '@/pages/tenant/signatures/SignatureLifecyclePage';
 import TemplateReviewPage from '@/pages/admin/templates/TemplateReviewPage';
 import TemplateLifecyclePage from '@/pages/tenant/templates/TemplateLifecyclePage';
+import TenantTemplateStatisticsPage from '@/pages/tenant/templates/TenantTemplateStatisticsPage';
 import ExemptionPolicyPage from '@/pages/admin/exemptions/ExemptionPolicyPage';
 import ResourceReviewHistoryPage from '@/pages/admin/review/ResourceReviewHistoryPage';
 import BlacklistRiskControlPage from '@/pages/admin/risk/BlacklistRiskControlPage';
 import ContentSafetyPage from '@/pages/admin/risk/ContentSafetyPage';
 import FrequencyRulesPage from '@/pages/admin/risk/FrequencyRulesPage';
 import NumberAttributionPage from '@/pages/admin/tools/NumberAttributionPage';
+import AdminToolsOverviewPage from '@/pages/admin/tools/AdminToolsOverviewPage';
 import ProviderStatusPage from '@/pages/admin/tools/ProviderStatusPage';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
@@ -51,6 +57,22 @@ import AdminUnsubscribesPage from '@/pages/admin/unsubscribes/AdminUnsubscribesP
 import TenantUnsubscribesPage from '@/pages/tenant/unsubscribes/TenantUnsubscribesPage';
 import AdminAlertsPage from '@/pages/admin/alerts/AdminAlertsPage';
 import AdminRechargeReviewPage from '@/pages/admin/billing/AdminRechargeReviewPage';
+import AdminReconciliationSettlementPage from '@/pages/admin/billing/AdminReconciliationSettlementPage';
+import TenantStatementsInvoicesPage from '@/pages/tenant/billing/TenantStatementsInvoicesPage';
+import AdminFinancialAnalyticsPage from '@/pages/admin/billing/AdminFinancialAnalyticsPage';
+import AdminFeeWarningPage from '@/pages/admin/billing/AdminFeeWarningPage';
+import TenantFeeWarningPage from '@/pages/tenant/billing/TenantFeeWarningPage';
+import AdminComplaintsPage from '@/pages/admin/complaints/AdminComplaintsPage';
+import AdminComplaintAnalyticsPage from '@/pages/admin/complaints/AdminComplaintAnalyticsPage';
+import AdminTenantRiskPage from '@/pages/admin/risk/AdminTenantRiskPage';
+import AdminCustomReportsPage from '@/pages/admin/reports/AdminCustomReportsPage';
+import AdminExportCenterPage from '@/pages/admin/exports/AdminExportCenterPage';
+import AdminRetentionArchivePage from '@/pages/admin/archive/AdminRetentionArchivePage';
+import TenantShortLinkPage from '@/pages/tenant/shortlinks/TenantShortLinkPage';
+import AdminShortLinkReviewPage from '@/pages/admin/shortlinks/AdminShortLinkReviewPage';
+import PublicShortLinkSafePage from '@/pages/public/PublicShortLinkSafePage';
+import AdminTenantTerminationPage from '@/pages/admin/tenants/AdminTenantTerminationPage';
+import TenantHelpCenterPage from '@/pages/tenant/help/TenantHelpCenterPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
@@ -61,6 +83,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/admin/auth/login', element: <LoginPage /> },
+  { path: '/s/:code', element: <PublicShortLinkSafePage /> },
   { path: '/admin/users', element: <Navigate to="/admin/system/users" replace /> },
   { path: '/admin/roles', element: <Navigate to="/admin/system/roles" replace /> },
   { path: '/tenant/register', element: <TenantRegistrationPage /> },
@@ -73,8 +96,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+      { path: '/admin/dashboard', element: <DashboardPage /> },
+      { path: '/admin/dashboard/configuration', element: <DashboardConfigurationPage /> },
+      { path: '/admin/api/status', element: <ApiStatusPage /> },
       { path: '/admin/tenants', element: <TenantListPage /> },
       { path: 'channels', element: <Navigate to="/admin/channel/configuration" replace /> },
       { path: '/admin/channel/configuration', element: <ChannelConfigurationPage /> },
@@ -96,6 +121,9 @@ export const router = createBrowserRouter([
       { path: '/admin/tenant-trial-contracts', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/balance-audit', element: <TrialPrepaidAdminPage /> },
       { path: '/admin/tenant-recharge-review', element: <AdminRechargeReviewPage /> },
+      { path: '/admin/reconciliation', element: <AdminReconciliationSettlementPage /> },
+      { path: '/admin/settlements', element: <AdminReconciliationSettlementPage /> },
+      { path: '/admin/invoices', element: <AdminReconciliationSettlementPage /> },
       { path: '/admin/submission/details', element: <MessageOperationsPage initialSection="submissions" /> },
       { path: '/admin/send/details', element: <MessageOperationsPage initialSection="sends" /> },
       { path: '/admin/receipt/details', element: <MessageOperationsPage initialSection="receipts" /> },
@@ -103,14 +131,23 @@ export const router = createBrowserRouter([
       { path: '/admin/push/failures', element: <AdminPushFailuresPage /> },
       { path: '/admin/bulk/details', element: <AdminBulkDetailsPage /> },
       { path: '/admin/send/jobs', element: <AdminSendJobsPage /> },
-      { path: 'complaints', element: <PlaceholderPage title="投诉管理" prdRef="F-9" /> },
+      { path: '/admin/complaints', element: <AdminComplaintsPage /> },
+      { path: '/admin/complaint/analytics', element: <AdminComplaintAnalyticsPage /> },
+      { path: '/admin/tenant-risk', element: <AdminTenantRiskPage /> },
       { path: '/admin/uplink', element: <AdminUplinksPage /> },
       { path: '/admin/unsubscribes', element: <AdminUnsubscribesPage /> },
-      { path: 'records', element: <PlaceholderPage title="数据详单" prdRef="F-7" /> },
-      { path: 'statistics', element: <PlaceholderPage title="数据统计" prdRef="F-11.1~F-11.4" /> },
-      { path: 'finance', element: <PlaceholderPage title="财务中心" prdRef="F-8" /> },
+      { path: 'records', element: <MessageOperationsPage initialSection="submissions" /> },
+      { path: '/admin/statistics', element: <AdminStatisticsOverviewPage /> },
+      { path: '/admin/statistics/resources', element: <ResourceStatisticsPage /> },
+      { path: '/admin/custom/reports', element: <AdminCustomReportsPage /> },
+      { path: '/admin/export-center', element: <AdminExportCenterPage /> },
+      { path: '/admin/archive', element: <AdminRetentionArchivePage /> },
+      { path: '/admin/shortlinks/review', element: <AdminShortLinkReviewPage /> },
+      { path: '/admin/tenant/terminations', element: <AdminTenantTerminationPage /> },
+      { path: '/admin/finance', element: <AdminFinancialAnalyticsPage /> },
+      { path: '/admin/fee/warning', element: <AdminFeeWarningPage /> },
       { path: '/admin/alerts', element: <AdminAlertsPage /> },
-      { path: 'tools', element: <PlaceholderPage title="工具管理（短链/状态码/号段）" prdRef="F-13" /> },
+      { path: 'tools', element: <AdminToolsOverviewPage /> },
       { path: 'system', element: <Navigate to="users" replace /> },
       { path: '/admin/system/users', element: <UserManagementPage /> },
       { path: '/admin/system/roles', element: <RoleManagementPage /> },
@@ -136,19 +173,27 @@ export const router = createBrowserRouter([
       { path: '/tenant/bulk/send', element: <TenantBulkSendPage /> },
       { path: '/tenant/scheduled/tasks', element: <TenantScheduledTasksPage /> },
       { path: '/tenant/templates', element: <TemplateLifecyclePage /> },
+      { path: '/tenant/templates/statistics', element: <TenantTemplateStatisticsPage /> },
       { path: '/tenant/signatures', element: <SignatureLifecyclePage /> },
       { path: '/tenant/recharge', element: <TenantRechargePage /> },
+      { path: '/tenant/balance', element: <TenantFeeWarningPage /> },
+      { path: '/tenant/statements', element: <TenantStatementsInvoicesPage /> },
+      { path: '/tenant/invoices', element: <TenantStatementsInvoicesPage /> },
       { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
       { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },
       { path: '/tenant/unsubscribes', element: <TenantUnsubscribesPage /> },
-      { path: 'shortlink', element: <PlaceholderPage title="短链管理" prdRef="F-13.1/F-13.2" /> },
+      { path: '/tenant/shortlink', element: <TenantShortLinkPage /> },
       { path: '/tenant/qualification', element: <TenantQualificationPage /> },
       { path: '/tenant/administrators', element: <TenantAdministratorsPage /> },
       { path: '/tenant/api/keys', element: <TenantApiKeysPage /> },
       { path: '/tenant/cmpp/access', element: <TenantCmppAccessPage /> },
       { path: '/tenant/webhooks', element: <TenantWebhooksPage /> },
+      { path: '/tenant/help', element: <Navigate to="/tenant/help/guide" replace /> },
+      { path: '/tenant/help/guide', element: <TenantHelpCenterPage section="guide" /> },
+      { path: '/tenant/help/api', element: <TenantHelpCenterPage section="api" /> },
+      { path: '/tenant/help/customer-service', element: <TenantHelpCenterPage section="service" /> },
     ],
   },
 ]);

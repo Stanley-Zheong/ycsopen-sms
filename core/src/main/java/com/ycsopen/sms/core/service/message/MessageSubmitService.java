@@ -8,15 +8,18 @@ import com.ycsopen.sms.core.domain.entity.MessageTask;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
 import com.ycsopen.sms.core.service.billing.BillingService;
+import com.ycsopen.sms.core.service.billing.FeeWarningCreditService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
 import com.ycsopen.sms.core.service.routing.FrequencyChecker;
 import com.ycsopen.sms.core.service.template.TemplateSendComplianceService;
 import com.ycsopen.sms.core.service.tenant.TenantEligibilityPolicy;
+import com.ycsopen.sms.core.service.tool.NumberAttributionService;
 import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -35,25 +38,45 @@ import java.util.TreeMap;
 @Service
 public class MessageSubmitService {
 
+    private static final long DEFAULT_SINGLE_MESSAGE_ESTIMATED_COST_MIL = 50L;
+
     private final TemplateSendComplianceService templateCompliance;
     private final RoutingEngine routingEngine;
     private final BillingService billingService;
+    private final FeeWarningCreditService feeWarningCreditService;
     private final MessageTaskProtectionAdapter messageTaskProtectionAdapter;
     private final TenantEligibilityPolicy tenantEligibilityPolicy;
     private final MessageAcceptanceIdempotencyService idempotency;
+    private final NumberAttributionService numberAttributionService;
 
+    @Autowired
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
                                  RoutingEngine routingEngine,
                                  BillingService billingService,
+                                 FeeWarningCreditService feeWarningCreditService,
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
                                  TenantEligibilityPolicy tenantEligibilityPolicy,
-                                 MessageAcceptanceIdempotencyService idempotency) {
+                                 MessageAcceptanceIdempotencyService idempotency,
+                                 NumberAttributionService numberAttributionService) {
         this.templateCompliance = templateCompliance;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
+        this.feeWarningCreditService = feeWarningCreditService;
         this.messageTaskProtectionAdapter = messageTaskProtectionAdapter;
         this.tenantEligibilityPolicy = tenantEligibilityPolicy;
         this.idempotency = idempotency;
+        this.numberAttributionService = numberAttributionService;
+    }
+
+    /** Backward-compatible constructor for focused unit tests that do not exercise attribution. */
+    public MessageSubmitService(TemplateSendComplianceService templateCompliance,
+                                 RoutingEngine routingEngine, BillingService billingService,
+                                 FeeWarningCreditService feeWarningCreditService,
+                                 MessageTaskProtectionAdapter messageTaskProtectionAdapter,
+                                 TenantEligibilityPolicy tenantEligibilityPolicy,
+                                 MessageAcceptanceIdempotencyService idempotency) {
+        this(templateCompliance, routingEngine, billingService, feeWarningCreditService,
+                messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null);
     }
 
     @Transactional
@@ -74,6 +97,8 @@ public class MessageSubmitService {
                 tenantId, request.templateId(), request.signId(), request.templateParams());
         Template template = compliance.template();
         Signature signature = compliance.signature();
+        NumberAttributionService.AttributionResult attribution = numberAttributionService == null
+                ? null : numberAttributionService.lookup(request.phoneNumber(), false);
         idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
@@ -86,6 +111,7 @@ public class MessageSubmitService {
                 .mobileQueryIndexes(preparedRouting.queryIndexes())
                 .legacyMobileLookupToken(preparedRouting.legacyLookupToken())
                 .clientIp(clientIp)
+                .operatorHint(attribution == null ? null : attribution.carrier())
                 .content(compliance.finalContent())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
@@ -102,6 +128,10 @@ public class MessageSubmitService {
             throw new BusinessException("ROUTING_REJECTED",
                     "提交被拒绝[%s]：%s".formatted(decision.getRejectStage(), decision.getRejectReason()));
         }
+
+        // 费用预警使用 mil 作为金额单位：50 mil = 0.05 元，与当前预扣演示单价保持一致。
+        feeWarningCreditService.enforceSubmission(
+                tenantId, DEFAULT_SINGLE_MESSAGE_ESTIMATED_COST_MIL, "message-submit");
 
         PreparedMessageMobile preparedMobile = messageTaskProtectionAdapter.protectForPersistence(
                 preparedRouting, request.phoneNumber());

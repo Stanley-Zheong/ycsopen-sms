@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-NFR-INDEPENDENT-SCALE",
+  "owner": "extension-conformance-assurance",
+  "status": "PASS",
+  "evidence": [
+    "ExtensionPointRegistryTest.connectorAndQueueExtensionsProtectCoreMessageContractsAndScaleIndependently",
+    "HttpMessageDeliveryServiceTest",
+    "DispatchTaskRecoveryServiceTest",
+    "MessageAcceptanceIdempotencyServiceTest",
+    "MessageSubmitServiceTest",
+    "extension-targeted.log"
+  ],
+  "verified_behavior": "Connector and queue-consumer extension points can scale independently while preserving acceptance, routing, receipt, billing, and observability contracts."
+}

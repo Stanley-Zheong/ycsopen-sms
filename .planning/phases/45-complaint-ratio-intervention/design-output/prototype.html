@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<body>
+  <main data-route="/admin/dashboard">
+    <section data-testid="admin-complaint-ratio-dashboard-complaint-ratio-threshold">阈值 3.00‰ / default-v1 / 当前显示超阈值 1</section>
+    <section data-testid="admin-complaint-ratio-dashboard-complaint-ratio-period">月份 2026-08 / Top 10 / 显示全部 / 刷新 / 历史月 T+1</section>
+    <section data-testid="admin-complaint-ratio-dashboard-complaint-ratio-threshold-tenant">阈值 3.00‰ / default-v1 / 当前显示超阈值 0</section>
+    <section data-testid="admin-complaint-ratio-dashboard-complaint-ratio-period-tenant">月份 2026-08 / Top 10 / 显示全部 / 刷新 / 历史月 T+1</section>
+    <table data-testid="admin-complaint-ratio-dashboard-complaint-ratio-channel">
+      <tr><th>通道</th><th>发送</th><th>投诉</th><th>占比</th><th>质量</th><th>动作</th></tr>
+      <tr><td>移动主通道</td><td>1000</td><td>3</td><td>3.00‰</td><td>完整</td><td>钻取 / 暂停通道</td></tr>
+    </table>
+    <table data-testid="admin-complaint-ratio-dashboard-complaint-ratio-tenant">
+      <tr><th>机构</th><th>发送</th><th>投诉</th><th>占比</th><th>质量</th><th>动作</th></tr>
+      <tr><td>示例机构</td><td>500</td><td>1</td><td>2.00‰</td><td>完整</td><td>钻取 / 暂停机构</td></tr>
+    </table>
+    <dialog open data-testid="admin-complaint-ratio-dashboard-complaint-ratio-drilldown">MSG-91 / 监管投诉</dialog>
+    <dialog open data-testid="admin-complaint-ratio-dashboard-complaint-ratio-intervention-confirm">
+      确认暂停通道 / 目标：移动主通道 / 投诉占比 3.00‰
+      <textarea data-testid="admin-complaint-ratio-dashboard-complaint-ratio-intervention-reason">投诉率超阈值人工确认</textarea>
+    </dialog>
+  </main>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": ["/admin/statistics", "/admin/finance"],
+    "test_ids": [
+      "admin-financial-source-channel-statistics-page",
+      "admin-financial-source-financial-analytics-page",
+      "admin-financial-source-financial-analytics-drilldown",
+      "admin-financial-source-financial-analytics-apply"
+    ],
+    "sources": [
+      {"path": ".planning/phases/39-financial-source-analytics/UI-ELEMENTS.md", "sha256": "42307282f36a17d79f9ddd0be0d58e448d95d085ad2c5a02185cc9d0d55d3349"}
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {"path": ".planning/phases/39-financial-source-analytics/design-output/reconciliation-source-analytics.pen", "sha256": "74ebd99677c26780fea704f93993076bc34bb1d51ab057ad389b95945bed1a47"}
+    ]
+  },
+  "prototype": {
+    "routes": ["/admin/statistics", "/admin/finance"],
+    "test_ids": [
+      "admin-financial-source-channel-statistics-page",
+      "admin-financial-source-financial-analytics-page",
+      "admin-financial-source-financial-analytics-drilldown",
+      "admin-financial-source-financial-analytics-apply"
+    ],
+    "sources": [
+      {"path": ".planning/phases/39-financial-source-analytics/design-output/prototype.html", "sha256": "26fa9628a60ac1cf3c4ef1260dc2fff4228daa410bc79d926d7c1d8513c045cf"}
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "admin-financial-source-channel-statistics-page",
+      "admin-financial-source-financial-analytics-page",
+      "admin-financial-source-financial-analytics-drilldown",
+      "admin-financial-source-financial-analytics-apply"
+    ],
+    "sources": [
+      {"path": ".planning/phases/39-financial-source-analytics/design-output/prototype.spec.ts", "sha256": "3e204df3a711d55e60e8932704c97e696ed2567d095b2dec13f04981048d3bd6"}
+    ]
+  },
+  "implementation": {
+    "routes": ["/admin/statistics", "/admin/finance"],
+    "test_ids": [
+      "admin-financial-source-channel-statistics-page",
+      "admin-financial-source-financial-analytics-page",
+      "admin-financial-source-financial-analytics-drilldown",
+      "admin-financial-source-financial-analytics-apply"
+    ],
+    "sources": [
+      {"path": "web/src/router/routes.tsx", "sha256": "aba084da4f116e2116012679f1f963a976733bd47f368adcb5ebb22c8cc27919"},
+      {"path": "web/src/pages/admin/billing/AdminFinancialAnalyticsPage.tsx", "sha256": "317add266fde8b462c88aaf5c412462f201842d3a16f98ef5159d5fed6cb58c5"},
+      {"path": "web/src/components/layout/AdminLayout.tsx", "sha256": "e5b02bca8c44441ac6af900b23ea4c5b8f8fcb85c8da4d5bf747acbe02456571"}
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-financial-source-channel-statistics-page",
+      "admin-financial-source-financial-analytics-page",
+      "admin-financial-source-financial-analytics-drilldown",
+      "admin-financial-source-financial-analytics-apply"
+    ],
+    "sources": [
+      {"path": "web/test/scripts/financial-source-analytics.spec.ts", "sha256": "13174f3e5755a8dd2075c3c23df64ee5e880db6fb428f6cc0b59e1ddfadafc5c"}
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test financial-source-analytics.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/39-financial-source-analytics/EVIDENCE/playwright-financial-source-report.json",
+      "sha256": "cd76c9e0e7d85192d44b31cb7fcd9380d187a4953d93892e51c70bd1f1a9802d"
+    }
+  }
+}

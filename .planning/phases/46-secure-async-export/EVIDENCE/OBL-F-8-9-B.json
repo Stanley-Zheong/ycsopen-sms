@@ -1,0 +1,13 @@
+{
+  "obligation": "OBL-F-8-9-B",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "TrialPrepaidAdminPage renders admin-secure-async-balance-audit-export.",
+    "TrialPrepaidLedgerService creates BALANCE_AUDIT jobs through SecureAsyncExportService."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test",
+    "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json"
+  ]
+}

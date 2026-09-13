@@ -1,0 +1,1 @@
+{"obligation":"OBL-STATE-RESOURCE-DISABLE","phase":41,"owner":"complaint-case-management","status":"implemented","evidence":["ComplaintCaseService.applyRemediation","ComplaintCaseServiceTest"]}

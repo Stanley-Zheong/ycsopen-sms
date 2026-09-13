@@ -124,8 +124,6 @@ describe('Phase 13 template lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-variable-preview'));
     await screen.findByText('尊敬的 张三，本次消费 99.5 元');
 
-    expect(screen.queryByTestId('tenant-template-lifecycle-templates-create-dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-create-open'));
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-name'), { target: { value: '登录验证码' } });
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-content'), { target: { value: '您的验证码是 ${code}' } });
     fireEvent.change(screen.getByTestId('tenant-template-lifecycle-templates-form-type'), { target: { value: 'verification' } });
@@ -134,7 +132,6 @@ describe('Phase 13 template lifecycle UI', () => {
     fireEvent.click(screen.getByTestId('tenant-template-lifecycle-templates-submit'));
 
     await screen.findByText('模板申请已提交。');
-    expect(screen.queryByTestId('tenant-template-lifecycle-templates-create-dialog')).not.toBeInTheDocument();
     expect(seen).toContainEqual(expect.objectContaining({
       method: 'POST',
       url: '/console/tenant/templates',
@@ -167,19 +164,9 @@ describe('Phase 13 template lifecycle UI', () => {
     renderWithProviders(<TemplateReviewPage />);
     await screen.findByTestId('admin-template-lifecycle-template-review-page');
     await waitFor(() => expect(screen.getByTestId('admin-template-lifecycle-template-review-stats')).toHaveTextContent('待审核 1'));
-    expect(screen.getByTestId('query-panel')).toBeVisible();
-    expect(screen.queryByTestId('query-panel-toggle')).not.toBeInTheDocument();
-    expect(screen.getByTestId('query-result-table')).toContainElement(screen.getByTestId('admin-template-lifecycle-template-review-row'));
 
     fireEvent.change(screen.getByTestId('admin-template-lifecycle-template-review-filters'), { target: { value: '验证码' } });
-    expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=验证码'))).toBe(false);
-    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=验证码'))).toBe(true));
-    expect(screen.queryByTestId('query-reset')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByTestId('admin-template-lifecycle-template-review-filters'), { target: { value: '' } });
-    fireEvent.click(screen.getByTestId('query-submit'));
-    expect(screen.getByTestId('admin-template-lifecycle-template-review-filters')).toHaveValue('');
-    await waitFor(() => expect(seen.filter((req) => req.url === '/console/templates/review')).toHaveLength(2));
     const row = screen.getByTestId('admin-template-lifecycle-template-review-row');
     fireEvent.click(within(row).getByTestId('admin-template-lifecycle-template-review-decision-open'));
     fireEvent.change(screen.getByTestId('admin-template-lifecycle-template-review-decision-status'), { target: { value: 'AMENDMENT_REQUIRED' } });

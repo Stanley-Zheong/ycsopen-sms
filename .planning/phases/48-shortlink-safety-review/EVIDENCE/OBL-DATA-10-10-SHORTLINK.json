@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-DATA-10-10-SHORTLINK","result":"PASS","evidence":["V5700__shortlink_safety_review.sql","ShortLinkSafetyReviewMigrationTest"],"summary":"Schema preserves immutable target version, tenant, domain, code, validity, state, clicks, automated evidence, risk, human decision, inspection and offline time."}

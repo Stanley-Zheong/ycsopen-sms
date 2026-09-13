@@ -146,7 +146,7 @@ public class TenantReviewService {
                 account == null ? null : account.getVersion(), tenant.getQualificationRevision(),
                 tenant.getQualificationSubmittedAt(), tenant.getQualificationReason(),
                 tenant.getInspectionStatus(), tenant.getInspectionCompanyName(),
-                tenant.getInspectionCreditCode(), tenant.getInspectionConfidence(),
+                tenant.getInspectionCreditCode(), tenant.getInspectionConfidence() == null ? null : tenant.getInspectionConfidence().doubleValue(),
                 tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt());
     }
 

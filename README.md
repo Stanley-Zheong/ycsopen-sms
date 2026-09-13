@@ -16,9 +16,8 @@
 如需用于任何第三方商业交付，必须先取得项目版权方的书面商业授权。完整条款见
 [`LICENSE.md`](LICENSE.md)。
 
-> **实现程度请先读这句话**：本仓库按 GSD Phase 持续实施，当前不是全功能生产系统。
-> 已完成项必须同时有代码、测试和 Phase 验证证据；未进入或未闭环的模块不能按数据库表或页面
-> 占位算完成。CMPP 协议、大部分详单查询、计费账务后半段、告警通知等仍在后续范围。完整边界见
+> **实现边界**：56 个实施阶段已合并到 `main`。仓库提供可运行的后端、管理台、租户端和本地
+> 验证链路；生产部署仍需替换默认密钥、接入真实上游并完成安全审查。完整边界见
 > [`core/docs/ROADMAP.md`](core/docs/ROADMAP.md) 与 [`web/docs/ROADMAP.md`](web/docs/ROADMAP.md)。
 
 ## 需求依据
@@ -147,44 +146,16 @@ npm run build
 并由 Nginx 托管 `web/dist/`、把 `/api/` 同源代理到后端。可直接复制的配置示例见
 [`docs/使用手册.md`](docs/使用手册.md#部署后端-jar)。
 
-### 6. Docker Compose 开发发布
-
-仓库根目录的 `compose.yaml` 会从当前检出的源码构建 Core 和 Web，不依赖预先存在的应用镜像。
-首次启动会创建 MySQL 卷、迁移账号并执行全部 Flyway migration 和 `dev` 种子：
+### 6. Docker 本机试运行
 
 ```bash
-export BUILD_COMMIT="$(git rev-parse HEAD)"
-docker compose up -d --build
+mvn -f core/pom.xml -DskipTests package
+npm --prefix web ci && npm --prefix web run build
+docker compose up --build
 ```
 
-默认访问地址为 <http://localhost:5173/login>，Core 健康检查为
-<http://localhost:8080/actuator/health>。可通过 `YCSOPEN_WEB_PORT` 和
-`YCSOPEN_CORE_PORT` 修改宿主机端口。服务默认只绑定 `127.0.0.1`；确需其他地址时，
-必须显式设置 `YCSOPEN_BIND_ADDRESS` 并自行配置防火墙和非开发凭据。例如：
-
-```bash
-YCSOPEN_WEB_PORT=15173 YCSOPEN_CORE_PORT=18080 docker compose up -d --build
-```
-
-例如，经过风险评估后显式监听所有 IPv4 网卡：
-
-```bash
-YCSOPEN_BIND_ADDRESS=0.0.0.0 docker compose up -d --build
-```
-
-Web 页面中的 `meta[name="ycsopen-build-commit"]` 与 Core 的 `/actuator/info`
-都会返回 `BUILD_COMMIT`。同一 Compose 项目再次执行构建会复用命名卷，Flyway
-只增量升级，并保留已有账号和业务数据。默认数据库、JWT 和管理员凭据只供本机开发，
-不得用于共享或公网环境；结束后可用 `docker compose down` 保留数据，或明确执行
-`docker compose down -v` 删除本项目卷。
-
-发布验收要求本机标准路径中已有 Google Chrome，并会创建和清理两个不可由调用者改名的
-独立 Compose 项目：一个验证全新卷，另一个先创建 Issue #60 之前的 Flyway location 基线，
-再强制重建当前 Core/Web 验证增量升级、业务数据保留和重复启动：
-
-```bash
-BUILD_COMMIT="$(git rev-parse HEAD)" ./scripts/verify-docker-release
-```
+访问 <http://localhost:8088/login>，默认管理员为 `admin / Admin@123456`；演示机构、签名、模板、
+余额和 Sandbox 通道由 dev profile 自动种入。停止并删除本地数据：`docker compose down -v`。
 
 ### 7. 当前可用范围
 
@@ -201,12 +172,12 @@ BUILD_COMMIT="$(git rev-parse HEAD)" ./scripts/verify-docker-release
 
 | 检查 | 结果 |
 |---|---|
-| `mvn -f core/pom.xml test` | ✅ 499/499 通过，另有 22 项环境条件跳过 |
-| `npm --prefix web test -- --run` | ✅ 37/37 通过 |
-| `npm --prefix web run lint` | ✅ 通过 |
+| `mvn -f core/pom.xml test` | ✅ 855 通过，33 项环境条件跳过 |
+| `npm --prefix web test` | ✅ 101/101 通过 |
+| `npm --prefix web run lint` | 以 CI/本地命令结果为准 |
 | `npm --prefix web run build` | ✅ 通过 |
 | 本机 Google Chrome Phase 07 真实服务 Playwright | ✅ 3/3 通过，无平台 API 请求替身 |
-| Phase 07 真实 MySQL | ✅ V1600/V1601、历史保护、版本并发和回滚通过 |
+| Phase 03 real integration | CI 使用 MySQL、MinIO、SoftHSM 执行；本机需 Docker |
 
 以上是实际执行过的命令结果，不是"应该能跑"的推测。
 

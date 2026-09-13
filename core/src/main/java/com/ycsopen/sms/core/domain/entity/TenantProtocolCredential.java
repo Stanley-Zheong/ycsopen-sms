@@ -10,8 +10,7 @@ public class TenantProtocolCredential {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(name="tenant_id", nullable=false) private Long tenantId;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Protocol protocol = Protocol.CMPP;
+    @Column(columnDefinition="enum('CMPP','HTTP')") private Protocol protocol = Protocol.CMPP;
     private String spid;
     @Column(name="endpoint_host") private String endpointHost;
     @Column(name="endpoint_port") private Integer endpointPort;
@@ -20,10 +19,9 @@ public class TenantProtocolCredential {
     @Column(name="tps_limit") private Integer tpsLimit = 100;
     @Column(name="window_size") private Integer windowSize = 8;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    @Column(columnDefinition="enum('ACTIVE','REVOKED')") private Status status = Status.ACTIVE;
     @Column(name="revoked_at") private java.time.LocalDateTime revokedAt;
 
-    public enum Protocol { CMPP }
-    public enum Status { ACTIVE, DISABLED }
+    public enum Protocol { CMPP, HTTP }
+    public enum Status { ACTIVE, REVOKED }
 }

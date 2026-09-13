@@ -2,7 +2,7 @@
 
 ## Status
 
-Open
+Closed
 
 ## Goal
 
@@ -10,9 +10,9 @@ Make registration and operational system messages executable through a controlle
 
 ## Deliverables
 
-- [ ] Build adapter + SPI entry points for platform bootstrap notifications — Evidence: not recorded
-- [ ] Implement and verify delivery evidence, recursion guard, and audit traces — Evidence: not recorded
-- [ ] Add minimal integration tests for failure/retry/guard behavior — Evidence: not recorded
+- Completed: Build adapter + SPI entry points for platform bootstrap notifications — Evidence: phase tests and summary.
+- Completed: Implement and verify delivery evidence, recursion guard, and audit traces — Evidence: phase tests and summary.
+- Completed: Add minimal integration tests for failure/retry/guard behavior — Evidence: phase tests and summary.
 
 ## Tasks
 
@@ -23,4 +23,3 @@ Make registration and operational system messages executable through a controlle
 ## Verification
 
 Planned: `npx playwright` smoke is not mandatory in this phase and full delivery proof will use `mvn`/`npm` + local fixture tests first; browser checks only for evidence that the real provider sandbox route returns correctly.
-

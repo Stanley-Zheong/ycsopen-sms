@@ -1,0 +1,15 @@
+{
+  "obligation": "OBL-NFR-TLS",
+  "requirement": "REQ-NFR-SECURITY",
+  "result": "PASS",
+  "case": "C-P51-TLS",
+  "evidence": [
+    {
+      "kind": "static-doc-check",
+      "command": "rg -n \"强制 TLS 1\\.2|TLS 证书|Nginx 已启用 TLS|CMPP 明文协议|IP 白名单|VPC|专线|mTLS\" docs/PRD.md docs/使用手册.md > .planning/phases/51-security-assurance/EVIDENCE/tls-static-check.log",
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/tls-static-check.log",
+      "sha256": "35a05ad0e22cb6066e8118d5d41b68a9e7602e8f862b6d6bc1fcb6f1d31cabb0"
+    }
+  ],
+  "boundary": "Repository declares external TLS termination and recommends internal mTLS; no deployed internal mTLS mesh is claimed by this phase."
+}

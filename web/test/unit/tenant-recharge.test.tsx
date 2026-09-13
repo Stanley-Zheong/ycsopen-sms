@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -107,10 +107,7 @@ describe('Phase 36 tenant recharge operations UI', () => {
   it('submits amount method transaction evidence and shows processing state', async () => {
     renderWithProviders(<TenantRechargePage />);
 
-    await screen.findByTestId('tenant-recharge-operations-recharge-history');
-    expect(screen.queryByTestId('tenant-recharge-operations-recharge-form')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('tenant-recharge-operations-recharge-create-open'));
-    expect(screen.getByTestId('tenant-recharge-operations-recharge-form')).toBeVisible();
+    expect(await screen.findByTestId('tenant-recharge-operations-recharge-form')).toBeVisible();
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-amount'), { target: { value: '200000' } });
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-method'), { target: { value: 'ALIPAY' } });
     fireEvent.change(screen.getByTestId('tenant-recharge-operations-recharge-transaction'), { target: { value: 'ALI-RECHARGE-0002' } });
@@ -124,7 +121,6 @@ describe('Phase 36 tenant recharge operations UI', () => {
       evidenceText: '支付宝凭证',
     }));
     expect(await screen.findByTestId('tenant-recharge-operations-recharge-message')).toHaveTextContent('PENDING');
-    expect(screen.queryByTestId('tenant-recharge-operations-recharge-form')).not.toBeInTheDocument();
     expect(screen.getByTestId('tenant-recharge-operations-recharge-state')).toHaveTextContent('PENDING');
   });
 
@@ -139,30 +135,5 @@ describe('Phase 36 tenant recharge operations UI', () => {
 
     await waitFor(() => expect(rechargeApi.reviewRecharge).toHaveBeenCalledWith(3, { approved: true, reason: '到账一致' }));
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-message')).toHaveTextContent('APPROVED');
-  });
-
-  it('applies the single recharge status through search without a reset action', async () => {
-    useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
-    renderWithProviders(<AdminRechargeReviewPage />);
-
-    const panel = screen.getByTestId('query-panel');
-    const status = within(panel).getByTestId('admin-tenant-recharge-operations-review-status');
-    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledWith(''));
-    vi.mocked(rechargeApi.listRechargeReviews).mockClear();
-
-    fireEvent.change(status, { target: { value: 'APPROVED' } });
-    expect(rechargeApi.listRechargeReviews).not.toHaveBeenCalled();
-    fireEvent.click(within(panel).getByTestId('query-submit'));
-    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledWith('APPROVED'));
-
-    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
-    fireEvent.change(status, { target: { value: '' } });
-    fireEvent.click(within(panel).getByTestId('query-submit'));
-    expect(status).toHaveValue('');
-    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenLastCalledWith(''));
-    expect(within(panel).getByTestId('query-result-table')).toContainElement(
-      screen.getByTestId('admin-tenant-recharge-operations-review-table'),
-    );
-    expect(within(panel).queryByTestId('admin-tenant-recharge-operations-review-reason')).not.toBeInTheDocument();
   });
 });

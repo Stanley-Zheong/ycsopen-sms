@@ -1,0 +1,8 @@
+{
+  "obligation": "OBL-NFR-CHINESE",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest confirms simplified-Chinese release references exist in README and docs/使用手册.md.",
+    "Existing copy and export checks remain owned by earlier phase evidence."
+  ]
+}

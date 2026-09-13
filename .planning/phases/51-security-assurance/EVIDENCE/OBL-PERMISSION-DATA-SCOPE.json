@@ -1,0 +1,28 @@
+{
+  "obligation": "OBL-PERMISSION-DATA-SCOPE",
+  "requirement": "PROJECT-PERMISSION-CONTRACT",
+  "result": "PASS",
+  "case": "C-P51-DATA-SCOPE",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "OperationAuditSecurityTest",
+        "TrialPrepaidLedgerControllerSecurityContractTest",
+        "BlacklistRiskControlControllerSecurityContractTest",
+        "ContentSafetyControllerSecurityContractTest",
+        "FrequencyRuleControllerSecurityContractTest",
+        "NumberAttributionControllerSecurityContractTest",
+        "ProviderStatusTaxonomyControllerSecurityContractTest",
+        "RoutingCircuitPolicyControllerSecurityContractTest"
+      ],
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/security-targeted.log",
+      "sha256": "80d9e75aa865ed3d4028178c9532619bab77f047ddcf3b8727ad181a32bbf46e"
+    },
+    {
+      "kind": "full-regression",
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/full-backend.log",
+      "sha256": "a0c4437b9c51f50e7b80cdff7e3aa91d076a42c201b9d5ba5b65cf0fe2276d6f"
+    }
+  ]
+}

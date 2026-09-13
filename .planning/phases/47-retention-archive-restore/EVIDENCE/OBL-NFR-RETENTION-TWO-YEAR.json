@@ -1,0 +1,6 @@
+{
+  "obligation": "OBL-NFR-RETENTION-TWO-YEAR",
+  "status": "PASS",
+  "evidence": ["V5600__retention_archive_restore.sql", "RetentionArchiveServiceTest", "admin-retention-archive-policy-card"],
+  "notes": "Archive policies default core evidence domains to at least 730 retention days."
+}

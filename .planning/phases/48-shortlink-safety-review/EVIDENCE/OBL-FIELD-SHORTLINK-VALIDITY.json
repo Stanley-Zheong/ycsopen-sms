@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-FIELD-SHORTLINK-VALIDITY","result":"PASS","evidence":["ShortLinkSafetyServiceTest","tenant-shortlink-safety-shortlinks-form-validity"],"summary":"Validity defaults to 30 days and rejects dates before today or beyond 365 days."}

@@ -1,0 +1,223 @@
+{
+  "mode": "production",
+  "manifest": {
+    "routes": [
+      "/admin/dashboard",
+      "/admin/dashboard/configuration",
+      "/admin/api/status",
+      "/admin/statistics/resources",
+      "/tenant/overview",
+      "/tenant/templates/statistics"
+    ],
+    "test_ids": [
+      "tenant-operational-dashboards-tenant-overview-page",
+      "tenant-operational-dashboards-tenant-overview-scope",
+      "tenant-operational-dashboards-templates-statistics-page",
+      "admin-operational-dashboards-channel-statistics-comparison",
+      "admin-operational-dashboards-dashboard-finance-warning-card",
+      "admin-operational-dashboards-statistics-channel-period-compare",
+      "admin-operational-dashboards-statistics-resources-page",
+      "admin-operational-dashboards-dashboard-realtime-page",
+      "admin-operational-dashboards-dashboard-realtime-send-trend",
+      "admin-operational-dashboards-dashboard-realtime-refresh",
+      "admin-operational-dashboards-dashboard-kpi-page",
+      "admin-operational-dashboards-dashboard-kpi-hourly-trend",
+      "admin-operational-dashboards-dashboard-kpi-tenant-rank",
+      "admin-operational-dashboards-dashboard-kpi-channel-health",
+      "admin-operational-dashboards-dashboard-configuration-page",
+      "admin-operational-dashboards-dashboard-configuration-role",
+      "admin-operational-dashboards-api-status-monitor-page",
+      "shared-operational-dashboards-metric-source"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/44-operational-dashboards/UI-ELEMENTS.md",
+        "sha256": "261696a33ba9b10a4d0c187ef02e586d43d80d77974ad7c8e27b350928b713c2"
+      }
+    ]
+  },
+  "pencil": {
+    "sources": [
+      {
+        "path": ".planning/phases/44-operational-dashboards/design-output/operational-dashboards.pen",
+        "sha256": "3d3e4ec4c54d79b69a492a6ae32e7b71a256a2e51308861a66e000dcbbb2b7de"
+      }
+    ]
+  },
+  "prototype": {
+    "routes": [
+      "/admin/dashboard",
+      "/admin/dashboard/configuration",
+      "/admin/api/status",
+      "/admin/statistics/resources",
+      "/tenant/overview",
+      "/tenant/templates/statistics"
+    ],
+    "test_ids": [
+      "tenant-operational-dashboards-tenant-overview-page",
+      "tenant-operational-dashboards-tenant-overview-scope",
+      "tenant-operational-dashboards-templates-statistics-page",
+      "admin-operational-dashboards-channel-statistics-comparison",
+      "admin-operational-dashboards-dashboard-finance-warning-card",
+      "admin-operational-dashboards-statistics-channel-period-compare",
+      "admin-operational-dashboards-statistics-resources-page",
+      "admin-operational-dashboards-dashboard-realtime-page",
+      "admin-operational-dashboards-dashboard-realtime-send-trend",
+      "admin-operational-dashboards-dashboard-realtime-refresh",
+      "admin-operational-dashboards-dashboard-kpi-page",
+      "admin-operational-dashboards-dashboard-kpi-hourly-trend",
+      "admin-operational-dashboards-dashboard-kpi-tenant-rank",
+      "admin-operational-dashboards-dashboard-kpi-channel-health",
+      "admin-operational-dashboards-dashboard-configuration-page",
+      "admin-operational-dashboards-dashboard-configuration-role",
+      "admin-operational-dashboards-api-status-monitor-page",
+      "shared-operational-dashboards-metric-source"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/44-operational-dashboards/design-output/prototype.html",
+        "sha256": "66e235d133c3a05d11e3fe90332a46e4c75280c90cc84fb785df992f1f10ba96"
+      }
+    ]
+  },
+  "prototype_playwright": {
+    "evidence_kind": "prototype",
+    "test_ids": [
+      "tenant-operational-dashboards-tenant-overview-page",
+      "tenant-operational-dashboards-tenant-overview-scope",
+      "tenant-operational-dashboards-templates-statistics-page",
+      "admin-operational-dashboards-channel-statistics-comparison",
+      "admin-operational-dashboards-dashboard-finance-warning-card",
+      "admin-operational-dashboards-statistics-channel-period-compare",
+      "admin-operational-dashboards-statistics-resources-page",
+      "admin-operational-dashboards-dashboard-realtime-page",
+      "admin-operational-dashboards-dashboard-realtime-send-trend",
+      "admin-operational-dashboards-dashboard-realtime-refresh",
+      "admin-operational-dashboards-dashboard-kpi-page",
+      "admin-operational-dashboards-dashboard-kpi-hourly-trend",
+      "admin-operational-dashboards-dashboard-kpi-tenant-rank",
+      "admin-operational-dashboards-dashboard-kpi-channel-health",
+      "admin-operational-dashboards-dashboard-configuration-page",
+      "admin-operational-dashboards-dashboard-configuration-role",
+      "admin-operational-dashboards-api-status-monitor-page",
+      "shared-operational-dashboards-metric-source"
+    ],
+    "sources": [
+      {
+        "path": ".planning/phases/44-operational-dashboards/design-output/prototype.spec.ts",
+        "sha256": "e95e529f7fe5b8824720adcc078c9cf0295d6699f0342fb305192355c6a74867"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/dashboard",
+      "/admin/dashboard/configuration",
+      "/admin/api/status",
+      "/admin/statistics/resources",
+      "/tenant/overview",
+      "/tenant/templates/statistics"
+    ],
+    "test_ids": [
+      "tenant-operational-dashboards-tenant-overview-page",
+      "tenant-operational-dashboards-tenant-overview-scope",
+      "tenant-operational-dashboards-templates-statistics-page",
+      "admin-operational-dashboards-channel-statistics-comparison",
+      "admin-operational-dashboards-dashboard-finance-warning-card",
+      "admin-operational-dashboards-statistics-channel-period-compare",
+      "admin-operational-dashboards-statistics-resources-page",
+      "admin-operational-dashboards-dashboard-realtime-page",
+      "admin-operational-dashboards-dashboard-realtime-send-trend",
+      "admin-operational-dashboards-dashboard-realtime-refresh",
+      "admin-operational-dashboards-dashboard-kpi-page",
+      "admin-operational-dashboards-dashboard-kpi-hourly-trend",
+      "admin-operational-dashboards-dashboard-kpi-tenant-rank",
+      "admin-operational-dashboards-dashboard-kpi-channel-health",
+      "admin-operational-dashboards-dashboard-configuration-page",
+      "admin-operational-dashboards-dashboard-configuration-role",
+      "admin-operational-dashboards-api-status-monitor-page",
+      "shared-operational-dashboards-metric-source"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "034f61af74b614c9a04ae5b0d49c8fe3ad8c46a273e37305c98524bbf42850d7"
+      },
+      {
+        "path": "web/src/components/layout/AdminLayout.tsx",
+        "sha256": "db12779259326f1c4baa15d0510358f4c91520863caf43abdbf3e02632145eef"
+      },
+      {
+        "path": "web/src/components/layout/TenantLayout.tsx",
+        "sha256": "0feacb5002807aa9a2a67e0e035a618fe172dcd30934482cd72f51673f46d59b"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/DashboardPage.tsx",
+        "sha256": "f5c6a478f4c262921c68d1b704150619512ecc630d207cf2e1f1ee3189685e72"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/ResourceStatisticsPage.tsx",
+        "sha256": "8d6d49539dd33579d78330efce064d13038aa98597c5235c70ab36dff59256f6"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/ApiStatusPage.tsx",
+        "sha256": "0bb337e614fd3353298f3e8e6e2d7956738eb9f9eb86f095d5f10e0ebdcd12d4"
+      },
+      {
+        "path": "web/src/pages/admin/dashboard/DashboardConfigurationPage.tsx",
+        "sha256": "48e30acd8295881ab35f27d8dd1865906ee504957ee6a83ac6a7553acb73cb58"
+      },
+      {
+        "path": "web/src/pages/tenant/overview/OverviewPage.tsx",
+        "sha256": "b5e110b4f59c0f9e162e3f968ce49363f1b7743da654864079b8446aa678d09e"
+      },
+      {
+        "path": "web/src/pages/tenant/templates/TenantTemplateStatisticsPage.tsx",
+        "sha256": "25af8e7aa46304c2ca7853cd68b27390aea454aeee50ab25f0ad322a51f8c1d8"
+      },
+      {
+        "path": "web/src/api/operationalDashboardApi.ts",
+        "sha256": "d2012eb42c571585ecdd5552fe8f24a8265462ae38e963919fb41fcb1f34b892"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "tenant-operational-dashboards-tenant-overview-page",
+      "tenant-operational-dashboards-tenant-overview-scope",
+      "tenant-operational-dashboards-templates-statistics-page",
+      "admin-operational-dashboards-channel-statistics-comparison",
+      "admin-operational-dashboards-dashboard-finance-warning-card",
+      "admin-operational-dashboards-statistics-channel-period-compare",
+      "admin-operational-dashboards-statistics-resources-page",
+      "admin-operational-dashboards-dashboard-realtime-page",
+      "admin-operational-dashboards-dashboard-realtime-send-trend",
+      "admin-operational-dashboards-dashboard-realtime-refresh",
+      "admin-operational-dashboards-dashboard-kpi-page",
+      "admin-operational-dashboards-dashboard-kpi-hourly-trend",
+      "admin-operational-dashboards-dashboard-kpi-tenant-rank",
+      "admin-operational-dashboards-dashboard-kpi-channel-health",
+      "admin-operational-dashboards-dashboard-configuration-page",
+      "admin-operational-dashboards-dashboard-configuration-role",
+      "admin-operational-dashboards-api-status-monitor-page",
+      "shared-operational-dashboards-metric-source"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/operational-dashboards.spec.ts",
+        "sha256": "aeab2d6cdd0f01b4f85a1625db8384faced2a0413b98ad1273343a165a09694c"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web exec -- playwright test operational-dashboards.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
+    "commit": "0000000000000000000000000000000000000000",
+    "config": "web/playwright.config.ts project=local-google-chrome",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/phases/44-operational-dashboards/EVIDENCE/playwright-operational-dashboards-report.json",
+      "sha256": "ca28e48fcec9c8a5f97b9790c0a52f17970473506b32154dcd252f8b17d6c889"
+    }
+  }
+}

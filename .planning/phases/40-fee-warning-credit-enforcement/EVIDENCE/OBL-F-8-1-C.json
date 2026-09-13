@@ -1,0 +1,1 @@
+{"obligation":"OBL-F-8-1-C","phase":40,"owner":"fee-warning-credit-enforcement","status":"implemented","evidence":["FeeWarningCreditServiceTest","TenantFeeWarningPage.tsx","fee-warning-credit.spec.ts","UI-ELEMENTS.md"]}

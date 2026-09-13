@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-2-D","result":"PASS","evidence":["ShortLinkSafetyServiceTest"],"summary":"Target inspection detects drift/private resolution, marks the link offline and records TARGET_OFFLINE_ALERT evidence."}

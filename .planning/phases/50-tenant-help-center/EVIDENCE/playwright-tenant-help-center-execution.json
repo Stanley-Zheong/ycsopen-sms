@@ -1,0 +1,11 @@
+{
+  "command": "npm --prefix web exec -- playwright test tenant-help-center.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/50-tenant-help-center/EVIDENCE/playwright-tenant-help-center-raw.json",
+  "commit": "5f5af84f38199360929e0c3dc69f871c813fcb4c",
+  "config": "web/playwright.config.ts project=local-google-chrome executable=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "result": "PASS",
+  "cases": ["C-P50-API", "C-P50-GUIDE", "C-P50-SERVICE"],
+  "raw_report": {
+    "path": ".planning/phases/50-tenant-help-center/EVIDENCE/playwright-tenant-help-center-raw.json",
+    "sha256": "877b65d91a17d658dbea261354a517c8fd048b21f686b99c82bea77f260e7c3f"
+  }
+}

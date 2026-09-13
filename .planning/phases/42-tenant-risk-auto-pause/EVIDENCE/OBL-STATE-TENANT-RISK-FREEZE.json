@@ -1,0 +1,1 @@
+{"status":"PASS","phase":42,"obligation":"OBL-STATE-TENANT-RISK-FREEZE","evidence":["TenantRiskAutoPauseServiceTest.sustainedBreachCreatesOneEpisodeAndAutoPauseRejectsNewSends","tenants.lifecycle_status=FROZEN"]}

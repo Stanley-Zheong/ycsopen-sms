@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-NFR-POLICY-CONFIG",
+  "owner": "extension-conformance-assurance",
+  "status": "PASS",
+  "evidence": [
+    "ExtensionPointRegistryTest.configurablePoliciesAreVersionedAndDoNotRequireHardCodedBranches",
+    "RoutingCircuitPolicyServiceTest",
+    "ProviderStatusTaxonomyServiceTest",
+    "ContractPricingServiceTest",
+    "ResourceReviewHistoryServiceTest",
+    "extension-targeted.log"
+  ],
+  "verified_behavior": "Routing, provider taxonomy, billing/pricing, and review policies are represented as versioned configuration contracts with conformance tests."
+}

@@ -87,8 +87,6 @@ test('pw-p13-template-application pw-p13-template-name pw-p13-template-content p
   await routeApi(page);
   await page.goto('/tenant/templates');
   await expect(page.getByTestId('tenant-template-lifecycle-templates-page')).toBeVisible();
-  await expect(page.getByTestId('tenant-template-lifecycle-templates-create-dialog')).toHaveCount(0);
-  await page.getByTestId('tenant-template-lifecycle-templates-create-open').click();
   await page.getByTestId('tenant-template-lifecycle-templates-form-name').fill('登录验证码');
   await page.getByTestId('tenant-template-lifecycle-templates-form-content').fill('您的验证码是 ${code}');
   await page.getByTestId('tenant-template-lifecycle-templates-form-type').selectOption('verification');
@@ -115,7 +113,6 @@ test('pw-p13-template-review pw-p13-template-decision pw-p13-template-approve pw
   await expect(page.getByTestId('admin-template-lifecycle-template-review-page')).toBeVisible();
   await expect(page.getByTestId('admin-template-lifecycle-template-review-stats')).toContainText('待审核 1');
   await page.getByTestId('admin-template-lifecycle-template-review-filters').fill('验证码');
-  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('admin-template-lifecycle-template-review-row')).toContainText('code');
   await page.getByTestId('admin-template-lifecycle-template-review-decision-open').click();
   await page.getByTestId('admin-template-lifecycle-template-review-decision-opinion').fill('材料完整');

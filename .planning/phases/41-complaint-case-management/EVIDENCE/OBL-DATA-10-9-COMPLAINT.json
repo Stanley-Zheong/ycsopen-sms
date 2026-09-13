@@ -1,0 +1,1 @@
+{"obligation":"OBL-DATA-10-9-COMPLAINT","phase":41,"owner":"complaint-case-management","status":"implemented","evidence":["V5000__complaint_case_management.sql","ComplaintCaseManagementMigrationTest","ComplaintCaseServiceTest"]}

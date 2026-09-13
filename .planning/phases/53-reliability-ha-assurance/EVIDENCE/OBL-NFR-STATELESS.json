@@ -1,0 +1,31 @@
+{
+  "obligation": "OBL-NFR-STATELESS",
+  "requirement": "REQ-NFR-RELIABILITY",
+  "result": "PASS",
+  "case": "C-P53-STATELESS",
+  "evidence": [
+    {
+      "kind": "junit-targeted",
+      "tests": [
+        "MessageAcceptanceIdempotencyServiceTest",
+        "DispatchTaskRecoveryServiceTest",
+        "ChannelConfigurationHotReloadTest",
+        "PlatformConfigurationServiceTest"
+      ],
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-targeted.log",
+      "sha256": "8d6a7c8f7178160bf72aa0a48550faab57fc7d280734e58ed5e85791fdcb58f9"
+    },
+    {
+      "kind": "prd-source-check",
+      "path": ".planning/phases/53-reliability-ha-assurance/EVIDENCE/reliability-source-check.log",
+      "sha256": "e706d902245d7b208fca942937b70cb48473031f60dbdd7106c4a9cd4bf4281f"
+    }
+  ],
+  "covered_controls": [
+    "durable submit ownership",
+    "durable send intent",
+    "configuration state stored outside worker memory",
+    "restart-safe recovery rows"
+  ],
+  "boundary": "Does not run a multi-replica process restart drill."
+}

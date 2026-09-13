@@ -1,0 +1,23 @@
+{
+  "obligation": "OBL-NFR-CMPP-ISOLATION",
+  "requirement": "REQ-NFR-SECURITY",
+  "result": "PASS",
+  "case": "C-P51-CMPP",
+  "evidence": [
+    {
+      "kind": "junit",
+      "tests": [
+        "CmppDownstreamGatewaySessionTest",
+        "CmppClientSessionTest"
+      ],
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/security-targeted.log",
+      "sha256": "80d9e75aa865ed3d4028178c9532619bab77f047ddcf3b8727ad181a32bbf46e"
+    },
+    {
+      "kind": "static-doc-check",
+      "path": ".planning/phases/51-security-assurance/EVIDENCE/tls-static-check.log",
+      "sha256": "35a05ad0e22cb6066e8118d5d41b68a9e7602e8f862b6d6bc1fcb6f1d31cabb0"
+    }
+  ],
+  "covered_controls": ["account authentication", "IP allow-list", "connection limit", "TPS limit", "acceptance-boundary reuse"]
+}

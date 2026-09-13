@@ -1,0 +1,7 @@
+phase: 48
+package: shortlink-safety-review
+source: local lightweight Pencil-compatible design note
+routes:
+  - /tenant/shortlink
+  - /admin/shortlinks/review
+  - /s/:code

@@ -1,0 +1,14 @@
+{
+  "obligation": "OBL-EDGE-EXPORT-FAILURE",
+  "owner": "secure-async-export",
+  "status": "PASS",
+  "evidence": [
+    "Export center rows expose failure_reason.",
+    "admin-secure-async-export-center-retry is enabled for FAILED rows.",
+    "SecureAsyncExportService.retry rejects non-failed jobs and completes failed retries with retry_count evidence."
+  ],
+  "commands": [
+    "mvn -f core/pom.xml test",
+    "npm --prefix web exec -- playwright test secure-async-export.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json > .planning/phases/46-secure-async-export/EVIDENCE/playwright-secure-async-export-report.json"
+  ]
+}

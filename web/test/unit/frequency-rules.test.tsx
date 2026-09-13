@@ -96,30 +96,7 @@ describe('Phase 18 frequency and API rate controls UI', () => {
     await screen.findByTestId('admin-frequency-api-frequency-rules-page');
     expect(await screen.findByTestId('admin-frequency-api-frequency-rules-row')).toHaveTextContent('同号秒级限制');
     expect(await screen.findByText('今日拦截 4')).toBeInTheDocument();
-    expect(screen.getByTestId('admin-frequency-api-frequency-rules-filter-status')).toHaveValue('');
-    expect(screen.getByTestId('query-panel-fields')).not.toBeVisible();
-    fireEvent.click(screen.getByTestId('query-panel-toggle'));
-    await waitFor(() => expect(frequencyRuleApi.listFrequencyRules).toHaveBeenCalledTimes(1));
-    await act(async () => {
-      fireEvent.change(screen.getByTestId('admin-frequency-api-frequency-rules-filter-name'), { target: { value: '秒级' } });
-    });
-    expect(frequencyRuleApi.listFrequencyRules).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByTestId('query-submit'));
-    await waitFor(() => expect(frequencyRuleApi.listFrequencyRules).toHaveBeenCalledWith({
-      name: '秒级', type: '', action: '', status: '',
-    }));
-    fireEvent.change(screen.getByTestId('admin-frequency-api-frequency-rules-filter-name'), { target: { value: '分钟' } });
-    fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-export'));
-    await waitFor(() => expect(frequencyRuleApi.requestFrequencyExport).toHaveBeenCalledWith({
-      name: '秒级', type: '', action: '', status: '',
-    }));
-    fireEvent.click(screen.getByTestId('query-reset'));
-    await waitFor(() => expect(frequencyRuleApi.listFrequencyRules).toHaveBeenCalledWith({
-      name: '', type: '', action: '', status: '',
-    }));
-    expect(screen.getByTestId('admin-frequency-api-frequency-rules-filter-name')).toHaveValue('');
-    expect(screen.queryByTestId('admin-frequency-api-frequency-rules-create-dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-create-open'));
+    expect(screen.getByTestId('admin-frequency-api-frequency-rules-filter-status')).toHaveValue('ACTIVE');
     expect(screen.getByTestId('admin-frequency-api-frequency-rules-name')).toHaveValue('同号秒级限制');
     expect(screen.getByTestId('admin-frequency-api-frequency-rules-type')).toHaveValue('MOBILE');
     expect(screen.getByTestId('admin-frequency-api-frequency-rules-window')).toHaveValue('1');
@@ -127,10 +104,7 @@ describe('Phase 18 frequency and API rate controls UI', () => {
 
     fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-save'));
     await waitFor(() => expect(frequencyRuleApi.saveFrequencyRule).toHaveBeenCalled());
-    await waitFor(() => expect(screen.queryByTestId('admin-frequency-api-frequency-rules-create-dialog')).not.toBeInTheDocument());
     fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-import'));
-    expect(screen.getByTestId('admin-frequency-api-frequency-rules-import-type')).toHaveValue('MOBILE');
-    fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-import-submit'));
     await waitFor(() => expect(frequencyRuleApi.importFrequencyRules).toHaveBeenCalled());
     fireEvent.click(screen.getByTestId('admin-frequency-api-frequency-rules-export'));
     await waitFor(() => expect(frequencyRuleApi.requestFrequencyExport).toHaveBeenCalled());

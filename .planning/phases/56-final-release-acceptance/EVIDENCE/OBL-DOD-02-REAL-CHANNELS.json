@@ -1,0 +1,7 @@
+{
+  "obligation": "OBL-DOD-02-REAL-CHANNELS",
+  "status": "PASS",
+  "evidence": [
+    "FinalReleaseAcceptanceTest verifies HTTP and CMPP downstream/upstream implementation surfaces."
+  ]
+}

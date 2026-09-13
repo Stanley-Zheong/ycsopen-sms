@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-FIELD-SHORTLINK-DOMAIN","result":"PASS","evidence":["short_link_domains","tenant-shortlink-safety-shortlinks-form-domain"],"summary":"Short domain defaults to approved platform domain and custom domain must exist as approved short domain."}

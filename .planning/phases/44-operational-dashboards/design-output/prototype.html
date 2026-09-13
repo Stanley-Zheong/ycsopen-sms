@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Phase 44 Operational Dashboards Prototype</title>
+</head>
+<body>
+  <main>
+    <section data-route="/admin/dashboard" data-testid="admin-operational-dashboards-dashboard-realtime-page">
+      <button data-testid="admin-operational-dashboards-dashboard-realtime-refresh">刷新</button>
+      <table data-testid="admin-operational-dashboards-dashboard-realtime-send-trend"><tr><td>09:00</td></tr></table>
+      <section data-testid="admin-operational-dashboards-dashboard-kpi-page">
+        <table data-testid="admin-operational-dashboards-dashboard-kpi-hourly-trend"><tr><td>0.9000</td></tr></table>
+        <table data-testid="admin-operational-dashboards-dashboard-kpi-tenant-rank"><tr><td>7</td></tr></table>
+        <div data-testid="admin-operational-dashboards-dashboard-kpi-channel-health">NORMAL 1 MAINTENANCE 1 ABNORMAL 1</div>
+      </section>
+      <section data-testid="admin-operational-dashboards-dashboard-finance-warning-card">active warnings</section>
+      <div data-testid="shared-operational-dashboards-metric-source">statistics_aggregates success_count/send_count freshness permission</div>
+    </section>
+    <section data-route="/admin/dashboard/realtime">realtime alias</section>
+    <section data-route="/admin/dashboard/kpi">kpi alias</section>
+    <section data-route="/admin/statistics/resources" data-testid="admin-operational-dashboards-statistics-resources-page">
+      <table data-testid="admin-operational-dashboards-channel-statistics-comparison"><tr><td>11</td></tr></table>
+      <div data-testid="admin-operational-dashboards-statistics-channel-period-compare">0.9000</div>
+    </section>
+    <section data-route="/admin/api/status" data-testid="admin-operational-dashboards-api-status-monitor-page">health|database|statistics_aggregates</section>
+    <section data-route="/admin/dashboard/configuration" data-testid="admin-operational-dashboards-dashboard-configuration-page">
+      <select data-testid="admin-operational-dashboards-dashboard-configuration-role"><option>TENANT_ADMIN</option></select>
+    </section>
+    <section data-route="/tenant/overview" data-testid="tenant-operational-dashboards-tenant-overview-page">
+      <p data-testid="tenant-operational-dashboards-tenant-overview-scope">tenant-7</p>
+    </section>
+    <section data-route="/tenant/templates/statistics" data-testid="tenant-operational-dashboards-templates-statistics-page">55</section>
+  </main>
+</body>
+</html>

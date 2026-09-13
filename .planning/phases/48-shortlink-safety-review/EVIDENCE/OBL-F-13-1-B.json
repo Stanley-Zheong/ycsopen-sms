@@ -1,0 +1,1 @@
+{"phase":48,"obligation":"OBL-F-13-1-B","result":"PASS","evidence":["TenantShortLinkPage","shortlink-safety.spec.ts"],"summary":"Tenant list shows original URL, short URL, expiry, status and click count."}

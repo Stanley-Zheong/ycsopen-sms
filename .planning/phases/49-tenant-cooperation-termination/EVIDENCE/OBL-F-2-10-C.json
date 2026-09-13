@@ -1,0 +1,9 @@
+{
+  "obligation": "OBL-F-2-10-C",
+  "result": "PASS",
+  "evidence": [
+    "TenantCooperationTerminationService.effect transitions tenant lifecycle to TERMINATED.",
+    "The same transaction disables users, expires sessions, disables API keys, disables CMPP credentials, disables callbacks, cancels bulk work, and deactivates signatures/templates.",
+    "TenantCooperationTerminationService.requireTenantNotTerminated returns TENANT_TERMINATED for terminated tenant ingress checks."
+  ]
+}

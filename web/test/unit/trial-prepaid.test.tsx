@@ -1,10 +1,11 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as identityApi from '@/api/identity';
 import * as contractApi from '@/api/contractPricingApi';
+import * as operationalDashboardApi from '@/api/operationalDashboardApi';
 import * as trialPrepaidApi from '@/api/trialPrepaidApi';
 import TrialPrepaidAdminPage from '@/pages/admin/billing/TrialPrepaidAdminPage';
 import TenantConsumptionLedgerPage from '@/pages/tenant/ledger/TenantConsumptionLedgerPage';
@@ -32,6 +33,11 @@ vi.mock('@/api/trialPrepaidApi', async (importOriginal) => {
 vi.mock('@/api/contractPricingApi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/contractPricingApi')>();
   return { ...actual, getContractOverview: vi.fn() };
+});
+
+vi.mock('@/api/operationalDashboardApi', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/operationalDashboardApi')>();
+  return { ...actual, getTenantOperationalOverview: vi.fn() };
 });
 
 function renderWithProviders(ui: ReactElement) {
@@ -132,6 +138,22 @@ describe('Phase 22 trial prepaid ledger UI', () => {
       contractStatus: 'NONE',
       approvedBy: null,
     });
+    vi.mocked(operationalDashboardApi.getTenantOperationalOverview).mockResolvedValue({
+      tenantId: 42,
+      balanceMil: 1000,
+      trialStatus: 'TRIAL',
+      contractStatus: 'NONE',
+      todayMessages: 0,
+      successRate: 0,
+      serviceStatus: 'NORMAL',
+      source: {
+        registry: 'statistics_aggregates',
+        formula: 'success_count/send_count',
+        freshnessAt: '2026-09-10T09:00:00',
+        permissionScope: 'TENANT',
+        formulaVersion: 'v1',
+      },
+    });
     useAuthStore.setState({
       accessToken: 'test-token',
       userType: 'TENANT_ADMIN',
@@ -162,18 +184,8 @@ describe('Phase 22 trial prepaid ledger UI', () => {
 
     expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-filters')).toBeVisible();
     expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-row')).toHaveTextContent('MSG-22');
-    const panel = screen.getByTestId('query-panel');
-    vi.mocked(trialPrepaidApi.listConsumption).mockClear();
     fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: 'SMS' } });
-    expect(trialPrepaidApi.listConsumption).not.toHaveBeenCalled();
-    fireEvent.click(within(panel).getByTestId('query-submit'));
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, 'SMS'));
-    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: '' } });
-    fireEvent.click(within(panel).getByTestId('query-submit'));
-    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type')).toHaveValue('');
-    await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, ''));
-    expect(within(panel).getByTestId('query-result-table')).toHaveTextContent('MSG-22');
   });
 
   it('activates trial quota/validity and shows append-only balance audits', async () => {

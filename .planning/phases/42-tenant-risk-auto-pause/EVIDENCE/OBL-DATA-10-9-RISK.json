@@ -1,0 +1,1 @@
+{"status":"PASS","phase":42,"obligation":"OBL-DATA-10-9-RISK","evidence":["V5100__tenant_risk_auto_pause.sql","TenantRiskAutoPauseMigrationTest"]}

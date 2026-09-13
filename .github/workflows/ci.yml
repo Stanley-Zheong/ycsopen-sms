@@ -13,9 +13,42 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+  
 jobs:
+  changes:
+    name: Detect affected components
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.diff.outputs.backend }}
+      web: ${{ steps.diff.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            base="$GITHUB_SHA^"
+          else
+            base="${{ github.event.pull_request.base.sha }}"
+          fi
+          files="$(git diff --name-only "$base" "$GITHUB_SHA")"
+          if grep -Eq '^(core/|deploy/mysql/|scripts/lib/phase-0[13]/|\.planning/phases/03-)' <<<"$files"; then
+            echo 'backend=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'backend=false' >> "$GITHUB_OUTPUT"
+          fi
+          if grep -Eq '^(web/|compose\.yaml|deploy/nginx/|scripts/verify-docker-release)' <<<"$files"; then
+            echo 'web=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'web=false' >> "$GITHUB_OUTPUT"
+          fi
+
   phase-01-portable:
     name: Phase 01 portable registry
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -64,6 +97,8 @@ jobs:
 
   backend:
     name: Core / Java 21
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       # On pull_request, the default checkout target is GitHub's synthetic merge commit.
@@ -81,6 +116,8 @@ jobs:
 
   phase-03-portable-contracts:
     name: Phase 03 portable contracts
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -122,6 +159,8 @@ jobs:
 
   phase-03-real-integration:
     name: Phase 03 real integration
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     env:
       PHASE03_SERVICE_PLATFORM: linux/amd64
@@ -197,6 +236,8 @@ jobs:
 
   web:
     name: Web / Node 20
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -216,7 +257,8 @@ jobs:
 
   docker-release:
     name: Docker release / Google Chrome
-    if: github.event_name == 'pull_request'
+    needs: changes
+    if: needs.changes.outputs.web == 'true' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -234,16 +276,16 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: Install Web acceptance dependencies
         run: npm --prefix web ci
+      - name: Build Web assets for Docker image
+        run: npm --prefix web run build
       - name: Verify runner Google Chrome
         run: /usr/bin/google-chrome --version
-      - name: Install Playwright Chromium
-        run: npm --prefix web exec -- playwright install chromium
       - name: Verify control sizing breakpoints
         env:
-          YCSOPEN_USE_BUNDLED_CHROMIUM: "true"
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
         run: >-
           npm --prefix web run test:e2e --
-          control-sizing.spec.ts --project=bundled-chromium
+          control-sizing.spec.ts --project=local-google-chrome
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}

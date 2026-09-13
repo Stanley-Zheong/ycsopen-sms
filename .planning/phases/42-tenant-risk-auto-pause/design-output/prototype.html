@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Phase42 Tenant Risk Auto Pause Prototype</title>
+  <style>
+    body { font-family: Inter, "PingFang SC", sans-serif; margin: 0; background: #f6f8fb; color: #172033; }
+    main { padding: 24px; }
+    .card { background: white; border: 1px solid #d9e2ef; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #edf1f7; padding: 8px; text-align: left; }
+    input, select, button { min-height: 32px; }
+  </style>
+</head>
+<body>
+<main data-testid="admin-tenant-risk-rules-page" data-route="/admin/tenant-risk">
+  <header>
+    <nav>风控中心 / 机构风险 / 自动暂停</nav>
+    <h1>机构风险预警与自动暂停</h1>
+    <button data-testid="admin-tenant-risk-refresh">刷新</button>
+  </header>
+  <section class="card grid" data-testid="admin-tenant-risk-rule-panel">
+    <label>指标<select data-testid="admin-tenant-risk-metric"><option>FAILURE_RATE</option></select></label>
+    <label>阈值<input data-testid="admin-tenant-risk-threshold" value="0.2000" /></label>
+    <label>通知对象<input data-testid="admin-tenant-risk-notify-targets" value="[&quot;tenant:7&quot;,&quot;ops&quot;]" /></label>
+    <button data-testid="admin-tenant-risk-rule-save">保存规则</button>
+  </section>
+  <section class="card" data-testid="admin-tenant-risk-source-evaluation">
+    <input data-testid="admin-tenant-risk-numerator" value="25" />
+    <input data-testid="admin-tenant-risk-denominator" value="100" />
+    <button data-testid="admin-tenant-risk-evaluate">评估来源</button>
+  </section>
+  <section class="card" data-testid="admin-tenant-risk-tenant-risk-pause-detail">
+    <strong data-testid="admin-tenant-risk-data-quality">COMPLETE</strong>
+    <strong data-testid="admin-tenant-risk-rate">0.25</strong>
+    <table data-testid="admin-tenant-risk-episode-table"><tbody><tr data-testid="admin-tenant-risk-episode-row"><td>PAUSED</td></tr></tbody></table>
+    <pre data-testid="admin-tenant-risk-source-snapshot">numerator=25,denominator=100</pre>
+  </section>
+  <section class="card" data-testid="admin-tenant-risk-tenant-risk-recovery">
+    <input data-testid="admin-tenant-risk-recovery-review-id" value="review-42" />
+    <button data-testid="admin-tenant-risk-recover">恢复机构</button>
+  </section>
+  <span data-testid="admin-complaint-ratio-dashboard-complaint-ratio-tenant">tenant complaint ratio source</span>
+</main>
+</body>
+</html>
