@@ -20,6 +20,7 @@ import {
   type VerificationStatus,
 } from '@/api/tenantQualificationApi';
 import '@/styles/tenant-qualification.css';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 
 const PAGE_SIZE = 10;
 const VERIFICATION_LABELS: Record<VerificationStatus, string> = {
@@ -250,15 +251,17 @@ export default function TenantListPage() {
   return (
     <section data-testid="admin-tenant-qualification-tenants-page">
       <header className="qualification-page-header"><div><h1 data-testid="admin-tenant-qualification-tenants-heading">机构管理</h1><p className="page-description">审核机构资质并维护业务信息和账户运行状态。</p></div></header>
-      <section className="card qualification-filter-grid" aria-label="机构筛选">
-        <label htmlFor="tenant-keyword">关键字<input id="tenant-keyword" data-testid="admin-tenant-qualification-tenants-keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="机构编号、简称或全称" /></label>
-        <label htmlFor="tenant-verification">认证状态<select id="tenant-verification" data-testid="admin-tenant-qualification-tenants-verification-status" value={verification} onChange={(event) => setVerification(event.target.value as VerificationStatus | '')}><option value="">全部</option>{Object.entries(VERIFICATION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <label htmlFor="tenant-operating">运行状态<select id="tenant-operating" data-testid="admin-tenant-qualification-tenants-operating-status" value={operating} onChange={(event) => setOperating(event.target.value as OperatingStatus | '')}><option value="">全部</option>{Object.entries(OPERATING_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <div className="qualification-filter-actions">
-          <button data-testid="admin-tenant-qualification-tenants-query" type="button" onClick={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}>查询</button>
-          <button data-testid="admin-tenant-qualification-tenants-reset" className="button-secondary" type="button" onClick={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}>重置</button>
-        </div>
-      </section>
+      <QueryPanel
+        onSubmit={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}
+        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}
+        legacyPanelTestId="admin-tenant-qualification-tenants-filter"
+        submitLegacyTestId="admin-tenant-qualification-tenants-query"
+        resetLegacyTestId="admin-tenant-qualification-tenants-reset"
+      >
+        <QueryField name="keyword" label="关键字"><input id="tenant-keyword" data-testid="admin-tenant-qualification-tenants-keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="机构编号、简称或全称" /></QueryField>
+        <QueryField name="verification-status" label="认证状态"><select id="tenant-verification" data-testid="admin-tenant-qualification-tenants-verification-status" value={verification} onChange={(event) => setVerification(event.target.value as VerificationStatus | '')}><option value="">全部</option>{Object.entries(VERIFICATION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></QueryField>
+        <QueryField name="operating-status" label="运行状态"><select id="tenant-operating" data-testid="admin-tenant-qualification-tenants-operating-status" value={operating} onChange={(event) => setOperating(event.target.value as OperatingStatus | '')}><option value="">全部</option>{Object.entries(OPERATING_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></QueryField>
+      </QueryPanel>
       {tenants.isLoading && <p data-testid="admin-tenant-qualification-tenants-loading">正在加载机构列表…</p>}
       {tenants.isError && <div data-testid="admin-tenant-qualification-tenants-error" className="qualification-alert error" role="alert">机构列表加载失败。<button data-testid="admin-tenant-qualification-tenants-retry" type="button" onClick={() => void tenants.refetch()}>重新加载</button></div>}
       {!tenants.isLoading && !tenants.isError && rows.length === 0 && <p data-testid="admin-tenant-qualification-tenants-empty" className="card">没有符合条件的机构。</p>}
