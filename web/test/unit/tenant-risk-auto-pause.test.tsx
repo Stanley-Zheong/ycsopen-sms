@@ -73,15 +73,33 @@ describe('Phase 42 tenant risk warning and auto pause UI', () => {
     await waitFor(() => expect(screen.getByTestId('admin-tenant-risk-tenant-risk-pause-detail')).toHaveTextContent('PAUSED'));
     expect(screen.getByTestId('admin-tenant-risk-source-snapshot')).toHaveTextContent('numerator=25');
 
+    const queryPanel = screen.getByTestId('query-panel');
+    const queryTenant = screen.getByTestId('admin-tenant-risk-query-tenant-id');
+    expect(queryPanel).toContainElement(queryTenant);
+    expect(queryPanel.querySelectorAll('input, select, textarea')).toHaveLength(1);
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-tenant-risk-tenant-id'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-tenant-risk-recovery-review-id'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-tenant-risk-rule-save'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-tenant-risk-recover'));
+    expect(screen.getByTestId('query-label-tenant-risk-tenant')).toHaveTextContent('机构 ID');
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('admin-tenant-risk-refresh'));
+    fireEvent.change(queryTenant, { target: { value: '99' } });
+    fireEvent.change(screen.getByTestId('admin-tenant-risk-tenant-id'), { target: { value: '77' } });
+    expect(api.listTenantRiskRules).not.toHaveBeenCalledWith(99);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(api.listTenantRiskRules).toHaveBeenCalledWith(99));
+    await waitFor(() => expect(api.listTenantRiskEpisodes).toHaveBeenCalledWith(99));
+
     fireEvent.click(screen.getByTestId('admin-tenant-risk-rule-save'));
     await waitFor(() => expect(api.saveTenantRiskRule).toHaveBeenCalledWith(expect.objectContaining({
+      tenantId: 77,
       metric: 'FAILURE_RATE',
       durationMinutes: 15,
       action: 'AUTO_SUSPEND',
     })));
     fireEvent.click(screen.getByTestId('admin-tenant-risk-evaluate'));
     await waitFor(() => expect(api.evaluateTenantRisk).toHaveBeenCalledWith(expect.objectContaining({
-      tenantId: 7,
+      tenantId: 77,
       denominator: 100,
       sourceRegistry: 'statistics_aggregates',
     })));
@@ -90,6 +108,8 @@ describe('Phase 42 tenant risk warning and auto pause UI', () => {
       reviewId: 'review-42',
       note: '来源复核通过，恢复提交',
     }));
+
+    expect(screen.getByTestId('admin-tenant-risk-tenant-id')).toHaveValue('77');
   });
 
   it('shows unknown instead of safe rate when denominator is zero', async () => {

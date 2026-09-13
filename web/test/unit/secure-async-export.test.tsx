@@ -48,4 +48,22 @@ describe('Phase 46 secure async export UI', () => {
     fireEvent.click(screen.getAllByTestId('admin-secure-async-export-center-retry')[1]);
     await waitFor(() => expect(api.retrySecureExport).toHaveBeenCalledWith(47, '人工确认重试失败导出'));
   });
+
+  it('keeps refresh separate from applying draft filters', async () => {
+    renderPage();
+    await screen.findByTestId('admin-secure-async-export-center-page');
+    await waitFor(() => expect(api.listSecureExports).toHaveBeenCalledWith({ tenantId: '', exportType: '', status: '' }));
+
+    fireEvent.change(screen.getByTestId('admin-secure-async-export-center-filter-tenant'), { target: { value: '43' } });
+    vi.mocked(api.listSecureExports).mockClear();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+    await waitFor(() => expect(api.listSecureExports).toHaveBeenCalledWith({ tenantId: '', exportType: '', status: '' }));
+
+    vi.mocked(api.listSecureExports).mockClear();
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(api.listSecureExports).toHaveBeenCalledWith({ tenantId: '43', exportType: '', status: '' }));
+    expect(screen.getByTestId('query-refresh')).toContainElement(
+      screen.getByTestId('admin-secure-async-export-center-refresh'),
+    );
+  });
 });

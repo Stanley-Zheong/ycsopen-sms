@@ -60,7 +60,7 @@ test.describe('Phase 09 tenant access administration', () => {
     await dialog.getByTestId('tenant-tenant-access-api-keys-name-field').locator('input').fill(`p09-api-${Date.now()}`);
     await dialog.getByTestId('tenant-tenant-access-api-keys-expiry-field').locator('input').fill('2099-01-01T00:00');
     await dialog.getByTestId('tenant-tenant-access-api-keys-ip-allow-list-field').locator('input').fill('127.0.0.1/32');
-    await dialog.getByTestId('tenant-tenant-access-api-keys-rate-policy-field').locator('input').fill('10');
+    await dialog.getByTestId('tenant-tenant-access-api-keys-rate-second').fill('10');
     await dialog.getByRole('button', { name: '创建', exact: true }).click();
     await expect(page.getByTestId('tenant-tenant-access-api-keys-secret-once')).toBeVisible();
     await expect(page.getByTestId('tenant-tenant-access-api-keys-secret-dialog')).toBeVisible();
@@ -97,7 +97,9 @@ test.describe('Phase 09 tenant access administration', () => {
     await page.getByTestId('tenant-tenant-access-cmpp-request-form').click();
     const dialog = page.getByRole('dialog');
     await dialog.getByTestId('tenant-tenant-access-cmpp-endpoint').locator('input').fill('127.0.0.1');
-    await dialog.getByTestId('tenant-tenant-access-cmpp-connection-policy').locator('input').fill('4/100/8');
+    await dialog.getByTestId('tenant-tenant-access-cmpp-max-connections').fill('4');
+    await dialog.getByTestId('tenant-tenant-access-cmpp-tps-limit').fill('100');
+    await dialog.getByTestId('tenant-tenant-access-cmpp-window-size').fill('8');
     await dialog.locator('input[type="password"]').fill('Phase09-CMPP!123');
     await dialog.getByRole('button', { name: '提交申请', exact: true }).click();
     await expect(page.getByTestId('tenant-tenant-access-cmpp-secret-once')).toBeVisible();

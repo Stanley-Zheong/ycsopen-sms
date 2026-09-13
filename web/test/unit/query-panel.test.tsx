@@ -3,6 +3,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { QueryField, QueryPanel } from '../../src/components/common/QueryPanel';
 
 describe('QueryPanel', () => {
+  it('exposes separate field and action regions with associated controls', () => {
+    render(
+      <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
+        <QueryField name="keyword" label="关键字"><input data-testid="admin-example-keyword" /></QueryField>
+        <QueryField name="status" label="状态"><select data-testid="admin-example-status"><option>全部</option></select></QueryField>
+      </QueryPanel>,
+    );
+
+    const panel = screen.getByTestId('query-panel');
+    const fields = within(panel).getByTestId('query-fields');
+    const actions = within(panel).getByTestId('query-actions');
+    const keyword = within(fields).getByTestId('admin-example-keyword');
+
+    expect(within(fields).getByText('关键字')).toHaveAttribute('for', keyword.id);
+    expect(fields).not.toContainElement(within(actions).getByTestId('query-submit'));
+    expect(actions).toContainElement(within(actions).getByTestId('query-reset'));
+    expect(within(actions).getByRole('button', { name: '查询' })).toBeInTheDocument();
+  });
+
   it('keeps multi-row fields collapsed until the operator expands them', () => {
     render(
       <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
@@ -45,7 +64,7 @@ describe('QueryPanel', () => {
     expect(screen.getByTestId('query-panel-fields')).toBeVisible();
   });
 
-  it('keeps search and reset visible and invokes their page-owned behavior', () => {
+  it('keeps search and reset visible for a single field and invokes their page-owned behavior', () => {
     const onSubmit = vi.fn();
     const onReset = vi.fn();
     render(
@@ -68,8 +87,9 @@ describe('QueryPanel', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onReset).not.toHaveBeenCalled();
     expect(within(panel).getByTestId('legacy-search')).toBeInTheDocument();
-    expect(within(panel).queryByTestId('query-reset')).not.toBeInTheDocument();
-    expect(within(panel).queryByTestId('legacy-reset')).not.toBeInTheDocument();
+    fireEvent.click(within(panel).getByTestId('query-reset'));
+    expect(onReset).toHaveBeenCalledTimes(1);
+    expect(within(panel).getByTestId('legacy-reset')).toBeInTheDocument();
     expect(within(panel).getByTestId('query-result-table')).toHaveTextContent('初始数据');
   });
 
@@ -89,6 +109,32 @@ describe('QueryPanel', () => {
     expect(fields).toContainElement(reset);
     fireEvent.click(reset);
     expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps an optional page refresh action in the query action region', () => {
+    const onRefresh = vi.fn();
+    render(
+      <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()} onRefresh={onRefresh} refreshLegacyTestId="legacy-refresh">
+        <QueryField name="status" label="状态"><select><option value="">全部</option></select></QueryField>
+        <QueryField name="keyword" label="关键字"><input /></QueryField>
+      </QueryPanel>,
+    );
+
+    const actions = screen.getByTestId('query-actions');
+    const refresh = within(actions).getByTestId('query-refresh');
+    expect(within(actions).getByTestId('legacy-refresh')).toHaveTextContent('刷新');
+    fireEvent.click(refresh);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('can disable submission while page permissions are unresolved', () => {
+    render(
+      <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()} submitDisabled>
+        <QueryField name="keyword" label="关键字"><input /></QueryField>
+      </QueryPanel>,
+    );
+
+    expect(screen.getByTestId('query-submit')).toBeDisabled();
   });
 
   it('collapses two fields when the responsive grid wraps to one column', () => {

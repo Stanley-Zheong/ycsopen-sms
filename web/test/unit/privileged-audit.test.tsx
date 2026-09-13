@@ -167,6 +167,7 @@ describe('Phase 6 privileged audit UI', () => {
     await screen.findByText('UPDATE_PLATFORM_ROLE_PERMISSIONS');
 
     const filters = screen.getByTestId('admin-privileged-data-system-logs-filter');
+    fireEvent.click(within(filters).getByTestId('query-panel-toggle'));
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
     fireEvent.change(within(filters).getByLabelText('操作'), { target: { value: 'UPDATE_PLATFORM_ROLE_PERMISSIONS' } });
     fireEvent.change(within(filters).getByLabelText('结果'), { target: { value: 'SUCCESS' } });
@@ -192,6 +193,7 @@ describe('Phase 6 privileged audit UI', () => {
     expect(within(table).getByText('异常登录')).toBeVisible();
 
     const filters = screen.getByTestId('admin-privileged-data-security-events-filter');
+    fireEvent.click(within(filters).getByTestId('query-panel-toggle'));
     fireEvent.change(within(filters).getByLabelText('事件类型'), { target: { value: 'UNUSUAL_LOGIN' } });
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
     fireEvent.change(within(filters).getByLabelText('结果'), { target: { value: 'DETECTED' } });

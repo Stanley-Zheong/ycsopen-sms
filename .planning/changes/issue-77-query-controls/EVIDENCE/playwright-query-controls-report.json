@@ -1,0 +1,55 @@
+{
+  "recordedAt": "2026-09-13T05:58:02Z",
+  "sourceBaseCommit": "f10cee8f35a24d0b1d7bd708bf8f585456548dba",
+  "result": "PASS",
+  "expected": 2,
+  "unexpected": 0,
+  "skipped": 0,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1"
+  },
+  "command": "YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell npm --prefix web run test:e2e -- --project=local-google-chrome test/scripts/issue-77-admin-query-contract.spec.ts --reporter=list",
+  "executionEnvironment": {
+    "nativeLibraries": "Temporary Debian 12 arm64 Chromium runtime libraries supplied through LD_LIBRARY_PATH",
+    "gsettingsSchemas": "Temporary Debian 12 GLib schemas supplied through GSETTINGS_SCHEMA_DIR"
+  },
+  "sourceSha256": {
+    "web/src/components/common/QueryPanel.tsx": "3977e5cdee9dc7dce013732849cf374e10e816c60426aa4fd306052db855e17a",
+    "web/src/styles/index.css": "7c42eca1f6b7f5755e25acb1717cfb2bdc240e3d02e3d2425e0aa1f802bfb070",
+    "web/test/scripts/issue-77-admin-query-contract.spec.ts": "893f4aa5627c7fb9882ea44ff2291c692e0f1717a706388a55390845dde0fe54",
+    "web/test/unit/tenant-access-forms.test.tsx": "0c60382361162e7aa4e98dc0c0aaba25bf30822c7dba7a8980c7780f604c6a10"
+  },
+  "inventory": {
+    "adminRoutesVisited": 56,
+    "adminRoutesWithQueryPanels": 36,
+    "adminQueryPanelInstances": 38,
+    "tenantRoutesWithQueryPanels": 4
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-admin-query-controls",
+      "obligationId": "OBL-ISSUE-77-QUERY-CONTROLS",
+      "status": "passed",
+      "coverage": "All 56 admin routes; panel inventory, associated labels and stable test IDs, 38-42 px control geometry, vertically balanced selects, query behavior, action/result separation, and page horizontal overflow."
+    },
+    {
+      "id": "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-tenant-query-controls",
+      "obligationId": "OBL-ISSUE-77-QUERY-CONTROLS",
+      "status": "passed",
+      "coverage": "Tenant ledger, uplink, unsubscribe, and help routes; query behavior, control geometry, action/result separation, and page horizontal overflow."
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "businessApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The issue acceptance contract concerns browser-rendered query structure, geometry, interaction, request initiation, and overflow. Business API responses are deterministic interceptions, so this evidence does not claim backend-service integration or production data correctness."
+  }
+}

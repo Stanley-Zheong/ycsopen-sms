@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   AUDIT_PERMISSIONS,
@@ -7,6 +7,7 @@ import {
   type OperationAuditItem,
 } from '@/api/audit';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { protectedQueryKey } from '@/store/authStore';
 
@@ -30,8 +31,7 @@ export default function OperationAuditPage() {
     enabled: canRead,
   });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function submit() {
     setFilters({ ...draft, page: 0, size: 20 });
   }
 
@@ -53,39 +53,21 @@ export default function OperationAuditPage() {
       <div className="card">
         <h1 data-testid="admin-privileged-data-system-logs-heading">操作日志</h1>
         <p className="page-description">查询后台管理操作的结构化留痕；详情仅显示已脱敏字段。</p>
-        <form data-testid="admin-privileged-data-system-logs-filter" className="audit-filter-grid" onSubmit={submit}>
-          <label>操作人
-            <input data-testid="admin-privileged-data-system-logs-actor-input" value={draft.actor ?? ''} onChange={(event) => setDraft({ ...draft, actor: event.target.value })} />
-          </label>
-          <label>操作
-            <input data-testid="admin-privileged-data-system-logs-operation-input" value={draft.operation ?? ''} onChange={(event) => setDraft({ ...draft, operation: event.target.value })} />
-          </label>
-          <label>结果
-            <select data-testid="admin-privileged-data-system-logs-result-select" value={draft.result ?? ''} onChange={(event) => setDraft({ ...draft, result: event.target.value })}>
-              <option value="">全部</option><option value="STARTED">待终结</option><option value="SUCCESS">成功</option><option value="CLIENT_FAILURE">请求失败</option><option value="SERVER_FAILURE">服务失败</option><option value="DENIED">拒绝</option>
-            </select>
-          </label>
-          <label>开始时间
-            <input data-testid="admin-privileged-data-system-logs-from-input" type="datetime-local" value={draft.from ?? ''} onChange={(event) => setDraft({ ...draft, from: event.target.value })} />
-          </label>
-          <label>结束时间
-            <input data-testid="admin-privileged-data-system-logs-to-input" type="datetime-local" value={draft.to ?? ''} onChange={(event) => setDraft({ ...draft, to: event.target.value })} />
-          </label>
-          <div className="audit-filter-actions">
-            <button data-testid="admin-privileged-data-system-logs-query" type="submit">查询</button>
-            <button data-testid="admin-privileged-data-system-logs-reset" type="button" className="button-secondary" onClick={resetFilters}>重置</button>
-          </div>
-        </form>
       </div>
-
-      <div className="card">
-        {audits.isLoading && <p data-testid="admin-privileged-data-system-logs-loading">加载操作日志…</p>}
-        {audits.isError && <div data-testid="admin-privileged-data-system-logs-error" role="alert">
-          <p>操作日志加载失败，请保留筛选条件后重试。</p>
-          <button data-testid="admin-privileged-data-system-logs-retry" type="button" onClick={() => void audits.refetch()}>重试加载操作日志</button>
-        </div>}
-        {!audits.isLoading && !audits.isError && (
-          <table className="ratio-table" data-testid="admin-privileged-data-system-logs-table">
+      <QueryPanel
+        legacyPanelTestId="admin-privileged-data-system-logs-filter"
+        submitLegacyTestId="admin-privileged-data-system-logs-query"
+        resetLegacyTestId="admin-privileged-data-system-logs-reset"
+        onSubmit={submit}
+        onReset={resetFilters}
+        result={<>
+          {audits.isLoading && <p data-testid="admin-privileged-data-system-logs-loading">加载操作日志…</p>}
+          {audits.isError && <div data-testid="admin-privileged-data-system-logs-error" role="alert">
+            <p>操作日志加载失败，请保留筛选条件后重试。</p>
+            <button data-testid="admin-privileged-data-system-logs-retry" type="button" onClick={() => void audits.refetch()}>重试加载操作日志</button>
+          </div>}
+          {!audits.isLoading && !audits.isError && (
+            <table className="ratio-table" data-testid="admin-privileged-data-system-logs-table">
             <caption className="visually-hidden">后台操作审计日志</caption>
             <thead><tr><th>时间</th><th>操作人</th><th>租户</th><th>操作</th><th>资源</th><th>结果</th><th>IP</th><th>耗时</th><th>问题编号</th><th>详情</th></tr></thead>
             <tbody>
@@ -99,14 +81,23 @@ export default function OperationAuditPage() {
               ))}
               {(result?.items.length ?? 0) === 0 && <tr data-testid="admin-privileged-data-system-logs-empty"><td colSpan={10}>暂无操作日志</td></tr>}
             </tbody>
-          </table>
-        )}
-        {result && <div className="pagination-row">
-          <button data-testid="admin-privileged-data-system-logs-previous" type="button" className="button-secondary" disabled={!hasPrevious} onClick={() => setFilters({ ...filters, page: result.page - 1 })}>上一页</button>
-          <span data-testid="admin-privileged-data-system-logs-page-status">第 {result.page + 1} 页，共 {result.totalElements} 条</span>
-          <button data-testid="admin-privileged-data-system-logs-next" type="button" className="button-secondary" disabled={!hasNext} onClick={() => setFilters({ ...filters, page: result.page + 1 })}>下一页</button>
-        </div>}
-      </div>
+            </table>
+          )}
+          {result && <div className="pagination-row">
+            <button data-testid="admin-privileged-data-system-logs-previous" type="button" className="button-secondary" disabled={!hasPrevious} onClick={() => setFilters({ ...filters, page: result.page - 1 })}>上一页</button>
+            <span data-testid="admin-privileged-data-system-logs-page-status">第 {result.page + 1} 页，共 {result.totalElements} 条</span>
+            <button data-testid="admin-privileged-data-system-logs-next" type="button" className="button-secondary" disabled={!hasNext} onClick={() => setFilters({ ...filters, page: result.page + 1 })}>下一页</button>
+          </div>}
+        </>}
+      >
+        <QueryField name="actor" label="操作人"><input data-testid="admin-privileged-data-system-logs-actor-input" value={draft.actor ?? ''} onChange={(event) => setDraft({ ...draft, actor: event.target.value })} /></QueryField>
+        <QueryField name="operation" label="操作"><input data-testid="admin-privileged-data-system-logs-operation-input" value={draft.operation ?? ''} onChange={(event) => setDraft({ ...draft, operation: event.target.value })} /></QueryField>
+        <QueryField name="result" label="结果"><select data-testid="admin-privileged-data-system-logs-result-select" value={draft.result ?? ''} onChange={(event) => setDraft({ ...draft, result: event.target.value })}>
+          <option value="">全部</option><option value="STARTED">待终结</option><option value="SUCCESS">成功</option><option value="CLIENT_FAILURE">请求失败</option><option value="SERVER_FAILURE">服务失败</option><option value="DENIED">拒绝</option>
+        </select></QueryField>
+        <QueryField name="from" label="开始时间"><input data-testid="admin-privileged-data-system-logs-from-input" type="datetime-local" value={draft.from ?? ''} onChange={(event) => setDraft({ ...draft, from: event.target.value })} /></QueryField>
+        <QueryField name="to" label="结束时间"><input data-testid="admin-privileged-data-system-logs-to-input" type="datetime-local" value={draft.to ?? ''} onChange={(event) => setDraft({ ...draft, to: event.target.value })} /></QueryField>
+      </QueryPanel>
 
       {selected && (
         <ModalDialog labelledBy="operation-audit-detail-title" onRequestClose={() => setSelected(null)}>

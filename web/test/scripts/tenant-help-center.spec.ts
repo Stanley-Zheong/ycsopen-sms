@@ -14,6 +14,7 @@ test('OBL-IA-TENANT-HELP-GUIDE C-P50-GUIDE pw-p50-guide', async ({ page }) => {
   await expect(page.getByTestId('tenant-tenant-help-guide-page')).toBeVisible();
   await expect(page.getByTestId('tenant-tenant-help-content-version')).toContainText('2026.09');
   await page.getByTestId('tenant-tenant-help-guide-search-input').fill('短链');
+  await page.getByTestId('query-submit').click();
   await expect(page.getByTestId('tenant-tenant-help-guide-results')).toContainText('短链管理');
 });
 

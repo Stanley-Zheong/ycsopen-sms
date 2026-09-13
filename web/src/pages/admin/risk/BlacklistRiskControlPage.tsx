@@ -17,6 +17,7 @@ import {
   type RiskProviderPayload,
 } from '@/api/blacklistRiskControlApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { isPlatformRole, protectedQueryKey, useAuthStore } from '@/store/authStore';
 import '@/styles/blacklist-risk-control.css';
@@ -41,6 +42,8 @@ const PROVIDER_FORM: RiskProviderPayload = {
   cacheTtlSeconds: 300,
 };
 
+const DEFAULT_FILTERS = { tenantId: '42', listType: '', status: 'ACTIVE' };
+
 export default function BlacklistRiskControlPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -57,7 +60,8 @@ export default function BlacklistRiskControlPage() {
   const canAppeal = admin || access.can(BLACKLIST_RISK_PERMISSIONS.appeal);
   const canUsePage = canRead || canWrite || canImport || canExport || canProviderRead || canProviderWrite || canAnalyze || canCheck || access.isLoading;
   const [entryForm, setEntryForm] = useState(ENTRY_FORM);
-  const [filters, setFilters] = useState({ tenantId: '42', listType: '', status: 'ACTIVE' });
+  const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [importText, setImportText] = useState('13900000002\nbad-mobile');
   const [providerForm, setProviderForm] = useState(PROVIDER_FORM);
   const [riskTenantId, setRiskTenantId] = useState('42');
@@ -154,27 +158,8 @@ export default function BlacklistRiskControlPage() {
       {message && <p role="status" data-testid="admin-blacklist-risk-message" className="blacklist-risk-alert success">{message}</p>}
       {error && <p role="alert" data-testid="admin-blacklist-risk-error" className="blacklist-risk-alert error">{error}</p>}
 
-      <section className="card" data-testid="admin-blacklist-risk-black-white-lists-page">
+      <section data-testid="admin-blacklist-risk-black-white-lists-page">
         <h2>黑白名单</h2>
-        <div className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-filters">
-          <label>筛选机构
-            <input data-testid="admin-blacklist-risk-black-white-lists-filter-tenant" value={filters.tenantId} onChange={(event) => setFilters({ ...filters, tenantId: event.target.value })} />
-          </label>
-          <label>筛选类型
-            <select data-testid="admin-blacklist-risk-black-white-lists-filter-type" value={filters.listType} onChange={(event) => setFilters({ ...filters, listType: event.target.value })}>
-              <option value="">全部</option>
-              <option value="BLACK">黑名单</option>
-              <option value="WHITE">白名单</option>
-            </select>
-          </label>
-          <label>筛选状态
-            <select data-testid="admin-blacklist-risk-black-white-lists-filter-status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
-              <option value="">全部</option>
-              <option value="ACTIVE">生效</option>
-              <option value="DISABLED">已移除</option>
-            </select>
-          </label>
-        </div>
         <div className="blacklist-risk-form" data-testid="admin-blacklist-risk-black-white-lists-form">
           <label>机构
             <input data-testid="admin-blacklist-risk-black-white-lists-tenant" type="number" value={entryForm.tenantId ?? ''} onChange={(event) => setEntryForm({ ...entryForm, tenantId: Number(event.target.value) || null })} />
@@ -207,6 +192,11 @@ export default function BlacklistRiskControlPage() {
           <button type="button" data-testid="admin-blacklist-risk-black-white-lists-import" disabled={!canImport} onClick={() => importMutation.mutate()}>导入</button>
           <button type="button" data-testid="admin-blacklist-risk-black-white-lists-export" disabled={!canExport} onClick={() => exportMutation.mutate()}>请求导出</button>
         </div>
+        <QueryPanel
+          legacyPanelTestId="admin-blacklist-risk-black-white-lists-filters"
+          onSubmit={() => setFilters({ ...draftFilters })}
+          onReset={() => { setDraftFilters(DEFAULT_FILTERS); setFilters(DEFAULT_FILTERS); }}
+          result={<>
         <table className="ratio-table" data-testid="admin-blacklist-risk-black-white-lists-table">
           <thead><tr><th>类型</th><th>机构</th><th>脱敏手机号</th><th>来源</th><th>状态</th><th>原因</th><th>有效期</th><th>创建时间</th><th>动作</th></tr></thead>
           <tbody>
@@ -225,6 +215,22 @@ export default function BlacklistRiskControlPage() {
             ))}
           </tbody>
         </table>
+          </>}
+        >
+          <QueryField name="tenant-id" label="筛选机构">
+            <input data-testid="admin-blacklist-risk-black-white-lists-filter-tenant" value={draftFilters.tenantId} onChange={(event) => setDraftFilters({ ...draftFilters, tenantId: event.target.value })} />
+          </QueryField>
+          <QueryField name="list-type" label="筛选类型">
+            <select data-testid="admin-blacklist-risk-black-white-lists-filter-type" value={draftFilters.listType} onChange={(event) => setDraftFilters({ ...draftFilters, listType: event.target.value })}>
+              <option value="">全部</option><option value="BLACK">黑名单</option><option value="WHITE">白名单</option>
+            </select>
+          </QueryField>
+          <QueryField name="status" label="筛选状态">
+            <select data-testid="admin-blacklist-risk-black-white-lists-filter-status" value={draftFilters.status} onChange={(event) => setDraftFilters({ ...draftFilters, status: event.target.value })}>
+              <option value="">全部</option><option value="ACTIVE">生效</option><option value="DISABLED">已移除</option>
+            </select>
+          </QueryField>
+        </QueryPanel>
       </section>
 
       <section className="card" data-testid="admin-blacklist-risk-risk-provider-page">

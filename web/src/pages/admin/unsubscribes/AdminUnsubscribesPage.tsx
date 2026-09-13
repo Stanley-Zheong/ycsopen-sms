@@ -8,12 +8,15 @@ import {
   saveAdminUnsubscribeKeyword,
 } from '@/api/unsubscribeComplianceApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/unsubscribe-compliance.css';
+
+const EMPTY_FILTERS = { tenantId: '', mobile: '', keyword: '', outcome: '', signatureId: '', productCode: '', notificationState: '' };
 
 export default function AdminUnsubscribesPage() {
   const queryClient = useQueryClient();
-  const [draft, setDraft] = useState({ tenantId: '', mobile: '', keyword: '', outcome: '', signatureId: '', productCode: '', notificationState: '' });
-  const [filters, setFilters] = useState(draft);
+  const [draft, setDraft] = useState({ ...EMPTY_FILTERS });
+  const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
   const [keywordTenant, setKeywordTenant] = useState('');
   const [keywordText, setKeywordText] = useState('TD');
   const [keywordScope, setKeywordScope] = useState('GLOBAL');
@@ -54,6 +57,10 @@ export default function AdminUnsubscribesPage() {
   });
 
   const setField = (key: keyof typeof draft, value: string) => setDraft((current) => ({ ...current, [key]: value }));
+  const resetFilters = () => {
+    setDraft({ ...EMPTY_FILTERS });
+    setFilters({ ...EMPTY_FILTERS });
+  };
 
   return (
     <section className="unsubscribe-page" data-testid="admin-unsubscribe-compliance-page">
@@ -63,22 +70,44 @@ export default function AdminUnsubscribesPage() {
           <h1>退订合规</h1>
           <p>维护全局/租户退订关键词，查看退订证据，并用真实证据和最终发送量计算退订率。</p>
         </div>
-        <button type="button" data-testid="admin-unsubscribe-compliance-refresh" onClick={() => void queryClient.invalidateQueries()}>刷新</button>
       </header>
 
       {message && <p role="status" className="unsubscribe-alert success" data-testid="admin-unsubscribe-compliance-message">{message}</p>}
       {error && <p role="alert" className="unsubscribe-alert error" data-testid="admin-unsubscribe-compliance-error">{error}</p>}
 
-      <section className="card unsubscribe-filters">
-        <label>租户ID<input data-testid="admin-unsubscribe-compliance-filter-tenant" value={draft.tenantId} onChange={(event) => setField('tenantId', event.target.value)} /></label>
-        <label>手机号<input data-testid="admin-unsubscribe-compliance-filter-mobile" value={draft.mobile} onChange={(event) => setField('mobile', event.target.value)} /></label>
-        <label>关键词<input data-testid="admin-unsubscribe-compliance-filter-keyword" value={draft.keyword} onChange={(event) => setField('keyword', event.target.value)} /></label>
-        <label>结果<input data-testid="admin-unsubscribe-compliance-filter-outcome" value={draft.outcome} onChange={(event) => setField('outcome', event.target.value)} /></label>
-        <label>签名ID<input data-testid="admin-unsubscribe-compliance-filter-signature" value={draft.signatureId} onChange={(event) => setField('signatureId', event.target.value)} /></label>
-        <label>产品<input data-testid="admin-unsubscribe-compliance-filter-product" value={draft.productCode} onChange={(event) => setField('productCode', event.target.value)} /></label>
-        <label>通知状态<input data-testid="admin-unsubscribe-compliance-filter-notification" value={draft.notificationState} onChange={(event) => setField('notificationState', event.target.value)} /></label>
-        <button type="button" data-testid="admin-unsubscribe-compliance-search" onClick={() => setFilters(draft)}>查询</button>
-      </section>
+      <QueryPanel
+        onSubmit={() => setFilters({ ...draft })}
+        onReset={resetFilters}
+        onRefresh={() => void queryClient.invalidateQueries()}
+        submitLegacyTestId="admin-unsubscribe-compliance-search"
+        refreshLegacyTestId="admin-unsubscribe-compliance-refresh"
+        result={(
+          <section data-testid="admin-unsubscribe-compliance-unsubscribes-page">
+            <h2>退订证据</h2>
+            {records.isLoading && <p>正在加载退订证据…</p>}
+            {records.isError && <p role="alert">退订证据加载失败。</p>}
+            <table className="unsubscribe-table" data-testid="admin-unsubscribe-compliance-unsubscribes-table">
+              <thead><tr><th>租户</th><th>手机号</th><th>关键词</th><th>签名/产品</th><th>处理</th><th>通知</th><th>上行</th><th>时间</th></tr></thead>
+              <tbody>{(records.data ?? []).map((row) => (
+                <tr key={row.id} data-testid="admin-unsubscribe-compliance-unsubscribe-row">
+                  <td>{row.tenantId}</td><td>{row.maskedMobile ?? '-'}</td><td>{row.triggerKeyword ?? '-'}</td>
+                  <td>{row.signatureId ?? '-'}/{row.productCode ?? '-'}</td><td>{row.handlingState}</td>
+                  <td data-testid="admin-unsubscribe-compliance-unsubscribes-notification-state">{row.notificationState}</td>
+                  <td>{row.uplinkRecordId ?? '-'}</td><td>{row.unsubscribedAt ?? '-'}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </section>
+        )}
+      >
+        <QueryField name="tenant-id" label="租户ID"><input data-testid="admin-unsubscribe-compliance-filter-tenant" value={draft.tenantId} onChange={(event) => setField('tenantId', event.target.value)} /></QueryField>
+        <QueryField name="mobile" label="手机号"><input data-testid="admin-unsubscribe-compliance-filter-mobile" value={draft.mobile} onChange={(event) => setField('mobile', event.target.value)} /></QueryField>
+        <QueryField name="keyword" label="关键词"><input data-testid="admin-unsubscribe-compliance-filter-keyword" value={draft.keyword} onChange={(event) => setField('keyword', event.target.value)} /></QueryField>
+        <QueryField name="outcome" label="结果"><input data-testid="admin-unsubscribe-compliance-filter-outcome" value={draft.outcome} onChange={(event) => setField('outcome', event.target.value)} /></QueryField>
+        <QueryField name="signature-id" label="签名ID"><input data-testid="admin-unsubscribe-compliance-filter-signature" value={draft.signatureId} onChange={(event) => setField('signatureId', event.target.value)} /></QueryField>
+        <QueryField name="product-code" label="产品"><input data-testid="admin-unsubscribe-compliance-filter-product" value={draft.productCode} onChange={(event) => setField('productCode', event.target.value)} /></QueryField>
+        <QueryField name="notification-state" label="通知状态"><input data-testid="admin-unsubscribe-compliance-filter-notification" value={draft.notificationState} onChange={(event) => setField('notificationState', event.target.value)} /></QueryField>
+      </QueryPanel>
 
       <section className="card" data-testid="admin-unsubscribe-compliance-keywords-page">
         <h2>退订关键词库</h2>
@@ -92,23 +121,6 @@ export default function AdminUnsubscribesPage() {
           <thead><tr><th>关键词</th><th>归一化</th><th>范围</th><th>租户</th><th>状态</th></tr></thead>
           <tbody>{(keywords.data ?? []).map((row) => (
             <tr key={row.id} data-testid="admin-unsubscribe-compliance-keyword-row"><td>{row.keyword}</td><td>{row.keywordNormalized}</td><td>{row.scope}</td><td>{row.tenantId ?? '-'}</td><td>{row.status}</td></tr>
-          ))}</tbody>
-        </table>
-      </section>
-
-      <section className="card" data-testid="admin-unsubscribe-compliance-unsubscribes-page">
-        <h2>退订证据</h2>
-        {records.isLoading && <p>正在加载退订证据…</p>}
-        {records.isError && <p role="alert">退订证据加载失败。</p>}
-        <table className="unsubscribe-table" data-testid="admin-unsubscribe-compliance-unsubscribes-table">
-          <thead><tr><th>租户</th><th>手机号</th><th>关键词</th><th>签名/产品</th><th>处理</th><th>通知</th><th>上行</th><th>时间</th></tr></thead>
-          <tbody>{(records.data ?? []).map((row) => (
-            <tr key={row.id} data-testid="admin-unsubscribe-compliance-unsubscribe-row">
-              <td>{row.tenantId}</td><td>{row.maskedMobile ?? '-'}</td><td>{row.triggerKeyword ?? '-'}</td>
-              <td>{row.signatureId ?? '-'}/{row.productCode ?? '-'}</td><td>{row.handlingState}</td>
-              <td data-testid="admin-unsubscribe-compliance-unsubscribes-notification-state">{row.notificationState}</td>
-              <td>{row.uplinkRecordId ?? '-'}</td><td>{row.unsubscribedAt ?? '-'}</td>
-            </tr>
           ))}</tbody>
         </table>
       </section>

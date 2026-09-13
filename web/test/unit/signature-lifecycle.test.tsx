@@ -151,6 +151,7 @@ describe('Phase 12 signature lifecycle UI', () => {
     await waitFor(() => expect(screen.getByTestId('admin-signature-lifecycle-signature-review-stats')).toHaveTextContent('待审核 1'));
 
     fireEvent.change(screen.getByTestId('admin-signature-lifecycle-signature-review-filters'), { target: { value: '优创' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=优创'))).toBe(true));
 
     const row = screen.getByTestId('admin-signature-lifecycle-signature-review-row');

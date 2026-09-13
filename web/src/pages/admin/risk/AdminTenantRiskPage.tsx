@@ -9,6 +9,7 @@ import {
   type TenantRiskEpisode,
 } from '@/api/tenantRiskAutoPauseApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/alert-engine.css';
 
 const defaultDraft = {
@@ -37,13 +38,16 @@ function displayRate(row: TenantRiskEpisode) {
 export default function AdminTenantRiskPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState(defaultDraft);
+  const [queryTenantDraft, setQueryTenantDraft] = useState(defaultDraft.tenantId);
+  const [queryTenantApplied, setQueryTenantApplied] = useState(defaultDraft.tenantId);
   const [reviewId, setReviewId] = useState('review-42');
   const [recoveryNote, setRecoveryNote] = useState('来源复核通过，恢复提交');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const tenantId = Number(draft.tenantId || 0);
-  const rules = useQuery({ queryKey: ['tenant-risk-rules', tenantId], queryFn: () => listTenantRiskRules(tenantId), retry: false });
-  const episodes = useQuery({ queryKey: ['tenant-risk-episodes', tenantId], queryFn: () => listTenantRiskEpisodes(tenantId), retry: false });
+  const queryTenantId = queryTenantApplied ? Number(queryTenantApplied) : undefined;
+  const rules = useQuery({ queryKey: ['tenant-risk-rules', queryTenantId], queryFn: () => listTenantRiskRules(queryTenantId), retry: false });
+  const episodes = useQuery({ queryKey: ['tenant-risk-episodes', queryTenantId], queryFn: () => listTenantRiskEpisodes(queryTenantId), retry: false });
 
   async function refresh() {
     await Promise.all([
@@ -103,7 +107,6 @@ export default function AdminTenantRiskPage() {
           <h1>机构风险预警与自动暂停</h1>
           <p className="page-description">按投诉率、失败率、退订率来源快照评估；来源不完整时显示未知，不显示安全比例。</p>
         </div>
-        <button type="button" onClick={() => void refresh()} data-testid="admin-tenant-risk-refresh">刷新</button>
       </header>
 
       {message && <p role="status" className="alert-engine-message success" data-testid="admin-tenant-risk-message">{message}</p>}
@@ -139,6 +142,16 @@ export default function AdminTenantRiskPage() {
         </div>
       </section>
 
+      <QueryPanel
+        onSubmit={() => setQueryTenantApplied(queryTenantDraft)}
+        onReset={() => {
+          setQueryTenantDraft('');
+          setQueryTenantApplied('');
+        }}
+        onRefresh={() => void refresh()}
+        refreshLegacyTestId="admin-tenant-risk-refresh"
+        result={(
+          <>
       <section className="card" data-testid="admin-tenant-risk-current-rules">
         <h2>当前规则</h2>
         {rules.isLoading && <p data-testid="admin-tenant-risk-rules-loading">正在加载规则…</p>}
@@ -190,6 +203,20 @@ export default function AdminTenantRiskPage() {
         <pre data-testid="admin-tenant-risk-source-snapshot">{firstEpisode?.sourceSnapshot ?? '暂无来源快照'}</pre>
         <span data-testid="admin-complaint-ratio-dashboard-complaint-ratio-tenant">投诉率来源可进入机构风险 episode</span>
       </section>
+
+          </>
+        )}
+      >
+        <QueryField name="tenant-risk-tenant" label="机构 ID">
+          <input
+            type="number"
+            min="1"
+            data-testid="admin-tenant-risk-query-tenant-id"
+            value={queryTenantDraft}
+            onChange={(event) => setQueryTenantDraft(event.target.value)}
+          />
+        </QueryField>
+      </QueryPanel>
 
       <section className="card alert-engine-rule-grid" data-testid="admin-tenant-risk-tenant-risk-recovery">
         <div>

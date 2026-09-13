@@ -14,6 +14,7 @@ import {
   type OperationFilter,
 } from '@/api/messageOperationsApi';
 import { mutationErrorMessage } from '@/api/client';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/message-operations.css';
 
 type Section = 'submissions' | 'sends' | 'receipts' | 'errors';
@@ -25,6 +26,8 @@ const SECTION_LABELS: Record<Section, string> = {
   errors: '错误详情',
 };
 
+const DEFAULT_FILTER: OperationFilter = { tenantId: '42', messageId: '', status: '', errorCode: '' };
+
 function newActionId(prefix: string) {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -35,15 +38,13 @@ function newActionId(prefix: string) {
 export default function MessageOperationsPage({ initialSection = 'submissions' }: { initialSection?: Section }) {
   const queryClient = useQueryClient();
   const [section, setSection] = useState<Section>(initialSection);
-  const [tenantId, setTenantId] = useState('42');
-  const [messageId, setMessageId] = useState('');
-  const [status, setStatus] = useState('');
-  const [errorCode, setErrorCode] = useState('');
+  const [draftFilter, setDraftFilter] = useState<OperationFilter>(DEFAULT_FILTER);
+  const [appliedFilter, setAppliedFilter] = useState<OperationFilter>(DEFAULT_FILTER);
   const [reason, setReason] = useState('运营复核确认');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const filter: OperationFilter = useMemo(() => ({ tenantId, messageId, status, errorCode }), [tenantId, messageId, status, errorCode]);
+  const filter: OperationFilter = useMemo(() => ({ ...appliedFilter }), [appliedFilter]);
   const queryOptions = { retry: false };
   const submissions = useQuery({ queryKey: ['message-ops-submissions', filter], queryFn: () => listSubmissions(filter), ...queryOptions });
   const sends = useQuery({ queryKey: ['message-ops-sends', filter], queryFn: () => listSends(filter), ...queryOptions });
@@ -87,13 +88,13 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     onError: (failure) => fail(failure, '回执重放失败'),
   });
   const bulkRetry = useMutation({
-    mutationFn: () => bulkErrorAction(newActionId('BULK'), 'BULK_RETRY', errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
+    mutationFn: () => bulkErrorAction(newActionId('BULK'), 'BULK_RETRY', filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
       (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId), reason),
     onSuccess: (result) => ok(`批量重试完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '批量重试失败'),
   });
   const markProblem = useMutation({
-    mutationFn: () => bulkErrorAction(newActionId('PROBLEM'), 'MARK_PROBLEM', errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
+    mutationFn: () => bulkErrorAction(newActionId('PROBLEM'), 'MARK_PROBLEM', filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
       (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId), reason),
     onSuccess: (result) => ok(`问题标记完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '问题标记失败'),
@@ -127,13 +128,17 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
       {error && <p role="alert" className="message-operations-alert error" data-testid="admin-message-receipt-operation-error">{error}</p>}
 
       <section className="card message-operations-filters">
-        <label>租户ID<input data-testid="admin-message-receipt-filter-tenant" value={tenantId} onChange={(event) => setTenantId(event.target.value)} /></label>
-        <label>消息ID<input data-testid="admin-message-receipt-filter-message" value={messageId} onChange={(event) => setMessageId(event.target.value)} /></label>
-        <label>状态<input data-testid="admin-message-receipt-filter-status" value={status} onChange={(event) => setStatus(event.target.value)} /></label>
-        <label>错误码<input data-testid="admin-message-receipt-filter-error-code" value={errorCode} onChange={(event) => setErrorCode(event.target.value)} /></label>
         <label>动作原因<input data-testid="admin-message-receipt-action-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></label>
       </section>
 
+      <QueryPanel
+        legacyPanelTestId="admin-message-receipt-query-panel"
+        onSubmit={() => setAppliedFilter({ ...draftFilter })}
+        onReset={() => {
+          setDraftFilter(DEFAULT_FILTER);
+          setAppliedFilter(DEFAULT_FILTER);
+        }}
+        result={(<>
       <div className="message-operations-tabs">
         {Object.entries(SECTION_LABELS).map(([key, label]) => (
           <button key={key} type="button" data-testid={`admin-message-receipt-tab-${key}`} className={section === key ? 'active' : ''} onClick={() => setSection(key as Section)}>{label}</button>
@@ -207,6 +212,21 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           </table>
         </section>
       )}
+        </>)}
+      >
+        <QueryField name="tenant-id" label="租户ID">
+          <input data-testid="admin-message-receipt-filter-tenant" value={draftFilter.tenantId ?? ''} onChange={(event) => setDraftFilter((current) => ({ ...current, tenantId: event.target.value }))} />
+        </QueryField>
+        <QueryField name="message-id" label="消息ID">
+          <input data-testid="admin-message-receipt-filter-message" value={draftFilter.messageId ?? ''} onChange={(event) => setDraftFilter((current) => ({ ...current, messageId: event.target.value }))} />
+        </QueryField>
+        <QueryField name="status" label="状态">
+          <input data-testid="admin-message-receipt-filter-status" value={draftFilter.status ?? ''} onChange={(event) => setDraftFilter((current) => ({ ...current, status: event.target.value }))} />
+        </QueryField>
+        <QueryField name="error-code" label="错误码">
+          <input data-testid="admin-message-receipt-filter-error-code" value={draftFilter.errorCode ?? ''} onChange={(event) => setDraftFilter((current) => ({ ...current, errorCode: event.target.value }))} />
+        </QueryField>
+      </QueryPanel>
     </section>
   );
 }

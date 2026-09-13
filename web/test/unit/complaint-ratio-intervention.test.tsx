@@ -97,7 +97,17 @@ describe('Phase 45 complaint ratio intervention UI', () => {
 
     expect(await screen.findByTestId('admin-complaint-ratio-dashboard-complaint-ratio-channel'))
       .toHaveTextContent('移动主通道');
-    expect(screen.getByTestId('admin-complaint-ratio-dashboard-complaint-ratio-threshold')).toHaveTextContent('3.00‰');
+    const queryPanel = screen.getByTestId('query-panel');
+    expect(queryPanel).toBeVisible();
+    expect(screen.getByTestId('query-fields')).toContainElement(screen.getByTestId('admin-complaint-ratio-dashboard-channel-month'));
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-refresh'));
+    vi.mocked(dashboardApi.fetchComplaintRatio).mockClear();
+    fireEvent.change(screen.getByTestId('admin-complaint-ratio-dashboard-channel-month'), { target: { value: '2026-07' } });
+    fireEvent.change(screen.getByTestId('admin-complaint-ratio-dashboard-channel-range'), { target: { value: 'all' } });
+    expect(dashboardApi.fetchComplaintRatio).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(dashboardApi.fetchComplaintRatio).toHaveBeenCalledWith('channel', '2026-07', { topN: 10, all: true }));
+    await waitFor(() => expect(screen.getByTestId('admin-complaint-ratio-dashboard-complaint-ratio-threshold')).toHaveTextContent('3.00‰'));
     expect(screen.getByTestId('admin-complaint-ratio-dashboard-complaint-ratio-threshold')).toHaveTextContent('当前显示超阈值：1');
     expect(screen.getByTestId('admin-complaint-ratio-dashboard-complaint-ratio-period')).toHaveTextContent('显示全部');
     const unknownRow = screen.getByRole('row', { name: /未知归因通道/ });

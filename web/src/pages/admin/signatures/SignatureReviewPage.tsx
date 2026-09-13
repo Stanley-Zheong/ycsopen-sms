@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import {
   decideSignature,
   listSignatureFilings,
@@ -17,6 +18,7 @@ import '@/styles/signature-lifecycle.css';
 export default function SignatureReviewPage() {
   const userType = useAuthStore((state) => state.userType);
   const canReview = userType === 'ADMIN' || userType === 'OPERATOR';
+  const [keywordDraft, setKeywordDraft] = useState('');
   const [keyword, setKeyword] = useState('');
   const [decisionTarget, setDecisionTarget] = useState<SignatureRecord | null>(null);
   const [decisionValue, setDecisionValue] = useState<'APPROVE' | 'REJECT' | 'SUPPLEMENT_REQUIRED'>('APPROVE');
@@ -114,35 +116,45 @@ export default function SignatureReviewPage() {
         <span>高风险 {summary?.highRisk ?? 0}</span>
       </section>
 
-      <label className="signature-lifecycle-filter">筛选签名
-        <input data-testid="admin-signature-lifecycle-signature-review-filters" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
-      </label>
-
-      <section className="card">
-        {queue.isLoading && <p>正在加载…</p>}
-        {!queue.isLoading && rows.length === 0 && <p>暂无签名审核数据。</p>}
-        {rows.length > 0 && (
-          <table className="ratio-table">
-            <thead><tr><th>签名</th><th>机构</th><th>类型</th><th>风险</th><th>状态</th><th>材料</th><th>操作</th></tr></thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} data-testid="admin-signature-lifecycle-signature-review-row">
-                  <td>{row.signContent}</td>
-                  <td>{row.tenantId}</td>
-                  <td>{row.signType} / {row.usageType}</td>
-                  <td>{row.riskLevel}</td>
-                  <td>{row.auditStatus}</td>
-                  <td>{row.evidenceRef ?? '未提交'}</td>
-                  <td>
-                    <button type="button" data-testid="admin-signature-lifecycle-signature-review-decision-open" onClick={() => setDecisionTarget(row)}>审核</button>
-                    <button type="button" data-testid="admin-signature-lifecycle-signature-filing-matrix-open" onClick={() => void openFilings(row)}>报备</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <QueryPanel
+        onSubmit={() => setKeyword(keywordDraft)}
+        onReset={() => {
+          setKeywordDraft('');
+          setKeyword('');
+        }}
+        result={(
+          <>
+            {queue.isLoading && <p>正在加载…</p>}
+            {queue.isError && <p role="alert">签名审核数据加载失败。</p>}
+            {!queue.isLoading && !queue.isError && rows.length === 0 && <p>暂无签名审核数据。</p>}
+            {rows.length > 0 && (
+              <table className="ratio-table">
+                <thead><tr><th>签名</th><th>机构</th><th>类型</th><th>风险</th><th>状态</th><th>材料</th><th>操作</th></tr></thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} data-testid="admin-signature-lifecycle-signature-review-row">
+                      <td>{row.signContent}</td>
+                      <td>{row.tenantId}</td>
+                      <td>{row.signType} / {row.usageType}</td>
+                      <td>{row.riskLevel}</td>
+                      <td>{row.auditStatus}</td>
+                      <td>{row.evidenceRef ?? '未提交'}</td>
+                      <td>
+                        <button type="button" data-testid="admin-signature-lifecycle-signature-review-decision-open" onClick={() => setDecisionTarget(row)}>审核</button>
+                        <button type="button" data-testid="admin-signature-lifecycle-signature-filing-matrix-open" onClick={() => void openFilings(row)}>报备</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
         )}
-      </section>
+      >
+        <QueryField name="keyword" label="筛选签名">
+          <input data-testid="admin-signature-lifecycle-signature-review-filters" value={keywordDraft} onChange={(event) => setKeywordDraft(event.target.value)} />
+        </QueryField>
+      </QueryPanel>
 
       {decisionTarget && (
         <ModalDialog labelledBy="signature-review-decision-title" onRequestClose={() => setDecisionTarget(null)}>

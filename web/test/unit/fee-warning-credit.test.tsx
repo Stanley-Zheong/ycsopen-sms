@@ -85,12 +85,31 @@ describe('Phase 40 fee warning and credit enforcement UI', () => {
     await waitFor(() => expect(screen.getByTestId('admin-fee-warning-fee-warning-credit-action')).toHaveTextContent('MANUAL_APPROVAL'));
     await waitFor(() => expect(screen.getByTestId('admin-fee-warning-fee-warning-enforcement-action')).toHaveTextContent('PENDING'));
 
+    const queryPanel = screen.getByTestId('query-panel');
+    const queryTenant = screen.getByTestId('admin-fee-warning-query-tenant-id');
+    expect(queryPanel).toContainElement(queryTenant);
+    expect(queryPanel.querySelectorAll('input, select, textarea')).toHaveLength(1);
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-fee-warning-fee-warning-tenant-id'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-fee-warning-fee-warning-approval-reason'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-fee-warning-fee-warning-rule-save'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-fee-warning-fee-warning-approve'));
+    expect(screen.getByTestId('query-label-fee-warning-tenant')).toHaveTextContent('机构 ID');
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('admin-fee-warning-refresh'));
+    fireEvent.change(queryTenant, { target: { value: '99' } });
+    fireEvent.change(screen.getByTestId('admin-fee-warning-fee-warning-tenant-id'), { target: { value: '77' } });
+    expect(feeApi.listFeeWarningRules).not.toHaveBeenCalledWith(99);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(feeApi.listFeeWarningRules).toHaveBeenCalledWith(99));
+    await waitFor(() => expect(feeApi.listFeeWarningEpisodes).toHaveBeenCalledWith(99));
+
     fireEvent.click(screen.getByTestId('admin-fee-warning-fee-warning-rule-save'));
-    await waitFor(() => expect(feeApi.saveFeeWarningRule).toHaveBeenCalled());
+    await waitFor(() => expect(feeApi.saveFeeWarningRule).toHaveBeenCalledWith(expect.objectContaining({ tenantId: 77 })));
     fireEvent.click(screen.getByTestId('admin-fee-warning-fee-warning-evaluate'));
-    await waitFor(() => expect(feeApi.evaluateFeeWarning).toHaveBeenCalledWith({ tenantId: 42, estimatedAmountMil: 50 }));
+    await waitFor(() => expect(feeApi.evaluateFeeWarning).toHaveBeenCalledWith({ tenantId: 77, estimatedAmountMil: 50 }));
     fireEvent.click(screen.getByTestId('admin-fee-warning-fee-warning-approve'));
     await waitFor(() => expect(feeApi.approveFeeWarningEpisode).toHaveBeenCalledWith(501, '允许本次提交'));
+
+    expect(screen.getByTestId('admin-fee-warning-fee-warning-tenant-id')).toHaveValue('77');
   });
 
   it('shows tenant low balance warning with source amount and delivery state', async () => {

@@ -184,7 +184,7 @@ describe('Phase 44 operational dashboards UI', () => {
       });
     renderWithProviders(<DashboardPage />);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('运营仪表盘加载失败');
+    expect(await screen.findByText('运营仪表盘加载失败，可重试。')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-refresh'));
 
     await waitFor(() => expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-page')).toHaveTextContent('150'));
@@ -219,7 +219,12 @@ describe('Phase 44 operational dashboards UI', () => {
     cleanup();
     renderWithProviders(<DashboardConfigurationPage />);
     await waitFor(() => expect(screen.getByTestId('admin-operational-dashboards-dashboard-configuration-page')).toHaveTextContent('ADMIN'));
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    vi.mocked(operationalApi.getDashboardConfiguration).mockClear();
     fireEvent.change(screen.getByTestId('admin-operational-dashboards-dashboard-configuration-role'), { target: { value: 'TENANT_ADMIN' } });
+    expect(operationalApi.getDashboardConfiguration).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(operationalApi.getDashboardConfiguration).toHaveBeenCalledWith('TENANT_ADMIN'));
     fireEvent.click(screen.getByTestId('admin-operational-dashboards-dashboard-configuration-save'));
     await waitFor(() => expect(operationalApi.saveDashboardConfiguration).toHaveBeenCalled());
     expect(vi.mocked(operationalApi.saveDashboardConfiguration).mock.calls[0][0]).toMatchObject({

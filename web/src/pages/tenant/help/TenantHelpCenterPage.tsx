@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { API_DOCS, CUSTOMER_SERVICE, GUIDE_ARTICLES, TENANT_HELP_VERSION } from '@/api/tenantHelpContent';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/tenant-help.css';
 
 type HelpSection = 'guide' | 'api' | 'service';
@@ -38,6 +39,7 @@ function HelpShell({ children }: { children: ReactNode }) {
 }
 
 function Guide() {
+  const [draftQuery, setDraftQuery] = useState('');
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -48,22 +50,31 @@ function Guide() {
       .includes(needle));
   }, [query]);
   return (
-    <section className="card tenant-help-card" data-testid="tenant-tenant-help-guide-search-region">
-      <h2>版本化使用指南</h2>
-      <label>搜索指南
-        <input data-testid="tenant-tenant-help-guide-search-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="发送、资质、对账、短链" />
-      </label>
-      <div className="tenant-help-article-grid" data-testid="tenant-tenant-help-guide-results">
-        {filtered.map((article) => (
-          <article key={article.id} className="tenant-help-article" data-testid="tenant-tenant-help-guide-article">
-            <h3>{article.title}</h3>
-            <p>{article.category} / 权限：{article.permissions.join('、')}</p>
-            <p>{article.summary}</p>
-            <ol>{article.steps.map((step) => <li key={step}>{step}</li>)}</ol>
-          </article>
-        ))}
-      </div>
-    </section>
+    <QueryPanel
+      className="tenant-help-card"
+      onSubmit={() => setQuery(draftQuery)}
+      onReset={() => { setDraftQuery(''); setQuery(''); }}
+      legacyPanelTestId="tenant-tenant-help-guide-search-region"
+      result={(
+        <>
+          <h2>版本化使用指南</h2>
+          <div className="tenant-help-article-grid" data-testid="tenant-tenant-help-guide-results">
+            {filtered.map((article) => (
+              <article key={article.id} className="tenant-help-article" data-testid="tenant-tenant-help-guide-article">
+                <h3>{article.title}</h3>
+                <p>{article.category} / 权限：{article.permissions.join('、')}</p>
+                <p>{article.summary}</p>
+                <ol>{article.steps.map((step) => <li key={step}>{step}</li>)}</ol>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+    >
+      <QueryField name="guide-search" label="搜索指南">
+        <input data-testid="tenant-tenant-help-guide-search-input" value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="发送、资质、对账、短链" />
+      </QueryField>
+    </QueryPanel>
   );
 }
 

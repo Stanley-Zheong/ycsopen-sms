@@ -185,6 +185,7 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-filters')).toBeVisible();
     expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-row')).toHaveTextContent('MSG-22');
     fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: 'SMS' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, 'SMS'));
   });
 
@@ -195,7 +196,20 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     expect(await screen.findByTestId('admin-trial-prepaid-tenant-trial-quota')).toHaveValue(500);
     expect(screen.getByTestId('admin-trial-prepaid-tenant-trial-validity')).toHaveTextContent('有效期结束');
     expect(await screen.findByTestId('admin-trial-prepaid-balance-audit-row')).toHaveTextContent('DOC-22');
+    const queryTenant = screen.getByTestId('admin-trial-prepaid-balance-audit-tenant-filter');
+    const queryPanel = screen.getByTestId('query-panel');
+    expect(queryPanel).toContainElement(queryTenant);
+    expect(queryPanel.querySelectorAll('input, select, textarea')).toHaveLength(1);
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-trial-prepaid-tenant-id'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-trial-prepaid-activate-trial'));
+    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-secure-async-balance-audit-export'));
+    expect(screen.getByTestId('query-label-balance-audit-tenant')).toHaveTextContent('机构 ID');
+    fireEvent.change(queryTenant, { target: { value: '99' } });
+    expect(trialPrepaidApi.listBalanceAudits).not.toHaveBeenCalledWith(99);
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(trialPrepaidApi.listBalanceAudits).toHaveBeenCalledWith(99));
     fireEvent.click(screen.getByTestId('admin-trial-prepaid-activate-trial'));
     await waitFor(() => expect(trialPrepaidApi.activateTrial).toHaveBeenCalledWith(42, 500, '2026-09-09T00:00:00', '2026-09-23T00:00:00'));
+    expect(screen.getByTestId('admin-trial-prepaid-tenant-id')).toHaveValue('42');
   });
 });

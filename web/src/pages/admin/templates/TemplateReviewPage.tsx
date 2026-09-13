@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ModalDialog from '@/components/common/ModalDialog';
+import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { decideTemplate, listTemplateReviewQueue, type TemplateRecord } from '@/api/templateLifecycleApi';
 import { mutationErrorMessage } from '@/api/client';
 import { isPlatformRole, useAuthStore } from '@/store/authStore';
@@ -9,6 +10,7 @@ import '@/styles/template-lifecycle.css';
 export default function TemplateReviewPage() {
   const userType = useAuthStore((state) => state.userType);
   const canReview = userType === 'ADMIN' || userType === 'OPERATOR';
+  const [keywordDraft, setKeywordDraft] = useState('');
   const [keyword, setKeyword] = useState('');
   const [decisionTarget, setDecisionTarget] = useState<TemplateRecord | null>(null);
   const [decision, setDecision] = useState<'APPROVE' | 'REJECT' | 'AMENDMENT_REQUIRED'>('APPROVE');
@@ -67,32 +69,42 @@ export default function TemplateReviewPage() {
         <span>需修改 {summary?.amendmentRequired ?? 0}</span>
       </section>
 
-      <label className="template-lifecycle-filter">筛选模板
-        <input data-testid="admin-template-lifecycle-template-review-filters" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
-      </label>
-
-      <section className="card">
-        {queue.isLoading && <p>正在加载…</p>}
-        {!queue.isLoading && rows.length === 0 && <p>暂无模板审核数据。</p>}
-        {rows.length > 0 && (
-          <table className="ratio-table">
-            <thead><tr><th>模板</th><th>机构</th><th>类型</th><th>签名</th><th>变量</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} data-testid="admin-template-lifecycle-template-review-row">
-                  <td>{row.templateName}<br />{row.content}</td>
-                  <td>{row.tenantId}</td>
-                  <td>{row.templateType}</td>
-                  <td>{row.signatureId}</td>
-                  <td>{row.variableNames.join(', ') || '无变量'}</td>
-                  <td>{row.auditStatus}</td>
-                  <td><button type="button" data-testid="admin-template-lifecycle-template-review-decision-open" onClick={() => setDecisionTarget(row)}>审核</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <QueryPanel
+        onSubmit={() => setKeyword(keywordDraft)}
+        onReset={() => {
+          setKeywordDraft('');
+          setKeyword('');
+        }}
+        result={(
+          <>
+            {queue.isLoading && <p>正在加载…</p>}
+            {queue.isError && <p role="alert">模板审核数据加载失败。</p>}
+            {!queue.isLoading && !queue.isError && rows.length === 0 && <p>暂无模板审核数据。</p>}
+            {rows.length > 0 && (
+              <table className="ratio-table">
+                <thead><tr><th>模板</th><th>机构</th><th>类型</th><th>签名</th><th>变量</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.id} data-testid="admin-template-lifecycle-template-review-row">
+                      <td>{row.templateName}<br />{row.content}</td>
+                      <td>{row.tenantId}</td>
+                      <td>{row.templateType}</td>
+                      <td>{row.signatureId}</td>
+                      <td>{row.variableNames.join(', ') || '无变量'}</td>
+                      <td>{row.auditStatus}</td>
+                      <td><button type="button" data-testid="admin-template-lifecycle-template-review-decision-open" onClick={() => setDecisionTarget(row)}>审核</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
         )}
-      </section>
+      >
+        <QueryField name="keyword" label="筛选模板">
+          <input data-testid="admin-template-lifecycle-template-review-filters" value={keywordDraft} onChange={(event) => setKeywordDraft(event.target.value)} />
+        </QueryField>
+      </QueryPanel>
 
       {decisionTarget && (
         <ModalDialog labelledBy="template-review-decision-title" onRequestClose={() => setDecisionTarget(null)}>

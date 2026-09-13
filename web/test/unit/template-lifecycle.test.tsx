@@ -166,6 +166,7 @@ describe('Phase 13 template lifecycle UI', () => {
     await waitFor(() => expect(screen.getByTestId('admin-template-lifecycle-template-review-stats')).toHaveTextContent('待审核 1'));
 
     fireEvent.change(screen.getByTestId('admin-template-lifecycle-template-review-filters'), { target: { value: '验证码' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(seen.some((req) => decodeURIComponent(req.url).includes('keyword=验证码'))).toBe(true));
     const row = screen.getByTestId('admin-template-lifecycle-template-review-row');
     fireEvent.click(within(row).getByTestId('admin-template-lifecycle-template-review-decision-open'));
