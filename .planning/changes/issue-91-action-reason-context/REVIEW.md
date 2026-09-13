@@ -7,9 +7,11 @@ target-description, error-group completeness, and value-mapping gaps. Those
 findings were resolved, and commit
 `bfc134a9db111bb2d66af5f070c230b3ec111bc2` passed every remote job. A later
 live review then found message-operation retry identity and taxonomy join
-multiplicity gaps. Final review is reopened until those corrections pass on a
-newer pull-request head. Existing API shapes, permissions, tenant boundaries,
-state transitions, and production audit contracts remain unchanged.
+multiplicity gaps. Those corrections passed independent review and the complete
+remote gate on `42e588fd81229e91d0aaebdab35e4e3e88232a3e`; Core's only failure
+was the deliberately open three-item TODO sentinel. Existing API shapes,
+permissions, tenant boundaries, state transitions, and production audit
+contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
 or documentation issue. It also read back all 15 evidence source digests after
@@ -18,8 +20,9 @@ closed that review's remote verification boundary; the later findings require a
 new independent readback. That readback has now passed on the current worktree:
 the reviewer confirmed stable retry identity, conservative one-row taxonomy
 collapse, H2/MySQL SQL compatibility, focused test coverage, and all 15 source
-digests. A new pull-request head still must pass the complete remote gate before
-the final TODOs can close.
+digests. Pull-request run `34768234208` then passed the installed-Chrome real
+service lane and all other remote jobs except the expected TODO sentinel, so the
+final TODOs can close.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,
