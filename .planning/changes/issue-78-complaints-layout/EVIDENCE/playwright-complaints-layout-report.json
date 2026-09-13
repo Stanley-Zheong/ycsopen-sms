@@ -1,0 +1,64 @@
+{
+  "recordedAt": "2026-09-13T04:40:57Z",
+  "baseCommit": "e91ae04d28d7b12e8789303d0405fc94454f2837",
+  "result": "PASS",
+  "expected": 1,
+  "unexpected": 0,
+  "project": "bundled-chromium",
+  "engine": "Chromium 151.0.7922.34",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "nativeLibrarySource": "Task-local extraction of Debian 12 arm64 Chromium runtime libraries"
+  },
+  "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell",
+  "command": "From web/: LD_LIBRARY_PATH=<chromium-libraries> YCSOPEN_USE_BUNDLED_CHROMIUM=true YCSOPEN_WEB_PORT=<unused-port> YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=<report-json> ./node_modules/.bin/playwright test test/scripts/complaint-case.spec.ts --config playwright.config.ts --project=bundled-chromium --workers=1 --grep pw-issue-78-complaints-layout --timeout=120000 --reporter=json",
+  "rawReportSha256": "06cdac194e1492ae41c192ed7229a5545b99ebf905e56b6ed0d37870b06ece89",
+  "sourceSha256": {
+    "docs/frontend页面实现规范.md": "26fd18d791bd6193aa5b18a65605f5dc71b5427dbf1cc044e8834283cdcd923b",
+    "web/playwright.config.ts": "3b63be387e0014e024df92cc6801142c197aa83c365b70b6ccf4faf7631d7405",
+    "web/src/pages/admin/complaints/AdminComplaintsPage.tsx": "a3d854d8d018d21ec874ab224559825485afe01453cc2743675779a9f518cf8d",
+    "web/src/styles/alert-engine.css": "d988bd388322afc830fb4f015416ccb4fe198b917cb9be0c0b6c968d94c23276",
+    "web/test/scripts/complaint-case.spec.ts": "8e411532cc311b357684ad16e41d4956e09430285d45581b3d3eb35ac1165e87",
+    "web/test/unit/complaint-case.test.tsx": "d0702dd12e265f1472d05cb51d3eb8f4a540b6edb2ba7eae859139e6fa6d893d"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-78-COMPLAINTS-LAYOUT",
+      "playwrightId": "pw-issue-78-complaints-layout",
+      "obligationId": "OBL-ISSUE-78-COMPLAINTS-LAYOUT",
+      "status": "passed",
+      "durationMs": 4035
+    }
+  ],
+  "screenshots": [
+    {
+      "state": "empty",
+      "artifact": "complaints-layout.png",
+      "sha256": "e122bc4037535a34483a25c30e09eb9fa77327517fba0e0796630dd9564b2dc7",
+      "viewport": "1440x900",
+      "fullPage": true
+    },
+    {
+      "state": "populated-long-values",
+      "artifact": "complaints-layout-populated.png",
+      "sha256": "42894cb9b6250a00075b2b2004c6dead5d87cca054d30872c53f1c93b87960a9",
+      "viewport": "1440x900",
+      "fullPage": true
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "complaintApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "interceptedApiGroups": [
+      "authentication: /api/v1/console/auth/login",
+      "account overview: /api/v1/console/account-overview",
+      "dashboard complaint ratio: /api/v1/console/dashboard/complaint-ratio/*",
+      "complaints: /api/v1/console/complaints and page-owned complaint action routes"
+    ],
+    "reason": "The issue claim is rendered layout geometry and visible table structure in both empty and populated-long-value states. The test renders the real React route with Desktop Chrome device settings and intercepted page APIs, so it does not claim backend-service acceptance. A native Google Chrome binary was unavailable in this runner; the executed browser was the repository-cached Chromium headless shell. The timeout was increased only to tolerate shared-runner scheduling pressure and did not change any assertion."
+  }
+}

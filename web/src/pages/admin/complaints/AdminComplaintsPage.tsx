@@ -228,40 +228,51 @@ export default function AdminComplaintsPage() {
       {message && <p role="status" className="alert-engine-message success" data-testid="admin-complaint-case-complaints-message">{message}</p>}
       {error && <p role="alert" className="alert-engine-message error" data-testid="admin-complaint-case-complaints-error">{error}</p>}
 
-      <section className="card alert-engine-rule-grid">
-        <div>
+      <form
+        className="complaint-intake-form"
+        data-testid="entity-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          createCase.mutate();
+        }}
+      >
+        <section className="card complaint-section-card" data-testid="admin-complaint-case-complaints-intake-card">
           <h2>投诉登记</h2>
-          <label>来源<input data-testid="admin-complaint-case-complaints-source" value={draft.source} onChange={(event) => setField('source', event.target.value)} /></label>
-          <label>摘要<input data-testid="admin-complaint-case-complaints-summary" value={draft.summary} onChange={(event) => setField('summary', event.target.value)} /></label>
-          <label>机构 ID<input data-testid="admin-complaint-case-complaints-tenant-id" value={draft.tenantId} onChange={(event) => setField('tenantId', event.target.value)} /></label>
-          <label>通道 ID<input data-testid="admin-complaint-case-complaints-channel-id" value={draft.channelId} onChange={(event) => setField('channelId', event.target.value)} /></label>
-          <label>签名 ID<input data-testid="admin-complaint-case-complaints-signature-id" value={draft.signatureId} onChange={(event) => setField('signatureId', event.target.value)} /></label>
-          <label>模板 ID<input data-testid="admin-complaint-case-complaints-template-id" value={draft.templateId} onChange={(event) => setField('templateId', event.target.value)} /></label>
-        </div>
-        <div>
-          <h2>归因与要求</h2>
-          <label>消息 ID<input data-testid="admin-complaint-case-complaints-message-id" value={draft.messageId} onChange={(event) => setField('messageId', event.target.value)} /></label>
-          <label>内容类型<input data-testid="admin-complaint-case-complaints-content-type" value={draft.contentType} onChange={(event) => setField('contentType', event.target.value)} /></label>
-          <label>被投诉号码<input data-testid="admin-complaint-case-complaints-mobile" value={draft.complainedMobile} onChange={(event) => setField('complainedMobile', event.target.value)} /></label>
-          <label>归因质量<select data-testid="admin-complaint-case-complaints-attribution-draft" value={draft.attributionQuality} onChange={(event) => setField('attributionQuality', event.target.value)}>
-            <option value="COMPLETE">COMPLETE</option>
-            <option value="UNKNOWN">UNKNOWN</option>
-          </select></label>
-          <label>处置要求<input data-testid="admin-complaint-case-complaints-requirement" value={draft.requirement} onChange={(event) => setField('requirement', event.target.value)} /></label>
-          <button type="button" data-testid="admin-complaint-case-complaints-create" onClick={() => createCase.mutate()}>登记投诉</button>
-        </div>
-      </section>
+          <div className="complaint-field-grid">
+            <label>来源<input data-testid="admin-complaint-case-complaints-source" value={draft.source} onChange={(event) => setField('source', event.target.value)} /></label>
+            <label>摘要<input data-testid="admin-complaint-case-complaints-summary" value={draft.summary} onChange={(event) => setField('summary', event.target.value)} /></label>
+            <label>机构 ID<input data-testid="admin-complaint-case-complaints-tenant-id" value={draft.tenantId} onChange={(event) => setField('tenantId', event.target.value)} /></label>
+            <label>通道 ID<input data-testid="admin-complaint-case-complaints-channel-id" value={draft.channelId} onChange={(event) => setField('channelId', event.target.value)} /></label>
+            <label>签名 ID<input data-testid="admin-complaint-case-complaints-signature-id" value={draft.signatureId} onChange={(event) => setField('signatureId', event.target.value)} /></label>
+            <label>模板 ID<input data-testid="admin-complaint-case-complaints-template-id" value={draft.templateId} onChange={(event) => setField('templateId', event.target.value)} /></label>
+          </div>
+        </section>
 
-      <section className="card alert-engine-rule-grid">
-        <div>
-          <h2>处理证据</h2>
+        <section className="card complaint-section-card" data-testid="admin-complaint-case-complaints-attribution-card">
+          <h2>归因与要求</h2>
+          <div className="complaint-field-grid">
+            <label>消息 ID<input data-testid="admin-complaint-case-complaints-message-id" value={draft.messageId} onChange={(event) => setField('messageId', event.target.value)} /></label>
+            <label>内容类型<input data-testid="admin-complaint-case-complaints-content-type" value={draft.contentType} onChange={(event) => setField('contentType', event.target.value)} /></label>
+            <label>被投诉号码<input data-testid="admin-complaint-case-complaints-mobile" value={draft.complainedMobile} onChange={(event) => setField('complainedMobile', event.target.value)} /></label>
+            <label>归因质量<select data-testid="admin-complaint-case-complaints-attribution-draft" value={draft.attributionQuality} onChange={(event) => setField('attributionQuality', event.target.value)}>
+              <option value="COMPLETE">COMPLETE</option>
+              <option value="UNKNOWN">UNKNOWN</option>
+            </select></label>
+            <label>处置要求<input data-testid="admin-complaint-case-complaints-requirement" value={draft.requirement} onChange={(event) => setField('requirement', event.target.value)} /></label>
+            <div className="complaint-form-actions" data-testid="form-actions">
+              <button type="submit" data-testid="form-submit">登记投诉</button>
+            </div>
+          </div>
+        </section>
+      </form>
+
+      <section className="card complaint-section-card" data-testid="admin-complaint-case-complaints-evidence-card">
+        <h2>处理证据</h2>
+        <div className="complaint-field-grid">
           <label>处理意见<input data-testid="admin-complaint-case-complaints-opinion" value={stateDraft.opinion} onChange={(event) => setStateField('opinion', event.target.value)} /></label>
           <label>处置动作<input data-testid="admin-complaint-case-complaints-remediation-note" value={stateDraft.remediation} onChange={(event) => setStateField('remediation', event.target.value)} /></label>
           <label>整改要求<input data-testid="admin-complaint-case-complaints-state-requirement" value={stateDraft.requirement} onChange={(event) => setStateField('requirement', event.target.value)} /></label>
           <label>关闭说明<input data-testid="admin-complaint-case-complaints-close-note" value={stateDraft.closeNote} onChange={(event) => setStateField('closeNote', event.target.value)} /></label>
-        </div>
-        <div>
-          <h2>处置与恢复证据</h2>
           <label>处置方式<select data-testid="admin-complaint-case-complaints-disposal-type" value={remediationDraft.disposalType} onChange={(event) => setRemediationField('disposalType', event.target.value)}>
             <option value="AUTO">自动匹配可用归因</option>
             <option value="SUSPEND_CHANNEL">暂停通道</option>
@@ -276,35 +287,67 @@ export default function AdminComplaintsPage() {
         </div>
       </section>
 
-      {cases.isLoading && <p data-testid="admin-complaint-case-complaints-loading">正在加载投诉案件…</p>}
-      {cases.isError && <p role="alert" data-testid="admin-complaint-case-complaints-load-error">投诉案件加载失败。</p>}
-
-      <section className="card">
+      <section className="card complaint-section-card" data-testid="admin-complaint-case-complaints-list-card">
         <h2>投诉列表</h2>
-        <table className="alert-engine-table" data-testid="admin-complaint-case-complaints-table">
-          <thead>
-            <tr><th>来源</th><th>摘要</th><th>归因质量</th><th>状态</th><th>处置资源</th><th>要求</th><th>动作</th></tr>
-          </thead>
-          <tbody>
-            {(cases.data ?? []).map((row) => (
-              <tr key={row.id} data-testid="admin-complaint-case-complaints-row">
-                <td>{row.source}</td>
-                <td>{row.summary}</td>
-                <td data-testid="admin-complaint-case-complaints-attribution-quality">{row.attributionQuality}</td>
-                <td data-testid="admin-complaint-case-complaints-state-action">{row.status}</td>
-                <td data-testid="admin-complaint-case-complaints-remediation-resource">{targetSummary(row)}</td>
-                <td>{row.requirement ?? 'UNKNOWN'}</td>
-                <td>
-                  <button type="button" data-testid="admin-complaint-case-complaints-accept" onClick={() => acceptCase.mutate(row)}>接单</button>
-                  <button type="button" data-testid="admin-complaint-case-complaints-handle" onClick={() => handleCase.mutate(row)}>处理</button>
-                  <button type="button" data-testid="admin-complaint-case-complaints-remediation" onClick={() => remediateCase.mutate(row)}>资源处置</button>
-                  <button type="button" data-testid="admin-complaint-case-complaints-remediation-recovery" disabled={disposalIdsByCase[row.id] == null} onClick={() => recoverCase.mutate(row)}>恢复</button>
-                  <button type="button" data-testid="admin-complaint-case-complaints-close" onClick={() => closeCase.mutate(row)}>关闭</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="complaint-table-wrap" data-testid="admin-complaint-case-complaints-table">
+          <table className="alert-engine-table complaint-table" data-testid="data-table">
+            <colgroup>
+              <col className="complaint-table-source" />
+              <col className="complaint-table-summary" />
+              <col className="complaint-table-quality" />
+              <col className="complaint-table-status" />
+              <col className="complaint-table-resource" />
+              <col className="complaint-table-requirement" />
+              <col className="complaint-table-actions-column" />
+            </colgroup>
+            <thead>
+              <tr><th>来源</th><th>摘要</th><th>归因质量</th><th>状态</th><th>处置资源</th><th>要求</th><th>动作</th></tr>
+            </thead>
+            <tbody>
+              {cases.isLoading ? (
+                <tr>
+                  <td colSpan={7} className="complaint-table-state" data-testid="admin-complaint-case-complaints-loading">正在加载投诉案件…</td>
+                </tr>
+              ) : cases.isError ? (
+                <tr>
+                  <td colSpan={7} className="complaint-table-state" role="alert" data-testid="admin-complaint-case-complaints-load-error">投诉案件加载失败。</td>
+                </tr>
+              ) : (cases.data ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="complaint-table-state" data-testid="table-empty">暂无投诉记录</td>
+                </tr>
+              ) : (cases.data ?? []).map((row) => {
+                const resourceSummary = targetSummary(row);
+                const requirement = row.requirement ?? 'UNKNOWN';
+                return (
+                  <tr key={row.id} data-testid="admin-complaint-case-complaints-row">
+                    <td><span className="complaint-table-truncate" title={row.source}>{row.source}</span></td>
+                    <td><span className="complaint-table-truncate" title={row.summary}>{row.summary}</span></td>
+                    <td data-testid="admin-complaint-case-complaints-attribution-quality">
+                      <span className="complaint-table-truncate" title={row.attributionQuality}>{row.attributionQuality}</span>
+                    </td>
+                    <td data-testid="admin-complaint-case-complaints-state-action">
+                      <span className="complaint-table-truncate" title={row.status}>{row.status}</span>
+                    </td>
+                    <td data-testid="admin-complaint-case-complaints-remediation-resource">
+                      <span className="complaint-table-truncate" title={resourceSummary}>{resourceSummary}</span>
+                    </td>
+                    <td><span className="complaint-table-truncate" title={requirement}>{requirement}</span></td>
+                    <td>
+                      <div className="complaint-table-actions">
+                        <button type="button" data-testid="admin-complaint-case-complaints-accept" onClick={() => acceptCase.mutate(row)}>接单</button>
+                        <button type="button" data-testid="admin-complaint-case-complaints-handle" onClick={() => handleCase.mutate(row)}>处理</button>
+                        <button type="button" data-testid="admin-complaint-case-complaints-remediation" onClick={() => remediateCase.mutate(row)}>资源处置</button>
+                        <button type="button" data-testid="admin-complaint-case-complaints-remediation-recovery" disabled={disposalIdsByCase[row.id] == null} onClick={() => recoverCase.mutate(row)}>恢复</button>
+                        <button type="button" data-testid="admin-complaint-case-complaints-close" onClick={() => closeCase.mutate(row)}>关闭</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
     </section>
   );
