@@ -3,6 +3,8 @@
 .planning
 **/node_modules
 **/dist
+!web/dist/
+!web/dist/**
 **/target
 **/.DS_Store
 **/playwright-report
