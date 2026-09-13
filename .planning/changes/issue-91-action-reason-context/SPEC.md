@@ -32,10 +32,15 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
   the export snapshot.
 - Error bulk actions belong to the error-group row whose action was chosen. The
   dialog and request use that row's error code and only currently loaded failed
-  messages with the same code. Groups exceeding the backend limit of 50 are not
-  partially submitted. While send targets are loading, when target loading
-  fails, or when a group has zero or more than 50 matching failed messages, its
-  bulk controls are disabled and no dialog or request may be created.
+  messages with the same code. The loaded target count must equal the error
+  group's aggregate total, so a list truncated by its independent 200-row limit
+  cannot become a partial submission. Groups exceeding the backend limit of 50
+  are not partially submitted. The display-only `UNKNOWN` group represents a
+  null stored error code and cannot be passed losslessly to the existing bulk
+  API, so its actions remain unavailable. While send targets are loading, when
+  target loading fails, when loaded targets are incomplete, or when a group has
+  zero or more than 50 matching failed messages, its bulk controls are disabled
+  and no dialog or request may be created.
 - `/admin/alerts`: resolve one alert, or start a 30-minute global notification
   mute from one alert row. The mute target and consequence name its global
   scope; the selected alert remains visible only as the initiating context.

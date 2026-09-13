@@ -4,10 +4,12 @@
 
 Live pull-request review reopened the affected slice after finding interaction
 and target-description gaps. The corrections below are implemented and locally
-verified; final review remains open until the installed-Google-Chrome real-service
-lane passes on the corrected pull-request head. Existing API shapes, permissions,
-tenant boundaries, state transitions, and production audit contracts remain
-unchanged.
+verified. The installed-Google-Chrome real-service lane passed on commit
+`5385e4a24638efbdde4dbdcab30e317a0075698a`, after which live review found two
+additional error-group completeness and value-mapping gaps. Final review is
+therefore reopened until those corrections pass on a newer pull-request head.
+Existing API shapes, permissions, tenant boundaries, state transitions, and
+production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
 or documentation issue. That review deliberately leaves the real-service Docker
@@ -29,6 +31,11 @@ seed assertions. Its prefix check counted the same prefix across two independent
 versions even though the schema key is `(version_id, prefix)`. The assertion is
 now scoped to the release version and continues to require exactly one matching
 release row.
+
+The authoritative Docker job passed the fresh, upgrade, and restart lanes. Each
+lane ran the Issue #60, #90, and #91 cases in installed Google Chrome against
+real Web/Core/MySQL services; the Issue #91 case persisted the reason and read
+back exactly one matching balance-audit entry.
 
 ## Findings resolved
 
@@ -70,5 +77,5 @@ The repository-required tool-less Claude review was attempted with the complete
 tracked and untracked diff, but the CLI stopped before reading it with
 `Not logged in · Please run /login`. This is recorded as an authentication
 boundary, not as a successful review. Independent pre-push review and the
-executable gates in `VERIFICATION.md` provide the replacement review evidence
-once the reopened remote gate completes.
+executable gates in `VERIFICATION.md` provide the completed replacement review
+evidence.

@@ -262,7 +262,53 @@ describe('Phase 27 message receipt error operations UI', () => {
     const markProblem = within(row).getByTestId('admin-message-receipt-error-details-mark-problem');
     await waitFor(() => expect(bulkRetry).toBeDisabled());
     expect(markProblem).toBeDisabled();
-    expect(bulkRetry).toHaveAttribute('title', '匹配 51 条，超过单次 50 条限制');
+    expect(bulkRetry).toHaveAttribute('title', '错误组共 51 条，超过单次 50 条限制');
+
+    fireEvent.click(bulkRetry);
+    fireEvent.click(markProblem);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+    expect(api.bulkErrorAction).not.toHaveBeenCalled();
+  });
+
+  it('does not submit a truncated subset when the aggregate group is larger than its loaded targets', async () => {
+    vi.mocked(api.listSends).mockResolvedValue([
+      ...Array.from({ length: 151 }, (_, index) => sendRow({
+        taskId: 400 + index,
+        messageId: `MSG_E99_${index}`,
+        errorCode: 'E99',
+      })),
+      ...Array.from({ length: 49 }, (_, index) => sendRow({
+        taskId: 600 + index,
+        messageId: `MSG_E42_${index}`,
+      })),
+    ]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup({ totalCount: 50 })]);
+    renderPage('errors');
+
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    const markProblem = within(row).getByTestId('admin-message-receipt-error-details-mark-problem');
+    await waitFor(() => expect(bulkRetry).toBeDisabled());
+    expect(markProblem).toBeDisabled();
+    expect(bulkRetry).toHaveAttribute('title', '目标未完整加载：已加载 49 条，共 50 条');
+
+    fireEvent.click(bulkRetry);
+    fireEvent.click(markProblem);
+    expect(screen.queryByTestId('admin-message-receipt-action-dialog')).not.toBeInTheDocument();
+    expect(api.bulkErrorAction).not.toHaveBeenCalled();
+  });
+
+  it('does not pass the display-only UNKNOWN group to the bulk API', async () => {
+    vi.mocked(api.listSends).mockResolvedValue([sendRow({ errorCode: null })]);
+    vi.mocked(api.listErrorGroups).mockResolvedValue([errorGroup({ normalizedCode: 'UNKNOWN' })]);
+    renderPage('errors');
+
+    const row = await screen.findByTestId('admin-message-receipt-error-details-row');
+    const bulkRetry = within(row).getByTestId('admin-message-receipt-error-details-bulk-retry');
+    const markProblem = within(row).getByTestId('admin-message-receipt-error-details-mark-problem');
+    await waitFor(() => expect(bulkRetry).toBeDisabled());
+    expect(markProblem).toBeDisabled();
+    expect(bulkRetry).toHaveAttribute('title', '错误码为空的 UNKNOWN 分组不支持批量操作');
 
     fireEvent.click(bulkRetry);
     fireEvent.click(markProblem);

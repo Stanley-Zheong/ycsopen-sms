@@ -69,6 +69,28 @@ function exportDataset(section: Section): string {
   return '消息运营导出（发送、回执与提交记录）';
 }
 
+function bulkActionUnavailableReason({
+  errorCode,
+  totalCount,
+  loadedCount,
+  loading,
+  failed,
+}: {
+  errorCode: string;
+  totalCount: number;
+  loadedCount: number;
+  loading: boolean;
+  failed: boolean;
+}): string | undefined {
+  if (loading) return '失败消息仍在加载';
+  if (failed) return '失败消息加载失败';
+  if (errorCode === 'UNKNOWN') return '错误码为空的 UNKNOWN 分组不支持批量操作';
+  if (totalCount <= 0 || loadedCount === 0) return '没有匹配的失败消息';
+  if (totalCount > MAX_BULK_SELECTION) return `错误组共 ${totalCount} 条，超过单次 ${MAX_BULK_SELECTION} 条限制`;
+  if (loadedCount !== totalCount) return `目标未完整加载：已加载 ${loadedCount} 条，共 ${totalCount} 条`;
+  return undefined;
+}
+
 function actionTarget(action: PendingAction): string {
   switch (action.kind) {
     case 'export': {
@@ -197,9 +219,15 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     setReason('');
     setError('');
   };
-  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', errorCode: string) => {
+  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem', errorCode: string, totalCount: number) => {
     const messageIds = failedMessageIdsByErrorCode.get(errorCode) ?? [];
-    if (sends.isFetching || sends.isError || messageIds.length === 0 || messageIds.length > MAX_BULK_SELECTION) return;
+    if (bulkActionUnavailableReason({
+      errorCode,
+      totalCount,
+      loadedCount: messageIds.length,
+      loading: sends.isFetching,
+      failed: sends.isError,
+    })) return;
     openAction({ kind, errorCode, messageIds: [...messageIds] });
   };
   const closeAction = () => {
@@ -312,23 +340,21 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
             <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th><th>动作</th></tr></thead>
             <tbody>{(errors.data ?? []).map((row) => {
               const messageIds = failedMessageIdsByErrorCode.get(row.normalizedCode) ?? [];
-              const bulkDisabled = sends.isFetching || sends.isError || messageIds.length === 0 || messageIds.length > MAX_BULK_SELECTION;
-              const bulkUnavailableReason = sends.isFetching
-                ? '失败消息仍在加载'
-                : sends.isError
-                  ? '失败消息加载失败'
-                  : messageIds.length === 0
-                    ? '没有匹配的失败消息'
-                    : messageIds.length > MAX_BULK_SELECTION
-                      ? `匹配 ${messageIds.length} 条，超过单次 ${MAX_BULK_SELECTION} 条限制`
-                      : undefined;
+              const bulkUnavailableReason = bulkActionUnavailableReason({
+                errorCode: row.normalizedCode,
+                totalCount: row.totalCount,
+                loadedCount: messageIds.length,
+                loading: sends.isFetching,
+                failed: sends.isError,
+              });
+              const bulkDisabled = Boolean(bulkUnavailableReason);
               return (
                 <tr key={row.normalizedCode} data-testid="admin-message-receipt-error-details-row">
                   <td>{row.normalizedCode}</td><td>{row.platformCategory}</td><td>{row.severity}</td><td>{String(row.retryable)}</td><td>{row.totalCount}</td><td>{row.tenantCount}</td><td>{row.channelCount}</td><td>{row.firstSeenAt} / {row.lastSeenAt}</td>
                   <td>
                     <div className="message-operations-actions">
-                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode)}>批量重试</button>
-                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode)}>标记问题</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" aria-label={`批量重试错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('bulk-retry', row.normalizedCode, row.totalCount)}>批量重试</button>
+                      <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" aria-label={`标记问题错误码 ${row.normalizedCode}`} title={bulkUnavailableReason} disabled={bulkDisabled} onClick={() => openBulkAction('mark-problem', row.normalizedCode, row.totalCount)}>标记问题</button>
                     </div>
                   </td>
                 </tr>
