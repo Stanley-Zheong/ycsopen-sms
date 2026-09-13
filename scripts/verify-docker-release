@@ -129,8 +129,9 @@ mysql_scalar() {
 assert_release_rows() {
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM channels WHERE channel_name='DEV-CMPP-PRIMARY'")" == '1' ]]
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM templates WHERE template_code='DEV-VERIFY-CODE'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_accounts a JOIN tenants t ON t.id=a.tenant_id WHERE t.tenant_no='DEV-TENANT'")" == '1' ]]
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_versions WHERE version_no='DEV-PREFIX-2026-09'")" == '1' ]]
-  [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_mappings WHERE prefix='1380013'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_mappings m JOIN number_prefix_versions v ON v.id=m.version_id WHERE v.version_no='DEV-PREFIX-2026-09' AND m.prefix='1380013'")" == '1' ]]
   [[ "$(mysql_scalar 'SELECT COUNT(*) FROM flyway_schema_history WHERE success=0')" == '0' ]]
 }
 
@@ -160,6 +161,10 @@ run_chrome_acceptance() {
 assert_project_unused "$fresh_project"
 assert_project_unused "$upgrade_project"
 docker compose config --quiet
+
+# The Web image copies prebuilt assets. Pin their embedded identity to the same
+# checked-out commit that labels the Core and Web images.
+VITE_BUILD_COMMIT="$BUILD_COMMIT" npm --prefix web run build
 
 # Fresh-volume proof: the default release configuration applies all versioned
 # migrations and both development repeatable-migration locations.

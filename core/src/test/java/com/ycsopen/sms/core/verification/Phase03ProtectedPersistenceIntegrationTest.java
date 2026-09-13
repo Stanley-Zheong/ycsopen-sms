@@ -301,6 +301,7 @@ class Phase03ProtectedPersistenceIntegrationTest {
         // account instead of application-dev.yml's local-only ycsopen_migrator.
         properties.put("spring.flyway.user", requiredEnvironment("PHASE03_MYSQL_USER"));
         properties.put("spring.flyway.password", requiredEnvironment("PHASE03_MYSQL_PASSWORD"));
+        properties.put("spring.flyway.locations", "classpath:db/migration");
         // Flyway owns and validates the real schema. Hibernate validation is intentionally disabled
         // here because the legacy CHAR(64) columns are represented as opaque String projections.
         properties.put("spring.jpa.hibernate.ddl-auto", "none");

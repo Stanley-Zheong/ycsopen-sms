@@ -35,6 +35,14 @@ SELECT
     'VERIFIED', 'SIGNED', 'flyway-dev'
 WHERE NOT EXISTS (SELECT 1 FROM tenants WHERE tenant_no = 'DEV-TENANT');
 
+INSERT INTO tenant_accounts (tenant_id, balance, frozen_amount, status, version)
+SELECT t.id, 0, 0, 'NORMAL', 0
+FROM tenants t
+WHERE t.tenant_no = 'DEV-TENANT'
+  AND NOT EXISTS (
+      SELECT 1 FROM tenant_accounts a WHERE a.tenant_id = t.id
+  );
+
 INSERT INTO signatures (
     tenant_id, biz_type, sign_code, sign_content, sign_type, usage_type,
     risk_level, audit_status, audit_time, audit_comment
