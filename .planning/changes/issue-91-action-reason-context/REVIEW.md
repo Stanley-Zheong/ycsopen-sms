@@ -13,6 +13,12 @@ pull-request merge SHA even though the release check and checkout use the PR
 head. The workflow now passes that head explicitly as `VITE_BUILD_COMMIT`;
 the release identity assertion remains strict.
 
+The next Docker run passed that browser identity check and reached the release
+seed assertions. Its prefix check counted the same prefix across two independent
+versions even though the schema key is `(version_id, prefix)`. The assertion is
+now scoped to the release version and continues to require exactly one matching
+release row.
+
 ## Findings resolved
 
 - Pending submissions now reject Escape, cancel, close, and background actions.

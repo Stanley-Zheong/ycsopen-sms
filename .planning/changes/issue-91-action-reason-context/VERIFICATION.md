@@ -14,6 +14,7 @@
 | Planning validator self-test | `/tmp/issue79-ruby.bBM4HQ/bin/ruby .planning/tools/test-planning-validators.rb` | PASS. A temporary user-space Ruby was used because the base image has no system Ruby. |
 | Docker Web build identity | `VITE_BUILD_COMMIT=1111111111111111111111111111111111111111 npm --prefix web run build` followed by an exact meta-tag readback | PASS; the workflow now injects the checked-out pull-request head instead of the synthetic pull-request merge SHA. |
 | Latest-main integration | Rebase onto `13b430877912cd9217645134b6bb9c83e948674b`, `git range-diff` against the pre-rebase commits, and the Issue #91 acceptance command recorded in evidence | PASS; incoming #95 changed backend-only files, the Issue #91 patch remained semantically identical, and Chromium acceptance passed 1/1 on the updated base. |
+| Docker release seed identity | `bash -n scripts/verify-docker-release` and review against the release migration's `UNIQUE(version_id, prefix)` key | PASS; the fixture assertion now counts `1380013` only within `DEV-PREFIX-2026-09`, while still requiring exactly one release row. |
 
 ## Executed boundaries
 
@@ -41,6 +42,12 @@
   than the checked-out head. The workflow identity injection was corrected
   without weakening that release assertion; the replacement CI result is the
   authoritative remote gate.
+- The second Docker run passed its real-Google-Chrome browser case, then exposed
+  a seed check that counted `1380013` across both the development prefix version
+  and the release prefix version. The schema's natural key is
+  `(version_id, prefix)`, so the check now scopes the exact-one assertion to
+  `DEV-PREFIX-2026-09`. It still fails on missing or duplicate release rows; the
+  next complete remote run is authoritative.
 
 ## Acceptance scope
 
