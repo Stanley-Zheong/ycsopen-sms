@@ -14,6 +14,9 @@ interface QueryPanelProps {
   onSubmit: () => void;
   onReset: () => void;
   result?: ReactNode;
+  additionalActions?: ReactNode;
+  initiallyExpanded?: boolean;
+  submitLabel?: ReactNode;
   className?: string;
   legacyPanelTestId?: string;
   submitLegacyTestId?: string;
@@ -60,6 +63,9 @@ export function QueryPanel({
   onSubmit,
   onReset,
   result,
+  additionalActions,
+  initiallyExpanded = false,
+  submitLabel = '搜索',
   className = '',
   legacyPanelTestId,
   submitLegacyTestId,
@@ -68,7 +74,7 @@ export function QueryPanel({
   const [columns, setColumns] = useState(queryColumnCount);
   const fieldCount = Children.count(children);
   const collapsible = fieldCount > columns;
-  const [expanded, setExpanded] = useState(!collapsible);
+  const [expanded, setExpanded] = useState(initiallyExpanded || !collapsible);
   const fieldsId = useId();
 
   useEffect(() => {
@@ -81,8 +87,8 @@ export function QueryPanel({
   }, []);
 
   useEffect(() => {
-    setExpanded(!collapsible);
-  }, [collapsible]);
+    setExpanded(initiallyExpanded || !collapsible);
+  }, [collapsible, initiallyExpanded]);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -120,13 +126,14 @@ export function QueryPanel({
           </div>
           <div className="query-panel-actions" data-testid="query-actions">
             <button type="submit" data-testid="query-submit">
-              {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>搜索</span> : '搜索'}
+              {submitLegacyTestId ? <span data-testid={submitLegacyTestId}>{submitLabel}</span> : submitLabel}
             </button>
             {fieldCount > 1 && (
               <button type="button" className="button-secondary" data-testid="query-reset" onClick={onReset}>
                 {resetLegacyTestId ? <span data-testid={resetLegacyTestId}>重置</span> : '重置'}
               </button>
             )}
+            {additionalActions}
           </div>
         </div>
       </form>

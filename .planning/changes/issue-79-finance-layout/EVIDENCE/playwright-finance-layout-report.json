@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-09-13T04:33:15.857Z",
+  "baseCommit": "e91ae04d28d7b12e8789303d0405fc94454f2837",
+  "result": "PASS",
+  "expected": 3,
+  "unexpected": 0,
+  "flaky": 0,
+  "durationMs": 21215.833,
+  "project": "local-google-chrome",
+  "engine": "Chrome/152.0.7977.84",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "cdpEndpoint": "http://192.168.65.254:9222",
+    "cdpProtocol": "1.3"
+  },
+  "command": "From web/: YCSOPEN_CHROME_CDP_ENDPOINT=http://192.168.65.254:9222 YCSOPEN_WEB_PORT=4286 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue79-playwright-report.json npm run test:e2e -- financial-source-analytics.chrome.spec.ts --project=local-google-chrome --workers=1 --reporter=json",
+  "rawReportSha256": "035b5863ab3b08638bc496b98bd1a45be9716dd3ea9d077a26a6401c06342bee",
+  "sourceSha256": {
+    "web/playwright.config.ts": "3b63be387e0014e024df92cc6801142c197aa83c365b70b6ccf4faf7631d7405",
+    "web/test/scripts/financial-source-analytics.chrome.spec.ts": "3df393115856b2b18461e9d5d57ebd30a311cc6a57bff2a33f3845c547784b94",
+    "web/src/components/common/QueryPanel.tsx": "0d6607b7c86abedea3491eac420414b7d66c04eab71f276b001f7b29c43090f3",
+    "web/src/pages/admin/billing/AdminFinancialAnalyticsPage.tsx": "a38fe986fd0e1cfe08d792f3087ffc0122763a16c305364bafb5616a1e9b6807",
+    "web/src/styles/financial-source-analytics.css": "0d36b5ab93503da9c43b7bff0473b4bff268483f23eb91bf6ecc1926a871a6ae",
+    "web/test/unit/financial-source-analytics.test.tsx": "c107727dff46d2c8ab7825ec13c567e053d2286253679134d30b53a1f004af69"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-79-FINANCE-QUERY-LAYOUT",
+      "playwrightId": "pw-issue-79-finance-query-layout",
+      "obligationId": "OBL-ISSUE-79-FINANCE-QUERY",
+      "durationMs": 8456,
+      "status": "passed"
+    },
+    {
+      "id": "C-ISSUE-79-FINANCE-TABLE-LAYOUT",
+      "playwrightId": "pw-issue-79-finance-table-layout",
+      "obligationId": "OBL-ISSUE-79-FINANCE-TABLES",
+      "durationMs": 4700,
+      "status": "passed"
+    },
+    {
+      "id": "C-ISSUE-79-FINANCE-RESULT-STATES",
+      "playwrightId": "pw-issue-79-finance-result-states",
+      "obligationId": "OBL-ISSUE-79-FINANCE-STATES",
+      "durationMs": 5628,
+      "status": "passed"
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "actualGoogleChrome": true,
+    "localViteApplicationModules": true,
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "interceptedApiGroups": [
+      "account overview: /api/v1/console/account-overview",
+      "financial summary: /api/v1/console/financial/analytics",
+      "financial drilldown: /api/v1/console/financial/analytics/drilldown"
+    ],
+    "reason": "Issue #79 owns browser-rendered structure, geometry, interaction states, table readability, and document overflow. The current React modules were served by local Vite into the authorized host Google Chrome over CDP; deterministic API responses isolate the UI contract, so this evidence does not claim real-service or backend financial correctness."
+  }
+}
