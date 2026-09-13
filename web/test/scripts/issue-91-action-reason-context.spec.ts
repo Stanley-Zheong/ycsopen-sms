@@ -47,6 +47,7 @@ function actionResult(action: string, target: string) {
 }
 
 async function mockBusinessApis(page: Page) {
+  let exportAttempts = 0;
   await page.route('**/api/v1/console/**', async (route: Route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname.replace('/api/v1', '');
@@ -83,6 +84,11 @@ async function mockBusinessApis(page: Page) {
     else if (path === '/console/uplinks/101/replay' || path.startsWith('/console/uplinks/push-monitor/501/')) data = { eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'OK', resultMessage: '完成' };
     else if (path === '/console/message-operations/exports') {
       expect(new URL(request.url()).searchParams.has('errorCode')).toBe(false);
+      exportAttempts += 1;
+      if (exportAttempts === 1) {
+        await route.fulfill({ status: 504, json: { code: 'EXPORT_RESPONSE_LOST', message: '响应在提交后丢失', data: null } });
+        return;
+      }
       data = actionResult('EXPORT_REQUEST', 'snapshot');
     }
     else if (path === '/console/message-operations/sends/MSG_FAILED/resend') data = actionResult('RESEND', 'MSG_FAILED');
@@ -114,6 +120,7 @@ async function verifyAction(page: Page, input: {
   triggerScope?: { testId: string; text: string };
   expectedRequestBody?: Record<string, unknown>;
   expectedConsequenceText?: string;
+  retrySameActionIdAfterFailure?: boolean;
 }) {
   const matchingRequests: Request[] = [];
   const captureMatchingRequest = (request: Request) => {
@@ -151,7 +158,19 @@ async function verifyAction(page: Page, input: {
   const request = await requestPromise;
   expect(request.postDataJSON().reason).toBe(input.reason);
   if (input.expectedRequestBody) expect(request.postDataJSON()).toEqual(expect.objectContaining(input.expectedRequestBody));
-  expect(matchingRequests).toHaveLength(1);
+  if (input.retrySameActionIdAfterFailure) {
+    const firstActionId = request.postDataJSON().actionId;
+    expect(matchingRequests).toHaveLength(1);
+    await expect(page.getByTestId(`${input.idPrefix}-confirm`)).toBeEnabled();
+    const retryRequestPromise = page.waitForRequest((candidate: Request) => new URL(candidate.url()).pathname === `/api/v1${input.requestPath}`);
+    await page.getByTestId(`${input.idPrefix}-confirm`).click();
+    const retryRequest = await retryRequestPromise;
+    expect(retryRequest.postDataJSON().reason).toBe(input.reason);
+    expect(retryRequest.postDataJSON().actionId).toBe(firstActionId);
+    expect(matchingRequests).toHaveLength(2);
+  } else {
+    expect(matchingRequests).toHaveLength(1);
+  }
   if (input.pendingBackgroundTriggerId) {
     await expect(page.getByTestId(`${input.idPrefix}-confirm`)).toBeDisabled();
     await expect(page.getByTestId(input.reasonTestId)).toHaveAttribute('readonly', '');
@@ -182,7 +201,7 @@ test('pw-issue-91-action-reason-context C-ISSUE-91-ACTION-REASON-CONTEXT OBL-ISS
   await page.getByTestId('query-panel-toggle').click();
   await page.getByTestId('admin-message-receipt-filter-error-code').fill('E42');
   await page.getByTestId('query-submit').click();
-  await verifyAction(page, { triggerId: 'admin-message-receipt-export-request', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '消息运营导出（发送、回执与提交记录）', additionalTargetText: '机构 42', expectedConsequenceText: '错误码筛选 E42 不受该导出接口支持，不会应用于导出', reason: '导出用于问题排查', requestPath: '/console/message-operations/exports' });
+  await verifyAction(page, { triggerId: 'admin-message-receipt-export-request', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: '消息运营导出（发送、回执与提交记录）', additionalTargetText: '机构 42', expectedConsequenceText: '错误码筛选 E42 不受该导出接口支持，不会应用于导出', reason: '导出用于问题排查', requestPath: '/console/message-operations/exports', retrySameActionIdAfterFailure: true });
 
   await page.goto('/admin/send/details');
   await verifyAction(page, { triggerId: 'admin-message-receipt-send-details-resend', idPrefix: 'admin-message-receipt-action', reasonTestId: 'admin-message-receipt-action-reason', targetText: 'MSG_FAILED', reason: '供应商失败重试', requestPath: '/console/message-operations/sends/MSG_FAILED/resend', triggerScope: { testId: 'admin-message-receipt-send-details-row', text: 'MSG_FAILED' } });

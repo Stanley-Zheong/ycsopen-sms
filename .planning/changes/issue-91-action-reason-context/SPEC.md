@@ -14,7 +14,7 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-91-action-reason-context | A reason input is absent until an authorized operator chooses a concrete state-changing action. The resulting modal names the action and target, explains the effect, blocks interaction with underlying page actions, and provides an empty required reason field. Cancel closes the modal without a request. Confirm is disabled while the trimmed reason is empty. Confirmation is synchronously latched so a double click or repeated keyboard activation produces one request. While a request is pending, focus remains inside the modal and confirm, cancel, keyboard dismissal, and background action replacement remain blocked; a failed request releases the latch for an explicit retry. Confirmation submits the entered reason to the selected action and target. | Isolated browser coverage traverses recharge review, uplink replay and push control, message/receipt/error operations, alert resolve and global mute, failed-push control, and admin send-task control. Each page has no detached reason field before action selection; each sampled action opens the correct modal, exposes its target/effect, blocks an empty confirmation, and sends exactly the entered reason only after confirmation. Shared-component and browser tests prove duplicate-activation and pending focus/dismissal locks. Docker acceptance uses installed Google Chrome against the real Web/Core services to prove all affected routes start without detached reason fields, then performs one recharge approval and reads back its persisted reason and balance audit. |
+| issue-91-action-reason-context | A reason input is absent until an authorized operator chooses a concrete state-changing action. The resulting modal names the action and target, explains the effect, blocks interaction with underlying page actions, and provides an empty required reason field. Cancel closes the modal without a request. Confirm is disabled while the trimmed reason is empty. Confirmation is synchronously latched so a double click or repeated keyboard activation produces one request. While a request is pending, focus remains inside the modal and confirm, cancel, keyboard dismissal, and background action replacement remain blocked; a failed request releases the latch for an explicit retry of the same selected operation, including reuse of its idempotency ID. Confirmation submits the entered reason to the selected action and target. | Isolated browser coverage traverses recharge review, uplink replay and push control, message/receipt/error operations, alert resolve and global mute, failed-push control, and admin send-task control. Each page has no detached reason field before action selection; each sampled action opens the correct modal, exposes its target/effect, blocks an empty confirmation, and sends exactly the entered reason only after confirmation. Shared-component and browser tests prove duplicate-activation, stable retry identity, and pending focus/dismissal locks. Docker acceptance uses installed Google Chrome against the real Web/Core services to prove all affected routes start without detached reason fields, then performs one recharge approval and reads back its persisted reason and balance audit. |
 
 ## Scope
 
@@ -32,15 +32,18 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
   the export snapshot.
 - Error bulk actions belong to the error-group row whose action was chosen. The
   dialog and request use that row's error code and only currently loaded failed
-  messages with the same code. The loaded target count must equal the error
-  group's aggregate total, so a list truncated by its independent 200-row limit
-  cannot become a partial submission. Groups exceeding the backend limit of 50
-  are not partially submitted. The display-only `UNKNOWN` group represents a
-  null stored error code and cannot be passed losslessly to the existing bulk
-  API, so its actions remain unavailable. While send targets are loading, when
-  target loading fails, when loaded targets are incomplete, or when a group has
-  zero or more than 50 matching failed messages, its bulk controls are disabled
-  and no dialog or request may be created.
+  messages with the same code. The backend aggregate counts each failed task
+  once even when multiple active provider/protocol taxonomy mappings share its
+  code; conflicting mapping attributes collapse to a conservative category,
+  severity, and retry policy instead of duplicating the group. The loaded target
+  count must equal that distinct-task aggregate, so a list truncated by its
+  independent 200-row limit cannot become a partial submission. Groups exceeding
+  the backend limit of 50 are not partially submitted. The display-only
+  `UNKNOWN` group represents a null stored error code and cannot be passed
+  losslessly to the existing bulk API, so its actions remain unavailable. While
+  send targets are loading, when target loading fails, when loaded targets are
+  incomplete, or when a group has zero or more than 50 matching failed messages,
+  its bulk controls are disabled and no dialog or request may be created.
 - `/admin/alerts`: resolve one alert, or start a 30-minute global notification
   mute from one alert row. The mute target and consequence name its global
   scope; the selected alert remains visible only as the initiating context.
@@ -48,6 +51,9 @@ idempotency boundaries, and audit persistence remain page-owned and unchanged.
 - `/admin/push/failures`: replay, pause, or resume one failed delivery.
 - `/admin/send/jobs`: pause, resume, cancel, or restart one send task.
 - Preserve current action-trigger selectors and current API payload contracts.
+- Message-operation actions allocate their existing `actionId` when the dialog
+  opens and retain it for an explicit retry after an ambiguous client failure;
+  cancellation, success, or selecting a new target ends that operation identity.
 - Remove all prefilled audit reasons from these pages; placeholder copy must
   explain what evidence the operator should enter without becoming submitted
   data.

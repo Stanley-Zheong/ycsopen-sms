@@ -144,15 +144,36 @@ public class MessageReceiptErrorOperationsService {
                        COALESCE(psm.platform_category, 'UNKNOWN_REVIEW_REQUIRED') AS platform_category,
                        COALESCE(psm.severity, 'WARN') AS severity,
                        COALESCE(psm.retryable, FALSE) AS retryable,
-                       COUNT(*) AS total_count,
+                       COUNT(DISTINCT t.id) AS total_count,
                        COUNT(DISTINCT t.tenant_id) AS tenant_count,
                        COUNT(DISTINCT t.channel_id) AS channel_count,
                        MIN(t.created_at) AS first_seen_at,
                        MAX(t.updated_at) AS last_seen_at
                   FROM message_tasks t
-             LEFT JOIN provider_status_mappings psm
-                    ON psm.status='ACTIVE'
-                   AND psm.provider_code=t.error_code
+             LEFT JOIN (
+                       SELECT provider_code,
+                              CASE WHEN COUNT(DISTINCT platform_category)=1
+                                   THEN MIN(platform_category)
+                                   ELSE 'UNKNOWN_REVIEW_REQUIRED'
+                              END AS platform_category,
+                              CASE MAX(CASE severity
+                                     WHEN 'CRITICAL' THEN 4
+                                     WHEN 'ERROR' THEN 3
+                                     WHEN 'WARN' THEN 2
+                                     ELSE 1
+                                   END)
+                                   WHEN 4 THEN 'CRITICAL'
+                                   WHEN 3 THEN 'ERROR'
+                                   WHEN 2 THEN 'WARN'
+                                   ELSE 'INFO'
+                              END AS severity,
+                              CASE WHEN MIN(CASE WHEN retryable THEN 1 ELSE 0 END)=1
+                                   THEN TRUE ELSE FALSE
+                              END AS retryable
+                         FROM provider_status_mappings
+                        WHERE status='ACTIVE'
+                        GROUP BY provider_code
+                       ) psm ON psm.provider_code=t.error_code
                  WHERE t.send_status='FAILED'
                    AND (? IS NULL OR t.tenant_id=?)
                    AND (? IS NULL OR t.error_code=?)

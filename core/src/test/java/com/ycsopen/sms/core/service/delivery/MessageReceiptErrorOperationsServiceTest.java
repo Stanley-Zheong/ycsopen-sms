@@ -106,6 +106,9 @@ class MessageReceiptErrorOperationsServiceTest {
         jdbc.execute("""
                 CREATE TABLE provider_status_mappings(
                   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                  version_id BIGINT,
+                  provider_name VARCHAR(64),
+                  protocol VARCHAR(16),
                   provider_code VARCHAR(64),
                   platform_category VARCHAR(64),
                   retryable BOOLEAN,
@@ -231,6 +234,30 @@ class MessageReceiptErrorOperationsServiceTest {
         assertThat(export.resultCode()).isEqualTo("EXPORT_REQUESTED");
         assertThat(jdbc.queryForObject("SELECT snapshot_json FROM message_operation_events WHERE action_type='EXPORT_REQUEST'",
                 String.class)).contains("secure-async-export");
+    }
+
+    @Test
+    void errorGroupsCountEachTaskOnceAndCollapseConflictingSameCodeMappingsConservatively() {
+        jdbc.update("""
+                INSERT INTO provider_status_mappings(version_id, provider_name, protocol, provider_code,
+                  platform_category, retryable, severity, status)
+                VALUES (1, 'provider-a', 'HTTP', 'E42', 'FAILURE', TRUE, 'WARN', 'ACTIVE'),
+                       (1, 'provider-b', 'CMPP', 'E42', 'PENDING', FALSE, 'CRITICAL', 'ACTIVE')
+                """);
+
+        var errors = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, null, null, null, "E42", null, null));
+
+        assertThat(errors).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.normalizedCode()).isEqualTo("E42");
+                    assertThat(row.totalCount()).isEqualTo(1);
+                    assertThat(row.tenantCount()).isEqualTo(1);
+                    assertThat(row.channelCount()).isEqualTo(1);
+                    assertThat(row.platformCategory()).isEqualTo("UNKNOWN_REVIEW_REQUIRED");
+                    assertThat(row.severity()).isEqualTo("CRITICAL");
+                    assertThat(row.retryable()).isFalse();
+                });
     }
 
     private void seed() {

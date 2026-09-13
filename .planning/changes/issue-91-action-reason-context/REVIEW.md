@@ -3,17 +3,23 @@
 ## Review outcome
 
 Live pull-request review reopened the affected slice after finding interaction,
-target-description, error-group completeness, and value-mapping gaps. All
-findings below are resolved. The corrected commit
-`982d206095fc59a33cc545434c62a63abb8ac10b` passed the installed-Google-Chrome
-real-service lane and every remote job except the deliberately open TODO
-sentinel. Existing API shapes, permissions, tenant boundaries, state
-transitions, and production audit contracts remain unchanged.
+target-description, error-group completeness, and value-mapping gaps. Those
+findings were resolved, and commit
+`bfc134a9db111bb2d66af5f070c230b3ec111bc2` passed every remote job. A later
+live review then found message-operation retry identity and taxonomy join
+multiplicity gaps. Final review is reopened until those corrections pass on a
+newer pull-request head. Existing API shapes, permissions, tenant boundaries,
+state transitions, and production audit contracts remain unchanged.
 
 Independent pre-push review of the corrected worktree found no actionable code
 or documentation issue. It also read back all 15 evidence source digests after
 the final isolated browser run. The subsequent real-service Docker result
-closes the review's remote verification boundary.
+closed that review's remote verification boundary; the later findings require a
+new independent readback. That readback has now passed on the current worktree:
+the reviewer confirmed stable retry identity, conservative one-row taxonomy
+collapse, H2/MySQL SQL compatibility, focused test coverage, and all 15 source
+digests. A new pull-request head still must pass the complete remote gate before
+the final TODOs can close.
 
 After rebasing onto `66d9cde`, a second independent review passed the additive
 resolution of Issue #90 and Issue #91 changes in the shared release seed,

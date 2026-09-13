@@ -30,11 +30,12 @@ const SECTION_LABELS: Record<Section, string> = {
 
 const DEFAULT_FILTER: OperationFilter = { tenantId: '42', messageId: '', status: '', errorCode: '' };
 
-type PendingAction =
+type ActionSelection =
   | { kind: 'export'; section: Section; filter: OperationFilter; ignoredErrorCode?: string }
   | { kind: 'resend' | 'appeal'; messageId: string }
   | { kind: 'correct' | 'replay'; receiptId: number; messageId: string }
   | { kind: 'bulk-retry' | 'mark-problem'; errorCode: string; messageIds: string[] };
+type PendingAction = ActionSelection & { actionId: string };
 
 const ACTION_LABELS: Record<PendingAction['kind'], string> = {
   export: '请求安全异步导出',
@@ -46,6 +47,16 @@ const ACTION_LABELS: Record<PendingAction['kind'], string> = {
   'mark-problem': '标记问题',
 };
 
+const ACTION_ID_PREFIXES: Record<PendingAction['kind'], string> = {
+  export: 'EXPORT',
+  resend: 'RESEND',
+  appeal: 'APPEAL',
+  correct: 'CORRECT',
+  replay: 'REPLAY',
+  'bulk-retry': 'BULK',
+  'mark-problem': 'PROBLEM',
+};
+
 function newActionId(prefix: string) {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -53,7 +64,7 @@ function newActionId(prefix: string) {
   return `${prefix}-${Date.now()}`;
 }
 
-function exportAction(section: Section, filter: OperationFilter): PendingAction {
+function exportAction(section: Section, filter: OperationFilter): ActionSelection {
   const { errorCode, ...effectiveFilter } = filter;
   return {
     kind: 'export',
@@ -178,44 +189,44 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   };
 
   const resend = useMutation({
-    mutationFn: ({ messageId, actionReason }: { messageId: string; actionReason: string }) => resendMessage(messageId, newActionId('RESEND'), actionReason),
+    mutationFn: ({ messageId, actionId, actionReason }: { messageId: string; actionId: string; actionReason: string }) => resendMessage(messageId, actionId, actionReason),
     onSuccess: (result) => ok(`重发已处理：${result.resultCode}`),
     onError: (failure) => fail(failure, '重发失败'),
   });
   const appeal = useMutation({
-    mutationFn: ({ messageId, actionReason }: { messageId: string; actionReason: string }) => appealMessage(messageId, newActionId('APPEAL'), actionReason),
+    mutationFn: ({ messageId, actionId, actionReason }: { messageId: string; actionId: string; actionReason: string }) => appealMessage(messageId, actionId, actionReason),
     onSuccess: (result) => ok(`申诉已登记：${result.resultCode}`),
     onError: (failure) => fail(failure, '申诉失败'),
   });
   const correct = useMutation({
-    mutationFn: ({ receiptId, actionReason }: { receiptId: number; actionReason: string }) => correctReceipt(receiptId, newActionId('CORRECT'), actionReason, 'DELIVERED', '', 'ST20260909'),
+    mutationFn: ({ receiptId, actionId, actionReason }: { receiptId: number; actionId: string; actionReason: string }) => correctReceipt(receiptId, actionId, actionReason, 'DELIVERED', '', 'ST20260909'),
     onSuccess: (result) => ok(`回执纠正已应用：${result.resultCode}`),
     onError: (failure) => fail(failure, '回执纠正失败'),
   });
   const replay = useMutation({
-    mutationFn: ({ receiptId, actionReason }: { receiptId: number; actionReason: string }) => replayReceipt(receiptId, newActionId('REPLAY'), actionReason),
+    mutationFn: ({ receiptId, actionId, actionReason }: { receiptId: number; actionId: string; actionReason: string }) => replayReceipt(receiptId, actionId, actionReason),
     onSuccess: (result) => ok(`回执重放已处理：${result.resultCode}`),
     onError: (failure) => fail(failure, '回执重放失败'),
   });
   const bulkRetry = useMutation({
-    mutationFn: ({ errorCode, messageIds, actionReason }: { errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(newActionId('BULK'), 'BULK_RETRY', errorCode, messageIds, actionReason),
+    mutationFn: ({ actionId, errorCode, messageIds, actionReason }: { actionId: string; errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(actionId, 'BULK_RETRY', errorCode, messageIds, actionReason),
     onSuccess: (result) => ok(`批量重试完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '批量重试失败'),
   });
   const markProblem = useMutation({
-    mutationFn: ({ errorCode, messageIds, actionReason }: { errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(newActionId('PROBLEM'), 'MARK_PROBLEM', errorCode, messageIds, actionReason),
+    mutationFn: ({ actionId, errorCode, messageIds, actionReason }: { actionId: string; errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(actionId, 'MARK_PROBLEM', errorCode, messageIds, actionReason),
     onSuccess: (result) => ok(`问题标记完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '问题标记失败'),
   });
   const exportRequest = useMutation({
-    mutationFn: ({ actionFilter, actionReason, actionSection }: { actionFilter: OperationFilter; actionReason: string; actionSection: Section }) => requestMessageExport(actionFilter, newActionId('EXPORT'), actionReason,
+    mutationFn: ({ actionFilter, actionId, actionReason, actionSection }: { actionFilter: OperationFilter; actionId: string; actionReason: string; actionSection: Section }) => requestMessageExport(actionFilter, actionId, actionReason,
       actionSection === 'sends' ? 'SEND_DETAIL' : actionSection === 'receipts' ? 'RECEIPT_DETAIL' : 'MESSAGE_OPERATIONS'),
     onSuccess: (result) => ok(`导出请求已登记：${result.resultMessage}`),
     onError: (failure) => fail(failure, '导出请求失败'),
   });
 
-  const openAction = (action: PendingAction) => {
-    setPendingAction(action);
+  const openAction = (action: ActionSelection) => {
+    setPendingAction({ ...action, actionId: newActionId(ACTION_ID_PREFIXES[action.kind]) });
     setReason('');
     setError('');
   };
@@ -237,13 +248,13 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   const confirmAction = () => {
     if (!pendingAction) return;
     const actionReason = reason.trim();
-    if (pendingAction.kind === 'export') exportRequest.mutate({ actionFilter: pendingAction.filter, actionReason, actionSection: pendingAction.section });
-    if (pendingAction.kind === 'resend') resend.mutate({ messageId: pendingAction.messageId, actionReason });
-    if (pendingAction.kind === 'appeal') appeal.mutate({ messageId: pendingAction.messageId, actionReason });
-    if (pendingAction.kind === 'correct') correct.mutate({ receiptId: pendingAction.receiptId, actionReason });
-    if (pendingAction.kind === 'replay') replay.mutate({ receiptId: pendingAction.receiptId, actionReason });
-    if (pendingAction.kind === 'bulk-retry') bulkRetry.mutate({ ...pendingAction, actionReason });
-    if (pendingAction.kind === 'mark-problem') markProblem.mutate({ ...pendingAction, actionReason });
+    if (pendingAction.kind === 'export') exportRequest.mutate({ actionFilter: pendingAction.filter, actionId: pendingAction.actionId, actionReason, actionSection: pendingAction.section });
+    if (pendingAction.kind === 'resend') resend.mutate({ messageId: pendingAction.messageId, actionId: pendingAction.actionId, actionReason });
+    if (pendingAction.kind === 'appeal') appeal.mutate({ messageId: pendingAction.messageId, actionId: pendingAction.actionId, actionReason });
+    if (pendingAction.kind === 'correct') correct.mutate({ receiptId: pendingAction.receiptId, actionId: pendingAction.actionId, actionReason });
+    if (pendingAction.kind === 'replay') replay.mutate({ receiptId: pendingAction.receiptId, actionId: pendingAction.actionId, actionReason });
+    if (pendingAction.kind === 'bulk-retry') bulkRetry.mutate({ actionId: pendingAction.actionId, errorCode: pendingAction.errorCode, messageIds: pendingAction.messageIds, actionReason });
+    if (pendingAction.kind === 'mark-problem') markProblem.mutate({ actionId: pendingAction.actionId, errorCode: pendingAction.errorCode, messageIds: pendingAction.messageIds, actionReason });
   };
   const actionPending = resend.isPending || appeal.isPending || correct.isPending || replay.isPending
     || bulkRetry.isPending || markProblem.isPending || exportRequest.isPending;

@@ -114,6 +114,28 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(await screen.findByTestId('admin-message-receipt-operation-message')).toHaveTextContent('导出请求已登记');
   });
 
+  it('reuses the selected operation id when an ambiguous export failure is retried', async () => {
+    vi.mocked(api.requestMessageExport)
+      .mockRejectedValueOnce(new Error('response lost after commit'))
+      .mockResolvedValueOnce({ actionId: 'EXPORT-1', action: 'EXPORT_REQUEST', target: 'snapshot', status: 'COMPLETED', resultCode: 'EXPORT_REQUESTED', resultMessage: '导出请求已登记，匹配行数:3' });
+    renderPage('submissions');
+
+    expect(await screen.findByTestId('admin-message-receipt-submission-details-page')).toBeVisible();
+    fireEvent.click(screen.getByTestId('admin-message-receipt-export-request'));
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '重试仍应保持幂等' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+
+    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledTimes(1));
+    const firstActionId = vi.mocked(api.requestMessageExport).mock.calls[0][1];
+    expect(await screen.findByTestId('admin-message-receipt-operation-error')).toHaveTextContent('导出请求失败');
+    await waitFor(() => expect(screen.getByTestId('admin-message-receipt-action-confirm')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+
+    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(api.requestMessageExport).mock.calls[1][1]).toBe(firstActionId);
+    expect(await screen.findByTestId('admin-message-receipt-operation-message')).toHaveTextContent('导出请求已登记');
+  });
+
   it.each([
     { section: 'submissions' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', excludesGroups: false },
     { section: 'sends' as const, triggerId: 'admin-secure-async-send-details-export', dataset: '发送详单导出', exportType: 'SEND_DETAIL', excludesGroups: false },
