@@ -5,10 +5,13 @@ import com.ycsopen.sms.core.common.security.persistence.MessageTaskProtectionAda
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageMobile;
 import com.ycsopen.sms.core.common.security.persistence.PreparedMessageRouting;
 import com.ycsopen.sms.core.domain.entity.MessageTask;
+import com.ycsopen.sms.core.domain.entity.Channel;
 import com.ycsopen.sms.core.domain.entity.Signature;
 import com.ycsopen.sms.core.domain.entity.Template;
+import com.ycsopen.sms.core.repository.ChannelRepository;
 import com.ycsopen.sms.core.service.billing.BillingService;
 import com.ycsopen.sms.core.service.billing.FeeWarningCreditService;
+import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService;
 import com.ycsopen.sms.core.service.routing.RoutingContext;
 import com.ycsopen.sms.core.service.routing.RoutingDecision;
 import com.ycsopen.sms.core.service.routing.RoutingEngine;
@@ -48,6 +51,8 @@ public class MessageSubmitService {
     private final TenantEligibilityPolicy tenantEligibilityPolicy;
     private final MessageAcceptanceIdempotencyService idempotency;
     private final NumberAttributionService numberAttributionService;
+    private final ChannelRepository channelRepository;
+    private final TrialPrepaidLedgerService trialLedger;
 
     @Autowired
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
@@ -57,7 +62,9 @@ public class MessageSubmitService {
                                  MessageTaskProtectionAdapter messageTaskProtectionAdapter,
                                  TenantEligibilityPolicy tenantEligibilityPolicy,
                                  MessageAcceptanceIdempotencyService idempotency,
-                                 NumberAttributionService numberAttributionService) {
+                                 NumberAttributionService numberAttributionService,
+                                 ChannelRepository channelRepository,
+                                 TrialPrepaidLedgerService trialLedger) {
         this.templateCompliance = templateCompliance;
         this.routingEngine = routingEngine;
         this.billingService = billingService;
@@ -66,6 +73,8 @@ public class MessageSubmitService {
         this.tenantEligibilityPolicy = tenantEligibilityPolicy;
         this.idempotency = idempotency;
         this.numberAttributionService = numberAttributionService;
+        this.channelRepository = channelRepository;
+        this.trialLedger = trialLedger;
     }
 
     /** Backward-compatible constructor for focused unit tests that do not exercise attribution. */
@@ -76,7 +85,7 @@ public class MessageSubmitService {
                                  TenantEligibilityPolicy tenantEligibilityPolicy,
                                  MessageAcceptanceIdempotencyService idempotency) {
         this(templateCompliance, routingEngine, billingService, feeWarningCreditService,
-                messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null);
+                messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null, null, null);
     }
 
     @Transactional
@@ -113,6 +122,7 @@ public class MessageSubmitService {
                 .clientIp(clientIp)
                 .operatorHint(attribution == null ? null : attribution.carrier())
                 .content(compliance.finalContent())
+                .messageType(template.getTemplateType() == null ? "NOTIFY" : template.getTemplateType().name())
                 .templateId(template.getId())
                 .signatureId(signature.getId())
                 .apiKeyId(apiKeyId)
@@ -129,9 +139,14 @@ public class MessageSubmitService {
                     "提交被拒绝[%s]：%s".formatted(decision.getRejectStage(), decision.getRejectReason()));
         }
 
-        // 费用预警使用 mil 作为金额单位：50 mil = 0.05 元，与当前预扣演示单价保持一致。
+        boolean trial = trialLedger != null && "TRIAL".equals(trialLedger.overview(tenantId).trialStatus());
+        if (trial) {
+            trialLedger.consumeTrial(tenantId, messageId,
+                    template.getTemplateType() == null ? "NOTIFY" : template.getTemplateType().name(), "MESSAGE_SUBMIT");
+        }
+        // 费用预警使用 mil 作为金额单位。
         feeWarningCreditService.enforceSubmission(
-                tenantId, DEFAULT_SINGLE_MESSAGE_ESTIMATED_COST_MIL, "message-submit");
+                tenantId, trial ? 0 : estimatedCostMil(decision.getSelectedChannelId()), "message-submit");
 
         PreparedMessageMobile preparedMobile = messageTaskProtectionAdapter.protectForPersistence(
                 preparedRouting, request.phoneNumber());
@@ -148,11 +163,26 @@ public class MessageSubmitService {
         MessageTask savedTask = messageTaskProtectionAdapter.save(task, preparedMobile);
 
         // F-8.1 预扣：通道单价从 Channel 读取，此处简化为固定演示单价；生产实现应查 Channel.price。
-        billingService.reserve(tenantId, savedTask.getId(), new java.math.BigDecimal("0.05"));
+        if (!trial) {
+            billingService.reserve(tenantId, savedTask.getId(), estimatedPrice(decision.getSelectedChannelId()));
+        }
         idempotency.enqueueSendIntent(tenantId, savedTask.getId(), messageId, decision.getSelectedChannelId());
         idempotency.markAccepted(claim.submissionId());
 
         return new SmsSendResponse(messageId, task.getSendStatus().name());
+    }
+
+    private long estimatedCostMil(Long channelId) {
+        return estimatedPrice(channelId).movePointRight(3).longValueExact();
+    }
+
+    private java.math.BigDecimal estimatedPrice(Long channelId) {
+        if (channelRepository == null || channelId == null) {
+            return new java.math.BigDecimal("0.05");
+        }
+        return channelRepository.findById(channelId).map(Channel::getPrice)
+                .filter(price -> price != null && price.signum() > 0)
+                .orElseThrow(() -> new BusinessException("CHANNEL_PRICE_UNAVAILABLE", "通道价格不可用"));
     }
 
     private static String requestDigest(SmsSendRequest request) {

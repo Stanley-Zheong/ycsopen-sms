@@ -60,16 +60,18 @@ public class ChannelSelector {
             }
         }
 
-        // 2. 无匹配规则：退化为"选优先级最高的可用通道"作为默认通道 (F-5.8 "条件不匹配时走默认通道")
+        // 2. 无匹配规则：验证码按最低价优先，其它类型仍按运营优先级选择默认通道。
+        Comparator<Channel> comparator = "VERIFY".equalsIgnoreCase(ctx.getMessageType())
+                ? Comparator.comparing(Channel::getPrice, Comparator.nullsLast(Comparator.naturalOrder()))
+                : Comparator.comparingInt(Channel::getPriority).reversed();
         return channelRepository.findAll().stream()
                 .filter(channel -> eligibility.evaluate(channel).eligible())
-                .max(Comparator.comparingInt(Channel::getPriority))
+                .min(comparator)
                 .map(Channel::getId);
     }
 
     private boolean matches(RouteRule rule, RoutingContext ctx) {
-        if (rule.getOperator() != null && ctx.getOperatorHint() != null
-                && !rule.getOperator().name().equals(ctx.getOperatorHint())) {
+        if (rule.getOperator() != null && !rule.getOperator().name().equals(ctx.getOperatorHint())) {
             return false;
         }
         // phonePrefix 匹配依赖明文号码前缀，路由引擎当前只持有不透明 HMAC 查询值——
