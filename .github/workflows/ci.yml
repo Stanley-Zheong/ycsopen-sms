@@ -258,8 +258,7 @@ jobs:
   docker-release:
     name: Docker release / Google Chrome
     needs: changes
-    if: needs.changes.outputs.web == 'true'
-    if: github.event_name == 'pull_request'
+    if: needs.changes.outputs.web == 'true' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
