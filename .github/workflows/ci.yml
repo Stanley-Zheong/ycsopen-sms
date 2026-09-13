@@ -276,6 +276,8 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: Install Web acceptance dependencies
         run: npm --prefix web ci
+      - name: Build Web assets for Docker image
+        run: npm --prefix web run build
       - name: Verify runner Google Chrome
         run: /usr/bin/google-chrome --version
       - name: Verify control sizing breakpoints
