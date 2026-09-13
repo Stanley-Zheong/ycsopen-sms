@@ -1,0 +1,62 @@
+{
+  "recordedAt": "2026-09-13T03:49:13Z",
+  "sourceBaseCommit": "e91ae04d28d7b12e8789303d0405fc94454f2837",
+  "result": "PASS",
+  "expected": 2,
+  "unexpected": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1"
+  },
+  "command": "LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4285 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue80-review-history-final.json npm --prefix web exec -- playwright test resource-review-history.spec.ts --config web/playwright.config.ts --project=local-google-chrome --workers=1 --reporter=json --output=/tmp/issue80-review-history-final-artifacts",
+  "rawReportSha256": "de8bc444590f1c85163b0a6d6579628c16fb165c2cf0c521ccf764a02d48ac5a",
+  "sourceSha256": {
+    "docs/frontend页面实现规范.md": "26fd18d791bd6193aa5b18a65605f5dc71b5427dbf1cc044e8834283cdcd923b",
+    "web/src/components/common/QueryPanel.tsx": "8867df86fd6231aae3c8246a5f2be4c6edacc5a115ec0336ed0921503464b7f3",
+    "web/src/pages/admin/review/ResourceReviewHistoryPage.tsx": "2ccc509beabb3206f30b4a17b018f92aef5b5c0a8ef9594d09ba100ccaf77676",
+    "web/src/styles/resource-review-history.css": "fcb47f28e262f9219e164580574b1e88a52997a4b94a7024ffbf769df66003f7",
+    "web/test/scripts/resource-review-history.spec.ts": "57f04baa53405c0e50161ccdc4b1f9a223e11d8156150124c7b405ace348f4b0",
+    "web/test/unit/query-panel.test.tsx": "41683adcaebb084ad3ce3894e54516b50ca2e01cc3b29ff0fd96e58ffb3c48ab",
+    "web/test/unit/resource-review-history.test.tsx": "5be8cef9a6d691533c802a6620f0c2f969cc456dd4b5e14225239b4940779d95",
+    ".planning/changes/issue-80-review-history-empty-table/SPEC.md": "060378e201a6e0644c0a1fd8f06809d4886dba3c21d44ac5f30fce30436bcff3",
+    ".planning/changes/issue-80-review-history-empty-table/UI-ELEMENTS.md": "fe1046a73f512d6efd287d6c3137025b43529eeca162651170b16f2df787fb0b",
+    ".planning/changes/issue-80-review-history-empty-table/TEST-MATRIX.md": "730eb170b6d4ce5071ebfe46c47d871cb940edb6675a16f572fb3dd39b240079"
+  },
+  "cases": [
+    {
+      "id": "C-P15-REVIEW-HISTORY",
+      "playwrightId": "pw-p15-review-history",
+      "obligationId": "OBL-IA-ADMIN-REVIEW-HISTORY",
+      "status": "passed",
+      "durationMs": 1730
+    },
+    {
+      "id": "C-ISSUE-80-REVIEW-HISTORY-EMPTY",
+      "playwrightId": "pw-issue-80-review-history-empty-table",
+      "obligationId": "OBL-ISSUE-80-REVIEW-HISTORY-EMPTY",
+      "status": "passed",
+      "durationMs": 1027,
+      "assertions": [
+        "query controls and action buttons are 40 px within the documented tolerance",
+        "draft input does not query before search is submitted",
+        "the submitted keyword appears in the review-history request and returns its matching row",
+        "reset clears the keyword and restores the default empty result",
+        "all eight column headers are visible",
+        "the empty row spans all eight columns and says 暂无审核记录",
+        "query actions, table header, and empty row do not overlap",
+        "document width does not exceed viewport width"
+      ]
+    }
+  ],
+  "boundary": {
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The acceptance target is rendered React structure and browser geometry. Deterministic API interception isolates the empty-result state and does not prove backend-service integration."
+  }
+}

@@ -67,9 +67,19 @@ describe('Phase 39 financial source analytics UI', () => {
   it('shows finance and channel figures and drills down to source formula records', async () => {
     renderWithProviders(<AdminFinancialAnalyticsPage />);
 
+    expect(screen.getByTestId('admin-finance-overview-title')).toHaveTextContent('财务总览');
+    expect(screen.getByTestId('query-panel')).toBeVisible();
+    expect(screen.getByTestId('query-fields')).toBeVisible();
+    const actions = screen.getByTestId('query-actions');
+    expect(actions).toContainElement(screen.getByTestId('query-submit'));
+    expect(actions).toContainElement(screen.getByTestId('query-reset'));
+    expect(actions).toContainElement(screen.getByTestId('admin-financial-source-financial-analytics-drilldown'));
+    expect(screen.getAllByTestId('data-table')).toHaveLength(2);
     expect(await screen.findByTestId('admin-financial-source-financial-analytics-page')).toBeVisible();
     expect(screen.getByTestId('admin-financial-source-channel-statistics-page')).toBeVisible();
     await waitFor(() => expect(screen.getByTestId('admin-financial-source-financial-analytics-row')).toHaveTextContent('SMS_STANDARD_V1'));
+    expect(screen.getByTestId('admin-financial-source-financial-analytics-status')).toHaveTextContent('已加载 1 条财务汇总');
+    expect(screen.getByTestId('admin-financial-source-channel-statistics-status')).toHaveTextContent('已加载 1 条通道统计');
     expect(screen.getByTestId('admin-financial-source-financial-analytics-row')).toHaveTextContent('-0.020');
     expect(screen.getByTestId('admin-financial-source-channel-statistics-row')).toHaveTextContent('2');
 
@@ -90,5 +100,30 @@ describe('Phase 39 financial source analytics UI', () => {
     }));
     expect(await screen.findByTestId('admin-financial-source-financial-analytics-drilldown-row')).toHaveTextContent('MSG-39-A');
     expect(screen.getByTestId('admin-financial-source-financial-analytics-drilldown-row')).toHaveTextContent('FINANCIAL_SOURCE_V1');
+  });
+
+  it('keeps both table headers and renders structured empty rows', async () => {
+    vi.mocked(financialApi.listFinancialSummaries).mockResolvedValue([]);
+    renderWithProviders(<AdminFinancialAnalyticsPage />);
+
+    await waitFor(() => expect(screen.getAllByTestId('table-empty')).toHaveLength(2));
+    expect(screen.getByTestId('admin-financial-source-financial-analytics-table').querySelectorAll('th')).toHaveLength(9);
+    expect(screen.getByTestId('admin-financial-source-channel-statistics-table').querySelectorAll('th')).toHaveLength(6);
+  });
+
+  it('exposes semantic retry actions and recovers to an empty result', async () => {
+    vi.mocked(financialApi.listFinancialSummaries)
+      .mockRejectedValueOnce(new Error('unavailable'))
+      .mockResolvedValueOnce([]);
+    renderWithProviders(<AdminFinancialAnalyticsPage />);
+
+    const financeRetry = await screen.findByTestId('admin-financial-source-financial-analytics-retry');
+    expect(screen.getByTestId('admin-financial-source-financial-analytics-status')).toHaveAttribute('role', 'alert');
+    expect(screen.getByTestId('admin-financial-source-channel-statistics-status')).toHaveAttribute('role', 'alert');
+    expect(screen.getByTestId('admin-financial-source-channel-statistics-retry')).toBeVisible();
+    fireEvent.click(financeRetry);
+
+    await waitFor(() => expect(financialApi.listFinancialSummaries).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getAllByTestId('table-empty')).toHaveLength(2));
   });
 });
