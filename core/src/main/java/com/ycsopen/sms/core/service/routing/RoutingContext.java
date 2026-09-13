@@ -19,6 +19,7 @@ public class RoutingContext {
     private final String clientIp;
     private final String operatorHint;   // 号码归属识别结果（F-5.7），可为 null 表示尚未识别
     private final String content;        // 模板 + 变量拼接后的最终文本（见 PRD 检视 Finding #2：变量也要审）
+    private final String messageType;    // VERIFY/NOTIFY/MARKETING, used by deterministic routing policy
     private final Long templateId;
     private final Long signatureId;
     private final Long apiKeyId;
