@@ -8,6 +8,7 @@ if (!/^\d{4,5}$/.test(webPort)) {
   throw new Error('YCSOPEN_WEB_PORT must be a numeric TCP port');
 }
 const baseURL = `http://127.0.0.1:${webPort}`;
+const useBundledChromium = process.env.YCSOPEN_USE_BUNDLED_CHROMIUM === 'true';
 
 export default defineConfig({
   testDir: './test/scripts',
@@ -16,7 +17,10 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: { baseURL, trace: 'on-first-retry', viewport: { width: 1440, height: 900 } },
-  projects: [{
+  projects: useBundledChromium ? [{
+    name: 'bundled-chromium',
+    use: { ...devices['Desktop Chrome'] },
+  }] : [{
     name: 'local-google-chrome',
     use: { ...devices['Desktop Chrome'], launchOptions: { executablePath: localChromePath } },
   }],
