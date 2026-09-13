@@ -1,0 +1,43 @@
+{
+  "recordedAt": "2026-09-12T23:36:48Z",
+  "baseCommit": "f978fb6b4dbde1521644349c5a90bc46440b1252",
+  "result": "PASS",
+  "expected": 1,
+  "unexpected": 0,
+  "project": "bundled-chromium",
+  "engine": "Chromium 151.0.7922.34",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "nativeLibrarySource": "Existing Debian 12 arm64 Chromium libraries at /tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu"
+  },
+  "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell",
+  "command": "From web/: LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_USE_BUNDLED_CHROMIUM=true npm run test:e2e -- control-sizing.spec.ts --project=bundled-chromium --grep pw-issue-73-primary-control-height",
+  "sourceSha256": {
+    "web/playwright.config.ts": "0e0dd0373153aa404bc9fdd93af4b408647c54e5475f5d7806dd208c64ce8831",
+    "web/test/scripts/control-sizing.spec.ts": "755bc5d57ad29f13806afd9bacdaf2003963b82018bb14a2e75611c005a75d61",
+    "web/src/styles/index.css": "475b44bf4b4efe3bec5ac53e6d6c279dc82b006b3d5cfacc0fe15b6175b78a2c"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-73-PRIMARY-CONTROL-HEIGHT",
+      "playwrightId": "pw-issue-73-primary-control-height",
+      "obligationId": "OBL-ISSUE-73-PRIMARY-CONTROL-HEIGHT",
+      "status": "passed"
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "interceptedApiGroups": [
+      "authentication: /api/v1/console/auth/login",
+      "account overview: /api/v1/console/account-overview",
+      "dashboard complaint ratio: /api/v1/console/dashboard/complaint-ratio/*",
+      "routing policy: /api/v1/console/routing-policy/versions, /rules, and /circuits"
+    ],
+    "reason": "The issue claim is browser-rendered CSS geometry and visible focus. The listed authentication, account-overview, dashboard complaint-ratio, and routing-policy APIs are intercepted, so this evidence does not claim backend-service acceptance. The public-registration control is rendered without a registration API call. The unprefixed mandated command was blocked before test execution because bundled Chromium could not load libatk-1.0.so.0; the existing extracted library bundle was required to execute the same browser case."
+  }
+}

@@ -38,7 +38,7 @@ button:hover { background: var(--color-brand-deep); }
 button:disabled { opacity: .55; cursor: not-allowed; }
 input, select { width: 100%; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 select[multiple] { min-height: 96px; }
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 label { display: inline-grid; gap: 4px; color: var(--color-text); }
 
 .layout { display: flex; min-height: 100vh; }

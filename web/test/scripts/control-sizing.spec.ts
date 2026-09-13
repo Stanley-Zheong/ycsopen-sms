@@ -91,3 +91,54 @@ test('pw-issue-63-action-buttons C-ISSUE-63-ACTION-BUTTONS OBL-ISSUE-63-ACTION-B
   await expectIntrinsicButtonWidth(page.getByTestId('admin-routing-circuit-routing-circuit-record'));
   await expectIntrinsicButtonWidth(page.getByTestId('admin-routing-circuit-routing-retry-save'));
 });
+
+test('pw-issue-73-primary-control-height C-ISSUE-73-PRIMARY-CONTROL-HEIGHT OBL-ISSUE-73-PRIMARY-CONTROL-HEIGHT', async ({ page }) => {
+  await mockEmptyDashboard(page);
+  await page.route('**/api/v1/console/routing-policy/versions', (route) => route.fulfill({ json: apiResponse([]) }));
+  await page.route('**/api/v1/console/routing-policy/rules', (route) => route.fulfill({ json: apiResponse([]) }));
+  await page.route('**/api/v1/console/routing-policy/circuits', (route) => route.fulfill({ json: apiResponse([]) }));
+  await loginAs(page, 'ADMIN');
+  await page.goto('/admin/routing-policy');
+
+  const controls = [
+    page.getByTestId('admin-routing-circuit-routing-policy-version'),
+    page.getByTestId('admin-routing-circuit-routing-policy-import-input'),
+    page.getByTestId('admin-routing-circuit-routing-retry-category'),
+  ];
+
+  for (const control of controls) {
+    const box = await control.boundingBox();
+    expect(box, 'primary control has a layout box').not.toBeNull();
+    expect(box!.height, 'primary controls share the 40px height').toBe(40);
+  }
+
+  const textarea = page.getByTestId('admin-routing-circuit-routing-policy-import-input');
+  await textarea.focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+  await expect(textarea).toBeFocused();
+  const focusStyle = await textarea.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      focusVisible: element.matches(':focus-visible'),
+      outlineColor: style.outlineColor,
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      outlineOffset: style.outlineOffset,
+    };
+  });
+  expect(focusStyle.focusVisible, 'textarea receives visible focus').toBe(true);
+  expect(focusStyle).toEqual({
+    focusVisible: true,
+    outlineColor: 'rgba(12, 133, 232, 0.28)',
+    outlineStyle: 'solid',
+    outlineWidth: '3px',
+    outlineOffset: '2px',
+  });
+
+  await page.goto('/tenant/register');
+  const publicRegistrationInput = page.getByTestId('public-tenant-qualification-register-admin-username');
+  const publicRegistrationBox = await publicRegistrationInput.boundingBox();
+  expect(publicRegistrationBox, 'public registration input has a layout box').not.toBeNull();
+  expect(publicRegistrationBox!.height, 'public registration input keeps the shared 40px minimum height').toBe(40);
+});
