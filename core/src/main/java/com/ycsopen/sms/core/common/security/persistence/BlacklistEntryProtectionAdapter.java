@@ -219,7 +219,9 @@ public class BlacklistEntryProtectionAdapter {
                 FOR UPDATE
                 """, (rs, row) -> new BoundRow(rs.getLong("id"),
                 rs.getObject("tenant_id", Long.class),
-                rs.getBytes("mobile_encrypted"), rs.getString("mobile_hash"),
+                rs.getBytes("mobile_encrypted"),
+                com.ycsopen.sms.core.domain.entity.FixedWidthCharConverter.removePadding(
+                        rs.getString("mobile_hash")),
                 BlacklistEntry.ListType.valueOf(rs.getString("list_type")),
                 BlacklistEntry.Status.valueOf(rs.getString("status"))), id);
         if (rows.size() != 1) {

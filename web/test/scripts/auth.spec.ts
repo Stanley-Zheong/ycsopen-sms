@@ -12,15 +12,17 @@ test('WEB-AUTH-001 ADMIN login routes to the platform dashboard', async ({ page 
   expect((await requestPromise).postDataJSON()).toEqual({ username: 'admin', password: 'valid-password' });
   await expect(page).toHaveURL(/\/admin\/dashboard$/);
   await expect(page.getByRole('heading', { name: '关键指标概览' })).toBeVisible();
-  await expect(page.getByRole('link', { name: '机构管理' })).toBeVisible();
-  await expect(page.getByRole('link', { name: '发送管理' })).toHaveCount(0);
+  await expect(page.getByTestId('admin-console-navigation-overview-group-toggle')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByTestId('admin-console-navigation-tenant-management-group-toggle')).toBeVisible();
+  await expect(page.getByTestId('tenant-console-navigation-send-management-group-toggle')).toHaveCount(0);
 });
 
 test('WEB-AUTH-002 TENANT_ADMIN login routes to the tenant overview', async ({ page }) => {
   await loginAs(page, 'TENANT_ADMIN');
   await expect(page.getByRole('heading', { name: '账户总览' })).toBeVisible();
-  await expect(page.getByRole('link', { name: '发送管理' })).toBeVisible();
-  await expect(page.getByRole('link', { name: '机构管理' })).toHaveCount(0);
+  await expect(page.getByTestId('tenant-console-navigation-overview-group-toggle')).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByTestId('tenant-console-navigation-send-management-group-toggle')).toBeVisible();
+  await expect(page.getByTestId('admin-console-navigation-tenant-management-group-toggle')).toHaveCount(0);
 });
 
 test('WEB-AUTH-003 rejected login remains on the login page', async ({ page }) => {
@@ -54,7 +56,7 @@ test('WEB-AUTH-005 tenant role cannot open a platform route', async ({ page }) =
   await navigateWithinSpa(page, '/admin/dashboard');
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole('heading', { name: '关键指标概览' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: '机构管理' })).toHaveCount(0);
+  await expect(page.getByTestId('admin-console-navigation-tenant-management-group-toggle')).toHaveCount(0);
 });
 
 test('WEB-AUTH-006 platform role cannot open a tenant route', async ({ page }) => {
@@ -64,5 +66,5 @@ test('WEB-AUTH-006 platform role cannot open a tenant route', async ({ page }) =
   await navigateWithinSpa(page, '/tenant/overview');
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole('heading', { name: '账户总览' })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: '发送管理' })).toHaveCount(0);
+  await expect(page.getByTestId('tenant-console-navigation-send-management-group-toggle')).toHaveCount(0);
 });

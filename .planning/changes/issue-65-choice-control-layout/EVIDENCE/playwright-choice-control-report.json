@@ -1,0 +1,44 @@
+{
+  "recordedAt": "2026-09-12T14:56:09.740Z",
+  "baseCommit": "fd62ec6cc755440f3e030d49d74c75fe364b13c2",
+  "result": "PASS",
+  "expected": 1,
+  "unexpected": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "durationMilliseconds": 7120.321999999999,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "nativeLibrarySource": "Debian 12 arm64 packages extracted under the command's temporary LD_LIBRARY_PATH"
+  },
+  "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell",
+  "command": "LD_LIBRARY_PATH=/tmp/issue65-browser-libs.4DEiH6/root/usr/lib/aarch64-linux-gnu YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4280 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue65-playwright-report-final.json npm exec -- playwright test test/scripts/number-attribution.spec.ts --config playwright.config.ts --project=local-google-chrome --grep pw-issue-65-choice-control-layout --workers=1 --reporter=json --output=/tmp/issue65-playwright-artifacts-final",
+  "rawReportSha256": "dc60f36b05335003b54d8a34805f9952b9d4976a7c032ffac4c146e513522274",
+  "sourceSha256": {
+    "web/playwright.config.ts": "51ef39a70fb1c4559bdad4abe8dc807280bd9b2ec32f52459c9adbd4887a28d9",
+    "web/test/scripts/number-attribution.spec.ts": "ce028b0e26a971ff3502f1c5db2e3613cd3977df6024f2d95c412c259a161eb6",
+    "web/src/styles/index.css": "52b3e80e1c74d859b28f7b9d9ca39784caa29adf18c339517ec0036c2707272b",
+    "web/src/styles/number-attribution.css": "95c2053f0cf859343ea03eb1579d0c4eb9feb76046853685ef298941a929450c",
+    "web/src/pages/admin/tools/NumberAttributionPage.tsx": "dd3f7cd3e323a31ef4e65a1fb98ce74b457a63cd9752bd627b438a1f51c6bebd",
+    "web/src/pages/admin/identity/RoleManagementPage.tsx": "6f7612af649a50fb8c09758bf9781c71400ca66bfddc90401af6507861e647da"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-65-CHOICE-CONTROL-LAYOUT",
+      "playwrightId": "pw-issue-65-choice-control-layout",
+      "obligationId": "OBL-ISSUE-65-CHOICE-CONTROLS",
+      "status": "passed"
+    }
+  ],
+  "boundary": {
+    "realReactDom": true,
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The issue claim is the browser-rendered form layout and computed native control size. Authentication and number-attribution APIs are intercepted; this evidence does not claim backend-service acceptance."
+  }
+}

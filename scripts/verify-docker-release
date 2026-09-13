@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+command -v docker >/dev/null 2>&1 || { echo >&2 'docker is required'; exit 1; }
+command -v curl >/dev/null 2>&1 || { echo >&2 'curl is required'; exit 1; }
+docker compose version >/dev/null 2>&1 || { echo >&2 'Docker Compose v2 is required'; exit 1; }
+
+repo_commit="$(git rev-parse HEAD)"
+BUILD_COMMIT="${BUILD_COMMIT:-$repo_commit}"
+case "$BUILD_COMMIT" in
+  *[!0-9a-f]*|'') echo >&2 'BUILD_COMMIT must be a full lowercase Git commit'; exit 1 ;;
+esac
+if [[ ${#BUILD_COMMIT} -ne 40 || "$BUILD_COMMIT" != "$repo_commit" ]]; then
+  echo >&2 'BUILD_COMMIT must equal the checked-out 40-character Git commit'
+  exit 1
+fi
+
+run_identity="${GITHUB_RUN_ID:-local-$$}-${GITHUB_RUN_ATTEMPT:-1}-${RANDOM}"
+project_prefix="ycsopen-issue60-${run_identity}"
+fresh_project="${project_prefix}-fresh"
+upgrade_project="${project_prefix}-upgrade"
+YCSOPEN_WEB_PORT="${YCSOPEN_WEB_PORT:-15173}"
+YCSOPEN_CORE_PORT="${YCSOPEN_CORE_PORT:-18080}"
+YCSOPEN_BIND_ADDRESS="127.0.0.1"
+YCSOPEN_CHROME_PATH="${YCSOPEN_CHROME_PATH:-/usr/bin/google-chrome}"
+full_flyway_locations='classpath:db/migration,classpath:db/devmigration,classpath:db/releasemigration'
+baseline_flyway_locations='classpath:db/migration,classpath:db/devmigration'
+export BUILD_COMMIT YCSOPEN_WEB_PORT YCSOPEN_CORE_PORT YCSOPEN_BIND_ADDRESS YCSOPEN_CHROME_PATH
+
+for name in "$fresh_project" "$upgrade_project"; do
+  case "$name" in
+    *[!a-z0-9_.-]*|'') echo >&2 'generated Compose project name is invalid'; exit 1 ;;
+  esac
+done
+for port in "$YCSOPEN_WEB_PORT" "$YCSOPEN_CORE_PORT"; do
+  [[ "$port" =~ ^[0-9]{1,5}$ ]] || { echo >&2 'release ports must be numeric TCP ports'; exit 1; }
+  (( 10#$port >= 1 && 10#$port <= 65535 )) || { echo >&2 'release ports must be between 1 and 65535'; exit 1; }
+done
+[[ -x "$YCSOPEN_CHROME_PATH" ]] || { echo >&2 "Google Chrome is not executable: $YCSOPEN_CHROME_PATH"; exit 1; }
+
+mkdir -p web/test-results
+active_project="$fresh_project"
+
+compose() {
+  docker compose --project-name "$active_project" "$@"
+}
+
+project_resource_ids() {
+  local project="$1"
+  docker ps --all --quiet --filter "label=com.docker.compose.project=$project"
+  docker network ls --quiet --filter "label=com.docker.compose.project=$project"
+  docker volume ls --quiet --filter "label=com.docker.compose.project=$project"
+}
+
+assert_project_unused() {
+  local project="$1"
+  if [[ -n "$(project_resource_ids "$project")" ]]; then
+    echo >&2 "refusing to reuse an existing Compose project: $project"
+    exit 1
+  fi
+}
+
+cleanup() {
+  local exit_status=$?
+  local project
+  for project in "$fresh_project" "$upgrade_project"; do
+    if [[ -n "$(project_resource_ids "$project")" ]]; then
+      docker compose --project-name "$project" logs --no-color \
+        >"web/test-results/docker-release-${project}.log" 2>&1 || true
+      docker compose --project-name "$project" down --volumes --remove-orphans >/dev/null 2>&1 || true
+    fi
+  done
+  exit "$exit_status"
+}
+trap cleanup EXIT
+
+archive_and_remove_project() {
+  local project="$1"
+  docker compose --project-name "$project" logs --no-color \
+    >"web/test-results/docker-release-${project}.log" 2>&1
+  docker compose --project-name "$project" down --volumes --remove-orphans
+}
+
+wait_for_core() {
+  local deadline=$((SECONDS + 360))
+  local container_id state
+  while (( SECONDS < deadline )); do
+    container_id="$(compose ps --quiet core)"
+    if [[ -n "$container_id" ]]; then
+      state="$(docker inspect --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "$container_id")"
+      if [[ "$state" == 'running healthy' ]]; then
+        return 0
+      fi
+      if [[ "$state" == exited* || "$state" == dead* ]]; then
+        compose logs --no-color core >&2
+        return 1
+      fi
+    fi
+    sleep 3
+  done
+  compose logs --no-color core >&2
+  echo >&2 'Core did not become healthy within 360 seconds'
+  return 1
+}
+
+wait_for_web() {
+  local deadline=$((SECONDS + 120))
+  while (( SECONDS < deadline )); do
+    if curl --fail --silent --show-error "http://127.0.0.1:${YCSOPEN_WEB_PORT}/login" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+  compose logs --no-color web >&2
+  echo >&2 'Web did not become reachable within 120 seconds'
+  return 1
+}
+
+mysql_scalar() {
+  compose exec -T \
+    -e "MYSQL_PWD=${YCSOPEN_DB_ROOT_PASSWORD:-root-local-only}" \
+    mysql mysql --batch --skip-column-names --user=root \
+    --database="${YCSOPEN_DB_NAME:-ycsopen_sms}" --execute="$1"
+}
+
+assert_release_rows() {
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM channels WHERE channel_name='DEV-CMPP-PRIMARY'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM templates WHERE template_code='DEV-VERIFY-CODE'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_versions WHERE version_no='DEV-PREFIX-2026-09'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_mappings WHERE prefix='1380013'")" == '1' ]]
+  [[ "$(mysql_scalar 'SELECT COUNT(*) FROM flyway_schema_history WHERE success=0')" == '0' ]]
+}
+
+assert_release_rows_absent() {
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM channels WHERE channel_name='DEV-CMPP-PRIMARY'")" == '0' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM templates WHERE template_code='DEV-VERIFY-CODE'")" == '0' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_versions WHERE version_no='DEV-PREFIX-2026-09'")" == '0' ]]
+  [[ "$(mysql_scalar 'SELECT COUNT(*) FROM flyway_schema_history WHERE success=0')" == '0' ]]
+}
+
+assert_core_logs() {
+  # C-ISSUE-60-LOGS / OBL-ISSUE-60-LOGS
+  local core_logs
+  core_logs="$(compose logs --no-color core)"
+  grep -q 'Started YcsopenSmsCoreApplication' <<<"$core_logs"
+  if grep -Eq "Application run failed|Schema-validation|Table .*doesn't exist" <<<"$core_logs"; then
+    echo >&2 'Core logs contain a forbidden startup failure'
+    printf '%s\n' "$core_logs" >&2
+    return 1
+  fi
+}
+
+run_chrome_acceptance() {
+  npm --prefix web run test:docker-release
+}
+
+assert_project_unused "$fresh_project"
+assert_project_unused "$upgrade_project"
+docker compose config --quiet
+
+# Fresh-volume proof: the default release configuration applies all versioned
+# migrations and both development repeatable-migration locations.
+active_project="$fresh_project"
+YCSOPEN_FLYWAY_LOCATIONS="$full_flyway_locations"
+export YCSOPEN_FLYWAY_LOCATIONS
+compose up --detach --build
+wait_for_core
+wait_for_web
+run_chrome_acceptance
+assert_release_rows
+assert_core_logs
+archive_and_remove_project "$fresh_project"
+
+# Upgrade proof: first create an old-volume baseline with only the locations
+# that existed before Issue 60, then force the current Core/Web containers to
+# start against that named volume. The operator row must survive the upgrade.
+active_project="$upgrade_project"
+YCSOPEN_FLYWAY_LOCATIONS="$baseline_flyway_locations"
+export YCSOPEN_FLYWAY_LOCATIONS
+compose up --detach --build core
+wait_for_core
+assert_release_rows_absent
+assert_core_logs
+mysql_scalar "INSERT INTO channels (channel_name,protocol,operator,host,port,max_connections,window_size,price,priority,status) VALUES ('OPERATOR-EXISTING','HTTP','VIRTUAL','operator-managed.invalid',9443,2,8,0.0500,50,'NORMAL')" >/dev/null
+compose stop core
+
+YCSOPEN_FLYWAY_LOCATIONS="$full_flyway_locations"
+export YCSOPEN_FLYWAY_LOCATIONS
+compose up --detach --build --force-recreate core web
+wait_for_core
+wait_for_web
+run_chrome_acceptance
+assert_release_rows
+[[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
+assert_core_logs
+
+# A second forced current-version start proves repeatable migrations stay
+# duplicate-free and Flyway revalidates the persisted history on startup.
+# C-ISSUE-60-RESTART / OBL-ISSUE-60-RESTART
+compose stop core web
+compose up --detach --build --force-recreate core web
+wait_for_core
+wait_for_web
+run_chrome_acceptance
+assert_release_rows
+[[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
+assert_core_logs
+
+echo "docker_release_acceptance=PASS commit=$BUILD_COMMIT"

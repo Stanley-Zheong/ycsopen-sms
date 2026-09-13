@@ -10,7 +10,15 @@ if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(backendTarget)) {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'release-build-identity',
+      transformIndexHtml(html) {
+        return html.replace('__YCSOPEN_BUILD_COMMIT__', buildCommit);
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

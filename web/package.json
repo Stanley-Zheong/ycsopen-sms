@@ -10,8 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:docker-release": "playwright test --config=playwright.docker.config.ts",
     "test:watch": "vitest",
-    "lint": "eslint src test scripts playwright.config.ts vite.config.ts --ext .ts,.tsx,.mjs --max-warnings 0",
+    "lint": "eslint src test scripts playwright.config.ts playwright.docker.config.ts vite.config.ts --ext .ts,.tsx,.mjs --max-warnings 0",
     "test:browser:structural": "node scripts/test-browser-scenario-server.mjs --run-playwright",
     "test:browser:compat": "npm run test:browser:structural",
     "test:copy:zh-cn": "playwright test test/phase01/chinese-copy.spec.ts && node scripts/validate-copy-zh-cn.mjs --registry verification/copy.zh-CN.json --export-fixture verification/fixtures/zh-cn-export.csv --source src/pages/LoginPage.tsx && node scripts/test-copy-zh-cn.mjs"

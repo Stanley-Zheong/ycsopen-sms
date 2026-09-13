@@ -1,0 +1,66 @@
+{
+  "recordedAt": "2026-09-12T14:25:31.337Z",
+  "sourceBaseCommit": "fd62ec6cc755440f3e030d49d74c75fe364b13c2",
+  "result": "PASS",
+  "expected": 3,
+  "unexpected": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1"
+  },
+  "command": "LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4205 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue64-query-panel-report.json ./node_modules/.bin/playwright test test/scripts/query-panel.spec.ts --config playwright.config.ts --project=local-google-chrome --workers=1 --grep 'pw-issue-64-' --reporter=json --output=/tmp/issue64-query-panel-artifacts",
+  "rawReportSha256": "99b868f147561b6152eecf101a82b11d94178c327fdc6ff879c7531927b8eeda",
+  "sourceSha256": {
+    "web/src/components/common/QueryPanel.tsx": "4c936b425f10f65b29f28661dc7890cffde45029ce26cdd8787b8dc5cef52c05",
+    "web/src/styles/index.css": "81b73abb58a725cc75f7a8f7bef3cd4ba7fc3537cc17b929ce533f6fcfd01eb7",
+    "web/test/scripts/query-panel.spec.ts": "f50c13847e63c71e0d7f67eee5db81d0d6ce6069eafa452d74765678bec098dd",
+    "web/test/unit/query-panel.test.tsx": "fac805b7bceeee29ea280c2aacfaebf34adb88958818a3eb2ec1629738cc8a15",
+    "web/test/unit/tenant-recharge.test.tsx": "d788abcb4e21c311ac9466407e03febb3e19eb2d2f57b8f267a0e1e8a883488f",
+    "web/test/unit/bulk-scheduled.test.tsx": "14ee99f9e9957623aefd38a974a8d0c991bf117ab87fb547cca72498c7253ca1",
+    "web/test/unit/identity-pages.test.tsx": "8f99fa2a5db7cd7f395e5b09858ad5dd69a8ad2113a306d24cfb39447414d975",
+    "web/test/unit/signature-lifecycle.test.tsx": "858274908e97bd57e3c94f13c4a05d46725d3374a7bc816b7a9f2dbd2f71eec5",
+    "web/test/unit/template-lifecycle.test.tsx": "3a816ae44763da9706732746e7d787704ffe81239a9e6fdfc4c2f04b878292cc",
+    "web/test/unit/trial-prepaid.test.tsx": "f9a2340956b5b0ddea0aed768be9ba3d38e0be029064679a18cf850825d8442f"
+  },
+  "inventory": {
+    "pageSourceFiles": 21,
+    "queryPanelInstances": 22,
+    "distinctRoutes": 24,
+    "routePanelSurfaces": 25,
+    "singleFieldSurfaces": 6
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-64-INLINE-ACTIONS",
+      "playwrightId": "pw-issue-64-inline-actions",
+      "obligationId": "OBL-ISSUE-64-INLINE-ACTIONS",
+      "status": "passed",
+      "durationMs": 1540
+    },
+    {
+      "id": "C-ISSUE-64-COLLAPSE-ACTIONS",
+      "playwrightId": "pw-issue-64-collapse-actions",
+      "obligationId": "OBL-ISSUE-64-COLLAPSE-ACTIONS",
+      "status": "passed",
+      "durationMs": 952
+    },
+    {
+      "id": "C-ISSUE-64-SINGLE-FIELD",
+      "playwrightId": "pw-issue-64-single-field",
+      "obligationId": "OBL-ISSUE-64-SINGLE-FIELD",
+      "status": "passed",
+      "durationMs": 897
+    }
+  ],
+  "boundary": {
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The test runner has no installed Google Chrome. The repository-configured Chromium headless shell executed the rendered UI and deterministic page API mocks; this proves browser layout and component interaction but not real-service integration."
+  }
+}

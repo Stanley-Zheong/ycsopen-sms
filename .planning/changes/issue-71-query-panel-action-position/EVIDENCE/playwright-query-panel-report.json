@@ -1,0 +1,85 @@
+{
+  "recordedAt": "2026-09-12T17:43:26.919Z",
+  "sourceBaseCommit": "caa940378ad5839644ac3cf108bfc06469686b12",
+  "result": "PASS",
+  "expected": 7,
+  "unexpected": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "project": "local-google-chrome",
+  "engine": "Chromium 151.0.7922.34 headless shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1"
+  },
+  "command": "LD_LIBRARY_PATH=/tmp/issue58-chrome-libs.ycmT8i/root/usr/lib/aarch64-linux-gnu YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4224 YCSOPEN_E2E_ISOLATED=1 PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/issue71-query-panel-final.json ./node_modules/.bin/playwright test test/scripts/query-panel.spec.ts --config playwright.config.ts --project=local-google-chrome --workers=1 --grep 'pw-issue-(58|64|71)-' --reporter=json --output=/tmp/issue71-query-panel-final-artifacts",
+  "rawReportSha256": "3715998b46cb8cda93151d44927ae57e81e82e5d8788fadfd47cc9bf664b332c",
+  "sourceSha256": {
+    "web/src/components/common/QueryPanel.tsx": "9b8fbd7f4e8f4ba74264cd462456404a5b5c1486789f350aeb43010821c83c8e",
+    "web/src/styles/index.css": "baa4dc8301241fd9a12138c472ad90eb42ccd1ce02046b9fc26a75cba4ed0e35",
+    "web/test/scripts/query-panel.spec.ts": "ce9c4076ef4cd495e884518203153a88f80fbd0c0e4f85b0e5d247de187a6259",
+    "web/test/unit/query-panel.test.tsx": "f74789f8e263dd3f085e5e9f7f1b55a26c42cf8e3d1fddb6a093583f84c5010f"
+  },
+  "inventory": {
+    "pageSourceFiles": 21,
+    "queryPanelInstances": 22
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-58-ADMIN-TENANTS",
+      "playwrightId": "pw-issue-58-admin-tenants",
+      "obligationId": "OBL-ISSUE-58-ADMIN-TENANTS",
+      "status": "passed",
+      "durationMs": 2087
+    },
+    {
+      "id": "C-ISSUE-64-INLINE-ACTIONS",
+      "playwrightId": "pw-issue-64-inline-actions",
+      "obligationId": "OBL-ISSUE-64-INLINE-ACTIONS",
+      "status": "passed",
+      "durationMs": 1027
+    },
+    {
+      "id": "C-ISSUE-71-QUERY-ACTION-POSITION",
+      "playwrightId": "pw-issue-71-query-action-position",
+      "obligationId": "OBL-ISSUE-71-QUERY-ACTION-POSITION",
+      "status": "passed",
+      "durationMs": 1096
+    },
+    {
+      "id": "C-ISSUE-64-COLLAPSE-ACTIONS",
+      "playwrightId": "pw-issue-64-collapse-actions",
+      "obligationId": "OBL-ISSUE-64-COLLAPSE-ACTIONS",
+      "status": "passed",
+      "durationMs": 1165
+    },
+    {
+      "id": "C-ISSUE-58-OPERATION-AUDIT",
+      "playwrightId": "pw-issue-58-operation-audit",
+      "obligationId": "OBL-ISSUE-58-OPERATION-AUDIT",
+      "status": "passed",
+      "durationMs": 1872
+    },
+    {
+      "id": "C-ISSUE-58-ADMIN-UPLINKS",
+      "playwrightId": "pw-issue-58-admin-uplinks",
+      "obligationId": "OBL-ISSUE-58-ADMIN-UPLINKS",
+      "status": "passed",
+      "durationMs": 1684
+    },
+    {
+      "id": "C-ISSUE-64-SINGLE-FIELD",
+      "playwrightId": "pw-issue-64-single-field",
+      "obligationId": "OBL-ISSUE-64-SINGLE-FIELD",
+      "status": "passed",
+      "durationMs": 951
+    }
+  ],
+  "boundary": {
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The local ARM64 runner used the repository-cached Chromium headless shell with deterministic page API interceptions. This proves rendered query-panel geometry and interaction, but it does not prove backend-service integration."
+  }
+}

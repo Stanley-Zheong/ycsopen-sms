@@ -76,7 +76,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; permissions?: string[]; role
   { to: '/admin/account-overview', label: '账号概览' },
 ];
 
-/** 平台管理后台整体布局，导航结构与 ycsansms.md 8.1 节一一对应。 */
+/** Shared layout for every authenticated Admin route. */
 export default function AdminLayout() {
   const userType = useAuthStore((s) => s.userType);
   const clearSession = useAuthStore((s) => s.logout);
@@ -85,6 +85,15 @@ export default function AdminLayout() {
   if (!isPlatformRole(userType)) {
     return <Navigate to="/login" replace />;
   }
+
+  const groups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => (
+      (!item.roles || item.roles.includes(userType as PlatformUserType))
+      && (!item.permissions || item.permissions.every(access.can))
+    )),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <div className="layout">
       <nav className="sidebar">

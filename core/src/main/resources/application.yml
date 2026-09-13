@@ -13,6 +13,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    # V1 stores message-template literals such as ${var}; they are domain data,
+    # not Flyway placeholders.
+    placeholder-replacement: false
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -84,7 +87,14 @@ ycsopen:
     timeout-ms: ${YCSOPEN_PLATFORM_NOTIFICATION_TIMEOUT_MS:800}
 
 management:
+  info:
+    env:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
+
+info:
+  build:
+    commit: ${BUILD_COMMIT:unknown}

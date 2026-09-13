@@ -26,7 +26,7 @@ const NAV_ITEMS: Array<{ to: string; label: string; adminOnly?: boolean }> = [
   { to: '/tenant/help/customer-service', label: '联系客服' },
 ];
 
-/** 机构端整体布局，导航结构与 ycsansms.md 8.2 节一一对应。 */
+/** Shared layout for every authenticated Tenant route. */
 export default function TenantLayout() {
   const userType = useAuthStore((s) => s.userType);
   const clearSession = useAuthStore((s) => s.logout);
@@ -34,6 +34,12 @@ export default function TenantLayout() {
   if (isPlatformRole(userType) || !userType) {
     return <Navigate to="/login" replace />;
   }
+
+  const groups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.roles || item.roles.includes(userType as TenantUserType)),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <div className="layout">
       <nav className="sidebar">

@@ -86,7 +86,7 @@ module Phase03
     PROVISIONER = File.join(ROOT, "scripts/provision-phase-03-softhsm")
     SOFTHSM_MANIFEST = File.join(__dir__, "softhsm-source.json")
     MYSQL_IMAGE = Phase01::ServiceChecks::MYSQL_IMAGE
-    MINIO_IMAGE = "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    MINIO_IMAGE = "quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
     MINIO_MANIFEST_DIGEST = "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
     MINIO_IMAGE_CONFIG_DIGESTS = {
       "linux/amd64" => "sha256:69b2ec208575b69597784255eec6fa6a2985ee9e1a47f4411a51f7f5fdd193a9",

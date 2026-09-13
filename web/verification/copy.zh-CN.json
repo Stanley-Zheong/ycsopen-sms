@@ -9,23 +9,54 @@
   },
   "technicalTokens": [
     {
-      "value": "YCSAN-SMS",
+      "value": "YCSOpen",
       "classification": "production-surface",
       "reason": "product-name"
+    },
+    {
+      "value": "SMS",
+      "classification": "production-surface",
+      "reason": "industry-abbreviation"
+    },
+    {
+      "value": "YCSAN",
+      "classification": "production-surface",
+      "reason": "brand-name"
     }
   ],
   "source": {
     "path": "web/src/pages/LoginPage.tsx",
     "classification": "production-surface",
     "entries": [
-      { "kind": "jsx-text", "value": "YCSAN-SMS 登录", "classification": "production-surface" },
-      { "kind": "aria-label", "value": "用户名", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "信", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "YCSOpen SMS", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "多租户 · 多通道", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "企业短信运营工作台", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "面向多租户、多通道短信业务，为平台与机构用户提供统一的管理入口。", "classification": "production-surface" },
+      { "kind": "aria-label", "value": "平台能力概览", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "01", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "统一入口", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "按账号类型进入对应的管理工作区", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "02", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "角色隔离", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "根据当前账号状态与权限控制访问范围", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "03", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "安全登录", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "勾选后仅保存用户名，不会保存密码", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "YCSAN · 短信平台控制台", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "安全访问", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "欢迎登录", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "使用已授权的控制台账号继续", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "用户名", "classification": "production-surface" },
       { "kind": "placeholder", "value": "用户名", "classification": "production-surface" },
-      { "kind": "aria-label", "value": "密码", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "密码", "classification": "production-surface" },
       { "kind": "placeholder", "value": "密码", "classification": "production-surface" },
       { "kind": "jsx-text", "value": "记住用户名", "classification": "production-surface" },
-      { "kind": "error", "value": "用户名或密码错误，或账号已被锁定", "classification": "production-surface" },
-      { "kind": "jsx-text", "value": "登录", "classification": "production-surface" }
+      { "kind": "jsx-text", "value": "仅保存在此设备", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "用户名或密码错误，或账号已被锁定", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "登录", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "中…", "classification": "production-surface" },
+      { "kind": "jsx-text", "value": "“记住用户名”不会保存密码", "classification": "production-surface" }
     ]
   },
   "runtime": {

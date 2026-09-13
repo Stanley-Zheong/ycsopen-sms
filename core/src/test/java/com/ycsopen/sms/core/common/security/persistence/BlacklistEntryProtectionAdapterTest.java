@@ -112,7 +112,7 @@ class BlacklistEntryProtectionAdapterTest {
                 "SELECT mobile_encrypted FROM blacklist_entries WHERE id=?", byte[].class, id);
         String locator = jdbc.queryForObject(
                 "SELECT mobile_hash FROM blacklist_entries WHERE id=?", String.class, id);
-        byte[] original = sha256(locator);
+        byte[] original = sha256(locator.stripTrailing());
         byte[] expected = BlindIndexLookupService.blacklistBinding(id, 17L,
                 BlacklistEntry.ListType.WHITE, BlacklistEntry.Status.DISABLED, envelope, original);
         assertThat(jdbc.query("SELECT row_binding_digest FROM ycs_crypto_blind_indexes "

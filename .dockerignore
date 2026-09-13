@@ -1,0 +1,9 @@
+.git
+.github
+.planning
+**/node_modules
+**/dist
+**/target
+**/.DS_Store
+**/playwright-report
+**/test-results

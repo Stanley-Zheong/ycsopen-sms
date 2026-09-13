@@ -394,7 +394,7 @@ class S3PrivateObjectStoreAdapterTest {
                     "PHASE03_MINIO_SECRET_KEY", secretKey));
             assertThat(service.path("status").asText()).isEqualTo("READY");
             assertThat(service.path("image_reference").asText()).isEqualTo(
-                    "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e");
+                    "quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e");
             URI endpoint = URI.create("http://" + service.path("host").asText()
                     + ":" + service.path("port").asInt());
             S3Configuration pathStyle = S3Configuration.builder().pathStyleAccessEnabled(true).build();

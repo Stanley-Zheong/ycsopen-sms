@@ -11,7 +11,7 @@ export default function DashboardPage() {
     </button>
   );
   return (
-    <div>
+    <main data-testid="admin-dashboard-page">
       <h1>关键指标概览</h1>
       {dashboard.isLoading && <p>正在加载运营仪表盘…</p>}
       {dashboard.isError && <p role="alert">运营仪表盘加载失败，可重试。</p>}
@@ -66,7 +66,7 @@ export default function DashboardPage() {
       )}
       <ComplaintRatioPanel dimension="channel" title="每通道当月投诉占比" />
       <ComplaintRatioPanel dimension="tenant" title="每机构当月投诉占比" />
-    </div>
+    </main>
   );
 }
 
