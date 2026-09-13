@@ -82,14 +82,23 @@ describe('Phase 32 uplink normalization UI', () => {
     await waitFor(() => expect(api.getAdminUplink).toHaveBeenCalledWith(101));
     expect(await screen.findByTestId('admin-uplink-normalization-detail-drawer')).toHaveTextContent('回复帮助');
 
+    expect(screen.queryByTestId('admin-uplink-normalization-uplink-replay-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-uplink-normalization-uplink-replay'));
-    await waitFor(() => expect(api.replayAdminUplink).toHaveBeenCalledWith(101, '运营复核后处理'));
+    expect(screen.getByTestId('admin-uplink-normalization-action-target')).toHaveTextContent('上行记录 #101');
+    fireEvent.change(screen.getByTestId('admin-uplink-normalization-uplink-replay-reason'), { target: { value: '上行内容复核通过' } });
+    fireEvent.click(screen.getByTestId('admin-uplink-normalization-action-confirm'));
+    await waitFor(() => expect(api.replayAdminUplink).toHaveBeenCalledWith(101, '上行内容复核通过'));
 
     expect(await screen.findByTestId('admin-uplink-normalization-push-monitor-page')).toBeVisible();
     fireEvent.click(screen.getByTestId('admin-uplink-normalization-push-pause'));
-    await waitFor(() => expect(api.pauseUplinkPushEvent).toHaveBeenCalledWith(501, '运营复核后处理'));
+    expect(screen.getByTestId('admin-uplink-normalization-action-target')).toHaveTextContent('UPLINK:101');
+    fireEvent.change(screen.getByTestId('admin-uplink-normalization-push-action-reason'), { target: { value: '目的地维护暂停' } });
+    fireEvent.click(screen.getByTestId('admin-uplink-normalization-action-confirm'));
+    await waitFor(() => expect(api.pauseUplinkPushEvent).toHaveBeenCalledWith(501, '目的地维护暂停'));
     fireEvent.click(screen.getByTestId('admin-uplink-normalization-push-resume'));
-    await waitFor(() => expect(api.resumeUplinkPushEvent).toHaveBeenCalledWith(501, '运营复核后处理'));
+    fireEvent.change(screen.getByTestId('admin-uplink-normalization-push-action-reason'), { target: { value: '维护完成恢复' } });
+    fireEvent.click(screen.getByTestId('admin-uplink-normalization-action-confirm'));
+    await waitFor(() => expect(api.resumeUplinkPushEvent).toHaveBeenCalledWith(501, '维护完成恢复'));
   });
 
   it('shows tenant scoped uplinks and saves audited auto reply config', async () => {

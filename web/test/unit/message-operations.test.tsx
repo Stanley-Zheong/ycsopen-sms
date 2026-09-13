@@ -62,8 +62,13 @@ describe('Phase 27 message receipt error operations UI', () => {
 
     expect(await screen.findByTestId('admin-message-receipt-submission-details-page')).toBeVisible();
     expect(await screen.findByTestId('admin-message-receipt-submission-details-trace')).toHaveTextContent('SUBMIT-1');
+    expect(screen.queryByTestId('admin-message-receipt-action-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-message-receipt-export-request'));
-    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalled());
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('提交详情当前筛选结果');
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('机构 42');
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '导出用于问题排查' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledWith(expect.objectContaining({ tenantId: '42' }), expect.stringMatching(/^EXPORT-/), '导出用于问题排查', 'MESSAGE_OPERATIONS'));
     expect(await screen.findByTestId('admin-message-receipt-operation-message')).toHaveTextContent('导出请求已登记');
   });
 
@@ -73,9 +78,13 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(await screen.findByTestId('admin-message-receipt-send-details-page')).toBeVisible();
     expect(await screen.findByTestId('admin-message-receipt-send-details-row')).toHaveTextContent('已保护');
     fireEvent.click(screen.getByTestId('admin-message-receipt-send-details-resend'));
-    await waitFor(() => expect(api.resendMessage).toHaveBeenCalledWith('MSG_FAILED', expect.stringMatching(/^RESEND-/), '运营复核确认'));
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '供应商失败重试' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.resendMessage).toHaveBeenCalledWith('MSG_FAILED', expect.stringMatching(/^RESEND-/), '供应商失败重试'));
     fireEvent.click(screen.getByTestId('admin-message-receipt-send-details-appeal'));
-    await waitFor(() => expect(api.appealMessage).toHaveBeenCalled());
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '供应商拒绝申诉' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.appealMessage).toHaveBeenCalledWith('MSG_FAILED', expect.stringMatching(/^APPEAL-/), '供应商拒绝申诉'));
   });
 
   it('corrects and replays receipts with explicit reason', async () => {
@@ -83,9 +92,13 @@ describe('Phase 27 message receipt error operations UI', () => {
 
     expect(await screen.findByTestId('admin-message-receipt-receipt-details-page')).toBeVisible();
     fireEvent.click(await screen.findByTestId('admin-message-receipt-receipt-correct'));
-    await waitFor(() => expect(api.correctReceipt).toHaveBeenCalledWith(501, expect.stringMatching(/^CORRECT-/), '运营复核确认', 'DELIVERED', '', 'ST20260909'));
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '运营商送达凭证确认' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.correctReceipt).toHaveBeenCalledWith(501, expect.stringMatching(/^CORRECT-/), '运营商送达凭证确认', 'DELIVERED', '', 'ST20260909'));
     fireEvent.click(screen.getByTestId('admin-message-receipt-receipt-replay'));
-    await waitFor(() => expect(api.replayReceipt).toHaveBeenCalled());
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '重新处理原始回执' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.replayReceipt).toHaveBeenCalledWith(501, expect.stringMatching(/^REPLAY-/), '重新处理原始回执'));
   });
 
   it('runs bulk retry from the error distribution section', async () => {
@@ -94,6 +107,9 @@ describe('Phase 27 message receipt error operations UI', () => {
     expect(await screen.findByTestId('admin-message-receipt-error-details-page')).toBeVisible();
     expect(await screen.findByTestId('admin-message-receipt-error-details-row')).toHaveTextContent('E42');
     fireEvent.click(screen.getByTestId('admin-message-receipt-error-details-bulk-retry'));
-    await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '运营复核确认'));
+    expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('错误码 E42');
+    fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '错误组已具备重试条件' } });
+    fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
+    await waitFor(() => expect(api.bulkErrorAction).toHaveBeenCalledWith(expect.stringMatching(/^BULK-/), 'BULK_RETRY', 'E42', ['MSG_FAILED'], '错误组已具备重试条件'));
   });
 });

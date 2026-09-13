@@ -114,7 +114,12 @@ describe('Phase 29 bulk scheduled pages', () => {
     renderWithQuery(<AdminSendJobsPage />);
     expect(screen.getByTestId('admin-bulk-scheduled-send-jobs-page')).toBeVisible();
     await waitFor(() => expect(screen.getByTestId('admin-bulk-scheduled-send-jobs-control')).toHaveTextContent('BULK-301'));
+    expect(screen.queryByTestId('admin-bulk-scheduled-send-jobs-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-bulk-scheduled-send-jobs-pause'));
-    await waitFor(() => expect(seen.some((request) => request.url === '/console/bulk/tasks/301/pause')).toBe(true));
+    expect(screen.getByTestId('admin-bulk-scheduled-send-jobs-action-target')).toHaveTextContent('BULK-301');
+    expect(seen.some((request) => request.method === 'POST' && request.url === '/console/bulk/tasks/301/pause')).toBe(false);
+    fireEvent.change(screen.getByTestId('admin-bulk-scheduled-send-jobs-reason'), { target: { value: '等待通道恢复' } });
+    fireEvent.click(screen.getByTestId('admin-bulk-scheduled-send-jobs-action-confirm'));
+    await waitFor(() => expect(seen.some((request) => request.method === 'POST' && request.url === '/console/bulk/tasks/301/pause' && request.body.reason === '等待通道恢复')).toBe(true));
   });
 });

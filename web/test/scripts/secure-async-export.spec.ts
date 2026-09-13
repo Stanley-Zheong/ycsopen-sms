@@ -48,10 +48,14 @@ test('OBL-F-7-2-C C-P46-SEND-EXPORT pw-p46-send-export OBL-F-7-4-C C-P46-RECEIPT
   await loginAs(page, 'OPERATOR');
   await page.goto('/admin/send/details');
   await page.getByTestId('admin-secure-async-send-details-export').click();
+  await page.getByTestId('admin-message-receipt-action-reason').fill('导出发送详单核查');
+  await page.getByTestId('admin-message-receipt-action-confirm').click();
   await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出任务');
 
   await page.goto('/admin/receipt/details');
   await page.getByTestId('admin-secure-async-receipt-export').click();
+  await page.getByTestId('admin-message-receipt-action-reason').fill('导出回执详单核查');
+  await page.getByTestId('admin-message-receipt-action-confirm').click();
   await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出任务');
 });
 

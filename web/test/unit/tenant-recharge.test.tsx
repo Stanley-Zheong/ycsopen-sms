@@ -130,8 +130,13 @@ describe('Phase 36 tenant recharge operations UI', () => {
 
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-table')).toBeVisible();
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-row')).toHaveTextContent('WX-R****0003');
-    fireEvent.change(screen.getByTestId('admin-tenant-recharge-operations-review-reason'), { target: { value: '到账一致' } });
+    expect(screen.queryByTestId('admin-tenant-recharge-operations-review-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-tenant-recharge-operations-review-approve'));
+    expect(screen.getByTestId('admin-tenant-recharge-operations-review-action-target')).toHaveTextContent('机构 42');
+    expect(screen.getByTestId('admin-tenant-recharge-operations-review-action-confirm')).toBeDisabled();
+    expect(screen.getByTestId('admin-tenant-recharge-operations-review-reason')).toHaveAttribute('maxlength', '255');
+    fireEvent.change(screen.getByTestId('admin-tenant-recharge-operations-review-reason'), { target: { value: '到账一致' } });
+    fireEvent.click(screen.getByTestId('admin-tenant-recharge-operations-review-action-confirm'));
 
     await waitFor(() => expect(rechargeApi.reviewRecharge).toHaveBeenCalledWith(3, { approved: true, reason: '到账一致' }));
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-message')).toHaveTextContent('APPROVED');

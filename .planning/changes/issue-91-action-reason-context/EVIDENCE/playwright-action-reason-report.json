@@ -1,0 +1,79 @@
+{
+  "recordedAt": "2026-09-13T13:41:56Z",
+  "baseCommit": "d36b5818d07cb9dce39f10f77d15a63614dbb949",
+  "result": "PASS",
+  "expected": 1,
+  "unexpected": 0,
+  "flaky": 0,
+  "durationMs": 8200,
+  "project": "local-google-chrome",
+  "engine": "Chromium/151.0.7922.34 headless_shell",
+  "runtime": {
+    "os": "Debian GNU/Linux 12 (bookworm)",
+    "architecture": "aarch64",
+    "node": "22.23.2",
+    "playwright": "1.62.1",
+    "executable": "/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell"
+  },
+  "command": "LD_LIBRARY_PATH=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/lib/aarch64-linux-gnu GSETTINGS_SCHEMA_DIR=/tmp/issue79-browser-libs-r_HYV5CF77XH66/root/usr/share/glib-2.0/schemas YCSOPEN_CHROME_PATH=/var/cache/jarvis-box/playwright/browsers/chromium_headless_shell-1234/chrome-linux/headless_shell YCSOPEN_WEB_PORT=4199 YCSOPEN_E2E_ISOLATED=1 npm --prefix web run test:e2e -- issue-91-action-reason-context.spec.ts --project=local-google-chrome --grep pw-issue-91-action-reason-context --workers=1 --reporter=line",
+  "sourceSha256": {
+    "docs/frontend页面实现规范.md": "6e07dbf2ca6df7a8a22d4b573e669c6a018563a0a31ad1c0ef90d43628ecfd31",
+    ".planning/changes/issue-91-action-reason-context/SPEC.md": "5c6ad92dd3e5c9074c765777127b15a5dc4195f3796790adcd644da0921c3826",
+    ".planning/changes/issue-91-action-reason-context/UI-ELEMENTS.md": "330a06a3cf8103fb72b4401ddaf4ff336619a7cfbfa3ce672d5d5af6cfd52e07",
+    ".planning/changes/issue-91-action-reason-context/TEST-MATRIX.md": "2d794fdf67ee6de52d7818310584affb73107f9a7d388d7c4577f726bb1aaa6a",
+    "web/src/components/common/ActionReasonDialog.tsx": "327991dfe86bd8d2dda7b7256494aec5c85d8fa2ac1b3fa6e7100a4b863bcfeb",
+    "web/src/components/common/ModalDialog.tsx": "b81de4095c707f9743f928049af12d31b7e65b3d5b801f49974d7a4099d2559b",
+    "web/src/pages/admin/alerts/AdminAlertsPage.tsx": "13930733f4cd2d115cdf4a1fcf45c4d3199363c9c62aa7291f282dbafd25d42b",
+    "web/src/pages/admin/billing/AdminRechargeReviewPage.tsx": "67b2bf8b292c354bf6cd988f727298d94595d298bf21ea2651ee83ff7aba92b4",
+    "web/src/pages/admin/bulk/AdminSendJobsPage.tsx": "fc512dc7e9ac896be09ba87061132d229a547dfd7a7bafe837ef502273e080e0",
+    "web/src/pages/admin/records/MessageOperationsPage.tsx": "59e25eee2d13e592ee0217c8321dd525b967254ecf5cad0b1cbc297a18dc2d05",
+    "web/src/pages/admin/uplinks/AdminUplinksPage.tsx": "97e1a98f88abc504e70fb1e3dd04cc31cf195e890b920b7581745911e74aa9ea",
+    "web/src/pages/admin/webhooks/AdminPushFailuresPage.tsx": "381f914d7b8dd0bc4b7ee88afa1f2d9fabbafd7b967abfcf150631f7ce8597f0",
+    "web/src/styles/index.css": "203b0738a2a793621dbcbc383cf04b2adbfe4d5051718c125db5fe74541b8204",
+    "web/test/scripts/issue-91-action-reason-context.spec.ts": "4aac76266d2efa0896b027690566e19c0502216b6b57601fe40291ad17901bcc",
+    "web/test/unit/action-reason-dialog.test.tsx": "3100dec721df47adcc6530f9359c0bc13a41d62d7e83687f69cfed3cc17a956c"
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-91-ACTION-REASON-CONTEXT",
+      "playwrightId": "pw-issue-91-action-reason-context",
+      "obligationId": "OBL-ISSUE-91-ACTION-REASON",
+      "durationMs": 8200,
+      "status": "passed"
+    }
+  ],
+  "coverage": {
+    "routes": [
+      "/admin/tenant-recharge-review",
+      "/admin/uplink",
+      "/admin/submission/details",
+      "/admin/send/details",
+      "/admin/receipt/details",
+      "/admin/error/details",
+      "/admin/alerts",
+      "/admin/push/failures",
+      "/admin/send/jobs"
+    ],
+    "assertions": [
+      "no detached reason field before action selection",
+      "selected action opens a modal with target and consequence",
+      "target and consequence participate in the reason field accessible description",
+      "trimmed-empty confirmation is disabled",
+      "reason length follows the owning API limit",
+      "cancel closes the modal without an action request",
+      "confirm sends exactly one request containing the trimmed operator reason",
+      "export confirmation snapshots and displays the applied filters",
+      "pending confirmation rejects Escape and background actions",
+      "successful confirmation closes the modal"
+    ]
+  },
+  "boundary": {
+    "realReactDom": true,
+    "actualChromium": true,
+    "actualGoogleChrome": false,
+    "localViteApplicationModules": true,
+    "platformApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "Issue #91 owns browser-rendered visibility, action and target context, cancellation, reason validation, and request binding. The current React modules ran in the accepted Chromium headless shell while deterministic API responses isolated the UI contract; this evidence does not claim real-service state-transition, authorization, persistence, or audit correctness."
+  }
+}

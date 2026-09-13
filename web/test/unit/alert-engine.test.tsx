@@ -86,9 +86,35 @@ describe('Phase 35 alert engine console UI', () => {
     await waitFor(() => expect(api.evaluateAlertSource).toHaveBeenCalledWith(expect.objectContaining({ metricName: 'FAILURE_RATE' })));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-acknowledge'));
     await waitFor(() => expect(api.acknowledgeAlert).toHaveBeenCalledWith(501));
+    expect(screen.queryByTestId('admin-alert-engine-resolve-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-resolve'));
+    expect(screen.getByTestId('admin-alert-engine-action-target')).toHaveTextContent('通道失败率过高');
+    expect(screen.getByTestId('admin-alert-engine-resolve-reason')).toHaveAttribute('maxlength', '255');
+    fireEvent.change(screen.getByTestId('admin-alert-engine-resolve-reason'), { target: { value: '确认来源已恢复' } });
+    fireEvent.click(screen.getByTestId('admin-alert-engine-action-confirm'));
     await waitFor(() => expect(api.resolveAlert).toHaveBeenCalledWith(501, '确认来源已恢复'));
     fireEvent.click(screen.getByTestId('admin-alert-engine-alert-mute'));
+    fireEvent.change(screen.getByTestId('admin-alert-engine-mute-reason'), { target: { value: '运营临时静音' } });
+    fireEvent.click(screen.getByTestId('admin-alert-engine-action-confirm'));
     await waitFor(() => expect(api.muteAlert).toHaveBeenCalledWith(501, 30, '运营临时静音'));
+  });
+
+  it('keeps a reason dialog intact when an unrelated alert mutation finishes', async () => {
+    let finishEvaluation: ((value: { alerts: typeof alertRow[] }) => void) | undefined;
+    vi.mocked(api.evaluateAlertSource).mockImplementation(() => new Promise((resolve) => {
+      finishEvaluation = resolve;
+    }));
+    renderWithQuery(<AdminAlertsPage />);
+
+    expect(await screen.findByTestId('admin-alert-engine-alert-row')).toBeVisible();
+    fireEvent.click(screen.getByTestId('admin-alert-engine-source-evaluate'));
+    await waitFor(() => expect(api.evaluateAlertSource).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('admin-alert-engine-alert-resolve'));
+    fireEvent.change(screen.getByTestId('admin-alert-engine-resolve-reason'), { target: { value: '保留这份复核依据' } });
+
+    finishEvaluation?.({ alerts: [alertRow] });
+    expect(await screen.findByTestId('admin-alert-engine-message')).toHaveTextContent('告警评估完成');
+    expect(screen.getByTestId('admin-alert-engine-action-dialog')).toBeVisible();
+    expect(screen.getByTestId('admin-alert-engine-resolve-reason')).toHaveValue('保留这份复核依据');
   });
 });

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { listRechargeReviews, reviewRecharge } from '@/api/tenantRechargeApi';
+import { listRechargeReviews, reviewRecharge, type RechargeRecord } from '@/api/tenantRechargeApi';
 import { mutationErrorMessage } from '@/api/client';
+import ActionReasonDialog from '@/components/common/ActionReasonDialog';
 import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import { protectedQueryKey } from '@/store/authStore';
 import '@/styles/tenant-recharge.css';
@@ -13,15 +14,18 @@ function displayTime(value: string): string {
 export default function AdminRechargeReviewPage() {
   const [draftStatus, setDraftStatus] = useState('PENDING');
   const [appliedStatus, setAppliedStatus] = useState('PENDING');
-  const [reason, setReason] = useState('到账一致');
+  const [decision, setDecision] = useState<{ row: RechargeRecord; approved: boolean } | null>(null);
+  const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const queryClient = useQueryClient();
   const queryKey = protectedQueryKey('tenant-recharge-operations-review', appliedStatus);
   const reviews = useQuery({ queryKey, queryFn: () => listRechargeReviews(appliedStatus), retry: false });
   const mutation = useMutation({
-    mutationFn: ({ id, approved }: { id: number; approved: boolean }) => reviewRecharge(id, { approved, reason }),
+    mutationFn: ({ row, approved, actionReason }: { row: RechargeRecord; approved: boolean; actionReason: string }) => reviewRecharge(row.id, { approved, reason: actionReason }),
     onSuccess: async (record) => {
+      setDecision(null);
+      setReason('');
       setMessage(`充值审核已处理：${record.status}`);
       setError('');
       await queryClient.invalidateQueries({ queryKey });
@@ -43,10 +47,6 @@ export default function AdminRechargeReviewPage() {
       </header>
       {message && <p role="status" className="tenant-recharge-alert success" data-testid="admin-tenant-recharge-operations-review-message">{message}</p>}
       {error && <p role="alert" className="tenant-recharge-alert error" data-testid="admin-tenant-recharge-operations-review-error">{error}</p>}
-
-      <section className="card tenant-recharge-form">
-        <label>审核原因<input data-testid="admin-tenant-recharge-operations-review-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></label>
-      </section>
 
       <QueryPanel
         legacyPanelTestId="admin-tenant-recharge-operations-review-filter"
@@ -76,8 +76,8 @@ export default function AdminRechargeReviewPage() {
                   <td>{row.submitterActor}</td>
                   <td>{displayTime(row.createdAt)}</td>
                   <td>
-                    <button type="button" data-testid="admin-tenant-recharge-operations-review-approve" disabled={row.status !== 'PENDING'} onClick={() => mutation.mutate({ id: row.id, approved: true })}>通过</button>
-                    <button type="button" data-testid="admin-tenant-recharge-operations-review-reject" disabled={row.status !== 'PENDING'} onClick={() => mutation.mutate({ id: row.id, approved: false })}>拒绝</button>
+                    <button type="button" data-testid="admin-tenant-recharge-operations-review-approve" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: true }); setReason(''); }}>通过</button>
+                    <button type="button" data-testid="admin-tenant-recharge-operations-review-reject" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: false }); setReason(''); }}>拒绝</button>
                   </td>
                 </tr>
               ))}</tbody>
@@ -93,6 +93,25 @@ export default function AdminRechargeReviewPage() {
           </select>
         </QueryField>
       </QueryPanel>
+
+      {decision && (
+        <ActionReasonDialog
+          idPrefix="admin-tenant-recharge-operations-review-action"
+          title={`确认${decision.approved ? '通过' : '拒绝'}充值申请`}
+          target={`充值申请 #${decision.row.id} · 机构 ${decision.row.tenantId} · ${decision.row.amountMil} 厘`}
+          consequence={decision.approved ? '确认后，本次金额将一次性计入机构预付费可用余额。' : '确认后，本次申请将被拒绝，所填原因会保存在审核记录中。'}
+          reasonLabel={`${decision.approved ? '通过' : '拒绝'}原因`}
+          reasonTestId="admin-tenant-recharge-operations-review-reason"
+          reason={reason}
+          placeholder={decision.approved ? '请填写到账核对依据' : '请填写拒绝依据，便于提交人核对'}
+          maxLength={255}
+          confirmLabel={`确认${decision.approved ? '通过' : '拒绝'}`}
+          pending={mutation.isPending}
+          onReasonChange={setReason}
+          onCancel={() => { setDecision(null); setReason(''); }}
+          onConfirm={() => mutation.mutate({ ...decision, actionReason: reason.trim() })}
+        />
+      )}
     </section>
   );
 }

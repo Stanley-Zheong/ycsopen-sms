@@ -46,8 +46,14 @@ async function mockAlertApis(page: Page) {
   }));
   await page.route('**/api/v1/console/alerts/evaluate', (route: Route) => route.fulfill({ json: apiResponse({ alerts: [alertRow] }) }));
   await page.route('**/api/v1/console/alerts/501/acknowledge', (route: Route) => route.fulfill({ json: apiResponse({ ...alertRow, status: 'ACKNOWLEDGED', acknowledgedBy: 'operator' }) }));
-  await page.route('**/api/v1/console/alerts/501/resolve', (route: Route) => route.fulfill({ json: apiResponse({ ...alertRow, status: 'RESOLVED', resolvedBy: 'operator', resolutionNote: '确认来源已恢复' }) }));
-  await page.route('**/api/v1/console/alerts/501/mute', (route: Route) => route.fulfill({ json: apiResponse({ id: 1, scope: 'GLOBAL', reason: '运营临时静音', mutedBy: 'operator', mutedUntil: '2026-09-10T10:30:00' }) }));
+  await page.route('**/api/v1/console/alerts/501/resolve', (route: Route) => {
+    expect(route.request().postDataJSON()).toEqual({ reason: '确认来源已恢复' });
+    return route.fulfill({ json: apiResponse({ ...alertRow, status: 'RESOLVED', resolvedBy: 'operator', resolutionNote: '确认来源已恢复' }) });
+  });
+  await page.route('**/api/v1/console/alerts/501/mute', (route: Route) => {
+    expect(route.request().postDataJSON()).toEqual({ minutes: 30, reason: '运营临时静音' });
+    return route.fulfill({ json: apiResponse({ id: 1, scope: 'GLOBAL', reason: '运营临时静音', mutedBy: 'operator', mutedUntil: '2026-09-10T10:30:00' }) });
+  });
 }
 
 test.describe('Phase 35 alert engine console', () => {
@@ -80,6 +86,9 @@ test.describe('Phase 35 alert engine console', () => {
     await page.getByTestId('admin-alert-engine-alert-acknowledge').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警已确认');
     await page.getByTestId('admin-alert-engine-alert-resolve').click();
+    await expect(page.getByTestId('admin-alert-engine-action-target')).toContainText('通道失败率过高');
+    await page.getByTestId('admin-alert-engine-resolve-reason').fill('确认来源已恢复');
+    await page.getByTestId('admin-alert-engine-action-confirm').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警已解决');
   });
 
@@ -89,8 +98,12 @@ test.describe('Phase 35 alert engine console', () => {
     await page.goto('/admin/alerts');
     await expect(page.getByTestId('admin-alert-engine-alert-delivery-attempts')).toContainText('EMAIL');
     await page.getByTestId('admin-alert-engine-alert-history-mute').click();
+    await page.getByTestId('admin-alert-engine-mute-reason').fill('运营临时静音');
+    await page.getByTestId('admin-alert-engine-action-confirm').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警通知已静音');
     await page.getByTestId('admin-alert-engine-alert-mute').click();
+    await page.getByTestId('admin-alert-engine-mute-reason').fill('运营临时静音');
+    await page.getByTestId('admin-alert-engine-action-confirm').click();
     await expect(page.getByTestId('admin-alert-engine-message')).toContainText('告警通知已静音');
   });
 });

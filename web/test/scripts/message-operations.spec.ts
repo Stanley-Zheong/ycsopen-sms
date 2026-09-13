@@ -15,22 +15,22 @@ async function mockMessageOperationsApis(page: Page) {
   await page.route('**/api/v1/console/message-operations/receipts?**', (route: Route) => route.fulfill({ json: apiResponse(receipts) }));
   await page.route('**/api/v1/console/message-operations/errors?**', (route: Route) => route.fulfill({ json: apiResponse(errors) }));
   await page.route('**/api/v1/console/message-operations/sends/MSG_FAILED/resend', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核确认' }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '供应商失败重试' }));
     await route.fulfill({ json: apiResponse({ actionId: 'RESEND-1', action: 'RESEND', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RETRY_CREATED', resultMessage: '301' }) });
   });
   await page.route('**/api/v1/console/message-operations/sends/MSG_FAILED/appeal', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核确认' }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '供应商拒绝申诉' }));
     await route.fulfill({ json: apiResponse({ actionId: 'APPEAL-1', action: 'APPEAL', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'APPEAL_RECORDED', resultMessage: null }) });
   });
   await page.route('**/api/v1/console/message-operations/receipts/501/correct', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核确认', status: 'DELIVERED', taxonomyVersion: 'ST20260909' }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营商送达凭证确认', status: 'DELIVERED', taxonomyVersion: 'ST20260909' }));
     await route.fulfill({ json: apiResponse({ actionId: 'CORRECT-1', action: 'RECEIPT_CORRECT', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RECEIPT_CORRECTED', resultMessage: null }) });
   });
   await page.route('**/api/v1/console/message-operations/receipts/501/replay', async (route: Route) => route.fulfill({
     json: apiResponse({ actionId: 'REPLAY-1', action: 'RECEIPT_REPLAY', target: 'MSG_FAILED', status: 'COMPLETED', resultCode: 'RECEIPT_REPLAYED', resultMessage: 'FAILED' }),
   }));
   await page.route('**/api/v1/console/message-operations/errors/actions', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ action: 'BULK_RETRY', errorCode: 'E42', messageIds: ['MSG_FAILED'] }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ action: 'BULK_RETRY', errorCode: 'E42', messageIds: ['MSG_FAILED'], reason: '错误组已具备重试条件' }));
     await route.fulfill({ json: apiResponse({ actionId: 'BULK-1', action: 'BULK_RETRY', total: 1, completed: 1, failed: 0, results: [] }) });
   });
   await page.route('**/api/v1/console/message-operations/exports?**', async (route: Route) => route.fulfill({
@@ -46,6 +46,9 @@ test.describe('Phase 27 message receipt error operations', () => {
     await expect(page.getByTestId('admin-message-receipt-submission-details-page')).toBeVisible();
     await expect(page.getByTestId('admin-message-receipt-submission-details-trace')).toContainText('SUBMIT-1');
     await page.getByTestId('admin-message-receipt-export-request').click();
+    await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('提交详情当前筛选结果');
+    await page.getByTestId('admin-message-receipt-action-reason').fill('导出用于问题排查');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出请求已登记');
   });
 
@@ -56,8 +59,12 @@ test.describe('Phase 27 message receipt error operations', () => {
     await expect(page.getByTestId('admin-message-receipt-send-details-page')).toBeVisible();
     await expect(page.getByTestId('admin-message-receipt-send-details-row')).toContainText('已保护');
     await page.getByTestId('admin-message-receipt-send-details-resend').click();
+    await page.getByTestId('admin-message-receipt-action-reason').fill('供应商失败重试');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('重发已处理');
     await page.getByTestId('admin-message-receipt-send-details-appeal').click();
+    await page.getByTestId('admin-message-receipt-action-reason').fill('供应商拒绝申诉');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('申诉已登记');
   });
 
@@ -68,8 +75,12 @@ test.describe('Phase 27 message receipt error operations', () => {
     await expect(page.getByTestId('admin-message-receipt-receipt-details-page')).toBeVisible();
     await expect(page.getByTestId('admin-message-receipt-receipt-details-row')).toContainText('raw payload protected');
     await page.getByTestId('admin-message-receipt-receipt-correct').click();
+    await page.getByTestId('admin-message-receipt-action-reason').fill('运营商送达凭证确认');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('回执纠正已应用');
     await page.getByTestId('admin-message-receipt-receipt-replay').click();
+    await page.getByTestId('admin-message-receipt-action-reason').fill('重新处理原始回执');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('回执重放已处理');
   });
 
@@ -80,6 +91,9 @@ test.describe('Phase 27 message receipt error operations', () => {
     await expect(page.getByTestId('admin-message-receipt-error-details-page')).toBeVisible();
     await expect(page.getByTestId('admin-message-receipt-error-details-row')).toContainText('E42');
     await page.getByTestId('admin-message-receipt-error-details-bulk-retry').click();
+    await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('错误码 E42');
+    await page.getByTestId('admin-message-receipt-action-reason').fill('错误组已具备重试条件');
+    await page.getByTestId('admin-message-receipt-action-confirm').click();
     await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('批量重试完成');
   });
 });

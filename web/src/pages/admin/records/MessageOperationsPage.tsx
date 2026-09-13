@@ -14,6 +14,7 @@ import {
   type OperationFilter,
 } from '@/api/messageOperationsApi';
 import { mutationErrorMessage } from '@/api/client';
+import ActionReasonDialog from '@/components/common/ActionReasonDialog';
 import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/message-operations.css';
 
@@ -28,6 +29,22 @@ const SECTION_LABELS: Record<Section, string> = {
 
 const DEFAULT_FILTER: OperationFilter = { tenantId: '42', messageId: '', status: '', errorCode: '' };
 
+type PendingAction =
+  | { kind: 'export'; section: Section; filter: OperationFilter }
+  | { kind: 'resend' | 'appeal'; messageId: string }
+  | { kind: 'correct' | 'replay'; receiptId: number; messageId: string }
+  | { kind: 'bulk-retry' | 'mark-problem'; errorCode: string; messageIds: string[] };
+
+const ACTION_LABELS: Record<PendingAction['kind'], string> = {
+  export: '请求安全异步导出',
+  resend: '重发消息',
+  appeal: '提交申诉',
+  correct: '纠正回执为送达',
+  replay: '重放回执',
+  'bulk-retry': '批量重试',
+  'mark-problem': '标记问题',
+};
+
 function newActionId(prefix: string) {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return `${prefix}-${crypto.randomUUID()}`;
@@ -35,12 +52,45 @@ function newActionId(prefix: string) {
   return `${prefix}-${Date.now()}`;
 }
 
+function actionTarget(action: PendingAction): string {
+  switch (action.kind) {
+    case 'export': {
+      const scope = [
+        action.filter.tenantId ? `机构 ${action.filter.tenantId}` : '',
+        action.filter.messageId ? `消息 ${action.filter.messageId}` : '',
+        action.filter.status ? `状态 ${action.filter.status}` : '',
+        action.filter.errorCode ? `错误码 ${action.filter.errorCode}` : '',
+      ].filter(Boolean);
+      return `${SECTION_LABELS[action.section]}当前筛选结果 · ${scope.length ? scope.join(' · ') : '全部记录'}`;
+    }
+    case 'resend':
+    case 'appeal': return `消息 ${action.messageId}`;
+    case 'correct':
+    case 'replay': return `回执 #${action.receiptId} · 消息 ${action.messageId}`;
+    case 'bulk-retry':
+    case 'mark-problem': return `错误码 ${action.errorCode} · ${action.messageIds.length} 条失败消息`;
+  }
+}
+
+function actionConsequence(action: PendingAction): string {
+  switch (action.kind) {
+    case 'export': return '确认后将按当前已应用筛选条件登记安全异步导出请求。';
+    case 'resend': return '确认后将为该失败消息创建一次新的发送尝试。';
+    case 'appeal': return '确认后将为该失败消息登记运营申诉记录。';
+    case 'correct': return '确认后将保留原始回执，并新增一条送达纠正记录。';
+    case 'replay': return '确认后将按保存的回执数据重新执行处理。';
+    case 'bulk-retry': return '确认后将重试当前错误组中的失败消息，并分别记录处理结果。';
+    case 'mark-problem': return '确认后将把当前错误组中的失败消息标记为问题记录。';
+  }
+}
+
 export default function MessageOperationsPage({ initialSection = 'submissions' }: { initialSection?: Section }) {
   const queryClient = useQueryClient();
   const [section, setSection] = useState<Section>(initialSection);
   const [draftFilter, setDraftFilter] = useState<OperationFilter>(DEFAULT_FILTER);
   const [appliedFilter, setAppliedFilter] = useState<OperationFilter>(DEFAULT_FILTER);
-  const [reason, setReason] = useState('运营复核确认');
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -62,49 +112,77 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
     setMessage('');
   };
   const ok = async (text: string) => {
+    setPendingAction(null);
+    setReason('');
     setMessage(text);
     setError('');
     await refresh();
   };
 
   const resend = useMutation({
-    mutationFn: (target: string) => resendMessage(target, newActionId('RESEND'), reason),
+    mutationFn: ({ messageId, actionReason }: { messageId: string; actionReason: string }) => resendMessage(messageId, newActionId('RESEND'), actionReason),
     onSuccess: (result) => ok(`重发已处理：${result.resultCode}`),
     onError: (failure) => fail(failure, '重发失败'),
   });
   const appeal = useMutation({
-    mutationFn: (target: string) => appealMessage(target, newActionId('APPEAL'), reason),
+    mutationFn: ({ messageId, actionReason }: { messageId: string; actionReason: string }) => appealMessage(messageId, newActionId('APPEAL'), actionReason),
     onSuccess: (result) => ok(`申诉已登记：${result.resultCode}`),
     onError: (failure) => fail(failure, '申诉失败'),
   });
   const correct = useMutation({
-    mutationFn: (receiptId: number) => correctReceipt(receiptId, newActionId('CORRECT'), reason, 'DELIVERED', '', 'ST20260909'),
+    mutationFn: ({ receiptId, actionReason }: { receiptId: number; actionReason: string }) => correctReceipt(receiptId, newActionId('CORRECT'), actionReason, 'DELIVERED', '', 'ST20260909'),
     onSuccess: (result) => ok(`回执纠正已应用：${result.resultCode}`),
     onError: (failure) => fail(failure, '回执纠正失败'),
   });
   const replay = useMutation({
-    mutationFn: (receiptId: number) => replayReceipt(receiptId, newActionId('REPLAY'), reason),
+    mutationFn: ({ receiptId, actionReason }: { receiptId: number; actionReason: string }) => replayReceipt(receiptId, newActionId('REPLAY'), actionReason),
     onSuccess: (result) => ok(`回执重放已处理：${result.resultCode}`),
     onError: (failure) => fail(failure, '回执重放失败'),
   });
   const bulkRetry = useMutation({
-    mutationFn: () => bulkErrorAction(newActionId('BULK'), 'BULK_RETRY', filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
-      (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId), reason),
+    mutationFn: ({ errorCode, messageIds, actionReason }: { errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(newActionId('BULK'), 'BULK_RETRY', errorCode, messageIds, actionReason),
     onSuccess: (result) => ok(`批量重试完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '批量重试失败'),
   });
   const markProblem = useMutation({
-    mutationFn: () => bulkErrorAction(newActionId('PROBLEM'), 'MARK_PROBLEM', filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
-      (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId), reason),
+    mutationFn: ({ errorCode, messageIds, actionReason }: { errorCode: string; messageIds: string[]; actionReason: string }) => bulkErrorAction(newActionId('PROBLEM'), 'MARK_PROBLEM', errorCode, messageIds, actionReason),
     onSuccess: (result) => ok(`问题标记完成：成功 ${result.completed}，失败 ${result.failed}`),
     onError: (failure) => fail(failure, '问题标记失败'),
   });
   const exportRequest = useMutation({
-    mutationFn: () => requestMessageExport(filter, newActionId('EXPORT'), reason,
-      section === 'sends' ? 'SEND_DETAIL' : section === 'receipts' ? 'RECEIPT_DETAIL' : 'MESSAGE_OPERATIONS'),
+    mutationFn: ({ actionFilter, actionReason, actionSection }: { actionFilter: OperationFilter; actionReason: string; actionSection: Section }) => requestMessageExport(actionFilter, newActionId('EXPORT'), actionReason,
+      actionSection === 'sends' ? 'SEND_DETAIL' : actionSection === 'receipts' ? 'RECEIPT_DETAIL' : 'MESSAGE_OPERATIONS'),
     onSuccess: (result) => ok(`导出请求已登记：${result.resultMessage}`),
     onError: (failure) => fail(failure, '导出请求失败'),
   });
+
+  const openAction = (action: PendingAction) => {
+    setPendingAction(action);
+    setReason('');
+    setError('');
+  };
+  const openBulkAction = (kind: 'bulk-retry' | 'mark-problem') => openAction({
+    kind,
+    errorCode: filter.errorCode || errors.data?.[0]?.normalizedCode || 'UNKNOWN',
+    messageIds: (sends.data ?? []).filter((row) => row.sendStatus === 'FAILED').map((row) => row.messageId),
+  });
+  const closeAction = () => {
+    setPendingAction(null);
+    setReason('');
+  };
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    const actionReason = reason.trim();
+    if (pendingAction.kind === 'export') exportRequest.mutate({ actionFilter: pendingAction.filter, actionReason, actionSection: pendingAction.section });
+    if (pendingAction.kind === 'resend') resend.mutate({ messageId: pendingAction.messageId, actionReason });
+    if (pendingAction.kind === 'appeal') appeal.mutate({ messageId: pendingAction.messageId, actionReason });
+    if (pendingAction.kind === 'correct') correct.mutate({ receiptId: pendingAction.receiptId, actionReason });
+    if (pendingAction.kind === 'replay') replay.mutate({ receiptId: pendingAction.receiptId, actionReason });
+    if (pendingAction.kind === 'bulk-retry') bulkRetry.mutate({ ...pendingAction, actionReason });
+    if (pendingAction.kind === 'mark-problem') markProblem.mutate({ ...pendingAction, actionReason });
+  };
+  const actionPending = resend.isPending || appeal.isPending || correct.isPending || replay.isPending
+    || bulkRetry.isPending || markProblem.isPending || exportRequest.isPending;
 
   return (
     <section className="message-operations-page" data-testid="admin-message-receipt-operations-page">
@@ -119,17 +197,13 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           <h1>消息、回执与错误运营</h1>
           <p className="page-description">按租户、状态、消息和错误码追踪提交、发送、回执、错误聚合，并执行有原因、有幂等键的运营动作。</p>
         </div>
-        {section === 'sends' && <button type="button" data-testid="admin-secure-async-send-details-export" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
-        {section === 'receipts' && <button type="button" data-testid="admin-secure-async-receipt-export" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
-        {section !== 'sends' && section !== 'receipts' && <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => exportRequest.mutate()}>请求安全异步导出</button>}
+        {section === 'sends' && <button type="button" data-testid="admin-secure-async-send-details-export" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
+        {section === 'receipts' && <button type="button" data-testid="admin-secure-async-receipt-export" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
+        {section !== 'sends' && section !== 'receipts' && <button type="button" data-testid="admin-message-receipt-export-request" onClick={() => openAction({ kind: 'export', section, filter: { ...filter } })}>请求安全异步导出</button>}
       </header>
 
       {message && <p role="status" className="message-operations-alert success" data-testid="admin-message-receipt-operation-message">{message}</p>}
       {error && <p role="alert" className="message-operations-alert error" data-testid="admin-message-receipt-operation-error">{error}</p>}
-
-      <section className="card message-operations-filters">
-        <label>动作原因<input data-testid="admin-message-receipt-action-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></label>
-      </section>
 
       <QueryPanel
         legacyPanelTestId="admin-message-receipt-query-panel"
@@ -168,8 +242,8 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
               <tr key={row.taskId} data-testid="admin-message-receipt-send-details-row">
                 <td>{row.messageId}</td><td>{row.tenantId}</td><td>{row.maskedMobile}</td><td>{row.contentSummary}</td><td>{row.sendStatus}</td><td>{row.channelId}</td><td>{row.carrier}/{row.province}/{row.city}</td><td>{row.errorCode || '-'}</td>
                 <td>
-                  <button type="button" data-testid="admin-message-receipt-send-details-resend" disabled={row.sendStatus !== 'FAILED'} onClick={() => resend.mutate(row.messageId)}>重发</button>
-                  <button type="button" data-testid="admin-message-receipt-send-details-appeal" disabled={row.sendStatus !== 'FAILED'} onClick={() => appeal.mutate(row.messageId)}>申诉</button>
+                  <button type="button" data-testid="admin-message-receipt-send-details-resend" disabled={row.sendStatus !== 'FAILED'} onClick={() => openAction({ kind: 'resend', messageId: row.messageId })}>重发</button>
+                  <button type="button" data-testid="admin-message-receipt-send-details-appeal" disabled={row.sendStatus !== 'FAILED'} onClick={() => openAction({ kind: 'appeal', messageId: row.messageId })}>申诉</button>
                 </td>
               </tr>
             ))}</tbody>
@@ -186,8 +260,8 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
               <tr key={row.receiptId} data-testid="admin-message-receipt-receipt-details-row">
                 <td>{row.receiptId}</td><td>{row.messageId}</td><td>{row.maskedMobile}</td><td>{row.receiptStatus}</td><td>{row.errorCode || '-'}</td><td>{row.channelId}</td><td>{row.rawPayloadSummary}</td>
                 <td>
-                  <button type="button" data-testid="admin-message-receipt-receipt-correct" onClick={() => correct.mutate(row.receiptId)}>纠正为送达</button>
-                  <button type="button" data-testid="admin-message-receipt-receipt-replay" onClick={() => replay.mutate(row.receiptId)}>重放</button>
+                  <button type="button" data-testid="admin-message-receipt-receipt-correct" onClick={() => openAction({ kind: 'correct', receiptId: row.receiptId, messageId: row.messageId })}>纠正为送达</button>
+                  <button type="button" data-testid="admin-message-receipt-receipt-replay" onClick={() => openAction({ kind: 'replay', receiptId: row.receiptId, messageId: row.messageId })}>重放</button>
                 </td>
               </tr>
             ))}</tbody>
@@ -199,8 +273,8 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
         <section className="card">
           <h2>错误详情</h2>
           <div className="message-operations-actions">
-            <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" onClick={() => bulkRetry.mutate()}>批量重试</button>
-            <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" onClick={() => markProblem.mutate()}>标记问题</button>
+            <button type="button" data-testid="admin-message-receipt-error-details-bulk-retry" onClick={() => openBulkAction('bulk-retry')}>批量重试</button>
+            <button type="button" data-testid="admin-message-receipt-error-details-mark-problem" onClick={() => openBulkAction('mark-problem')}>标记问题</button>
           </div>
           <table className="message-operations-table" data-testid="admin-message-receipt-error-details-table">
             <thead><tr><th>归一化错误码</th><th>分类</th><th>级别</th><th>可重试</th><th>消息数</th><th>租户数</th><th>通道数</th><th>首次/最近</th></tr></thead>
@@ -227,6 +301,24 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
           <input data-testid="admin-message-receipt-filter-error-code" value={draftFilter.errorCode ?? ''} onChange={(event) => setDraftFilter((current) => ({ ...current, errorCode: event.target.value }))} />
         </QueryField>
       </QueryPanel>
+
+      {pendingAction && (
+        <ActionReasonDialog
+          idPrefix="admin-message-receipt-action"
+          title={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          target={actionTarget(pendingAction)}
+          consequence={actionConsequence(pendingAction)}
+          reasonLabel={`${ACTION_LABELS[pendingAction.kind]}原因`}
+          reasonTestId="admin-message-receipt-action-reason"
+          reason={reason}
+          placeholder="请填写本次操作的复核依据"
+          confirmLabel={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          pending={actionPending}
+          onReasonChange={setReason}
+          onCancel={closeAction}
+          onConfirm={confirmAction}
+        />
+      )}
     </section>
   );
 }
