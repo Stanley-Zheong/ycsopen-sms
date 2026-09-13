@@ -79,7 +79,7 @@ test('pw-issue-90-release-tenant-status-action C-ISSUE-90-RELEASE-TENANT-ACCOUNT
   await expect(releaseTenant.getByTestId('admin-tenant-qualification-tenants-status-action')).toBeVisible();
 });
 
-test('Issue 91 real-service action reasons start contextual and persist one confirmed action', async ({ page }) => {
+test('pw-issue-91-docker-release C-ISSUE-91-REAL-SERVICE OBL-ISSUE-91-ACTION-REASON', async ({ page }) => {
   const environment = (globalThis as typeof globalThis & {
     process: { env: Record<string, string | undefined> };
   }).process.env;
