@@ -30,6 +30,6 @@ Make frontend release evidence repeatable so Docker test environments, default a
 
 ## Remaining TODO
 
-- [ ] Decide whether every frontend spirit requires Docker release verification or only release-sensitive changes.
-- [ ] Add a PR evidence template after product review.
-- [ ] Record final verification commands in `QUALITY-GATEWAY.md`.
+- Open item: Decide whether every frontend spirit requires Docker release verification or only release-sensitive changes.
+- Open item: Add a PR evidence template after product review.
+- Open item: Record final verification commands in `QUALITY-GATEWAY.md`.

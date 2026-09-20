@@ -12,6 +12,6 @@
 
 ## Merge Gate
 
-- [ ] Trial, prepaid, postpaid, billing, and invoice terms are not conflated.
-- [ ] Finance actions have target-aware confirmation and audit input when required.
-- [ ] PR body records verification evidence and unresolved product decisions.
+- Gate item: Trial, prepaid, postpaid, billing, and invoice terms are not conflated.
+- Gate item: Finance actions have target-aware confirmation and audit input when required.
+- Gate item: PR body records verification evidence and unresolved product decisions.

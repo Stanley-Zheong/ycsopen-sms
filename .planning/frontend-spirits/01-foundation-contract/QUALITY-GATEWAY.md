@@ -12,7 +12,7 @@
 
 ## Merge Gate
 
-- [ ] Scoped TODO set is empty with evidence.
-- [ ] Shared component behavior is covered by unit tests.
-- [ ] Representative Chrome Playwright route evidence is recorded.
-- [ ] PR body lists changed routes, changed selectors, verification commands, and boundaries.
+- Gate item: Scoped TODO set is empty with evidence.
+- Gate item: Shared component behavior is covered by unit tests.
+- Gate item: Representative Chrome Playwright route evidence is recorded.
+- Gate item: PR body lists changed routes, changed selectors, verification commands, and boundaries.

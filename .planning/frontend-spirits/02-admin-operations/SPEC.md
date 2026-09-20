@@ -29,6 +29,6 @@ Make operations pages understandable and action-complete for alerts, complaints,
 
 ## Remaining TODO
 
-- [ ] Select owning issue for the first admin operations implementation PR.
-- [ ] Map alert history buttons to exact action names and API effects.
-- [ ] Record final verification commands in `QUALITY-GATEWAY.md`.
+- Open item: Select owning issue for the first admin operations implementation PR.
+- Open item: Map alert history buttons to exact action names and API effects.
+- Open item: Record final verification commands in `QUALITY-GATEWAY.md`.

@@ -38,19 +38,19 @@
 - Consumes: `docs/frontend页面实现规范.md`, `docs/PRD_V2.md`
 - Produces: repository-wide frontend development rules used by every later spirit.
 
-- [ ] **Step 1: Add frontend contract to `AGENTS.md`**
+- [x] **Step 1: Add frontend contract to `AGENTS.md`**
 
 ```markdown
 - Frontend work must follow `docs/frontend页面实现规范.md` and
   `.planning/frontend-spirits/README.md`.
 ```
 
-- [ ] **Step 2: Verify contract formatting**
+- [x] **Step 2: Verify contract formatting**
 
 Run: `git diff --check`
 Expected: exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add AGENTS.md
@@ -66,16 +66,16 @@ git commit -m "docs: add frontend spirit development contract"
 - Consumes: `docs/PRD_V2.md`, `docs/ISSUE_BUG_RETROSPECTIVE.md`
 - Produces: the common spirit definition, required artifacts, merge gate, and ordered spirit list.
 
-- [ ] **Step 1: Write spirit index**
+- [x] **Step 1: Write spirit index**
 
 Create `.planning/frontend-spirits/README.md` with the definition of a frontend spirit, required artifact names, quality gate, and the five package sequence.
 
-- [ ] **Step 2: Verify index formatting**
+- [x] **Step 2: Verify index formatting**
 
 Run: `git diff --check`
 Expected: exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .planning/frontend-spirits/README.md
@@ -96,16 +96,16 @@ git commit -m "docs: define frontend spirit workflow"
 - Consumes: spirit index, current GitHub issue set, V2 PRD, frontend page specification.
 - Produces: one independently reviewable development package per frontend slice.
 
-- [ ] **Step 1: Write each spirit artifact**
+- [x] **Step 1: Write each spirit artifact**
 
 Each spirit package must identify scope, out-of-scope boundaries, action contracts, shared component ownership, decisions, iteration ledger schema, and quality gate commands.
 
-- [ ] **Step 2: Verify artifact formatting**
+- [x] **Step 2: Verify artifact formatting**
 
 Run: `git diff --check`
 Expected: exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .planning/frontend-spirits
@@ -121,15 +121,15 @@ git commit -m "docs: split frontend work into spirit packages"
 - Consumes: commits from Tasks 1-3.
 - Produces: updated pull request with verification evidence.
 
-- [ ] **Step 1: Push branch**
+- [x] **Step 1: Push branch**
 
 Run: `git push`
 Expected: branch updates successfully.
 
-- [ ] **Step 2: Update PR body or comment**
+- [x] **Step 2: Update PR body or comment**
 
 Record `git diff --check` and note that this is documentation-only with no frontend runtime tests run.
 
-- [ ] **Step 3: Merge only after gate**
+- [x] **Step 3: Merge only after gate**
 
 Merge the PR only after repository checks required for the documentation change are green and the PR review boundary is satisfied.

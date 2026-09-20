@@ -37,6 +37,6 @@ Create the reusable frontend foundation that prevents repeated layout, form, tab
 
 ## Remaining TODO
 
-- [ ] Assign each open layout/form issue to this spirit or an explicit later spirit.
-- [ ] Inventory current shared components and routes before implementation.
-- [ ] Record final verification commands in `QUALITY-GATEWAY.md`.
+- Open item: Assign each open layout/form issue to this spirit or an explicit later spirit.
+- Open item: Inventory current shared components and routes before implementation.
+- Open item: Record final verification commands in `QUALITY-GATEWAY.md`.

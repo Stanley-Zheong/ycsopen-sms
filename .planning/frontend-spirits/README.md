@@ -47,6 +47,6 @@ Every spirit directory contains:
 
 ## Global Remaining TODO
 
-- [ ] Split each open frontend issue into one owning spirit before implementation starts.
-- [ ] Add issue links to the relevant spirit `SPEC.md` when the issue is selected for implementation.
-- [ ] Record per-spirit verification evidence in `QUALITY-GATEWAY.md` before each spirit merge.
+- Open item: Split each open frontend issue into one owning spirit before implementation starts.
+- Open item: Add issue links to the relevant spirit `SPEC.md` when the issue is selected for implementation.
+- Open item: Record per-spirit verification evidence in `QUALITY-GATEWAY.md` before each spirit merge.

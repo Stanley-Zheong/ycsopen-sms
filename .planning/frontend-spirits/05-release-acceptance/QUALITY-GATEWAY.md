@@ -12,6 +12,6 @@
 
 ## Merge Gate
 
-- [ ] Build commit identity is recorded for release-sensitive work.
-- [ ] Health and login evidence are recorded.
-- [ ] Report paths and verification boundaries are listed in the PR.
+- Gate item: Build commit identity is recorded for release-sensitive work.
+- Gate item: Health and login evidence are recorded.
+- Gate item: Report paths and verification boundaries are listed in the PR.

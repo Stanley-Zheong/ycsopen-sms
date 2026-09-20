@@ -27,6 +27,6 @@ Make sending, delivery, receipt, uplink, error, export, and callback workbench p
 
 ## Remaining TODO
 
-- [ ] Select first workbench route for implementation.
-- [ ] Inventory existing export and retry behavior against PRD V2 command contract.
-- [ ] Record final verification commands in `QUALITY-GATEWAY.md`.
+- Open item: Select first workbench route for implementation.
+- Open item: Inventory existing export and retry behavior against PRD V2 command contract.
+- Open item: Record final verification commands in `QUALITY-GATEWAY.md`.

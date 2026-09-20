@@ -12,6 +12,6 @@
 
 ## Merge Gate
 
-- [ ] Each changed operation button has verb, target, effect, and feedback.
-- [ ] Unknown attribution and empty states are represented explicitly.
-- [ ] PR body references the owning issue and evidence.
+- Gate item: Each changed operation button has verb, target, effect, and feedback.
+- Gate item: Unknown attribution and empty states are represented explicitly.
+- Gate item: PR body references the owning issue and evidence.

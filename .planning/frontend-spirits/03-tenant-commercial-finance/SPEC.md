@@ -27,6 +27,6 @@ Make tenant lifecycle, trial, contract, recharge, billing, account balance, and 
 
 ## Remaining TODO
 
-- [ ] Confirm zero-amount trial billing behavior from product review.
-- [ ] Identify first finance route and issue scope for implementation.
-- [ ] Record final verification commands in `QUALITY-GATEWAY.md`.
+- Open item: Confirm zero-amount trial billing behavior from product review.
+- Open item: Identify first finance route and issue scope for implementation.
+- Open item: Record final verification commands in `QUALITY-GATEWAY.md`.

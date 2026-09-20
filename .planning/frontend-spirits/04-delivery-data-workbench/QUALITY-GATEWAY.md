@@ -12,6 +12,6 @@
 
 ## Merge Gate
 
-- [ ] Commands disclose target and snapshot.
-- [ ] Bulk actions cannot submit partial or incomplete targets.
-- [ ] Exports disclose included datasets and excluded filters.
+- Gate item: Commands disclose target and snapshot.
+- Gate item: Bulk actions cannot submit partial or incomplete targets.
+- Gate item: Exports disclose included datasets and excluded filters.
