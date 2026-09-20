@@ -87,6 +87,12 @@ lane ran the Issue #60, #90, and #91 cases in installed Google Chrome against
 real Web/Core/MySQL services; the Issue #91 case persisted the reason and read
 back exactly one matching balance-audit entry.
 
+The final review follow-up resolved the two remaining non-sentinel findings:
+`SEND_DETAIL` export now preserves the error-code snapshot that the backend
+supports, while unsupported export types still disclose and drop it; Docker
+release acceptance now writes separate fresh, upgrade, and restart JSON reports
+instead of overwriting earlier lanes.
+
 ## Findings resolved
 
 - Pending submissions now reject Escape, cancel, close, and background actions.

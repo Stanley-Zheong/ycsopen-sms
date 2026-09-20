@@ -66,6 +66,13 @@ function newActionId(prefix: string) {
 }
 
 function exportAction(section: Section, filter: OperationFilter): ActionSelection {
+  if (section === 'sends') {
+    return {
+      kind: 'export',
+      section,
+      filter,
+    };
+  }
   const { errorCode, ...effectiveFilter } = filter;
   return {
     kind: 'export',

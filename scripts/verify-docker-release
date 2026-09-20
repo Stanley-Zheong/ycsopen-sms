@@ -156,12 +156,15 @@ assert_core_logs() {
 }
 
 run_chrome_acceptance() {
+  local lane="$1"
+  YCSOPEN_DOCKER_REPORT_NAME="docker-release-${lane}-report.json"
+  export YCSOPEN_DOCKER_REPORT_NAME
   npm --prefix web run test:docker-release
-  local report='web/test-results/docker-release-report.json'
+  local report="web/test-results/${YCSOPEN_DOCKER_REPORT_NAME}"
   [[ -s "$report" ]] || { echo >&2 'Docker Chrome JSON report is missing'; return 1; }
   local report_sha
   report_sha="$(sha256sum "$report" | awk '{print $1}')"
-  echo "docker_release_playwright_evidence=PASS commit=$BUILD_COMMIT report=$report sha256=$report_sha"
+  echo "docker_release_playwright_evidence=PASS lane=$lane commit=$BUILD_COMMIT report=$report sha256=$report_sha"
 }
 
 prepare_issue91_fixture() {
@@ -186,7 +189,7 @@ compose up --detach --build
 wait_for_core
 wait_for_web
 prepare_issue91_fixture
-run_chrome_acceptance
+run_chrome_acceptance fresh
 assert_release_rows
 assert_core_logs
 archive_and_remove_project "$fresh_project"
@@ -210,7 +213,7 @@ compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
 prepare_issue91_fixture
-run_chrome_acceptance
+run_chrome_acceptance upgrade
 assert_release_rows
 [[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
 assert_core_logs
@@ -223,7 +226,7 @@ compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
 prepare_issue91_fixture
-run_chrome_acceptance
+run_chrome_acceptance restart
 assert_release_rows
 [[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
 assert_core_logs

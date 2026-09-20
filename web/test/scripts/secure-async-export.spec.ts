@@ -56,12 +56,13 @@ test('OBL-F-7-2-C C-P46-SEND-EXPORT pw-p46-send-export OBL-F-7-4-C C-P46-RECEIPT
   await page.getByTestId('query-submit').click();
   await page.getByTestId('admin-secure-async-send-details-export').click();
   await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('发送详单导出');
-  await expect(page.getByTestId('admin-message-receipt-action-consequence')).toContainText('错误码筛选 E42 不受该导出接口支持');
+  await expect(page.getByTestId('admin-message-receipt-action-target')).toContainText('错误码 E42');
+  await expect(page.getByTestId('admin-message-receipt-action-consequence')).not.toContainText('错误码筛选 E42 不受该导出接口支持');
   await page.getByTestId('admin-message-receipt-action-reason').fill('导出发送详单核查');
   await page.getByTestId('admin-message-receipt-action-confirm').click();
   await expect(page.getByTestId('admin-message-receipt-operation-message')).toContainText('导出任务');
   expect(exportRequests[0].searchParams.get('exportType')).toBe('SEND_DETAIL');
-  expect(exportRequests[0].searchParams.has('errorCode')).toBe(false);
+  expect(exportRequests[0].searchParams.get('errorCode')).toBe('E42');
 
   await page.goto('/admin/receipt/details');
   await page.getByTestId('admin-secure-async-receipt-export').click();

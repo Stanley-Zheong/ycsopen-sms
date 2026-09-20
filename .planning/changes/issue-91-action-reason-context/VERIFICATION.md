@@ -19,6 +19,9 @@
 | Error aggregation service tests | From the repository root: `mvn -f core/pom.xml -Dtest=MessageReceiptErrorOperationsServiceTest test` | PASS, 9/9. The added cases prove that message/status filters scope loaded sends and error aggregates identically, a non-`FAILED` status produces no error group, two active provider/protocol mappings with the same provider code do not multiply task counts, conflicting taxonomy collapses conservatively, and null versus literal `UNKNOWN` error codes remain distinct groups with the correct bulk-action capability. |
 | Docker acceptance discovery | `npm --prefix web run test:docker-release -- --list` | PASS, 3 tests discovered; the existing Issue #60 identity case, incoming Issue #90 account-status case, and Issue #91 real-service action-reason case coexist. |
 | Real-service installed-Chrome acceptance | Pull-request CI run [34773792381](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/34773792381), `Docker release / Google Chrome`, commit `332570a283ab89e16516f980e7884e2554d13504` | HISTORICAL PASS before the latest filter/trace correction. Fresh, upgrade, and restart each ran 3/3 cases against real Web/Core/MySQL with installed Google Chrome 152. The three JSON report SHA-256 values are `32d7d1a15ec20b921a7904f4462cfd4cdc537e89ae4cf4fac941c28a01ca3b77`, `ff05a6aaef8cb46024e4a2b982e1f36bfc3442f78d4358830f85c6fc2998731c`, and `ee94e99d0c29e9469b59c7dbbf0f051be84bbf8d567bef64b450e39d16f089f5`. The same run's Web, portable-contract, and Phase 03 real-integration jobs passed. Its Core job executed 985 tests with one failure and no errors: only the intentionally open three-item TODO sentinel. A current-commit replacement run is required before closure. |
+| Final send-detail export correction | `npm --prefix web test -- test/unit/message-operations.test.tsx` | PASS, 17/17. `SEND_DETAIL` now retains `errorCode` in the submitted export snapshot and action target, while unsupported export datasets still disclose and remove the unsupported filter. |
+| Final secure export browser correction | `npm --prefix web run test:e2e -- secure-async-export.spec.ts --workers=1 --reporter=line` | PASS, 4/4. The send-detail export path now submits `errorCode=E42`; existing Vite proxy connection messages did not fail the run. |
+| Docker release report retention | `bash -n scripts/verify-docker-release` plus script/config inspection | PASS. `run_chrome_acceptance` assigns lane-specific `YCSOPEN_DOCKER_REPORT_NAME` values so fresh, upgrade, and restart produce separate JSON artifacts. |
 
 ## Executed boundaries
 
@@ -81,3 +84,8 @@ migration-composition failures plus two errors. Pull-request CI is the
 authoritative clean host and passed all 984 tests on that head. Later live review
 reopened the TODOs for the null/literal `UNKNOWN` distinction, so another
 post-closure rerun on the final corrected head is required before merge.
+
+After the final send-detail export and Docker report-retention fixes, the
+remaining open TODO items were closed only after the focused UI, browser, and
+script checks above passed. `FinalReleaseAcceptanceTest` is the authoritative
+local gate for the empty TODO sentinel on the final worktree.

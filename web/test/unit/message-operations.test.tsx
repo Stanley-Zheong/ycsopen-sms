@@ -141,11 +141,11 @@ describe('Phase 27 message receipt error operations UI', () => {
   });
 
   it.each([
-    { section: 'submissions' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', excludesGroups: false },
-    { section: 'sends' as const, triggerId: 'admin-secure-async-send-details-export', dataset: '发送详单导出', exportType: 'SEND_DETAIL', excludesGroups: false },
-    { section: 'receipts' as const, triggerId: 'admin-secure-async-receipt-export', dataset: '回执详单导出', exportType: 'RECEIPT_DETAIL', excludesGroups: false },
-    { section: 'errors' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', excludesGroups: true },
-  ])('describes the real $section export dataset and excludes unsupported error-code filtering', async ({ section, triggerId, dataset, exportType, excludesGroups }) => {
+    { section: 'submissions' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', includesErrorCode: false, excludesGroups: false },
+    { section: 'sends' as const, triggerId: 'admin-secure-async-send-details-export', dataset: '发送详单导出', exportType: 'SEND_DETAIL', includesErrorCode: true, excludesGroups: false },
+    { section: 'receipts' as const, triggerId: 'admin-secure-async-receipt-export', dataset: '回执详单导出', exportType: 'RECEIPT_DETAIL', includesErrorCode: false, excludesGroups: false },
+    { section: 'errors' as const, triggerId: 'admin-message-receipt-export-request', dataset: '消息运营导出（发送、回执与提交记录）', exportType: 'MESSAGE_OPERATIONS', includesErrorCode: false, excludesGroups: true },
+  ])('describes the real $section export dataset and only excludes unsupported error-code filtering', async ({ section, triggerId, dataset, exportType, includesErrorCode, excludesGroups }) => {
     renderPage(section);
     expect(await screen.findByTestId(`admin-message-receipt-${section === 'submissions' ? 'submission' : section.slice(0, -1)}-details-page`)).toBeVisible();
     fireEvent.change(screen.getByTestId('admin-message-receipt-filter-error-code'), { target: { value: 'E99' } });
@@ -153,13 +153,20 @@ describe('Phase 27 message receipt error operations UI', () => {
     fireEvent.click(screen.getByTestId(triggerId));
 
     expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent(dataset);
-    expect(screen.getByTestId('admin-message-receipt-action-target')).not.toHaveTextContent('错误码 E99');
-    expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('错误码筛选 E99 不受该导出接口支持，不会应用于导出');
+    if (includesErrorCode) {
+      expect(screen.getByTestId('admin-message-receipt-action-target')).toHaveTextContent('错误码 E99');
+      expect(screen.getByTestId('admin-message-receipt-action-consequence')).not.toHaveTextContent('错误码筛选 E99 不受该导出接口支持');
+    } else {
+      expect(screen.getByTestId('admin-message-receipt-action-target')).not.toHaveTextContent('错误码 E99');
+      expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('错误码筛选 E99 不受该导出接口支持，不会应用于导出');
+    }
     if (excludesGroups) expect(screen.getByTestId('admin-message-receipt-action-consequence')).toHaveTextContent('不包含错误聚合行');
     fireEvent.change(screen.getByTestId('admin-message-receipt-action-reason'), { target: { value: '核对实际导出范围' } });
     fireEvent.click(screen.getByTestId('admin-message-receipt-action-confirm'));
     await waitFor(() => expect(api.requestMessageExport).toHaveBeenCalledWith(
-      { tenantId: '42', messageId: '', status: '' },
+      includesErrorCode
+        ? { tenantId: '42', messageId: '', status: '', errorCode: 'E99' }
+        : { tenantId: '42', messageId: '', status: '' },
       expect.stringMatching(/^EXPORT-/),
       '核对实际导出范围',
       exportType,
