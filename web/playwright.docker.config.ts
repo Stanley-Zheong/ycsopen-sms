@@ -2,9 +2,14 @@ import { defineConfig, devices } from '@playwright/test';
 
 const chromePath = process.env.YCSOPEN_CHROME_PATH ?? '/usr/bin/google-chrome';
 const webPort = process.env.YCSOPEN_WEB_PORT ?? '5173';
+const reportName = process.env.YCSOPEN_DOCKER_REPORT_NAME ?? 'docker-release-report.json';
 
 if (!/^\d{1,5}$/.test(webPort) || Number(webPort) < 1 || Number(webPort) > 65535) {
   throw new Error('YCSOPEN_WEB_PORT must be a TCP port between 1 and 65535');
+}
+
+if (!/^[a-zA-Z0-9_.-]+\.json$/.test(reportName)) {
+  throw new Error('YCSOPEN_DOCKER_REPORT_NAME must be a JSON filename');
 }
 
 export default defineConfig({
@@ -12,7 +17,11 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
-  reporter: [['line'], ['html', { open: 'never' }]],
+  reporter: [
+    ['line'],
+    ['json', { outputFile: `test-results/${reportName}` }],
+    ['html', { open: 'never' }],
+  ],
   use: {
     baseURL: `http://127.0.0.1:${webPort}`,
     trace: 'retain-on-failure',

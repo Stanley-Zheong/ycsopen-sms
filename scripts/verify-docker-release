@@ -132,6 +132,7 @@ assert_release_rows() {
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_accounts a JOIN tenants t ON t.id=a.tenant_id WHERE t.tenant_no='DEV-TENANT'")" == '1' ]]
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_versions WHERE version_no='DEV-PREFIX-2026-09'")" == '1' ]]
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM number_prefix_mappings m JOIN number_prefix_versions v ON v.id=m.version_id WHERE v.version_no='DEV-PREFIX-2026-09' AND m.prefix='1380013'")" == '1' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_recharge_records WHERE transaction_ref_hash='11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a'")" == '1' ]]
   [[ "$(mysql_scalar 'SELECT COUNT(*) FROM flyway_schema_history WHERE success=0')" == '0' ]]
 }
 
@@ -155,7 +156,20 @@ assert_core_logs() {
 }
 
 run_chrome_acceptance() {
+  local lane="$1"
+  YCSOPEN_DOCKER_REPORT_NAME="docker-release-${lane}-report.json"
+  export YCSOPEN_DOCKER_REPORT_NAME
   npm --prefix web run test:docker-release
+  local report="web/test-results/${YCSOPEN_DOCKER_REPORT_NAME}"
+  [[ -s "$report" ]] || { echo >&2 'Docker Chrome JSON report is missing'; return 1; }
+  local report_sha
+  report_sha="$(sha256sum "$report" | awk '{print $1}')"
+  echo "docker_release_playwright_evidence=PASS lane=$lane commit=$BUILD_COMMIT report=$report sha256=$report_sha"
+}
+
+prepare_issue91_fixture() {
+  mysql_scalar "UPDATE tenant_recharge_records SET status='PENDING', reviewer_actor=NULL, review_reason=NULL, reviewed_at=NULL WHERE transaction_ref_hash='11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a'" >/dev/null
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_recharge_records WHERE transaction_ref_hash='11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a' AND status='PENDING'")" == '1' ]]
 }
 
 assert_project_unused "$fresh_project"
@@ -174,7 +188,8 @@ export YCSOPEN_FLYWAY_LOCATIONS
 compose up --detach --build
 wait_for_core
 wait_for_web
-run_chrome_acceptance
+prepare_issue91_fixture
+run_chrome_acceptance fresh
 assert_release_rows
 assert_core_logs
 archive_and_remove_project "$fresh_project"
@@ -197,7 +212,8 @@ export YCSOPEN_FLYWAY_LOCATIONS
 compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
-run_chrome_acceptance
+prepare_issue91_fixture
+run_chrome_acceptance upgrade
 assert_release_rows
 [[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
 assert_core_logs
@@ -209,7 +225,8 @@ compose stop core web
 compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
-run_chrome_acceptance
+prepare_issue91_fixture
+run_chrome_acceptance restart
 assert_release_rows
 [[ "$(mysql_scalar "SELECT host FROM channels WHERE channel_name='OPERATOR-EXISTING'")" == 'operator-managed.invalid' ]]
 assert_core_logs

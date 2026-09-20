@@ -106,6 +106,9 @@ class MessageReceiptErrorOperationsServiceTest {
         jdbc.execute("""
                 CREATE TABLE provider_status_mappings(
                   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                  version_id BIGINT,
+                  provider_name VARCHAR(64),
+                  protocol VARCHAR(16),
                   provider_code VARCHAR(64),
                   platform_category VARCHAR(64),
                   retryable BOOLEAN,
@@ -231,6 +234,87 @@ class MessageReceiptErrorOperationsServiceTest {
         assertThat(export.resultCode()).isEqualTo("EXPORT_REQUESTED");
         assertThat(jdbc.queryForObject("SELECT snapshot_json FROM message_operation_events WHERE action_type='EXPORT_REQUEST'",
                 String.class)).contains("secure-async-export");
+    }
+
+    @Test
+    void errorGroupsCountEachTaskOnceAndCollapseConflictingSameCodeMappingsConservatively() {
+        jdbc.update("""
+                INSERT INTO provider_status_mappings(version_id, provider_name, protocol, provider_code,
+                  platform_category, retryable, severity, status)
+                VALUES (1, 'provider-a', 'HTTP', 'E42', 'FAILURE', TRUE, 'WARN', 'ACTIVE'),
+                       (1, 'provider-b', 'CMPP', 'E42', 'PENDING', FALSE, 'CRITICAL', 'ACTIVE')
+                """);
+
+        var errors = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, null, null, null, "E42", null, null));
+
+        assertThat(errors).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.normalizedCode()).isEqualTo("E42");
+                    assertThat(row.totalCount()).isEqualTo(1);
+                    assertThat(row.tenantCount()).isEqualTo(1);
+                    assertThat(row.channelCount()).isEqualTo(1);
+                    assertThat(row.platformCategory()).isEqualTo("UNKNOWN_REVIEW_REQUIRED");
+                    assertThat(row.severity()).isEqualTo("CRITICAL");
+                    assertThat(row.retryable()).isFalse();
+                });
+    }
+
+    @Test
+    void errorGroupsSeparateNullPlaceholderFromLiteralUnknownCode() {
+        jdbc.update("""
+                INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                VALUES (42, 'MSG_NULL_CODE', 'null error code', 'FAILED', 7, NULL),
+                       (42, 'MSG_LITERAL_UNKNOWN', 'literal unknown code', 'FAILED', 7, 'UNKNOWN')
+                """);
+
+        var unknownGroups = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                        42L, null, null, null, null, null, null)).stream()
+                .filter(row -> "UNKNOWN".equals(row.normalizedCode()))
+                .toList();
+
+        assertThat(unknownGroups).hasSize(2);
+        assertThat(unknownGroups).filteredOn(row -> row.bulkActionSupported())
+                .singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(1));
+        assertThat(unknownGroups).filteredOn(row -> !row.bulkActionSupported())
+                .singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(1));
+    }
+
+    @Test
+    void errorGroupsApplyTheSameMessageAndStatusScopeAsSendTargets() {
+        jdbc.update("""
+                INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                VALUES (42, 'MSG_OTHER_E42', 'another failed message', 'FAILED', 7, 'E42')
+                """);
+        for (int index = 0; index < 201; index++) {
+            jdbc.update("""
+                    INSERT INTO message_tasks(tenant_id, message_id, content, send_status, channel_id, error_code)
+                    VALUES (42, ?, 'newer unrelated error', 'FAILED', 7, 'E99')
+                    """, "MSG_OTHER_CODE_" + index);
+        }
+
+        var oneMessage = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, "MSG_FAILED", "FAILED", null, "E42", null, null));
+        var incompatibleStatus = service.errorGroups(new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, "MSG_FAILED", "SENT", null, "E42", null, null));
+        var errorCodeFilter = new MessageReceiptErrorOperationsService.OperationFilter(
+                42L, null, "FAILED", null, "E42", null, null);
+        var filteredSends = service.sends(errorCodeFilter);
+        var filteredGroups = service.errorGroups(errorCodeFilter);
+
+        assertThat(oneMessage).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.normalizedCode()).isEqualTo("E42");
+                    assertThat(row.totalCount()).isEqualTo(1);
+                });
+        assertThat(incompatibleStatus).isEmpty();
+        assertThat(filteredSends)
+                .extracting(MessageReceiptErrorOperationsService.SendRow::messageId)
+                .containsExactlyInAnyOrder("MSG_FAILED", "MSG_OTHER_E42");
+        assertThat(filteredGroups).singleElement()
+                .satisfies(row -> assertThat(row.totalCount()).isEqualTo(filteredSends.size()));
     }
 
     private void seed() {

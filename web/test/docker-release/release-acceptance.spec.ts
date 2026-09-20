@@ -78,3 +78,78 @@ test('pw-issue-90-release-tenant-status-action C-ISSUE-90-RELEASE-TENANT-ACCOUNT
   await expect(releaseTenant).toBeVisible();
   await expect(releaseTenant.getByTestId('admin-tenant-qualification-tenants-status-action')).toBeVisible();
 });
+
+test('pw-issue-91-docker-release C-ISSUE-91-REAL-SERVICE OBL-ISSUE-91-REAL-SERVICE', async ({ page }) => {
+  const environment = (globalThis as typeof globalThis & {
+    process: { env: Record<string, string | undefined> };
+  }).process.env;
+  const buildCommit = environment.BUILD_COMMIT;
+  expect(buildCommit, 'the acceptance run must identify the checked-out commit').toMatch(/^[0-9a-f]{40}$/);
+
+  await loginAsAdmin(page);
+  await expect(page.locator('meta[name="ycsopen-build-commit"]')).toHaveAttribute('content', buildCommit!);
+  expect(await page.evaluate(() => navigator.userAgent)).toContain('Chrome/');
+
+  const routes = [
+    { path: '/admin/tenant-recharge-review', pageId: 'admin-tenant-recharge-operations-review-page', reasons: ['admin-tenant-recharge-operations-review-reason'] },
+    { path: '/admin/uplink', pageId: 'admin-uplink-normalization-uplinks-page', reasons: ['admin-uplink-normalization-uplink-replay-reason', 'admin-uplink-normalization-push-action-reason'] },
+    { path: '/admin/submission/details', pageId: 'admin-message-receipt-submission-details-page', reasons: ['admin-message-receipt-action-reason'] },
+    { path: '/admin/send/details', pageId: 'admin-message-receipt-send-details-page', reasons: ['admin-message-receipt-action-reason'] },
+    { path: '/admin/receipt/details', pageId: 'admin-message-receipt-receipt-details-page', reasons: ['admin-message-receipt-action-reason'] },
+    { path: '/admin/error/details', pageId: 'admin-message-receipt-error-details-page', reasons: ['admin-message-receipt-action-reason'] },
+    { path: '/admin/alerts', pageId: 'admin-alert-engine-page', reasons: ['admin-alert-engine-resolve-reason', 'admin-alert-engine-mute-reason'] },
+    { path: '/admin/push/failures', pageId: 'admin-webhook-delivery-push-failures-page', reasons: ['admin-webhook-delivery-action-reason'] },
+    { path: '/admin/send/jobs', pageId: 'admin-bulk-scheduled-send-jobs-page', reasons: ['admin-bulk-scheduled-send-jobs-reason'] },
+  ];
+
+  for (const route of routes) {
+    await page.goto(route.path);
+    await expect(page.getByTestId(route.pageId)).toBeVisible();
+    for (const reasonId of route.reasons) await expect(page.getByTestId(reasonId)).toHaveCount(0);
+  }
+
+  await page.goto('/admin/tenant-recharge-review');
+  const fixtureRow = page.getByTestId('admin-tenant-recharge-operations-review-row').filter({ hasText: 'ISSU****0091' });
+  await expect(fixtureRow).toContainText('PENDING');
+  await fixtureRow.getByTestId('admin-tenant-recharge-operations-review-approve').click();
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-action-target')).toContainText('充值申请');
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-action-consequence')).toContainText('一次性计入机构预付费可用余额');
+  await page.getByTestId('admin-tenant-recharge-operations-review-reason').fill('Issue 91 Google Chrome 实际服务验收');
+
+  let reviewRequestCount = 0;
+  page.on('request', (request) => {
+    const path = new URL(request.url()).pathname;
+    if (request.method() === 'POST' && /^\/api\/v1\/console\/recharges\/\d+\/review$/.test(path)) reviewRequestCount += 1;
+  });
+  const reviewResponse = page.waitForResponse((response) => /^\/api\/v1\/console\/recharges\/\d+\/review$/.test(new URL(response.url()).pathname));
+  await page.getByTestId('admin-tenant-recharge-operations-review-action-confirm').dblclick();
+  expect((await reviewResponse).status()).toBe(200);
+  await expect(page.getByTestId('admin-tenant-recharge-operations-review-message')).toContainText('APPROVED');
+  expect(reviewRequestCount).toBe(1);
+
+  const readback = await page.evaluate(async () => {
+    const rawSession = window.sessionStorage.getItem('ycsopen.console.auth-session');
+    if (!rawSession) throw new Error('authenticated browser session was not persisted');
+    const { accessToken } = JSON.parse(rawSession) as { accessToken?: string };
+    if (!accessToken) throw new Error('authenticated browser session has no access token');
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const reviewResult = await fetch('/api/v1/console/recharges/reviews?status=APPROVED', { headers });
+    const reviewBody = await reviewResult.json() as { data: Array<{ id: number; tenantId: number; transactionRefMask: string; status: string; reviewReason: string | null }> };
+    const record = reviewBody.data.find((row) => row.transactionRefMask === 'ISSU****0091');
+    if (!record) throw new Error('approved Issue 91 fixture was not returned');
+    const auditResult = await fetch(`/api/v1/console/trial-prepaid/balance-audits?tenantId=${record.tenantId}`, { headers });
+    const auditBody = await auditResult.json() as { data: Array<{ businessDocId: string; mutationType: string }> };
+    return {
+      reviewStatus: reviewResult.status,
+      auditStatus: auditResult.status,
+      record,
+      matchingAudits: auditBody.data.filter((row) => row.businessDocId === `RECHARGE-${record.id}` && row.mutationType === 'RECHARGE_APPROVE'),
+    };
+  });
+
+  expect(readback.reviewStatus).toBe(200);
+  expect(readback.auditStatus).toBe(200);
+  expect(readback.record.status).toBe('APPROVED');
+  expect(readback.record.reviewReason).toBe('Issue 91 Google Chrome 实际服务验收');
+  expect(readback.matchingAudits).toHaveLength(1);
+});

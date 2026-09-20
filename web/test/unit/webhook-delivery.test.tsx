@@ -95,11 +95,19 @@ describe('Phase 28 webhook delivery UI', () => {
 
     expect(await screen.findByTestId('admin-webhook-delivery-push-failures-page')).toBeVisible();
     expect(await screen.findByTestId('admin-webhook-delivery-push-failures-row')).toHaveTextContent('STATUS:MSG_1:FAILED');
+    expect(screen.queryByTestId('admin-webhook-delivery-action-reason')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('admin-webhook-delivery-push-failures-replay'));
-    await waitFor(() => expect(api.replayWebhookFailure).toHaveBeenCalledWith(501, '运营复核后处理'));
+    expect(screen.getByTestId('admin-webhook-delivery-action-target')).toHaveTextContent('STATUS:MSG_1:FAILED');
+    fireEvent.change(screen.getByTestId('admin-webhook-delivery-action-reason'), { target: { value: '修复目的地后重放' } });
+    fireEvent.click(screen.getByTestId('admin-webhook-delivery-action-confirm'));
+    await waitFor(() => expect(api.replayWebhookFailure).toHaveBeenCalledWith(501, '修复目的地后重放'));
     fireEvent.click(screen.getByTestId('admin-webhook-delivery-push-failures-pause'));
-    await waitFor(() => expect(api.pauseWebhookFailure).toHaveBeenCalledWith(501, '运营复核后处理'));
+    fireEvent.change(screen.getByTestId('admin-webhook-delivery-action-reason'), { target: { value: '目的地维护暂停' } });
+    fireEvent.click(screen.getByTestId('admin-webhook-delivery-action-confirm'));
+    await waitFor(() => expect(api.pauseWebhookFailure).toHaveBeenCalledWith(501, '目的地维护暂停'));
     fireEvent.click(screen.getByTestId('admin-webhook-delivery-push-failures-resume'));
-    await waitFor(() => expect(api.resumeWebhookFailure).toHaveBeenCalledWith(501, '运营复核后处理'));
+    fireEvent.change(screen.getByTestId('admin-webhook-delivery-action-reason'), { target: { value: '目的地维护完成' } });
+    fireEvent.click(screen.getByTestId('admin-webhook-delivery-action-confirm'));
+    await waitFor(() => expect(api.resumeWebhookFailure).toHaveBeenCalledWith(501, '目的地维护完成'));
   });
 });

@@ -83,6 +83,14 @@ label { display: inline-grid; gap: 4px; color: var(--color-text); }
   .query-panel-field-grid { min-width: 260px; grid-template-columns: minmax(260px, 1fr); }
 }
 [role="dialog"].card { position: fixed; inset: 50% auto auto 50%; z-index: 900; width: min(720px, calc(100vw - 48px)); max-height: calc(100vh - 48px); margin: 0; overflow: auto; transform: translate(-50%, -50%); box-shadow: 0 0 0 100vmax rgb(18 50 80 / 35%), 0 16px 48px var(--color-shadow); }
+.action-reason-dialog-backdrop { position: fixed; inset: 0; z-index: 900; background: rgb(18 50 80 / 35%); }
+.action-reason-dialog-backdrop > [role="dialog"].card { box-shadow: 0 16px 48px var(--color-shadow); }
+.action-reason-dialog { display: grid; gap: 12px; }
+.action-reason-dialog h2, .action-reason-dialog p { margin: 0; }
+.action-reason-target { padding: 8px 12px; background: var(--color-surface-alt); border-radius: var(--radius-control); font-weight: 600; overflow-wrap: anywhere; }
+.action-reason-dialog label { display: grid; gap: 6px; font-weight: 600; }
+.action-reason-dialog textarea { width: 100%; min-height: 96px; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); font: inherit; font-weight: 400; resize: vertical; }
+.action-reason-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
 table.ratio-table { width: 100%; border-collapse: collapse; }
 table.ratio-table th, table.ratio-table td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--color-row-border); }

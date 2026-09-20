@@ -37,7 +37,7 @@ async function mockUplinkApis(page: Page) {
     await route.fulfill({ json: apiResponse(uplink) });
   });
   await page.route('**/api/v1/console/uplinks/101/replay', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核后处理' }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '上行内容复核通过' }));
     await route.fulfill({ json: apiResponse({ eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'HTTP_200', resultMessage: 'ok' }) });
   });
   await page.route(/\/api\/v1\/console\/uplinks\/push-monitor(?:\?.*)?$/, async (route: Route) => {
@@ -85,7 +85,12 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await mockUplinkApis(page);
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/uplink');
+    await expect(page.getByTestId('admin-uplink-normalization-uplink-replay-reason')).toHaveCount(0);
     await page.getByTestId('admin-uplink-normalization-uplink-replay').click();
+    await expect(page.getByTestId('admin-uplink-normalization-action-target')).toContainText('上行记录 #101');
+    await expect(page.getByTestId('admin-uplink-normalization-action-confirm')).toBeDisabled();
+    await page.getByTestId('admin-uplink-normalization-uplink-replay-reason').fill('上行内容复核通过');
+    await page.getByTestId('admin-uplink-normalization-action-confirm').click();
     await expect(page.getByTestId('admin-uplink-normalization-operation-message')).toContainText('上行重放完成');
   });
 
@@ -108,6 +113,9 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await expect(page.getByTestId('admin-uplink-normalization-push-monitor-row')).toContainText('PUSH_FAILED');
     await expect(page.getByTestId('admin-uplink-normalization-uplink-push-destination-action')).toBeVisible();
     await page.getByTestId('admin-uplink-normalization-push-pause').click();
+    await expect(page.getByTestId('admin-uplink-normalization-action-target')).toContainText('UPLINK:101');
+    await page.getByTestId('admin-uplink-normalization-push-action-reason').fill('目的地维护暂停');
+    await page.getByTestId('admin-uplink-normalization-action-confirm').click();
     await expect(page.getByTestId('admin-uplink-normalization-operation-message')).toContainText('目的地暂停完成');
   });
 });

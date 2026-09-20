@@ -54,7 +54,7 @@ async function mockWebhookApis(page: Page) {
     ]) });
   });
   await page.route('**/api/v1/console/webhook-deliveries/501/replay', async (route: Route) => {
-    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '运营复核后处理' }));
+    expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '修复目的地后重放' }));
     await route.fulfill({ json: apiResponse({ eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'HTTP_200', resultMessage: 'ok' }) });
   });
   await page.route('**/api/v1/console/webhook-deliveries/501/pause', async (route: Route) => route.fulfill({
@@ -90,7 +90,11 @@ test.describe('Phase 28 webhook delivery transport', () => {
     await mockWebhookApis(page);
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/push/failures');
+    await expect(page.getByTestId('admin-webhook-delivery-action-reason')).toHaveCount(0);
     await page.getByTestId('admin-webhook-delivery-push-failures-replay').click();
+    await expect(page.getByTestId('admin-webhook-delivery-action-target')).toContainText('STATUS:MSG_1:FAILED');
+    await page.getByTestId('admin-webhook-delivery-action-reason').fill('修复目的地后重放');
+    await page.getByTestId('admin-webhook-delivery-action-confirm').click();
     await expect(page.getByTestId('admin-webhook-delivery-operation-message')).toContainText('重放完成');
   });
 
@@ -100,8 +104,12 @@ test.describe('Phase 28 webhook delivery transport', () => {
     await page.goto('/admin/push/failures');
     await expect(page.getByTestId('admin-webhook-delivery-push-failures-policy')).toBeVisible();
     await page.getByTestId('admin-webhook-delivery-push-failures-pause').click();
+    await page.getByTestId('admin-webhook-delivery-action-reason').fill('目的地维护暂停');
+    await page.getByTestId('admin-webhook-delivery-action-confirm').click();
     await expect(page.getByTestId('admin-webhook-delivery-operation-message')).toContainText('暂停完成');
     await page.getByTestId('admin-webhook-delivery-push-failures-resume').click();
+    await page.getByTestId('admin-webhook-delivery-action-reason').fill('目的地维护完成');
+    await page.getByTestId('admin-webhook-delivery-action-confirm').click();
     await expect(page.getByTestId('admin-webhook-delivery-operation-message')).toContainText('恢复完成');
   });
 });

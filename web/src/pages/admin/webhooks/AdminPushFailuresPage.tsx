@@ -8,16 +8,25 @@ import {
   type WebhookFailureRow,
 } from '@/api/webhookDeliveryApi';
 import { mutationErrorMessage } from '@/api/client';
+import ActionReasonDialog from '@/components/common/ActionReasonDialog';
 import { QueryField, QueryPanel } from '@/components/common/QueryPanel';
 import '@/styles/webhook-delivery.css';
 
 const DEFAULT_FILTER = { tenantId: '', state: 'PUSH_FAILED' };
+type PendingAction = { kind: 'replay' | 'pause' | 'resume'; row: WebhookFailureRow };
+
+const ACTION_LABELS: Record<PendingAction['kind'], string> = {
+  replay: '重放推送',
+  pause: '暂停推送',
+  resume: '恢复推送',
+};
 
 export default function AdminPushFailuresPage() {
   const queryClient = useQueryClient();
   const [draftFilter, setDraftFilter] = useState(DEFAULT_FILTER);
   const [appliedFilter, setAppliedFilter] = useState(DEFAULT_FILTER);
-  const [reason, setReason] = useState('运营复核后处理');
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [reason, setReason] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const filter = useMemo(() => ({ ...appliedFilter }), [appliedFilter]);
@@ -25,6 +34,8 @@ export default function AdminPushFailuresPage() {
 
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['webhook-failures'] });
   const ok = async (text: string) => {
+    setPendingAction(null);
+    setReason('');
     setMessage(text);
     setError('');
     await refresh();
@@ -35,20 +46,36 @@ export default function AdminPushFailuresPage() {
   };
 
   const replay = useMutation({
-    mutationFn: (row: WebhookFailureRow) => replayWebhookFailure(row.eventId, reason),
+    mutationFn: ({ row, actionReason }: { row: WebhookFailureRow; actionReason: string }) => replayWebhookFailure(row.eventId, actionReason),
     onSuccess: (result) => ok(`重放完成：${result.state}`),
     onError: (failure) => fail(failure, '重放失败'),
   });
   const pause = useMutation({
-    mutationFn: (row: WebhookFailureRow) => pauseWebhookFailure(row.eventId, reason),
+    mutationFn: ({ row, actionReason }: { row: WebhookFailureRow; actionReason: string }) => pauseWebhookFailure(row.eventId, actionReason),
     onSuccess: (result) => ok(`暂停完成：${result.state}`),
     onError: (failure) => fail(failure, '暂停失败'),
   });
   const resume = useMutation({
-    mutationFn: (row: WebhookFailureRow) => resumeWebhookFailure(row.eventId, reason),
+    mutationFn: ({ row, actionReason }: { row: WebhookFailureRow; actionReason: string }) => resumeWebhookFailure(row.eventId, actionReason),
     onSuccess: (result) => ok(`恢复完成：${result.state}`),
     onError: (failure) => fail(failure, '恢复失败'),
   });
+  const openAction = (kind: PendingAction['kind'], row: WebhookFailureRow) => {
+    setPendingAction({ kind, row });
+    setReason('');
+    setError('');
+  };
+  const closeAction = () => {
+    setPendingAction(null);
+    setReason('');
+  };
+  const confirmAction = () => {
+    if (!pendingAction) return;
+    const actionReason = reason.trim();
+    if (pendingAction.kind === 'replay') replay.mutate({ row: pendingAction.row, actionReason });
+    if (pendingAction.kind === 'pause') pause.mutate({ row: pendingAction.row, actionReason });
+    if (pendingAction.kind === 'resume') resume.mutate({ row: pendingAction.row, actionReason });
+  };
 
   return (
     <section className="webhook-delivery-page" data-testid="admin-webhook-delivery-push-failures-page">
@@ -62,10 +89,6 @@ export default function AdminPushFailuresPage() {
 
       {message && <p role="status" className="webhook-delivery-alert success" data-testid="admin-webhook-delivery-operation-message">{message}</p>}
       {error && <p role="alert" className="webhook-delivery-alert error" data-testid="admin-webhook-delivery-operation-error">{error}</p>}
-
-      <section className="card webhook-delivery-filters">
-        <label>操作原因<input data-testid="admin-webhook-delivery-action-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></label>
-      </section>
 
       <QueryPanel
         legacyPanelTestId="admin-webhook-delivery-push-failures-policy"
@@ -96,9 +119,9 @@ export default function AdminPushFailuresPage() {
                     <td>{row.attemptCount}/{row.maxAttempts}</td>
                     <td>{row.nextAttemptAt ?? '-'}</td>
                     <td>
-                      <button type="button" data-testid="admin-webhook-delivery-push-failures-replay" onClick={() => replay.mutate(row)}>重放</button>
-                      <button type="button" data-testid="admin-webhook-delivery-push-failures-pause" onClick={() => pause.mutate(row)}>暂停</button>
-                      <button type="button" data-testid="admin-webhook-delivery-push-failures-resume" onClick={() => resume.mutate(row)}>恢复</button>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-replay" onClick={() => openAction('replay', row)}>重放</button>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-pause" onClick={() => openAction('pause', row)}>暂停</button>
+                      <button type="button" data-testid="admin-webhook-delivery-push-failures-resume" onClick={() => openAction('resume', row)}>恢复</button>
                     </td>
                   </tr>
                 ))}
@@ -118,6 +141,28 @@ export default function AdminPushFailuresPage() {
           </select>
         </QueryField>
       </QueryPanel>
+
+      {pendingAction && (
+        <ActionReasonDialog
+          idPrefix="admin-webhook-delivery-action"
+          title={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          target={`推送事件 ${pendingAction.row.logicalId} · 机构 ${pendingAction.row.tenantId}`}
+          consequence={pendingAction.kind === 'replay'
+            ? '确认后将按保存的目的地重新投递该事件。'
+            : pendingAction.kind === 'pause'
+              ? '确认后将暂停该事件的后续自动投递。'
+              : '确认后将恢复该事件的投递调度。'}
+          reasonLabel={`${ACTION_LABELS[pendingAction.kind]}原因`}
+          reasonTestId="admin-webhook-delivery-action-reason"
+          reason={reason}
+          placeholder="请填写本次操作的复核依据"
+          confirmLabel={`确认${ACTION_LABELS[pendingAction.kind]}`}
+          pending={replay.isPending || pause.isPending || resume.isPending}
+          onReasonChange={setReason}
+          onCancel={closeAction}
+          onConfirm={confirmAction}
+        />
+      )}
     </section>
   );
 }
