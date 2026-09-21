@@ -9,9 +9,51 @@
   align-items: flex-start;
 }
 
+.routing-policy-flow {
+  display: grid;
+  gap: 16px;
+}
+
+.routing-policy-flow-heading p,
+.routing-policy-section-help {
+  max-width: 880px;
+  margin: 4px 0 0;
+  color: #667085;
+  line-height: 1.7;
+}
+
+.routing-policy-flow-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.routing-policy-flow-steps li {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  background: #f8fbff;
+  border: 1px solid #dce7f3;
+  border-radius: 12px;
+}
+
+.routing-policy-flow-steps strong {
+  color: #102a43;
+  font-size: 14px;
+}
+
+.routing-policy-flow-steps span {
+  color: #475467;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .routing-policy-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
   gap: 12px;
   align-items: end;
 }
@@ -19,6 +61,7 @@
 .routing-policy-form label {
   display: grid;
   gap: 6px;
+  width: min(100%, 280px);
   color: #344054;
 }
 
@@ -35,9 +78,13 @@
   height: 40px;
 }
 
-.routing-policy-form > button {
+.routing-policy-form > button,
+.routing-policy-action-button {
+  min-width: 96px;
+  max-width: 180px;
   width: fit-content;
   justify-self: start;
+  white-space: nowrap;
 }
 
 .routing-policy-alert {
