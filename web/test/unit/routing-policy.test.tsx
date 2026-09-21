@@ -87,6 +87,30 @@ describe('Phase 21 routing circuit policy UI', () => {
     act(() => useAuthStore.getState().logout());
   });
 
+  it('explains the routing circuit and retry business flow before the editable controls', async () => {
+    renderWithProviders(<RoutingPolicyPage />);
+
+    const flow = await screen.findByTestId('admin-routing-circuit-routing-policy-business-flow');
+    expect(flow).toHaveTextContent('1. 提交校验');
+    expect(flow).toHaveTextContent('2. 路由匹配');
+    expect(flow).toHaveTextContent('3. 通道熔断');
+    expect(flow).toHaveTextContent('4. 重试或终止');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-flow-import')).toHaveTextContent('导入有序规则');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-flow-simulate')).toHaveTextContent('模拟路由');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-flow-circuit')).toHaveTextContent('熔断状态');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-flow-retry')).toHaveTextContent('重试规则');
+  });
+
+  it('keeps route operation buttons content-sized instead of stretching across the grid', async () => {
+    renderWithProviders(<RoutingPolicyPage />);
+
+    await screen.findByTestId('admin-routing-circuit-routing-policy-page');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-import')).toHaveClass('routing-policy-action-button');
+    expect(screen.getByTestId('admin-routing-circuit-routing-policy-simulate')).toHaveClass('routing-policy-action-button');
+    expect(screen.getByTestId('admin-routing-circuit-routing-circuit-record')).toHaveClass('routing-policy-action-button');
+    expect(screen.getByTestId('admin-routing-circuit-routing-retry-save')).toHaveClass('routing-policy-action-button');
+  });
+
   it('imports, simulates, records circuit state, and saves retry policy', async () => {
     renderWithProviders(<RoutingPolicyPage />);
 
@@ -104,4 +128,3 @@ describe('Phase 21 routing circuit policy UI', () => {
     await waitFor(() => expect(routingApi.saveRetryPolicy).toHaveBeenCalled());
   });
 });
-

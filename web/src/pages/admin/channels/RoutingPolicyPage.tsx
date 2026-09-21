@@ -117,32 +117,60 @@ export default function RoutingPolicyPage() {
       {message && <p role="status" data-testid="admin-routing-circuit-routing-policy-message" className="routing-policy-alert success">{message}</p>}
       {error && <p role="alert" data-testid="admin-routing-circuit-routing-policy-error" className="routing-policy-alert error">{error}</p>}
 
+      <section className="card routing-policy-flow" data-testid="admin-routing-circuit-routing-policy-business-flow" aria-labelledby="routing-policy-flow-title">
+        <div className="routing-policy-flow-heading">
+          <h2 id="routing-policy-flow-title">业务流说明</h2>
+          <p>页面按“规则准备 → 请求模拟 → 通道健康 → 失败动作”的发送链路组织，先确定可用路由，再结合熔断与重试策略决定最终动作。</p>
+        </div>
+        <ol className="routing-policy-flow-steps">
+          <li data-testid="admin-routing-circuit-routing-policy-flow-import">
+            <strong>1. 提交校验 / 导入有序规则</strong>
+            <span>运营将规则按优先级导入版本，形成后续发送请求可匹配的候选目标。</span>
+          </li>
+          <li data-testid="admin-routing-circuit-routing-policy-flow-simulate">
+            <strong>2. 路由匹配 / 模拟路由</strong>
+            <span>技术或运营用机构、运营商、号段和内容样本验证命中规则，确认目标通道或通道组。</span>
+          </li>
+          <li data-testid="admin-routing-circuit-routing-policy-flow-circuit">
+            <strong>3. 通道熔断 / 熔断状态</strong>
+            <span>系统根据失败、成功与延迟记录判断通道是否可用，已打开熔断的通道不再进入发送候选。</span>
+          </li>
+          <li data-testid="admin-routing-circuit-routing-policy-flow-retry">
+            <strong>4. 重试或终止 / 重试规则</strong>
+            <span>归一化错误决定是否重试、延迟多久以及最多尝试次数；成功类结果不再触发重试。</span>
+          </li>
+        </ol>
+      </section>
+
       <section className="card">
         <h2>导入有序规则</h2>
+        <p className="routing-policy-section-help">先导入版本化规则，后续模拟和线上发送都以激活版本为准。</p>
         <div className="routing-policy-form">
           <label>版本号<input data-testid="admin-routing-circuit-routing-policy-version" value={versionNo} onChange={(event) => setVersionNo(event.target.value)} /></label>
           <label>规则 CSV<textarea data-testid="admin-routing-circuit-routing-policy-import-input" value={ruleText} onChange={(event) => setRuleText(event.target.value)} /></label>
-          <button type="button" data-testid="admin-routing-circuit-routing-policy-import" disabled={!canImport} onClick={() => importMutation.mutate()}>导入策略</button>
+          <button type="button" className="routing-policy-action-button" data-testid="admin-routing-circuit-routing-policy-import" disabled={!canImport} onClick={() => importMutation.mutate()}>导入策略</button>
         </div>
       </section>
 
       <section className="card" data-testid="admin-routing-circuit-routing-policy-simulator">
         <h2>路由模拟</h2>
+        <p className="routing-policy-section-help">用发送样本预演路由结果，帮助定位规则优先级、条件和目标配置是否符合预期。</p>
         <div className="routing-policy-form">
           <label>机构<input data-testid="admin-routing-circuit-routing-policy-tenant" value={tenantId} onChange={(event) => setTenantId(event.target.value)} /></label>
           <label>运营商<input data-testid="admin-routing-circuit-routing-policy-carrier" value={carrier} onChange={(event) => setCarrier(event.target.value)} /></label>
           <label>号段<input data-testid="admin-routing-circuit-routing-policy-prefix" value={prefix} onChange={(event) => setPrefix(event.target.value)} /></label>
           <label>内容<input data-testid="admin-routing-circuit-routing-policy-content" value={content} onChange={(event) => setContent(event.target.value)} /></label>
-          <button type="button" data-testid="admin-routing-circuit-routing-policy-simulate" disabled={!canRead} onClick={() => simulateMutation.mutate()}>模拟路由</button>
+          <button type="button" className="routing-policy-action-button" data-testid="admin-routing-circuit-routing-policy-simulate" disabled={!canRead} onClick={() => simulateMutation.mutate()}>模拟路由</button>
         </div>
         {simulation && <p data-testid="admin-routing-circuit-routing-policy-simulation-result">{simulation.explanation} / {simulation.retryPolicy.normalizedCategory}:{simulation.retryPolicy.maxAttempts}</p>}
       </section>
 
       <section className="card" data-testid="admin-routing-circuit-routing-circuit-state">
         <h2>熔断状态</h2>
+        <p className="routing-policy-section-help">记录通道异常后刷新熔断状态，打开熔断的通道会影响路由候选结果。</p>
         <div className="routing-policy-form">
           <label>通道<input data-testid="admin-routing-circuit-routing-circuit-channel" value={channelCode} onChange={(event) => setChannelCode(event.target.value)} /></label>
-          <button type="button" data-testid="admin-routing-circuit-routing-circuit-record" disabled={!canWrite} onClick={() => circuitMutation.mutate()}>记录失败</button>
+          <button type="button" className="routing-policy-action-button" data-testid="admin-routing-circuit-routing-circuit-record" disabled={!canWrite} onClick={() => circuitMutation.mutate()}>记录失败</button>
         </div>
         <table className="ratio-table">
           <thead><tr><th>通道</th><th>状态</th><th>失败</th><th>成功</th><th>延迟</th><th>历史</th></tr></thead>
@@ -154,9 +182,10 @@ export default function RoutingPolicyPage() {
 
       <section className="card" data-testid="admin-routing-circuit-routing-retry-rules">
         <h2>重试规则</h2>
+        <p className="routing-policy-section-help">将发送回执归一化为可执行动作，决定失败后是否进入延迟重试。</p>
         <div className="routing-policy-form">
           <label>归一化错误<select data-testid="admin-routing-circuit-routing-retry-category" value={category} onChange={(event) => setCategory(event.target.value)}><option value="FAILURE">FAILURE</option><option value="UNKNOWN_REVIEW_REQUIRED">UNKNOWN_REVIEW_REQUIRED</option><option value="SUCCESS">SUCCESS</option></select></label>
-          <button type="button" data-testid="admin-routing-circuit-routing-retry-save" disabled={!canWrite} onClick={() => retryMutation.mutate()}>保存重试策略</button>
+          <button type="button" className="routing-policy-action-button" data-testid="admin-routing-circuit-routing-retry-save" disabled={!canWrite} onClick={() => retryMutation.mutate()}>保存重试策略</button>
         </div>
       </section>
 
@@ -181,4 +210,3 @@ export default function RoutingPolicyPage() {
     </section>
   );
 }
-

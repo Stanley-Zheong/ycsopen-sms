@@ -34,6 +34,15 @@ describe('LoginPage remembered username', () => {
     window.localStorage.clear();
   });
 
+  it('renders the visual background shell and a compact remember checkbox', () => {
+    renderLoginPage();
+
+    expect(screen.getByTestId('shared-auth-login-page')).toHaveClass('login-page');
+    expect(screen.getByTestId('shared-auth-login-background')).toBeVisible();
+    expect(screen.getByTestId('shared-auth-login-card')).toHaveClass('login-card');
+    expect(screen.getByTestId('shared-auth-login-remember')).toHaveClass('login-remember-input');
+  });
+
   it('prefills the saved username without persisting a password', () => {
     window.localStorage.setItem('ycsopen.console.remembered-username', 'remembered-admin');
 
