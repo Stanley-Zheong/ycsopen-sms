@@ -90,7 +90,7 @@ Issue `#108` checklist, each item closed with evidence:
 | Preserve auth, routing, permissions, business data and stable `data-testid` contract | Done | `web/test/unit/app-shell.test.tsx`, `login-page.test.tsx`, `sidebar-layouts.test.tsx`; full unit suite 186/186; failing Playwright set identical to baseline |
 | Add or update unit/component tests and Chrome Playwright acceptance | Done | `web/test/unit/app-shell.test.tsx` (7 tests), `login-page.test.tsx` (8 tests), `web/test/scripts/issue-108-deepseek-shell.spec.ts` (8 tests) |
 | Execute and record acceptance commands; confirm scoped TODO empty | Done | Table "Executed commands" above; this section |
-| Commit, push the issue branch, create/update the PR; do not merge | Done | Commit and PR created on `fix/108-deepseek-platform-shell`; PR deliberately left unmerged |
+| Commit, push the issue branch, create/update the PR; do not merge | Done | Branch `fix/108-deepseek-platform-shell` pushed; pull request `#109` opened against `main` and deliberately left open and unmerged |
 
 ## Merge Gate
 
@@ -103,4 +103,5 @@ Issue `#108` checklist, each item closed with evidence:
   Recorded for `/login`, `/admin/auth/login`, `/admin/dashboard`, `/tenant/overview` at 1440×900 and
   390×844.
 - Gate item: PR body lists changed routes, changed selectors, verification commands, and boundaries.
-  Recorded in the pull request for this branch.
+  Recorded in pull request `#109`
+  (<https://github.com/Stanley-Zheong/ycsopen-sms/pull/109>).
