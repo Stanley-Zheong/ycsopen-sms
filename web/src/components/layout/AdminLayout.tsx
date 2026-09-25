@@ -1,7 +1,6 @@
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore, isPlatformRole } from '@/store/authStore';
 import type { PlatformUserType } from '@/api/identity';
-import { logout as revokeSession } from '@/api/auth';
 import { IDENTITY_PERMISSIONS } from '@/api/identity';
 import { useIdentityAccess } from '@/pages/admin/identity/useIdentityAccess';
 import { AUDIT_PERMISSIONS } from '@/api/audit';
@@ -16,7 +15,8 @@ import { NUMBER_ATTRIBUTION_PERMISSIONS } from '@/api/numberAttributionApi';
 import { PROVIDER_STATUS_PERMISSIONS } from '@/api/providerStatusApi';
 import { ROUTING_POLICY_PERMISSIONS } from '@/api/routingPolicyApi';
 import { TRIAL_PREPAID_PERMISSIONS } from '@/api/trialPrepaidApi';
-import SidebarMenu, { type SidebarMenuGroup, type SidebarMenuItem } from './SidebarMenu';
+import AppShell from './AppShell';
+import { type SidebarMenuGroup, type SidebarMenuItem } from './SidebarMenu';
 
 const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
@@ -127,8 +127,6 @@ const NAV_GROUPS: AdminNavGroup[] = [
 /** Shared layout for every authenticated Admin route. */
 export default function AdminLayout() {
   const userType = useAuthStore((state) => state.userType);
-  const clearSession = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
   const access = useIdentityAccess(isPlatformRole(userType));
   if (!isPlatformRole(userType)) {
     return <Navigate to="/login" replace />;
@@ -143,17 +141,12 @@ export default function AdminLayout() {
   })).filter((group) => group.items.length > 0);
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <div className="sidebar-brand">YCSAN-SMS 平台管理后台</div>
-        <SidebarMenu ariaLabel="平台主导航" groups={groups} testIdPrefix="admin-console-navigation" />
-        <button className="sidebar-logout" data-testid="shared-console-identity-profile-logout" type="button" onClick={async () => {
-          try { await revokeSession(); } finally { clearSession(); navigate('/login'); }
-        }}>退出登录</button>
-      </aside>
-      <main className="content">
-        <Outlet />
-      </main>
-    </div>
+    <AppShell
+      workspaceLabel="YCSAN-SMS 平台管理后台"
+      workspaceKind="平台管理后台"
+      navAriaLabel="平台主导航"
+      navTestIdPrefix="admin-console-navigation"
+      groups={groups}
+    />
   );
 }

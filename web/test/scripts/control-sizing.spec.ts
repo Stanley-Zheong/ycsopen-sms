@@ -128,9 +128,11 @@ test('pw-issue-73-primary-control-height C-ISSUE-73-PRIMARY-CONTROL-HEIGHT OBL-I
     };
   });
   expect(focusStyle.focusVisible, 'textarea receives visible focus').toBe(true);
+  // Geometry is frozen by docs/frontend页面实现规范.md; the colour follows the shared
+  // --color-focus token, which issue #108 moved to the DeepSeek business blue (57, 100, 254).
   expect(focusStyle).toEqual({
     focusVisible: true,
-    outlineColor: 'rgba(12, 133, 232, 0.28)',
+    outlineColor: 'rgba(57, 100, 254, 0.28)',
     outlineStyle: 'solid',
     outlineWidth: '3px',
     outlineOffset: '2px',
