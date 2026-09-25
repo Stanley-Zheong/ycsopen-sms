@@ -11,7 +11,9 @@ test('pw-issue-51-admin-sidebar C-ISSUE-51-ADMIN OBL-ISSUE-51-ADMIN-SIDEBAR issu
   await expect(overview).toHaveAttribute('aria-expanded', 'true');
   await details.press('Enter');
   await expect(details).toBeFocused();
-  await expect(details).toHaveCSS('outline-color', 'rgb(255, 255, 255)');
+  // Issue #108 moved the sidebar to the shared light shell, so the sidebar focus ring is the
+  // shared --color-focus token rather than the old dark-rail white outline.
+  await expect(details).toHaveCSS('outline-color', 'rgba(57, 100, 254, 0.28)');
   await expect(details).toHaveAttribute('aria-expanded', 'true');
   await expect(overview).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('.sidebar-menu-panel:not([hidden])')).toHaveCount(1);

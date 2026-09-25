@@ -38,17 +38,17 @@ export default function SidebarMenu({ ariaLabel, groups, testIdPrefix }: Sidebar
   }, [activeGroupId, firstGroupId, groupIds]);
 
   return (
-    <nav className="sidebar-menu" aria-label={ariaLabel}>
+    <nav className="sidebar-menu app-sidebar-nav" aria-label={ariaLabel}>
       {groups.map((group) => {
         const expanded = openGroupId === group.id;
         const groupContainsActiveRoute = activeGroupId === group.id;
         const toggleId = `${testIdPrefix}-${group.id}-group-toggle`;
         const panelId = `${testIdPrefix}-${group.id}-group-panel`;
         return (
-          <div className="sidebar-menu-group" key={group.id}>
+          <div className="sidebar-menu-group app-nav-group" key={group.id}>
             <button
               id={toggleId}
-              className={`sidebar-menu-trigger${groupContainsActiveRoute ? ' active-group' : ''}`}
+              className={`sidebar-menu-trigger app-nav-trigger${groupContainsActiveRoute ? ' active-group' : ''}`}
               type="button"
               aria-expanded={expanded}
               aria-controls={panelId}
@@ -56,11 +56,11 @@ export default function SidebarMenu({ ariaLabel, groups, testIdPrefix }: Sidebar
               onClick={() => setOpenGroupId((current) => (current === group.id ? null : group.id))}
             >
               <span>{group.label}</span>
-              <span className="sidebar-menu-chevron" aria-hidden="true">⌄</span>
+              <span className="sidebar-menu-chevron app-nav-chevron" aria-hidden="true">⌄</span>
             </button>
             <div
               id={panelId}
-              className="sidebar-menu-panel"
+              className="sidebar-menu-panel app-nav-panel"
               role="group"
               aria-labelledby={toggleId}
               data-testid={panelId}
@@ -72,7 +72,7 @@ export default function SidebarMenu({ ariaLabel, groups, testIdPrefix }: Sidebar
                   to={item.to}
                   end
                   data-testid={item.testId}
-                  className={({ isActive }) => (isActive ? 'active' : '')}
+                  className={({ isActive }) => `app-nav-link${isActive ? ' active' : ''}`}
                 >
                   {item.label}
                 </NavLink>

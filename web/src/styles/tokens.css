@@ -1,0 +1,128 @@
+/*
+ * Issue #108 — shared design tokens.
+ *
+ * Every value here is a transferable design value (colour, radius, shadow, spacing,
+ * type size) observed read-only on platform.deepseek.com through the local Chrome
+ * browser. No DeepSeek asset, stylesheet, markup or class name is copied.
+ *
+ * Source page, observed value and destination token are recorded in
+ * .planning/frontend-spirits/01-foundation-contract/evidence/deepseek-platform-visual-observation.md
+ * and justified by DR-FE01-002 / DR-FE01-003 in .../01-foundation-contract/DECISIONS.md.
+ *
+ * Token NAMES are stable. Existing names keep their names and change only their
+ * values, so the 31 page-level stylesheets keep working without per-page edits.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Brand ---------------------------------------------------------- */
+  /* --dsw-alias-state-business-primary #3964fe, hover --dsw-static-deepseek-450 #5686fe */
+  --color-brand: #3964fe;
+  --color-brand-hover: #5686fe;
+  --color-brand-soft: #e4edfd; /* --dsw-specific-sidebar-nav-item-active-accent */
+  --color-brand-tint: #edf3fe; /* --dsw-static-deepseek-50 */
+  --color-brand-deep: #2f4c8f; /* --dsw-static-deepseek-700 */
+  --color-brand-dark: #0f1115; /* reused as the strongest ink, see --color-text */
+  --color-focus: rgb(57 100 254 / 28%);
+
+  /* ---- Surfaces ------------------------------------------------------- */
+  /* --dsw-alias-bg-base #fff, --dsw-specific-sidebar-fill #f9fafb */
+  --color-bg-base: #fff;
+  --color-bg-sidebar: #f9fafb;
+  --color-bg-hover: #f1f3f5;  /* --dsw-specific-sidebar-nav-item-hover */
+  --color-bg-active: #ebeef2; /* --dsw-specific-sidebar-nav-item-active */
+  --color-field: #f5f6f7;     /* observed auth/console filled field surface */
+  --color-page: #fff;
+  --color-surface: #fff;
+  --color-surface-alt: #f9fafb;
+  --color-surface-muted: #f5f6f7;
+
+  /* ---- Ink ------------------------------------------------------------ */
+  /* --dsw-alias-label-primary / -secondary / -tertiary / -caption */
+  --color-text: #0f1115;
+  --color-text-secondary: #61666b;
+  --color-muted: #81858c;
+  --color-caption: #adb2b8;
+
+  /* ---- Borders -------------------------------------------------------- */
+  /* --dsw-alias-border-l1 / -l2 / -l4 */
+  --color-border-subtle: rgb(0 0 0 / 4%);
+  --color-border: rgb(0 0 0 / 10%);
+  --color-border-strong: rgb(0 0 0 / 16%);
+
+  /* ---- Status -------------------------------------------------------- */
+  /*
+   * Accent hues are the observed DeepSeek state colours. Text shades are darkened
+   * because the accents alone do not reach readable contrast on white
+   * (#22c55e is ~2.2:1 and #f59e0b is ~2.1:1 against #fff).
+   */
+  --color-success-accent: #22c55e; /* --dsw-alias-state-success-primary */
+  --color-success: #0f7a42;
+  --color-success-bg: #e6faed;     /* --dsw-alias-state-success-tertiary */
+  --color-warning-accent: #f59e0b; /* --dsw-alias-state-warn-primary */
+  --color-warning: #8a5300;
+  --color-warning-bg: #fef5e7;     /* --dsw-alias-state-warn-tertiary */
+  --color-danger: #ec1313;         /* --dsw-alias-state-error-primary */
+  /* Preserved from the pre-#108 palette: dashboard.spec.ts freezes this exact surface, and the
+     value is visually equivalent to the observed red tint. See DR-FE01-003. */
+  --color-error-bg: #fff0f2;
+
+  /* ---- Tables --------------------------------------------------------- */
+  --color-table-header: #f9fafb;
+  --color-row-border: rgb(0 0 0 / 6%);
+
+  /* ---- Radii ---------------------------------------------------------- */
+  /*
+   * --dsw-alias-* radii observed: menu item 14px, neutral button 10px, auth field
+   * 28px at 48px height, auth primary button 4096px (pill).
+   */
+  --radius-control: 10px;
+  --radius-card: 12px;
+  --radius-menu-item: 14px;
+  --radius-pill: 999px;
+
+  /* ---- Shadows -------------------------------------------------------- */
+  /* --dsw-shadow-lv1 / -lv2 / -lv3 */
+  --shadow-1: 0 2px 4px 0 rgb(0 0 0 / 5%);
+  --shadow-2: 0 4px 12px 0 rgb(0 0 0 / 2%), 0 2px 8px 0 rgb(0 0 0 / 4%);
+  --shadow-3: 0 0 1px 0 rgb(0 0 0 / 20%), 0 0 4px 0 rgb(0 0 0 / 2%), 0 12px 32px 0 rgb(0 0 0 / 8%);
+  --color-shadow: rgb(15 17 21 / 12%);
+  --color-card-shadow: rgb(0 0 0 / 4%);
+
+  /* ---- Shell layout --------------------------------------------------- */
+  --shell-sidebar-width: 260px;
+  --shell-topbar-height: 60px;
+  --shell-gutter-block: 28px;
+  --shell-gutter-inline: 32px;
+  /*
+   * The reference console centers content in a 936px container. YCSAN-SMS keeps the
+   * centered-container pattern but widens the cap, because the shared three-column
+   * query grid needs 812px and several tables declare min-width up to 1040px.
+   * See DR-FE01-008.
+   */
+  --content-max-width: 1120px;
+
+  /* ---- Type ----------------------------------------------------------- */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-title: 24px;
+  --font-weight-strong: 500;
+  --line-height-base: 22px;
+  --line-height-title: 32px;
+
+  /* ---- Controls ------------------------------------------------------- */
+  /* 40px is frozen by docs/frontend页面实现规范.md and control-sizing.spec.ts. */
+  --control-height: 40px;
+  --control-height-compact: 32px;
+  --control-height-auth: 48px;
+
+  /* ---- Scrollbar ------------------------------------------------------ */
+  /* --dsw-alias-scrollbar-bg-l1 #e5e5e5, -hover #d4d4d4 */
+  --color-scrollbar: #e5e5e5;
+  --color-scrollbar-hover: #d4d4d4;
+}
