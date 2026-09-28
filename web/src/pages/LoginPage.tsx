@@ -61,7 +61,7 @@ export default function LoginPage() {
       <div data-testid="shared-auth-login-background" className="login-shell">
         <section className="login-intro" aria-label="平台能力">
           <div className="login-brand">
-            <span className="login-brand-mark">SMS</span>
+            <span className="login-brand-mark" aria-hidden="true">SMS</span>
             <span>YCSOPEN 通信中台</span>
           </div>
           <div className="login-intro-content">
@@ -72,15 +72,15 @@ export default function LoginPage() {
             </p>
             <ul className="login-capabilities">
               <li>
-                <span className="login-capability-icon">路由</span>
+                <span className="login-capability-icon" aria-hidden="true">路由</span>
                 <span><strong>策略闭环</strong>有序分流、熔断与重试动作统一维护</span>
               </li>
               <li>
-                <span className="login-capability-icon">账务</span>
+                <span className="login-capability-icon" aria-hidden="true">账务</span>
                 <span><strong>账务可追溯</strong>余额、补款、消耗和结算状态全链路留痕</span>
               </li>
               <li>
-                <span className="login-capability-icon">权限</span>
+                <span className="login-capability-icon" aria-hidden="true">权限</span>
                 <span><strong>权限隔离</strong>平台与机构角色按菜单、接口和按钮授权</span>
               </li>
             </ul>
@@ -88,7 +88,12 @@ export default function LoginPage() {
           <p className="login-intro-footnote">Secure access for verified console users only</p>
         </section>
         <section className="login-form-panel" aria-label="登录表单">
-          <form data-testid="shared-auth-login-card" onSubmit={handleSubmit} className="login-card">
+          <form
+            data-testid="shared-auth-login-card"
+            onSubmit={handleSubmit}
+            className="login-card"
+            aria-busy={pending}
+          >
             <div className="login-form-heading">
               <p className="login-eyebrow">Welcome back</p>
               <h2>YCSAN-SMS 登录</h2>
@@ -133,7 +138,14 @@ export default function LoginPage() {
               </label>
               <span className="login-storage-note">仅保存用户名，不保存密码</span>
             </div>
-            {error && <p data-testid="shared-auth-login-error" role="alert" className="login-error">{error}</p>}
+            {/* The slot always reserves one error line so showing or clearing the message never moves the submit button. */}
+            <div className="login-error-slot">
+              {error && (
+                <p data-testid="shared-auth-login-error" role="alert" className="login-error">
+                  {error}
+                </p>
+              )}
+            </div>
             <button data-testid="admin-console-identity-auth-login-submit" className="login-submit" type="submit" disabled={pending}>
               <span data-testid="shared-auth-login-submit">{pending ? '登录中…' : '登录'}</span>
             </button>

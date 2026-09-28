@@ -1,66 +1,300 @@
+@import './tokens.css';
+@import './shell.css';
 @import './login.css';
 
-:root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #123250;
-  color-scheme: light;
-  --color-brand: #0c85e8;
-  --color-brand-deep: #0b61aa;
-  --color-brand-dark: #123250;
-  --color-page: #f4f8fc;
-  --color-surface: #fff;
-  --color-surface-alt: #eef5ff;
-  --color-text: #123250;
-  --color-muted: #5f7389;
-  --color-border: #dbe5ef;
-  --color-success: #0d8779;
-  --color-warning: #a56a00;
-  --color-danger: #c93647;
-  --color-focus: rgb(12 133 232 / 28%);
-  --color-shadow: rgb(18 50 80 / 14%);
-  --color-card-shadow: rgb(18 50 80 / 3%);
-  --color-success-bg: #e7f8f4;
-  --color-warning-bg: #fff8e6;
-  --color-error-bg: #fff0f2;
-  --color-table-header: #f7fafd;
-  --color-row-border: #edf2f6;
-  --radius-control: 6px;
-  --radius-card: 10px;
+/*
+ * Issue #108 — base elements and the shared component vocabulary.
+ *
+ * Shell geometry lives in shell.css; the auth surface lives in login.css. This file owns
+ * element defaults plus the shared component classes used across Admin and Tenant pages
+ * (card, query panel, table, dialog, button, field, badge, status, empty state).
+ *
+ * Class hooks asserted by existing tests are preserved on purpose:
+ *   .layout, .content, .card, .query-panel*, .sidebar-menu-panel, .button-secondary.
+ * Control height (40px) and focus-ring geometry (3px / 2px) are frozen contracts.
+ */
+
+/* ---- Element defaults ------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--color-page); font-size: 14px; line-height: 1.5; }
-h1 { margin: 0 0 16px; font-size: 28px; font-weight: 600; line-height: 1.2; }
-h2, h3 { margin: 0 0 16px; font-size: 20px; font-weight: 600; line-height: 1.2; }
-button, input, select { min-height: 40px; font: inherit; }
-button { padding: 8px 16px; color: #fff; background: var(--color-brand); border: 1px solid var(--color-brand); border-radius: var(--radius-control); cursor: pointer; }
-button:hover { background: var(--color-brand-deep); }
-button:disabled { opacity: .55; cursor: not-allowed; }
-input, select { width: 100%; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
-select[multiple] { min-height: 96px; }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
-label { display: inline-grid; gap: 4px; color: var(--color-text); }
+html {
+  background: var(--color-bg-base);
+}
 
-.layout { display: flex; min-height: 100vh; }
-.sidebar { width: 220px; flex: 0 0 220px; padding: 16px; color: #fff; background: var(--color-brand-dark); }
-.sidebar a { display: block; padding: 8px; color: #c7d7e4; border-radius: var(--radius-control); text-decoration: none; }
-.sidebar a:hover, .sidebar a.active { color: #fff; background: #244865; }
-.sidebar a.active { font-weight: 600; }
-.sidebar button { width: 100%; margin-top: 16px; }
-.content { min-width: 0; flex: 1; padding: 24px; }
-.card { margin-bottom: 16px; padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: 0 1px 2px var(--color-card-shadow); }
-.query-panel, .query-panel-form { display: grid; min-width: 0; max-width: 100%; gap: 16px; }
-.query-panel-form { margin: 0; }
-.query-panel-heading, .query-panel-actions { display: flex; align-items: center; gap: 8px; }
-.query-panel-heading { justify-content: space-between; }
-.query-panel-heading strong { color: var(--color-text); font-size: 16px; }
-.query-panel-fields { display: flex; min-width: 0; flex-wrap: wrap; align-items: end; gap: 12px 16px; }
-.query-panel-field-grid { display: grid; min-width: 812px; flex: 1 1 0; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 12px 16px; }
-.query-panel-fields[hidden] { display: none; }
-.query-panel-field { display: grid; min-width: 0; grid-template-columns: minmax(88px, auto) minmax(160px, 240px); align-items: center; justify-content: start; gap: 12px; }
-.query-panel-field > label { color: var(--color-muted); font-size: 14px; text-align: right; white-space: nowrap; }
-.query-panel-control { min-width: 0; }
-.query-panel-control > input, .query-panel-control > select, .query-panel-control > textarea { box-sizing: border-box; width: 100%; }
+body {
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-bg-base);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 24px/32px weight 500 matches the observed console page title. */
+h1 {
+  margin: 0 0 16px;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-title);
+  letter-spacing: -.01em;
+}
+
+h2,
+h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: var(--font-weight-strong);
+  line-height: 26px;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+a {
+  color: var(--color-brand);
+}
+
+hr {
+  height: 1px;
+  margin: 16px 0;
+  background: var(--color-border-subtle);
+  border: 0;
+}
+
+label {
+  display: inline-grid;
+  gap: 4px;
+  color: var(--color-text);
+}
+
+/* ---- Buttons ---------------------------------------------------------- */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: var(--control-height);
+  padding: 0 16px;
+  color: #fff;
+  background: var(--color-brand);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-weight: var(--font-weight-strong);
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+button:hover {
+  background: var(--color-brand-hover);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: var(--color-brand);
+}
+
+.button-secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+}
+
+.button-secondary:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+}
+
+/* ---- Fields ---------------------------------------------------------- */
+/*
+ * Focus uses a border + ring only. `outline: none` is deliberately NOT set, because
+ * control-sizing.spec.ts asserts the shared 3px/2px :focus-visible outline.
+ */
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 8px 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-caption);
+}
+
+input:hover:not(:disabled),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: rgb(0 0 0 / 24%);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-brand);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: var(--color-muted);
+  background: var(--color-bg-hover);
+  cursor: not-allowed;
+}
+
+select[multiple] {
+  min-height: 96px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  accent-color: var(--color-brand);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---- Card / page primitives ----------------------------------------- */
+
+.card {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-2);
+}
+
+.page-description {
+  margin-top: -8px;
+  color: var(--color-muted);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Query panel ----------------------------------------------------- */
+/*
+ * The 812px / 536px / 260px column minimums and the 40px control height are frozen by
+ * control-sizing.spec.ts and docs/frontend页面实现规范.md.
+ */
+
+.query-panel,
+.query-panel-form {
+  display: grid;
+  min-width: 0;
+  max-width: 100%;
+  gap: 16px;
+}
+
+.query-panel-form {
+  margin: 0;
+}
+
+.query-panel-heading,
+.query-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.query-panel-heading {
+  justify-content: space-between;
+}
+
+.query-panel-heading strong {
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-strong);
+}
+
+.query-panel-fields {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 16px;
+}
+
+.query-panel-field-grid {
+  display: grid;
+  min-width: 812px;
+  flex: 1 1 0;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 12px 16px;
+}
+
+.query-panel-fields[hidden] {
+  display: none;
+}
+
+.query-panel-field {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(88px, auto) minmax(160px, 240px);
+  align-items: center;
+  justify-content: start;
+  gap: 12px;
+}
+
+.query-panel-field > label {
+  color: var(--color-muted);
+  font-size: var(--font-size-base);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.query-panel-control {
+  min-width: 0;
+}
+
+.query-panel-control > input,
+.query-panel-control > select,
+.query-panel-control > textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+
 .query-panel .query-panel-control > input,
 .query-panel .query-panel-control > select:not([multiple]),
 .query-panel .query-panel-control > textarea {
@@ -70,35 +304,188 @@ label { display: inline-grid; gap: 4px; color: var(--color-text); }
   padding-bottom: 8px;
   line-height: 22px;
 }
-.query-panel-actions { justify-content: flex-end; margin-left: auto; white-space: nowrap; }
-.query-panel-actions > button { height: 40px; min-height: 40px; }
-.query-panel-toggle { min-width: 72px; }
-.query-panel-result { min-width: 0; max-width: 100%; overflow-x: auto; }
+
+.query-panel-actions {
+  justify-content: flex-end;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.query-panel-actions > button {
+  height: 40px;
+  min-height: 40px;
+}
+
+.query-panel-toggle {
+  min-width: 72px;
+}
+
+.query-panel-result {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
 
 @media (max-width: 1200px) {
-  .query-panel-field-grid { min-width: 536px; grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+  .query-panel-field-grid {
+    min-width: 536px;
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
-  .query-panel-field-grid { min-width: 260px; grid-template-columns: minmax(260px, 1fr); }
+  .query-panel-field-grid {
+    min-width: 260px;
+    grid-template-columns: minmax(260px, 1fr);
+  }
 }
-[role="dialog"].card { position: fixed; inset: 50% auto auto 50%; z-index: 900; width: min(720px, calc(100vw - 48px)); max-height: calc(100vh - 48px); margin: 0; overflow: auto; transform: translate(-50%, -50%); box-shadow: 0 0 0 100vmax rgb(18 50 80 / 35%), 0 16px 48px var(--color-shadow); }
-.action-reason-dialog-backdrop { position: fixed; inset: 0; z-index: 900; background: rgb(18 50 80 / 35%); }
-.action-reason-dialog-backdrop > [role="dialog"].card { box-shadow: 0 16px 48px var(--color-shadow); }
-.action-reason-dialog { display: grid; gap: 12px; }
-.action-reason-dialog h2, .action-reason-dialog p { margin: 0; }
-.action-reason-target { padding: 8px 12px; background: var(--color-surface-alt); border-radius: var(--radius-control); font-weight: 600; overflow-wrap: anywhere; }
-.action-reason-dialog label { display: grid; gap: 6px; font-weight: 600; }
-.action-reason-dialog textarea { width: 100%; min-height: 96px; padding: 8px; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); font: inherit; font-weight: 400; resize: vertical; }
-.action-reason-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
-table.ratio-table { width: 100%; border-collapse: collapse; }
-table.ratio-table th, table.ratio-table td { padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--color-row-border); }
-table.ratio-table th { background: var(--color-table-header); font-weight: 600; }
-tr.over-threshold { background: var(--color-error-bg); }
-tr.over-threshold td:first-child { font-weight: 600; }
-.badge-over { margin-left: 8px; padding: 4px 8px; color: #fff; background: var(--color-danger); border-radius: var(--radius-control); font-size: 12px; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+/*
+ * Below 700px the field grid takes the whole row, so the action row always falls below the
+ * fields instead of being squeezed beside the last column. Issue #71 freezes that behavior
+ * (query-panel.spec.ts), and it only needs restoring here because the shell content is now
+ * wider on small viewports — the sidebar stacks above it instead of stealing a fixed column
+ * (DR-FE01-009). Widths of 800px and above are unaffected.
+ */
+@media (max-width: 700px) {
+  .query-panel-field-grid {
+    flex-basis: 100%;
+  }
+}
+
+/* ---- Tables --------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+  text-align: left;
+  border-bottom: 1px solid var(--color-row-border);
+}
+
+table th {
+  color: var(--color-text-secondary);
+  background: var(--color-table-header);
+  font-weight: var(--font-weight-strong);
+}
+
+table.ratio-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.ratio-table th,
+table.ratio-table td {
+  padding: 8px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-row-border);
+}
+
+table.ratio-table th {
+  background: var(--color-table-header);
+  font-weight: 600;
+}
+
+tr.over-threshold {
+  background: var(--color-error-bg);
+}
+
+tr.over-threshold td:first-child {
+  font-weight: 600;
+}
+
+.badge-over {
+  margin-left: 8px;
+  padding: 4px 8px;
+  color: #fff;
+  background: var(--color-danger);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Dialogs -------------------------------------------------------- */
+
+[role="dialog"].card {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 900;
+  width: min(720px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  margin: 0;
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 100vmax rgb(15 17 21 / 35%), var(--shadow-3);
+}
+
+.action-reason-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgb(15 17 21 / 35%);
+}
+
+.action-reason-dialog-backdrop > [role="dialog"].card {
+  box-shadow: var(--shadow-3);
+}
+
+.action-reason-dialog {
+  display: grid;
+  gap: 12px;
+}
+
+.action-reason-dialog h2,
+.action-reason-dialog p {
+  margin: 0;
+}
+
+.action-reason-target {
+  padding: 10px 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-control);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.action-reason-dialog label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.action-reason-dialog textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 8px 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.action-reason-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+[role="dialog"].card:has([data-testid="admin-privileged-data-system-logs-detail-drawer"]) {
+  inset: 0 0 0 auto;
+  width: min(560px, calc(100vw - 48px));
+  max-height: 100vh;
+  border-radius: 0;
+  transform: none;
+}
+
+/* ---- Notices, status text, pagination ------------------------------- */
 
 .internal-error-notice {
   position: fixed;
@@ -114,46 +501,170 @@ tr.over-threshold td:first-child { font-weight: 600; }
   background: var(--color-error-bg);
   border: 1px solid var(--color-danger);
   border-radius: var(--radius-card);
-  box-shadow: 0 8px 24px var(--color-shadow);
-}
-.internal-error-notice button { color: var(--color-danger); background: transparent; border-color: transparent; }
-
-.page-description { margin-top: -8px; color: var(--color-muted); }
-.audit-filter-grid { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 16px; align-items: end; }
-.audit-filter-actions { display: flex; gap: 8px; }
-.button-secondary { color: var(--color-brand-deep); background: var(--color-surface); border-color: var(--color-brand); }
-.button-secondary:hover { color: #fff; }
-.pagination-row { display: flex; align-items: center; justify-content: flex-end; gap: 16px; margin-top: 16px; }
-.status-text { font-weight: 600; }
-.status-success, .status-detected { color: var(--color-success); }
-.status-failure, .status-client-failure, .status-server-failure, .status-denied, .status-blocked { color: var(--color-danger); }
-.audit-detail-list { display: grid; gap: 12px; margin: 0 0 24px; }
-.audit-detail-list div { display: grid; grid-template-columns: 112px 1fr; gap: 16px; }
-.audit-detail-list dt { color: var(--color-muted); }
-.audit-detail-list dd { margin: 0; overflow-wrap: anywhere; }
-
-[role="dialog"].card:has([data-testid="admin-privileged-data-system-logs-detail-drawer"]) {
-  inset: 0 0 0 auto;
-  width: min(560px, calc(100vw - 48px));
-  max-height: 100vh;
-  border-radius: 0;
-  transform: none;
+  box-shadow: var(--shadow-3);
 }
 
-.sensitive-value-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.sensitive-value-cell button { min-height: 32px; padding: 4px 8px; }
-.sensitive-value-warning { padding: 12px; color: var(--color-warning); background: var(--color-warning-bg); border-radius: var(--radius-control); }
-.sensitive-value-result { padding: 16px; color: var(--color-text); background: var(--color-success-bg); border-radius: var(--radius-control); font-size: 18px; font-weight: 600; letter-spacing: .08em; }
+.internal-error-notice button {
+  color: var(--color-danger);
+  background: transparent;
+  border-color: transparent;
+}
 
-.configuration-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.configuration-summary { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 16px; margin: 0; }
-.configuration-summary div { min-width: 0; }
-.configuration-summary dt { color: var(--color-muted); }
-.configuration-summary dd { margin: 4px 0 0; overflow-wrap: anywhere; font-weight: 600; }
-.configuration-table-wrap { overflow-x: auto; }
-.configuration-table-wrap table { min-width: 1040px; }
-.configuration-draft-actions { display: grid; grid-template-columns: minmax(240px, 1fr) auto auto; gap: 12px; align-items: end; margin-bottom: 12px; }
-.configuration-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-.configuration-alert { padding: 12px 16px; border-radius: var(--radius-control); }
-.configuration-alert.error { color: var(--color-danger); background: var(--color-error-bg); border: 1px solid var(--color-danger); }
-.configuration-alert.success { color: var(--color-success); background: var(--color-success-bg); border: 1px solid var(--color-success); }
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+.status-success,
+.status-detected {
+  color: var(--color-success);
+}
+
+.status-failure,
+.status-client-failure,
+.status-server-failure,
+.status-denied,
+.status-blocked {
+  color: var(--color-danger);
+}
+
+/* ---- Audit / configuration / sensitive-value surfaces --------------- */
+
+.audit-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.audit-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audit-detail-list {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.audit-detail-list div {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 16px;
+}
+
+.audit-detail-list dt {
+  color: var(--color-muted);
+}
+
+.audit-detail-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sensitive-value-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.sensitive-value-cell button {
+  min-height: var(--control-height-compact);
+  padding: 4px 12px;
+}
+
+.sensitive-value-warning {
+  padding: 12px;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-radius: var(--radius-control);
+}
+
+.sensitive-value-result {
+  padding: 16px;
+  color: var(--color-text);
+  background: var(--color-success-bg);
+  border-radius: var(--radius-control);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+
+.configuration-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.configuration-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.configuration-summary div {
+  min-width: 0;
+}
+
+.configuration-summary dt {
+  color: var(--color-muted);
+}
+
+.configuration-summary dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+
+.configuration-table-wrap {
+  overflow-x: auto;
+}
+
+.configuration-table-wrap table {
+  min-width: 1040px;
+}
+
+.configuration-draft-actions {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.configuration-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.configuration-alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-control);
+}
+
+.configuration-alert.error {
+  color: var(--color-danger);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-danger);
+}
+
+.configuration-alert.success {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+}

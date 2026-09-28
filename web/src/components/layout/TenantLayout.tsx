@@ -1,8 +1,8 @@
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore, isPlatformRole } from '@/store/authStore';
-import { logout as revokeSession } from '@/api/auth';
 import type { LoginResponse } from '@/types/api';
-import SidebarMenu, { type SidebarMenuGroup, type SidebarMenuItem } from './SidebarMenu';
+import AppShell from './AppShell';
+import { type SidebarMenuGroup, type SidebarMenuItem } from './SidebarMenu';
 
 type TenantUserType = Extract<LoginResponse['userType'], 'TENANT_ADMIN' | 'TENANT_USER' | 'TENANT_DEV'>;
 
@@ -74,8 +74,6 @@ const NAV_GROUPS: TenantNavGroup[] = [
 /** Shared layout for every authenticated Tenant route. */
 export default function TenantLayout() {
   const userType = useAuthStore((state) => state.userType);
-  const clearSession = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
   if (isPlatformRole(userType) || !userType) {
     return <Navigate to="/login" replace />;
   }
@@ -86,17 +84,12 @@ export default function TenantLayout() {
   })).filter((group) => group.items.length > 0);
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <div className="sidebar-brand">YCSAN-SMS 机构端</div>
-        <SidebarMenu ariaLabel="机构主导航" groups={groups} testIdPrefix="tenant-console-navigation" />
-        <button className="sidebar-logout" data-testid="shared-console-identity-profile-logout" type="button" onClick={async () => {
-          try { await revokeSession(); } finally { clearSession(); navigate('/login'); }
-        }}>退出登录</button>
-      </aside>
-      <main className="content">
-        <Outlet />
-      </main>
-    </div>
+    <AppShell
+      workspaceLabel="YCSAN-SMS 机构端"
+      workspaceKind="机构端"
+      navAriaLabel="机构主导航"
+      navTestIdPrefix="tenant-console-navigation"
+      groups={groups}
+    />
   );
 }
