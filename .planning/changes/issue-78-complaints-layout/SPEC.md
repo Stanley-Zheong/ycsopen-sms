@@ -15,9 +15,9 @@ owned by the Phase 41 complaint page.
 ## Layout contract
 
 - Cards use the console's existing surface, border, radius, and spacing tokens.
-- Intake, attribution/requirements, and handling evidence use the same
-  responsive three-column field grid, reducing to two columns at 1100 px and
-  one column at 720 px.
+- Issue #87 supersedes the original local column count: intake,
+  attribution/requirements, and handling evidence use the shared 4/3/2/1 Admin field-grid
+  breakpoints while preserving the same field order and action cell.
 - The registration action occupies the final attribution-grid cell so it stays
   adjacent to the fields and shares their control baseline.
 - Table headers remain rendered during loading, failure, and empty states.

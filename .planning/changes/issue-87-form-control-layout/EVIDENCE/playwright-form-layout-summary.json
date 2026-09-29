@@ -1,0 +1,31 @@
+{
+  "issue": 87,
+  "recordedAt": "2026-09-29T03:48:18Z",
+  "command": "YCSOPEN_CHROME_SINGLE_PROCESS=true YCSOPEN_CHROME_PATH=<Chromium-151-headless-shell> YCSOPEN_WEB_PORT=4331 YCSOPEN_E2E_ISOLATED=1 npx playwright test test/scripts/form-control-layout.spec.ts --project=local-google-chrome --workers=1 --reporter=json",
+  "browser": "Chromium 151.0.7922.34",
+  "project": "local-google-chrome",
+  "result": {
+    "status": "passed",
+    "tests": 1,
+    "durationMs": 20001,
+    "adminRoutes": 56,
+    "runtimeVisibleFormRoutes": 45
+  },
+  "coverage": [
+    "C-ISSUE-87-ADMIN-FORM-WIDTH",
+    "C-ISSUE-87-HORIZONTAL-CONTAINMENT",
+    "C-ISSUE-87-FOUR-COLUMN-LAYOUT",
+    "C-ISSUE-87-SELECT-OPTION-FIT"
+  ],
+  "rawReport": {
+    "path": "playwright-form-layout-raw.json",
+    "sha256": "96af3e425fb9f3b79cbd3157d40cf353ff0968daa8dd18bae1aba37ed336a668"
+  },
+  "sourceSha256": {
+    "web/src/styles/index.css": "eddba9c4c8c6931bc099874741f3e290119cf1fd6a9af094fd067fb97f56c8ff",
+    "web/test/scripts/form-control-layout.spec.ts": "8cae88d7c68c87562992b0a0effc66ab85551c3f0abcf92f3c0a86dac40fb5cb",
+    "web/src/components/common/QueryPanel.tsx": "31b810d01fdf7b26d3707dee3a5a49c536f35849a91c0346c148a44fffcf902a",
+    "web/src/components/layout/AppShell.tsx": "3c5674562827efdead66988f6d4e50bfb17786e4541cb2158d84b395f61fd286"
+  },
+  "boundary": "Console APIs were mocked to isolate rendered layout behavior. This report does not prove live backend integration, permissions, persistence, or production data."
+}

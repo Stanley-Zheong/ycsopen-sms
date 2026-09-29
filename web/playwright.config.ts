@@ -9,6 +9,8 @@ if (!/^\d{4,5}$/.test(webPort)) {
 }
 const baseURL = `http://127.0.0.1:${webPort}`;
 const useBundledChromium = process.env.YCSOPEN_USE_BUNDLED_CHROMIUM === 'true';
+const useSingleProcessChrome = process.env.YCSOPEN_CHROME_SINGLE_PROCESS === 'true';
+const localChromeArgs = useSingleProcessChrome ? ['--single-process', '--no-zygote'] : [];
 
 export default defineConfig({
   testDir: './test/scripts',
@@ -22,7 +24,10 @@ export default defineConfig({
     use: { ...devices['Desktop Chrome'] },
   }] : [{
     name: 'local-google-chrome',
-    use: { ...devices['Desktop Chrome'], launchOptions: { executablePath: localChromePath } },
+    use: {
+      ...devices['Desktop Chrome'],
+      launchOptions: { executablePath: localChromePath, args: localChromeArgs },
+    },
   }],
   webServer: {
     command: `npm run dev -- --host 127.0.0.1 --port ${webPort}`,

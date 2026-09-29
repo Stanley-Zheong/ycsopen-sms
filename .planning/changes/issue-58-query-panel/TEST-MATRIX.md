@@ -1,5 +1,9 @@
 # Issue 58 Query Panel Test Matrix
 
+Issue #87 supersedes the historical desktop column count with 4/3/2/1 responsive columns and stacks
+Admin labels above controls at the four-column breakpoint. The query actions, selectors, API
+semantics, and historical evidence boundaries below remain valid.
+
 This matrix covers the cross-page production query-panel contract. Existing
 phase tests continue to own page-specific permissions, data isolation, and API
 semantics.

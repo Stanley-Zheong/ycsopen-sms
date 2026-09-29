@@ -16,7 +16,7 @@
 
 .secure-export-cards {
   display: grid;
-  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -29,6 +29,7 @@
 
 .secure-export-cards strong {
   display: block;
+  overflow-wrap: anywhere;
   font-size: 24px;
   color: #183b56;
 }

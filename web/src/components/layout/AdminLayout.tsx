@@ -142,6 +142,7 @@ export default function AdminLayout() {
 
   return (
     <AppShell
+      consoleKind="admin"
       workspaceLabel="YCSAN-SMS 平台管理后台"
       workspaceKind="平台管理后台"
       navAriaLabel="平台主导航"

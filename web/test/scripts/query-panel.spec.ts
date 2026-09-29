@@ -14,8 +14,17 @@ async function expectLabelLeftOfControl(panel: Locator, name: string) {
   expect(labelBox!.x + labelBox!.width).toBeLessThanOrEqual(controlBox!.x + 1);
 }
 
-async function expectAllLabelsLeftOfControls(panel: Locator, names: string[]) {
-  for (const name of names) await expectLabelLeftOfControl(panel, name);
+async function expectLabelAboveControl(panel: Locator, name: string) {
+  const labelBox = await panel.getByTestId(`query-label-${name}`).boundingBox();
+  const controlBox = await panel.getByTestId(`query-input-${name}`).boundingBox();
+  expect(labelBox, `${name} label has a layout box`).not.toBeNull();
+  expect(controlBox, `${name} control has a layout box`).not.toBeNull();
+  expect(labelBox!.y + labelBox!.height).toBeLessThanOrEqual(controlBox!.y + 1);
+  expect(Math.abs(labelBox!.x - controlBox!.x)).toBeLessThanOrEqual(1);
+}
+
+async function expectAllLabelsAboveControls(panel: Locator, names: string[]) {
+  for (const name of names) await expectLabelAboveControl(panel, name);
 }
 
 async function expectActionsAtRightOfFieldRow(panel: Locator, name: string, hasReset = true) {
@@ -113,7 +122,7 @@ test('pw-issue-58-admin-tenants C-ISSUE-58-ADMIN-TENANTS OBL-ISSUE-58-ADMIN-TENA
   await expect(panel.getByTestId('query-panel-fields')).toBeVisible();
   await expect(panel.getByTestId('query-panel-toggle')).toHaveCount(0);
   const fields = ['keyword', 'verification-status', 'operating-status'];
-  await expectAllLabelsLeftOfControls(panel, fields);
+  await expectAllLabelsAboveControls(panel, fields);
   await expectActionsAtRightOfFieldRow(panel, 'keyword');
 
   await panel.getByTestId('query-input-keyword').locator('input').fill('阿尔法');
@@ -163,6 +172,7 @@ test('pw-issue-71-query-action-position C-ISSUE-71-QUERY-ACTION-POSITION OBL-ISS
   await expectActionsAtRightOfFieldRow(panel, 'keyword');
 
   await page.setViewportSize({ width: 1201, height: 900 });
+  await expectLabelLeftOfControl(panel, 'keyword');
   await expectActionsOnNextRowAtRight(panel, 'operating-status');
 
   await page.setViewportSize({ width: 901, height: 900 });
@@ -228,8 +238,8 @@ test('pw-issue-58-operation-audit C-ISSUE-58-OPERATION-AUDIT OBL-ISSUE-58-OPERAT
   await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
   await panel.getByTestId('query-panel-toggle').click();
   const fields = ['actor', 'operation', 'result', 'from', 'to'];
-  await expectAllLabelsLeftOfControls(panel, fields);
-  await expectActionsAtRightOfFieldRow(panel, 'from');
+  await expectAllLabelsAboveControls(panel, fields);
+  await expectActionsAtRightOfFieldRow(panel, 'to');
   await panel.getByTestId('query-input-actor').locator('input').fill('admin-user');
   await panel.getByTestId('query-input-operation').locator('input').fill('EXPORT_REPORT');
   await panel.getByTestId('query-input-result').locator('select').selectOption('SUCCESS');
@@ -301,7 +311,7 @@ test('pw-issue-58-admin-uplinks C-ISSUE-58-ADMIN-UPLINKS OBL-ISSUE-58-ADMIN-UPLI
   await expect(panel.getByTestId('query-panel-fields')).toBeHidden();
   await panel.getByTestId('query-panel-toggle').click();
   const fields = ['tenant-id', 'phone-number', 'keyword', 'carrier', 'push-state', 'start-time', 'end-time'];
-  await expectAllLabelsLeftOfControls(panel, fields);
+  await expectAllLabelsAboveControls(panel, fields);
   await expectActionsAtRightOfFieldRow(panel, 'end-time');
   await panel.getByTestId('query-input-tenant-id').locator('input').fill('7');
   await panel.getByTestId('query-input-phone-number').locator('input').fill('138');
