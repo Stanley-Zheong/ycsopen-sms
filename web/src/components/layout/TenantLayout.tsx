@@ -85,6 +85,7 @@ export default function TenantLayout() {
 
   return (
     <AppShell
+      consoleKind="tenant"
       workspaceLabel="YCSAN-SMS 机构端"
       workspaceKind="机构端"
       navAriaLabel="机构主导航"

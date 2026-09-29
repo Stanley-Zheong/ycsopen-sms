@@ -282,3 +282,46 @@ logout control reachable; the content container follows below it.
 - `web/src/styles/shell.css`
 - `web/test/unit/sidebar-layouts.test.tsx`, `web/test/scripts/sidebar-navigation.spec.ts`
 - GitHub issue `#108`
+
+## DR-FE01-010: Scope Admin Geometry Without Changing the Shared Shell Contract
+
+### Status
+Accepted (issue `#87`)
+
+### Decision
+`AppShell` receives a required `consoleKind` and exposes it as `data-console-kind`. Admin-specific
+form CSS is scoped below `[data-console-kind="admin"]`; Tenant fields are unaffected. The frozen
+`layout app-shell` class list, `shared-console-shell` test id, `ASIDE, MAIN` child order, and
+`.layout > main.content` relationship remain unchanged.
+
+## DR-FE01-011: One 4/3/2/1 Column Contract
+
+### Status
+Accepted (issue `#87`)
+
+### Decision
+Both QueryPanel's JavaScript collapse calculation and CSS use four columns at 1440px and wider,
+three at 1201–1439px, two at 901–1200px, and one at 900px and narrower. At the four-column
+breakpoint QueryPanel labels stack above controls so the #108 1120px content container can hold
+four fields without overlap.
+
+## DR-FE01-012: Preferred Input Width and Intrinsic Select Width
+
+### Status
+Accepted (issue `#87`)
+
+### Decision
+Admin ordinary inputs prefer 280px and never exceed 420px. Single-value selects use `max-content`,
+capped by their cell, 420px, and—at desktop acceptance widths—30 container-query inline units.
+Textareas and choice/file/special input types keep their page-owned geometry.
+
+## DR-FE01-013: Fail-Closed Route Inventory and Layout-Only Browser Evidence
+
+### Status
+Accepted (issue `#87`)
+
+### Decision
+The browser spec contains a literal 56-route Admin catalog and a literal 45-route set expected to
+show ordinary controls. The two sets make route additions or disappeared form surfaces explicit
+review events. API interception proves rendered layout only; it does not claim real-service or
+backend integration behavior.

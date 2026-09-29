@@ -105,3 +105,26 @@ Issue `#108` checklist, each item closed with evidence:
 - Gate item: PR body lists changed routes, changed selectors, verification commands, and boundaries.
   Recorded in pull request `#109`
   (<https://github.com/Stanley-Zheong/ycsopen-sms/pull/109>).
+
+## Issue #87 Verification Record
+
+Issue: `#87` — `统一所有表单组件宽度与四列布局`.
+Branch: `fix/87-form-control-layout`, based on post-#108 `main` (`d49828a`).
+
+| Gate | Command | Current result | Durable evidence |
+|---|---|---|---|
+| Frontend install | `npm --prefix web ci` | Pass; 357 packages installed, npm reported 7 audit findings | Issue verification record |
+| Targeted unit | `npm --prefix web test -- --run test/unit/query-panel.test.tsx test/unit/app-shell.test.tsx` | Pass, 16/16 after red-green confirmation | Issue verification record |
+| Full unit | `npm --prefix web test` | Pass, 50 files / 186 tests | Issue verification record |
+| Build | `npm --prefix web run build` | Pass, 306 modules; existing chunk-size warning only | Issue verification record |
+| Issue Chrome | `form-control-layout.spec.ts`, local Chrome project, one worker | Pass, one contract / four behaviors / 56 routes / exact 45 form routes | Raw and summary JSON under `.planning/changes/issue-87-form-control-layout/EVIDENCE/` |
+| Affected Chrome | Seven QueryPanel, three control-sizing, and three issue #108 shell cases, isolated on constrained-host Chrome | Pass, 13/13 | Issue verification record |
+| Diff hygiene | `git diff --check` | Pass | Issue verification record |
+| Review | Independent goal and code review | Pass, no remaining BLOCKER/HIGH | `.planning/changes/issue-87-form-control-layout/REVIEW.md` |
+
+The full backend boundary command ran 986 tests but did not pass in this runner: 7 failures and 4
+errors are confined to missing Ruby process harnesses, process-reaping assumptions, and unavailable
+migration configuration; 33 tests were skipped. The focused repository release acceptance test
+passes 5/5. No backend file changed. The Docker release check was not run because no container,
+build, or deployment input changed. Raw Chrome evidence SHA-256 is
+`96af3e425fb9f3b79cbd3157d40cf353ff0968daa8dd18bae1aba37ed336a668`.

@@ -10,14 +10,14 @@ change.
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| issue-71-query-action-position | A visible action group never starts at the left edge of a new row. It occupies the trailing edge of a single field row, aligns with the final field row when the configured field columns and action group fit, and moves to a separate right-aligned row when they do not. | At 1440 px, the tenant-list actions overlap the three-field row vertically and end at the panel's right edge. At the 1201 px and 901 px column-transition cliffs, they render below the final field without overlap and end at the right edge. At 800 px, the expanded actions overlap the final field row in the right-side region. At 600 px, they move below the final field and remain aligned to the right edge. |
+| issue-71-query-action-position | A visible action group never starts at the left edge of a new row. It occupies the trailing edge of a single field row, aligns with the final field row when the configured field columns and action group fit, and moves to a separate right-aligned row when they do not. | At 1440 px, the tenant-list actions share the visible four-column field-grid row and end at the panel's right edge. At the 1201 px and 901 px column-transition cliffs, they render below the final field without overlap and end at the right edge. At 800 px, the expanded actions overlap the final field row in the right-side region. At 600 px, they move below the final field and remain aligned to the right edge. |
 
 ## Layout contract
 
 - The action group is a sibling of the inner field grid inside the existing
   disclosure region.
 - The disclosure is a wrapping flex row. The field grid keeps its existing
-  3/2/1 responsive columns and a minimum width that preserves every field's
+  4/3/2/1 responsive columns and a minimum width that preserves every field's
   label/control track.
 - The action group stays on the final field row when both siblings fit. Flex
   wrapping moves the whole action group to the following row when they do not;

@@ -29,6 +29,7 @@ describe('QueryPanel', () => {
         <QueryField name="status" label="状态"><select><option>全部</option></select></QueryField>
         <QueryField name="keyword" label="关键字"><input /></QueryField>
         <QueryField name="created-at" label="创建时间"><input /></QueryField>
+        <QueryField name="owner" label="负责人"><input /></QueryField>
       </QueryPanel>,
     );
 
@@ -51,12 +52,13 @@ describe('QueryPanel', () => {
     expect(within(panel).getByTestId('query-input-tenant-id').querySelector('input')).toBeInTheDocument();
   });
 
-  it('keeps three desktop fields visible because they fit on one row', () => {
+  it('keeps four desktop fields visible because they fit on one row', () => {
     render(
       <QueryPanel onSubmit={vi.fn()} onReset={vi.fn()}>
         <QueryField name="keyword" label="关键字"><input /></QueryField>
         <QueryField name="verification-status" label="认证状态"><select><option>全部</option></select></QueryField>
         <QueryField name="operating-status" label="运行状态"><select><option>全部</option></select></QueryField>
+        <QueryField name="owner" label="负责人"><input /></QueryField>
       </QueryPanel>,
     );
 

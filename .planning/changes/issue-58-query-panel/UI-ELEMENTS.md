@@ -6,8 +6,11 @@ phases. Existing phase-owned selectors remain on their controls and tables;
 the shared selectors below add one consistent interaction contract that tests
 scope within each `query-panel` region.
 
-The field grid has three columns above 1200 px, two columns from 901-1200 px,
-and one column at the compact viewport. A panel starts collapsed whenever its
+Issue #87 supersedes the historical column count: the field grid has four columns at 1440 px and
+wider, three columns from 1201-1439 px, two columns from 901-1200 px, and one column at the compact
+viewport. It also supersedes the historical desktop label geometry for the Admin console: at
+1440 px and wider the label sits above its control within one column; narrower and Tenant-console
+panels retain the label-left-of-control geometry. A panel starts collapsed whenever its
 field count would occupy more than one row in the current grid, and exposes
 `query-panel-toggle`. Search and reset share the disclosure region with the
 fields and remain hidden while it is collapsed. When visible, the action group

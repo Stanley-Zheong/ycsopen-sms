@@ -37,8 +37,8 @@ feedback.
 
 ## Responsive and implicit-requirement decisions
 
-- Desktop Chrome at 1440×900 is the issue acceptance viewport. The query grid
-  follows the existing 3/2/1-column shared breakpoints and the action group stays
+- Desktop Chrome at 1440×900 is the issue acceptance viewport. Issue #87 supersedes the historical
+  column count; the query grid follows the shared 4/3/2/1 breakpoints and the action group stays
   intact.
 - All three tables use fixed layout and ellipsis rather than a document-width
   minimum, so opening the long-formula drilldown cannot introduce horizontal

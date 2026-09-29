@@ -81,7 +81,7 @@ export default function AdminCustomReportsPage() {
 
       <section className="card" data-testid="admin-custom-report-custom-reports-builder">
         <h2>报表构建器</h2>
-        <div className="form-grid">
+        <div className="form-grid custom-report-form-grid">
           <label>报表名称
             <input data-testid="admin-custom-report-custom-reports-name" value={reportName} onChange={(e) => setReportName(e.target.value)} />
           </label>

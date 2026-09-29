@@ -260,7 +260,7 @@ a:focus-visible {
   display: grid;
   min-width: 812px;
   flex: 1 1 0;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px 16px;
 }
 
@@ -333,6 +333,12 @@ a:focus-visible {
   }
 }
 
+@media (min-width: 1201px) and (max-width: 1439px) {
+  .query-panel-field-grid {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .query-panel-field-grid {
     min-width: 260px;
@@ -351,6 +357,100 @@ a:focus-visible {
   .query-panel-field-grid {
     flex-basis: 100%;
   }
+}
+
+/* ---- Admin form geometry (issue #87) -------------------------------- */
+
+[data-console-kind="admin"] {
+  --admin-form-columns: 4;
+  --admin-form-control-width: 280px;
+  --admin-form-select-width: 420px;
+}
+
+[data-console-kind="admin"] .content {
+  container-type: inline-size;
+}
+
+[data-console-kind="admin"] .query-panel {
+  container-type: inline-size;
+}
+
+[data-console-kind="admin"] .content :where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+  select:not([multiple])
+) {
+  width: min(100%, var(--admin-form-control-width));
+  max-width: 420px;
+  justify-self: start;
+}
+
+[data-console-kind="admin"] .content select:not([multiple]) {
+  width: max-content;
+  max-width: min(100%, var(--admin-form-select-width));
+}
+
+@media (min-width: 1440px) {
+  [data-console-kind="admin"] .query-panel-field {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    justify-content: stretch;
+    gap: 6px;
+  }
+
+  [data-console-kind="admin"] .query-panel-field > label {
+    text-align: left;
+    white-space: normal;
+  }
+
+  [data-console-kind="admin"] .content select:not([multiple]) {
+    max-width: min(100%, var(--admin-form-select-width), 30cqi);
+  }
+}
+
+[data-console-kind="admin"] .content :is(
+  .query-panel-field-grid,
+  .signature-lifecycle-form,
+  .exemption-policy-form,
+  .blacklist-risk-form,
+  .content-safety-form,
+  .frequency-rules-form,
+  .number-attribution-form,
+  .provider-status-form,
+  .routing-policy-form,
+  .trial-prepaid-form,
+  .tenant-recharge-form,
+  .custom-report-form-grid,
+  .unsubscribe-filters,
+  .shortlink-form,
+  .complaint-field-grid
+) {
+  display: grid;
+  grid-template-columns: repeat(var(--admin-form-columns), minmax(0, 1fr));
+  max-width: 100%;
+  align-items: end;
+}
+
+[data-console-kind="admin"] .content .trial-prepaid-form > .trial-prepaid-form {
+  grid-column: 1 / -1;
+}
+
+[data-console-kind="admin"] .content :is(
+  .exemption-policy-form,
+  .signature-lifecycle-form
+) > :is(h2, h3) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1439px) {
+  [data-console-kind="admin"] { --admin-form-columns: 3; }
+}
+
+@media (max-width: 1200px) {
+  [data-console-kind="admin"] { --admin-form-columns: 2; }
+}
+
+@media (max-width: 900px) {
+  [data-console-kind="admin"] { --admin-form-columns: 1; }
 }
 
 /* ---- Tables --------------------------------------------------------- */

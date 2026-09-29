@@ -54,6 +54,14 @@ export async function loginAs(page: Page, userType: UserType) {
   await expect(page).toHaveURL(userType.startsWith('TENANT_') ? /\/tenant\/overview$/ : /\/admin\/dashboard$/);
 }
 
+export async function seedAuthenticatedSession(page: Page, userType: UserType) {
+  const tenantId = userType.startsWith('TENANT_') ? 7 : null;
+  const accessToken = mockJwt(userType, tenantId);
+  await page.addInitScript(({ session }) => {
+    window.sessionStorage.setItem('ycsopen.console.auth-session', JSON.stringify(session));
+  }, { session: { accessToken, userType, tenantId } });
+}
+
 export async function mockEmptyDashboard(page: Page) {
   await page.route('**/api/v1/console/dashboard/complaint-ratio/*', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(apiResponse([])) }),
