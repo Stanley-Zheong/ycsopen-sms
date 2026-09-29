@@ -159,6 +159,15 @@ export default function TrialPrepaidAdminPage() {
             setAuditTenantDraft('');
             setAuditTenantApplied('');
           }}
+          onRefresh={() => void audits.refetch()}
+          queryStatus={{
+            testId: 'admin-trial-prepaid-balance-audit-query-status',
+            label: '余额审计',
+            isFetching: audits.isFetching,
+            isError: audits.isError,
+            isEmpty: (audits.data ?? []).length === 0,
+            count: audits.data?.length,
+          }}
           result={(
             <>
               {audits.isError && <p role="alert" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}

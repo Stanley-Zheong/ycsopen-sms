@@ -22,6 +22,15 @@ export default function DashboardConfigurationPage() {
           setDraftRole('ADMIN');
           setRole('ADMIN');
         }}
+        onRefresh={() => void config.refetch()}
+        queryStatus={{
+          testId: 'admin-operational-dashboards-dashboard-configuration-query-status',
+          label: '仪表盘配置',
+          isFetching: config.isFetching,
+          isError: config.isError,
+          isEmpty: !data,
+          count: data ? 1 : 0,
+        }}
         result={(
           <>
             {config.isError && <p role="alert">仪表盘配置加载失败。</p>}

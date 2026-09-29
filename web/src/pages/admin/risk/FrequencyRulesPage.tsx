@@ -177,6 +177,15 @@ export default function FrequencyRulesPage() {
           legacyPanelTestId="admin-frequency-api-frequency-rules-filters"
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+          onRefresh={() => void rules.refetch()}
+          queryStatus={{
+            testId: 'admin-frequency-api-frequency-rules-query-status',
+            label: '频控规则',
+            isFetching: rules.isFetching,
+            isError: rules.isError,
+            isEmpty: rows.length === 0,
+            count: rows.length,
+          }}
           result={<>
         <table className="ratio-table" data-testid="admin-frequency-api-frequency-rules-table">
           <thead><tr><th>规则</th><th>维度</th><th>次数</th><th>窗口</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>

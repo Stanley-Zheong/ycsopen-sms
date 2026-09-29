@@ -108,6 +108,9 @@ describe('Phase 19 number attribution and portability UI', () => {
     fireEvent.click(screen.getByTestId('admin-number-attribution-lookup'));
     await waitFor(() => expect(screen.getByTestId('admin-number-attribution-result')).toHaveTextContent('UNICOM'));
     expect(screen.getByTestId('admin-number-attribution-fallback-source')).toHaveTextContent('PORTABILITY_CACHE');
+    expect(screen.getByTestId('admin-number-attribution-query-status')).toHaveAttribute('data-state', 'success');
+    fireEvent.click(screen.getByTestId('query-refresh'));
+    await waitFor(() => expect(numberApi.lookupAttribution).toHaveBeenCalledTimes(2));
     fireEvent.click(screen.getByTestId('admin-number-portability-save'));
     await waitFor(() => expect(numberApi.savePortability).toHaveBeenCalled());
   });

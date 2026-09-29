@@ -4,7 +4,6 @@
   min-width: 0;
   max-width: 100%;
   gap: 16px;
-  overflow-x: hidden;
 }
 
 .secure-export-header {
@@ -16,11 +15,12 @@
 
 .secure-export-cards {
   display: grid;
-  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
   gap: 12px;
 }
 
 .secure-export-cards article {
+  min-width: 0;
   border: 1px solid #dde4f0;
   border-radius: 12px;
   background: #fff;
@@ -31,6 +31,7 @@
   display: block;
   font-size: 24px;
   color: #183b56;
+  overflow-wrap: anywhere;
 }
 
 .secure-export-cards span {

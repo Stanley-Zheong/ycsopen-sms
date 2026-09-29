@@ -55,6 +55,15 @@ export default function AdminRechargeReviewPage() {
           setDraftStatus('PENDING');
           setAppliedStatus('PENDING');
         }}
+        onRefresh={() => void reviews.refetch()}
+        queryStatus={{
+          testId: 'admin-tenant-recharge-operations-review-query-status',
+          label: '充值审核列表',
+          isFetching: reviews.isFetching,
+          isError: reviews.isError,
+          isEmpty: (reviews.data ?? []).length === 0,
+          count: reviews.data?.length,
+        }}
         result={(
           <section className="card" data-testid="admin-tenant-recharge-operations-review-table">
             <h2>充值申请</h2>

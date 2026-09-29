@@ -10,6 +10,53 @@
 | Build | `npm --prefix web run build` | Pass | Not recorded |
 | Chrome Playwright | Spirit-specific Chrome command covering QueryPanel, form, table, and action confirmation | Pass | Not recorded |
 
+## Issue #88 Verification Record
+
+Issue: `#88` — `修复无动作孤立输入框并接入异步查询`.
+Branch: `fix/88-actionable-query-controls`, cut from `origin/main` at `d49828a`.
+Environment: managed Linux arm64 workspace, Node.js 20 or newer, Java 21.
+
+### Required evidence
+
+| Gate | Command | Current result |
+|---|---|---|
+| Frontend install | `npm --prefix web ci` | **Pass** — 357 packages installed; npm reported 7 audit findings |
+| Shared and page unit tests | `npm --prefix web test` | **Pass** — 50 files / 203 tests |
+| Production build | `npm --prefix web run build` | **Pass** — 306 modules; Vite reported the existing large-chunk advisory |
+| Backend regression | `MAVEN_OPTS='-Xmx768m -XX:MaxMetaspaceSize=256m' mvn -f core/pom.xml test` | **Environment failure** — 986 tests: 7 failures, 4 errors, 33 skipped; failures require unavailable Ruby, process-tree reaping, or migration configuration. No backend file is changed. |
+| Admin and Tenant Chrome acceptance | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts --project=local-google-chrome --workers=1 --reporter=line --grep pw-issue-88` | **Local environment blocked** — managed ARM Chromium 151 renderer crashed (`page.goto: Page crashed`); the same two issue specs compile and list 7 tests. Required Google Chrome result remains the PR CI gate. |
+| Narrow export Chrome acceptance | `npm --prefix web run test:e2e -- secure-async-export.spec.ts --project=local-google-chrome --workers=1 --reporter=line --grep pw-issue-88-export-center-narrow` | **Local environment blocked** — same ARM Chromium renderer crash at `/login`; required Google Chrome result remains the PR CI gate. |
+| ESLint | `npm --prefix web run lint` | **Baseline warning** — 0 errors; one unchanged `react-refresh/only-export-components` warning in `DashboardPage.tsx` makes `--max-warnings 0` exit 1 |
+| Playwright discovery | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --list` | **Pass** — 7 tests in 2 files |
+| Diff hygiene | `git diff --check` | **Pass** |
+| Pull-request Google Chrome / Docker release | CI job `Docker release / Google Chrome` | Pending push |
+
+### Issue-scoped TODO
+
+| Item | Status | Evidence target |
+|---|---|---|
+| Every current Admin and Tenant QueryPanel has Search, Reset, Refresh and one four-state result status | Implemented; CI acceptance pending | Static inventory: 34 panels / 34 `onRefresh` / 34 `queryStatus`; 203 unit tests pass |
+| Every filter independently changes a request URL/body or a declared local result | Implemented; CI acceptance pending | `pw-issue-88-admin-actionable-controls` and `pw-issue-88-tenant-actionable-controls` compile and are wired into the Google Chrome CI job |
+| Unchanged criteria can retry the exact owning query | Done | QueryPanel and page-owner unit coverage, including initial and post-reset criteria |
+| Archive result containment and export-card narrow layout | Implemented; CI acceptance pending | archive and export unit tests pass; `pw-issue-88-export-center-narrow` is wired into CI |
+| Review, commit, pull request, CI and merge | Pending | GitHub PR and merged commit |
+
+### Verification boundaries
+
+- Browser business APIs are intercepted with deterministic fixtures. The acceptance proves real
+  React DOM, action wiring, request initiation/signature, state exposure, and layout; it does not
+  claim production-service or production-data correctness.
+- A local Playwright run may use the managed Chromium headless shell when Google Chrome is not
+  installed in the workspace. In this run both the managed and an isolated Playwright Chromium
+  151 build crashed their ARM renderer while navigating `/login` or `/admin/dashboard`, including
+  with GPU disabled. This is recorded as blocked, not passed. Only the pull-request runner's
+  `/usr/bin/google-chrome` execution can close the Chrome gate.
+- The backend command was executed to completion. Its 11 failures/errors are confined to test
+  harness prerequisites unavailable in this runtime (`ruby`, owned-process reaping, and migration
+  configuration); the branch changes no `core/` file. The pull-request backend job remains required.
+- Exact executed counts, commit identifiers, CI results, and any unexecuted boundary replace the
+  pending entries above before merge.
+
 ## Issue #108 Verification Record
 
 Issue: `#108` — `[UI] 参考 DeepSeek Platform 重做登录页与登录后控制台风格`.

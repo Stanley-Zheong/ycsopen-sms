@@ -75,6 +75,15 @@ export default function TemplateReviewPage() {
           setKeywordDraft('');
           setKeyword('');
         }}
+        onRefresh={() => void queue.refetch()}
+        queryStatus={{
+          testId: 'admin-template-lifecycle-template-review-query-status',
+          label: '模板审核数据',
+          isFetching: queue.isFetching,
+          isError: queue.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
         result={(
           <>
             {queue.isLoading && <p>正在加载…</p>}

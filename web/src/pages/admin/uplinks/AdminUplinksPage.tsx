@@ -149,7 +149,15 @@ export default function AdminUplinksPage() {
         refreshLegacyTestId="admin-uplink-normalization-refresh"
         onSubmit={applyFilters}
         onReset={() => { setDraftFilters(EMPTY_UPLINK_FILTERS); setFilters(EMPTY_UPLINK_FILTERS); }}
-        onRefresh={() => void refresh()}
+        onRefresh={() => void uplinks.refetch()}
+        queryStatus={{
+          testId: 'admin-uplink-normalization-uplinks-query-status',
+          label: '上行明细',
+          isFetching: uplinks.isFetching,
+          isError: uplinks.isError,
+          isEmpty: (uplinks.data ?? []).length === 0,
+          count: uplinks.data?.length,
+        }}
         result={<>
         {uplinks.isLoading && <p>正在加载上行记录…</p>}
         {uplinks.isError && <p role="alert">上行记录加载失败。</p>}
@@ -214,6 +222,15 @@ export default function AdminUplinksPage() {
           submitLegacyTestId="admin-uplink-normalization-push-search"
           onSubmit={applyMonitorFilters}
           onReset={() => { setDraftMonitorFilters(DEFAULT_MONITOR_FILTERS); setMonitorFilters(DEFAULT_MONITOR_FILTERS); }}
+          onRefresh={() => void monitor.refetch()}
+          queryStatus={{
+            testId: 'admin-uplink-normalization-push-monitor-query-status',
+            label: '上行推送监控',
+            isFetching: monitor.isFetching,
+            isError: monitor.isError,
+            isEmpty: (monitor.data ?? []).length === 0,
+            count: monitor.data?.length,
+          }}
           result={<table className="uplink-table" data-testid="admin-uplink-normalization-push-monitor-table">
           <thead>
             <tr><th>事件</th><th>租户</th><th>目的地</th><th>状态</th><th>尝试</th><th>延迟ms</th><th>更新时间</th><th>操作</th></tr>

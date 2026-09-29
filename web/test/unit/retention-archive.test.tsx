@@ -92,4 +92,13 @@ describe('Phase 47 retention archive UI', () => {
     fireEvent.click(screen.getByTestId('admin-retention-archive-export'));
     await waitFor(() => expect(api.exportArchiveManifest).toHaveBeenCalledWith(47));
   });
+
+  it('keeps the archive manifest and its state inside the query result region', async () => {
+    renderPage();
+
+    const table = await screen.findByTestId('admin-retention-archive-manifest-table');
+    const result = screen.getByTestId('query-result-table');
+    expect(result).toContainElement(table);
+    await waitFor(() => expect(screen.getByTestId('admin-retention-archive-manifest-query-status')).toHaveAttribute('data-state', 'success'));
+  });
 });

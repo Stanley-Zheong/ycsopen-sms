@@ -196,6 +196,15 @@ export default function BlacklistRiskControlPage() {
           legacyPanelTestId="admin-blacklist-risk-black-white-lists-filters"
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(DEFAULT_FILTERS); setFilters(DEFAULT_FILTERS); }}
+          onRefresh={() => void entries.refetch()}
+          queryStatus={{
+            testId: 'admin-blacklist-risk-black-white-lists-query-status',
+            label: '黑白名单',
+            isFetching: entries.isFetching,
+            isError: entries.isError,
+            isEmpty: rows.length === 0,
+            count: rows.length,
+          }}
           result={<>
         <table className="ratio-table" data-testid="admin-blacklist-risk-black-white-lists-table">
           <thead><tr><th>类型</th><th>机构</th><th>脱敏手机号</th><th>来源</th><th>状态</th><th>原因</th><th>有效期</th><th>创建时间</th><th>动作</th></tr></thead>

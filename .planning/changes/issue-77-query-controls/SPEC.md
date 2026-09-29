@@ -5,11 +5,18 @@ admin and tenant consoles. The implementation follows the owner-authored
 `docs/frontend页面实现规范.md`, merged by PR #81. Existing API, permission,
 mutation, and data-isolation contracts remain page-owned.
 
+GitHub issue #88 strengthens the same surface: each query field must cause an
+observable request-signature or declared local-result change; every panel has
+Search, Reset, and Refresh; and its result region exposes one deterministic
+loading, error, empty, or success state. Submitting unchanged applied criteria
+must retry the exact owning query after failure.
+
 ## Behavior
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
 | issue-77-query-controls | Every real list or read-only lookup filter is rendered by `QueryPanel`; its native controls are grouped under `query-fields`, and search/reset/refresh query actions are grouped under `query-actions`. Each control keeps a visible associated label, a page-owned stable test id, its applied-query behavior, and a 40 px rendered height. Results remain below the actions in a horizontally contained result region. | Chrome traverses all 56 concrete admin routes, checks the audited panel count on the 36 routes that contain queries, control semantics and geometry, action scoping, result ordering, and absence of page-level horizontal overflow. A second pass checks the four tenant query routes. |
+| issue-88-actionable-controls | Every visible editable Admin control has a stable page-owned test id and accessible label. Every QueryPanel provides Search, Reset, Refresh and one page-owned four-state status. Each filter is changed independently and must produce a different request URL/body or an observable declared local result. | Chrome traverses all 56 Admin routes and 38 query panels. Focused tests cover unchanged-filter retry, canonical-reset signature synchronization, archive-result containment, and the 1024px export-card layout. |
 
 ## Scope
 
@@ -25,6 +32,14 @@ mutation, and data-isolation contracts remain page-owned.
   panels. They have real behavior and are not disposable query inputs.
 - Preserve existing page-specific selectors as compatibility aliases while
   adding the shared semantic regions `query-fields` and `query-actions`.
+- Preserve page ownership of API requests and data while making `onRefresh`
+  and `queryStatus` required QueryPanel inputs.
+- Keep the recharge-review and send-job reason controls outside QueryPanel;
+  they are row-mutation inputs, not list filters.
+- Keep the archive manifest table inside its query result region, including
+  explicit loading, error, empty, and success feedback.
+- Let export summary cards wrap at narrow desktop widths; clipping overflow is
+  not an accepted responsive strategy.
 - Wire every editable API Key and CMPP creation field into its request payload;
   no editable control is retained as a presentation-only placeholder.
 

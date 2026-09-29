@@ -77,6 +77,15 @@ export default function ResourceReviewHistoryPage() {
         resetLegacyTestId="admin-resource-review-history-review-reset"
         onSubmit={() => setFilters({ ...draft, page: 0, pageSize: EMPTY_FILTERS.pageSize })}
         onReset={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+        onRefresh={() => void rowsQuery.refetch()}
+        queryStatus={{
+          testId: 'admin-resource-review-history-review-query-status',
+          label: '统一审核历史',
+          isFetching: rowsLoading || rowsQuery.isFetching,
+          isError: rowsQuery.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
         result={(
           <div data-testid="admin-resource-review-history-review-table" className="review-history-table-region">
             <table data-testid="data-table" className="ratio-table review-history-table" aria-label="审核历史记录">

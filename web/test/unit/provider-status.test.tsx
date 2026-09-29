@@ -94,6 +94,7 @@ describe('Phase 20 provider status taxonomy UI', () => {
     expect(screen.getByTestId('query-panel')).toBeVisible();
     expect(screen.getByTestId('query-fields')).toContainElement(screen.getByTestId('admin-provider-status-taxonomy-provider'));
     expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-submit'));
+    expect(screen.getByTestId('query-actions')).toContainElement(screen.getByTestId('query-refresh'));
 
     fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-status-codes-import'));
     await waitFor(() => expect(providerStatusApi.importStatusMappings).toHaveBeenCalled());
@@ -104,8 +105,19 @@ describe('Phase 20 provider status taxonomy UI', () => {
     fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(providerStatusApi.normalizeStatus).toHaveBeenCalledWith('NEW', 'HTTP', 'DELIVRD'));
     await waitFor(() => expect(screen.getByTestId('admin-provider-status-taxonomy-normalized-result')).toHaveTextContent('SUCCESS'));
+    expect(screen.getByTestId('admin-provider-status-taxonomy-query-status')).toHaveAttribute('data-state', 'success');
     expect(screen.getByTestId('admin-provider-status-taxonomy-unknown-fallback')).toHaveTextContent('MAPPED');
     fireEvent.click(screen.getByTestId('admin-provider-status-taxonomy-status-codes-export'));
     await waitFor(() => expect(providerStatusApi.requestStatusExport).toHaveBeenLastCalledWith('NEW', 'HTTP'));
+  });
+
+  it('retries unchanged normalization criteria exactly once', async () => {
+    renderWithProviders(<ProviderStatusPage />);
+    await screen.findByTestId('admin-provider-status-taxonomy-status-codes-version-row');
+
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(providerStatusApi.normalizeStatus).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(providerStatusApi.normalizeStatus).toHaveBeenCalledTimes(2));
   });
 });

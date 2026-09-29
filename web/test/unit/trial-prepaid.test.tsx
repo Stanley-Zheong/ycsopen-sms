@@ -189,6 +189,52 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, 'SMS'));
   });
 
+  it('retries a failed ledger query when the submitted filter is unchanged', async () => {
+    vi.mocked(trialPrepaidApi.listConsumption).mockReset();
+    vi.mocked(trialPrepaidApi.listConsumption)
+      .mockResolvedValueOnce([
+        {
+          tenantId: 42,
+          messageRef: 'MSG-INITIAL',
+          businessType: 'NOTICE',
+          quotaDelta: -1,
+          amountMil: 0,
+          entryType: 'TRIAL_CONSUME',
+          state: 'CONFIRMED',
+          actor: 'tenant',
+          createdAt: '2026-09-09T01:00:00',
+        },
+      ])
+      .mockRejectedValueOnce(new Error('ledger unavailable'))
+      .mockResolvedValueOnce([
+        {
+          tenantId: 42,
+          messageRef: 'MSG-RETRY',
+          businessType: 'SMS',
+          quotaDelta: -1,
+          amountMil: 0,
+          entryType: 'TRIAL_CONSUME',
+          state: 'CONFIRMED',
+          actor: 'tenant',
+          createdAt: '2026-09-09T01:00:00',
+        },
+      ])
+      .mockResolvedValue([]);
+
+    renderWithProviders(<TenantConsumptionLedgerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'success'));
+    fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: 'SMS' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'error'));
+
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledTimes(3));
+    expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-row')).toHaveTextContent('MSG-RETRY');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'success');
+  });
+
   it('activates trial quota/validity and shows append-only balance audits', async () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
     renderWithProviders(<TrialPrepaidAdminPage />);

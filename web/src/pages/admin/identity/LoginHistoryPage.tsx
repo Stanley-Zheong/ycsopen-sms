@@ -61,6 +61,15 @@ export default function LoginHistoryPage() {
           resetLegacyTestId="admin-identity-login-history-reset"
           onSubmit={() => { setPage(0); setAppliedUserId(userIdFilter ? Number(userIdFilter) : undefined); }}
           onReset={() => { setUserIdFilter(''); setAppliedUserId(undefined); setPage(0); }}
+          onRefresh={() => void history.refetch()}
+          queryStatus={{
+            testId: 'admin-identity-login-history-query-status',
+            label: '登录历史',
+            isFetching: history.isFetching,
+            isError: history.isError,
+            isEmpty: (result?.items ?? []).length === 0,
+            count: result?.items.length,
+          }}
           result={historyResult}
         >
           <QueryField name="user-id" label="用户 ID"><input data-testid="admin-identity-login-history-user-id-input" inputMode="numeric" pattern="[0-9]+" value={userIdFilter} onChange={(event) => setUserIdFilter(event.target.value)} /></QueryField>

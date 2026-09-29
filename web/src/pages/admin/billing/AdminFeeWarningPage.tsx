@@ -122,6 +122,14 @@ export default function AdminFeeWarningPage() {
         }}
         onRefresh={() => void refresh()}
         refreshLegacyTestId="admin-fee-warning-refresh"
+        queryStatus={{
+          testId: 'admin-fee-warning-query-status',
+          label: '费用预警规则与事件',
+          isFetching: rules.isFetching || episodes.isFetching,
+          isError: rules.isError || episodes.isError,
+          isEmpty: (rules.data ?? []).length === 0 && (episodes.data ?? []).length === 0,
+          count: (rules.data?.length ?? 0) + (episodes.data?.length ?? 0),
+        }}
         result={(
           <section className="card" data-testid="admin-fee-warning-current-rules">
             <h2>当前规则</h2>

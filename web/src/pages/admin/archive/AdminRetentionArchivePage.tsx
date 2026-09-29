@@ -118,6 +118,48 @@ export default function AdminRetentionArchivePage() {
       <QueryPanel
         onSubmit={() => setFilter({ ...draftFilter })}
         onReset={() => { setDraftFilter({ ...INITIAL_MANIFEST_FILTER }); setFilter({ ...INITIAL_MANIFEST_FILTER }); }}
+        onRefresh={() => void manifests.refetch()}
+        queryStatus={{
+          testId: 'admin-retention-archive-manifest-query-status',
+          label: '归档清单',
+          isFetching: manifests.isFetching,
+          isError: manifests.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
+        result={(
+          <section className="card">
+            <h2>归档清单</h2>
+            {manifests.isLoading && <p>正在加载归档清单…</p>}
+            {manifests.isError && <p role="alert">归档清单加载失败。</p>}
+            {!manifests.isLoading && !manifests.isError && rows.length === 0 && <p>暂无归档清单。</p>}
+            <table className="retention-archive-table" data-testid="admin-retention-archive-manifest-table">
+              <thead>
+                <tr>
+                  <th>清单ID</th><th>数据域</th><th>分区</th><th>状态</th><th>记录</th><th>校验和</th><th>保留到</th><th>删除资格</th><th>失败原因</th><th>动作</th>
+                </tr>
+              </thead>
+              <tbody>{rows.map((manifest) => (
+                <tr key={manifest.id} data-testid="admin-retention-archive-manifest-row">
+                  <td>{manifest.id}</td>
+                  <td>{manifest.dataDomain}</td>
+                  <td>{manifest.partitionKey}</td>
+                  <td>{statusLabel(manifest.archiveStatus)}</td>
+                  <td>{manifest.rowCount}</td>
+                  <td>{manifest.checksumSha256.slice(0, 12)}…</td>
+                  <td>{display(manifest.retentionUntil)}</td>
+                  <td data-testid="admin-retention-archive-deletion-eligibility">{manifest.deletionEligible ? '可删除' : '保留中'}</td>
+                  <td>{manifest.failureReason ?? '-'}</td>
+                  <td>
+                    <button type="button" data-testid="admin-retention-archive-manifest-verify" onClick={() => verify.mutate(manifest)}>校验</button>
+                    <button type="button" data-testid="admin-retention-archive-manifest-restore" disabled={manifest.archiveStatus === 'CORRUPTED'} onClick={() => restore.mutate(manifest)}>恢复</button>
+                    <button type="button" data-testid="admin-retention-archive-export" disabled={manifest.archiveStatus === 'CORRUPTED'} onClick={() => exportJob.mutate(manifest)}>归档导出</button>
+                  </td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </section>
+        )}
       >
         <QueryField name="archive-domain" label="数据域">
           <select
@@ -141,35 +183,6 @@ export default function AdminRetentionArchivePage() {
           </select>
         </QueryField>
       </QueryPanel>
-
-      <section className="card">
-        <h2>归档清单</h2>
-        <table className="retention-archive-table" data-testid="admin-retention-archive-manifest-table">
-          <thead>
-            <tr>
-              <th>清单ID</th><th>数据域</th><th>分区</th><th>状态</th><th>记录</th><th>校验和</th><th>保留到</th><th>删除资格</th><th>失败原因</th><th>动作</th>
-            </tr>
-          </thead>
-          <tbody>{rows.map((manifest) => (
-            <tr key={manifest.id} data-testid="admin-retention-archive-manifest-row">
-              <td>{manifest.id}</td>
-              <td>{manifest.dataDomain}</td>
-              <td>{manifest.partitionKey}</td>
-              <td>{statusLabel(manifest.archiveStatus)}</td>
-              <td>{manifest.rowCount}</td>
-              <td>{manifest.checksumSha256.slice(0, 12)}…</td>
-              <td>{display(manifest.retentionUntil)}</td>
-              <td data-testid="admin-retention-archive-deletion-eligibility">{manifest.deletionEligible ? '可删除' : '保留中'}</td>
-              <td>{manifest.failureReason ?? '-'}</td>
-              <td>
-                <button type="button" data-testid="admin-retention-archive-manifest-verify" onClick={() => verify.mutate(manifest)}>校验</button>
-                <button type="button" data-testid="admin-retention-archive-manifest-restore" disabled={manifest.archiveStatus === 'CORRUPTED'} onClick={() => restore.mutate(manifest)}>恢复</button>
-                <button type="button" data-testid="admin-retention-archive-export" disabled={manifest.archiveStatus === 'CORRUPTED'} onClick={() => exportJob.mutate(manifest)}>归档导出</button>
-              </td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </section>
     </section>
   );
 }

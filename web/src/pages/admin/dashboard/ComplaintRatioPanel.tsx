@@ -54,7 +54,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
     },
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => query.data ?? [], [query.data]);
   const breachedRows = useMemo(() => rows.filter((row) => thresholdResult(row) === 'BREACHED'), [rows]);
   const confirmReason = intervention?.reason.trim() ?? '';
   const thresholdSummary = rows[0]
@@ -120,6 +120,14 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
         setShowAll(false);
       }}
       onRefresh={() => { void query.refetch(); }}
+      queryStatus={{
+        testId: `admin-complaint-ratio-dashboard-${dimension}-query-status`,
+        label: title,
+        isFetching: query.isFetching,
+        isError: query.isError,
+        isEmpty: rows.length === 0,
+        count: rows.length,
+      }}
       legacyPanelTestId={dimension === 'channel'
         ? 'admin-complaint-ratio-dashboard-complaint-ratio-period'
         : 'admin-complaint-ratio-dashboard-complaint-ratio-period-tenant'}
@@ -149,7 +157,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
             </table>
           )}
           {pauseMutation.data && (
-            <p role="status">
+            <p role="status" data-testid="admin-complaint-ratio-dashboard-intervention-status">
               干预完成：{pauseMutation.data.dimensionType}:{pauseMutation.data.dimensionId} {pauseMutation.data.status}
               {' '}证据：{pauseMutation.data.sourceKey}
             </p>

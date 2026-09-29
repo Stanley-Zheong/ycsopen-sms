@@ -99,6 +99,14 @@ export default function AdminPushFailuresPage() {
         }}
         onRefresh={() => void refresh()}
         refreshLegacyTestId="admin-webhook-delivery-push-failures-refresh"
+        queryStatus={{
+          testId: 'admin-webhook-delivery-push-failures-query-status',
+          label: '推送失败记录',
+          isFetching: failures.isFetching,
+          isError: failures.isError,
+          isEmpty: (failures.data ?? []).length === 0,
+          count: failures.data?.length,
+        }}
         result={(
           <section className="card">
             {failures.isLoading && <p>正在加载推送失败记录…</p>}

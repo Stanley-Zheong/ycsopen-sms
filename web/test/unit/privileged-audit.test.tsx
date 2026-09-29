@@ -208,7 +208,8 @@ describe('Phase 6 privileged audit UI', () => {
   it('retains the audit filters and retries a failed request explicitly', async () => {
     failAuditRequest = true;
     const { queryClient } = renderPage(<OperationAuditPage />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('操作日志加载失败');
+    expect(await screen.findByTestId('admin-privileged-data-system-logs-query-status'))
+      .toHaveTextContent('操作日志加载失败');
     const filters = screen.getByTestId('admin-privileged-data-system-logs-filter');
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
 

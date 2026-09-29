@@ -64,6 +64,15 @@ export default function AdminSendJobsPage() {
           setDraftFilter(EMPTY_FILTER);
           setAppliedFilter(EMPTY_FILTER);
         }}
+        onRefresh={() => void tasks.refetch()}
+        queryStatus={{
+          testId: 'admin-bulk-scheduled-send-jobs-query-status',
+          label: '发送任务',
+          isFetching: tasks.isFetching,
+          isError: tasks.isError,
+          isEmpty: (tasks.data ?? []).length === 0,
+          count: tasks.data?.length,
+        }}
         result={(
           <section className="card" data-testid="admin-bulk-scheduled-send-jobs-control">
             {tasks.isLoading && <p>正在加载发送任务…</p>}

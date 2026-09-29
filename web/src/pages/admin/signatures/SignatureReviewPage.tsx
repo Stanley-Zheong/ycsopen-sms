@@ -122,6 +122,15 @@ export default function SignatureReviewPage() {
           setKeywordDraft('');
           setKeyword('');
         }}
+        onRefresh={() => void queue.refetch()}
+        queryStatus={{
+          testId: 'admin-signature-lifecycle-signature-review-query-status',
+          label: '签名审核数据',
+          isFetching: queue.isFetching,
+          isError: queue.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
         result={(
           <>
             {queue.isLoading && <p>正在加载…</p>}

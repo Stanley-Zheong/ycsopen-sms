@@ -183,6 +183,15 @@ export default function ContentSafetyPage() {
           legacyPanelTestId="admin-runtime-content-content-safety-filters"
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
+          onRefresh={() => void policies.refetch()}
+          queryStatus={{
+            testId: 'admin-runtime-content-content-safety-query-status',
+            label: '内容审核策略',
+            isFetching: policies.isFetching,
+            isError: policies.isError,
+            isEmpty: rows.length === 0,
+            count: rows.length,
+          }}
           result={<>
         <table className="ratio-table" data-testid="admin-runtime-content-content-safety-table">
           <thead><tr><th>词</th><th>分类</th><th>级别</th><th>替换</th><th>动作</th><th>作用域</th><th>状态</th><th>命中</th><th>创建时间</th><th>操作</th></tr></thead>
@@ -233,7 +242,9 @@ export default function ContentSafetyPage() {
             <input data-testid="admin-runtime-content-content-safety-scan-template" type="number" value={scanTemplate} onChange={(event) => setScanTemplate(event.target.value)} />
           </label>
         </div>
-        <textarea data-testid="admin-runtime-content-content-safety-scan-content" value={scanContent} onChange={(event) => setScanContent(event.target.value)} />
+        <label>待试扫内容
+          <textarea data-testid="admin-runtime-content-content-safety-scan-content" value={scanContent} onChange={(event) => setScanContent(event.target.value)} />
+        </label>
         <button type="button" data-testid="admin-runtime-content-content-safety-scan" disabled={!canScan} onClick={() => scanMutation.mutate()}>试扫最终内容</button>
         {scanResult && <p data-testid="admin-runtime-content-content-safety-scan-result">{scanResult}</p>}
       </section>

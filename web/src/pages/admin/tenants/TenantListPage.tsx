@@ -252,8 +252,17 @@ export default function TenantListPage() {
     <section data-testid="admin-tenant-qualification-tenants-page">
       <header className="qualification-page-header"><div><h1 data-testid="admin-tenant-qualification-tenants-heading">机构管理</h1><p className="page-description">审核机构资质并维护业务信息和账户运行状态。</p></div></header>
       <QueryPanel
-        onSubmit={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}
-        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}
+        onSubmit={() => { setApplied({ keyword, verification, operating }); setPage(0); }}
+        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); }}
+        onRefresh={() => void tenants.refetch()}
+        queryStatus={{
+          testId: 'admin-tenant-qualification-tenants-query-status',
+          label: '机构列表',
+          isFetching: tenants.isFetching,
+          isError: tenants.isError,
+          isEmpty: filtered.length === 0,
+          count: filtered.length,
+        }}
         legacyPanelTestId="admin-tenant-qualification-tenants-filter"
         submitLegacyTestId="admin-tenant-qualification-tenants-query"
         resetLegacyTestId="admin-tenant-qualification-tenants-reset"

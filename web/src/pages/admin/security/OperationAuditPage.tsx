@@ -60,6 +60,15 @@ export default function OperationAuditPage() {
         resetLegacyTestId="admin-privileged-data-system-logs-reset"
         onSubmit={submit}
         onReset={resetFilters}
+        onRefresh={() => void audits.refetch()}
+        queryStatus={{
+          testId: 'admin-privileged-data-system-logs-query-status',
+          label: '操作日志',
+          isFetching: audits.isFetching,
+          isError: audits.isError,
+          isEmpty: (result?.items ?? []).length === 0,
+          count: result?.items.length,
+        }}
         result={<>
           {audits.isLoading && <p data-testid="admin-privileged-data-system-logs-loading">加载操作日志…</p>}
           {audits.isError && <div data-testid="admin-privileged-data-system-logs-error" role="alert">

@@ -92,6 +92,14 @@ export default function AdminExportCenterPage() {
         }}
         onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['secure-async-exports'] })}
         refreshLegacyTestId="admin-secure-async-export-center-refresh"
+        queryStatus={{
+          testId: 'admin-secure-async-export-center-query-status',
+          label: '导出任务',
+          isFetching: jobs.isFetching,
+          isError: jobs.isError,
+          isEmpty: items.length === 0,
+          count: items.length,
+        }}
         result={(
           <section>
             <h2>导出任务</h2>

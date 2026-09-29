@@ -150,6 +150,14 @@ export default function AdminTenantRiskPage() {
         }}
         onRefresh={() => void refresh()}
         refreshLegacyTestId="admin-tenant-risk-refresh"
+        queryStatus={{
+          testId: 'admin-tenant-risk-query-status',
+          label: '机构风险规则与风险事件',
+          isFetching: rules.isFetching || episodes.isFetching,
+          isError: rules.isError || episodes.isError,
+          isEmpty: (rules.data ?? []).length === 0 && (episodes.data ?? []).length === 0,
+          count: (rules.data?.length ?? 0) + (episodes.data?.length ?? 0),
+        }}
         result={(
           <>
       <section className="card" data-testid="admin-tenant-risk-current-rules">

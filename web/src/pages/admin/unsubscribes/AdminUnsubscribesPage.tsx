@@ -78,9 +78,17 @@ export default function AdminUnsubscribesPage() {
       <QueryPanel
         onSubmit={() => setFilters({ ...draft })}
         onReset={resetFilters}
-        onRefresh={() => void queryClient.invalidateQueries()}
+        onRefresh={() => { void Promise.all([records.refetch(), statistics.refetch()]); }}
         submitLegacyTestId="admin-unsubscribe-compliance-search"
         refreshLegacyTestId="admin-unsubscribe-compliance-refresh"
+        queryStatus={{
+          testId: 'admin-unsubscribe-compliance-query-status',
+          label: '退订证据与统计',
+          isFetching: records.isFetching || statistics.isFetching,
+          isError: records.isError || statistics.isError,
+          isEmpty: (records.data ?? []).length === 0 && (statistics.data ?? []).length === 0,
+          count: (records.data?.length ?? 0) + (statistics.data?.length ?? 0),
+        }}
         result={(
           <section data-testid="admin-unsubscribe-compliance-unsubscribes-page">
             <h2>退订证据</h2>

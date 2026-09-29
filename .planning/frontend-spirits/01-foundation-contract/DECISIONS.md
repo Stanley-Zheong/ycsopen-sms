@@ -282,3 +282,36 @@ logout control reachable; the content container follows below it.
 - `web/src/styles/shell.css`
 - `web/test/unit/sidebar-layouts.test.tsx`, `web/test/scripts/sidebar-navigation.spec.ts`
 - GitHub issue `#108`
+
+## DR-FE01-010: QueryPanel Owns Retry Actions and the Result-State Envelope
+
+### Status
+Accepted (issue `#88`)
+
+### Context
+Page-local query panels could render inputs without Reset or Refresh, suppress retries when the
+applied filter did not change, and expose inconsistent or silent loading/error/empty feedback.
+Making every page independently rediscover the same state machine caused the contract to drift.
+
+### Decision
+`QueryPanel` always renders Search, Reset, and Refresh. It records a deterministic signature from
+named native form controls: changed Search delegates to the page's `onSubmit`; unchanged Search
+also calls the page's exact-owner `onRefresh`. Reset synchronizes the post-reset controlled values
+before a later edit is classified. Pages supply a required `queryStatus` object, while the shared
+component renders the single loading/error/empty/success envelope inside `query-result-table`.
+
+### Consequences
+
+- Page owners still own criteria, API calls, permissions, data, and business copy.
+- A retry cannot depend on a React state assignment changing a query key.
+- Query fields need native `name` values; `QueryField` derives them from its stable semantic name.
+- Loading takes precedence over error, then empty, then success, so stale data cannot hide an
+  in-flight request or a failed refresh.
+- Route acceptance can require one result state and three actions for every query panel.
+
+### References
+
+- `web/src/components/common/QueryPanel.tsx`
+- `web/test/unit/query-panel.test.tsx`
+- `web/test/scripts/issue-77-admin-query-contract.spec.ts`
+- GitHub issue `#88`

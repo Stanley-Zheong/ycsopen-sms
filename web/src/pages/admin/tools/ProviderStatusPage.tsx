@@ -44,7 +44,7 @@ export default function ProviderStatusPage() {
   const [sourceName, setSourceName] = useState('供应商文档');
   const [rowsText, setRowsText] = useState('YTO,HTTP,DELIVRD,SUCCESS,true,true,false,INFO,确认送达');
   const [draftCriteria, setDraftCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
-  const [appliedCriteria, setAppliedCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
+  const [appliedCriteria, setAppliedCriteria] = useState<NormalizeCriteria>(DEFAULT_NORMALIZE_CRITERIA);
   const [normalized, setNormalized] = useState<NormalizedStatus | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -98,7 +98,10 @@ export default function ProviderStatusPage() {
     onError: (failure) => onError(failure, '归一化失败'),
   });
   const exportMutation = useMutation({
-    mutationFn: () => requestStatusExport(appliedCriteria.providerName, appliedCriteria.protocol),
+    mutationFn: () => {
+      const criteria = appliedCriteria;
+      return requestStatusExport(criteria.providerName, criteria.protocol);
+    },
     onSuccess: (result) => {
       setMessage(`导出请求已登记：${result.requestId}，匹配 ${result.matchedRows} 条`);
       setError('');
@@ -136,6 +139,10 @@ export default function ProviderStatusPage() {
       <QueryPanel
         onSubmit={() => {
           const criteria = { ...draftCriteria };
+          if (criteria.providerName === appliedCriteria.providerName
+            && criteria.protocol === appliedCriteria.protocol
+            && criteria.providerCode === appliedCriteria.providerCode
+          ) return;
           setAppliedCriteria(criteria);
           normalizeMutation.mutate(criteria);
         }}
@@ -143,6 +150,18 @@ export default function ProviderStatusPage() {
           setDraftCriteria(DEFAULT_NORMALIZE_CRITERIA);
           setAppliedCriteria(DEFAULT_NORMALIZE_CRITERIA);
           setNormalized(null);
+          normalizeMutation.reset();
+          setMessage('');
+          setError('');
+        }}
+        onRefresh={() => normalizeMutation.mutate(appliedCriteria)}
+        queryStatus={{
+          testId: 'admin-provider-status-taxonomy-query-status',
+          label: '供应商状态码归一化',
+          isFetching: normalizeMutation.isPending,
+          isError: normalizeMutation.isError,
+          isEmpty: normalized === null,
+          count: normalized ? 1 : 0,
         }}
         submitLegacyTestId="admin-provider-status-taxonomy-normalize"
         submitDisabled={!canRead}

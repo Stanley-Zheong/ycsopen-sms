@@ -66,4 +66,20 @@ describe('Phase 46 secure async export UI', () => {
       screen.getByTestId('admin-secure-async-export-center-refresh'),
     );
   });
+
+  it('retries an initially failed object-filter query when criteria are unchanged', async () => {
+    vi.mocked(api.listSecureExports)
+      .mockRejectedValueOnce(new Error('temporary failure'))
+      .mockResolvedValueOnce([
+        { id: 48, requestId: 'REQ-48', tenantId: 43, exportType: 'BILLING', producer: 'FINANCE', jobName: '财务导出恢复', createdBy: '8', format: 'CSV', status: 'COMPLETED', progress: 100, recordCount: 3, fileSizeBytes: 256, fileSha256: 'ghi', encryptionState: 'ENCRYPTED', retryCount: 0, splitCount: 1, partialFailureCount: 0, failureReason: null, createdAt: '2026-09-10T09:00:00', completedAt: '2026-09-10T09:00:01' },
+      ]);
+    renderPage();
+
+    await waitFor(() => expect(screen.getByTestId('admin-secure-async-export-center-query-status')).toHaveAttribute('data-state', 'error'));
+    expect(api.listSecureExports).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => expect(api.listSecureExports).toHaveBeenCalledTimes(2));
+    expect(await screen.findByTestId('admin-secure-async-export-center-row')).toHaveTextContent('财务导出恢复');
+  });
 });

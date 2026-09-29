@@ -106,6 +106,15 @@ export default function AdminFinancialAnalyticsPage() {
         className="financial-query-panel"
         onSubmit={apply}
         onReset={reset}
+        onRefresh={() => void summaries.refetch()}
+        queryStatus={{
+          testId: 'admin-financial-source-financial-analytics-query-status',
+          label: '财务汇总',
+          isFetching: summaries.isFetching,
+          isError: summaries.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
         initiallyExpanded
         submitLabel="查询"
         submitLegacyTestId="admin-financial-source-financial-analytics-apply"

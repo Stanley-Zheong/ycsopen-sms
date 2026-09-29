@@ -36,6 +36,28 @@ test('OBL-F-7-8-A C-P46-CENTER pw-p46-export-center OBL-F-7-8-C C-P46-DOWNLOAD p
   await expect(page.getByTestId('admin-secure-async-export-center-message')).toContainText('导出任务已重试');
 });
 
+test('pw-issue-88-export-center-narrow C-ISSUE-88-EXPORT-CARDS OBL-ISSUE-88-ACTIONABLE-CONTROLS', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await mockExportCenter(page);
+  await loginAs(page, 'OPERATOR');
+  await page.goto('/admin/export-center');
+
+  const cards = page.getByTestId('admin-secure-async-export-center-cards');
+  await expect(cards).toBeVisible();
+  const geometry = await cards.evaluate((element) => {
+    const lastCard = element.lastElementChild?.getBoundingClientRect();
+    const container = element.getBoundingClientRect();
+    return {
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      lastCardRight: lastCard?.right ?? 0,
+      containerRight: container.right,
+    };
+  });
+  expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
+  expect(geometry.lastCardRight).toBeLessThanOrEqual(geometry.containerRight + 1);
+});
+
 test('OBL-F-7-2-C C-P46-SEND-EXPORT pw-p46-send-export OBL-F-7-4-C C-P46-RECEIPT-EXPORT pw-p46-receipt-export', async ({ page }) => {
   const exportRequests: URL[] = [];
   await mockEmptyDashboard(page);

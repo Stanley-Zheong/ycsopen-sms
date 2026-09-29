@@ -27,6 +27,15 @@ export default function AdminBulkDetailsPage() {
           setAppliedTenantId('');
           setSelectedId(null);
         }}
+        onRefresh={() => void tasks.refetch()}
+        queryStatus={{
+          testId: 'admin-bulk-scheduled-bulk-details-query-status',
+          label: '批量任务',
+          isFetching: tasks.isFetching,
+          isError: tasks.isError,
+          isEmpty: (tasks.data ?? []).length === 0,
+          count: tasks.data?.length,
+        }}
         result={(
           <>
             {tasks.isLoading && <p>正在加载批量任务…</p>}

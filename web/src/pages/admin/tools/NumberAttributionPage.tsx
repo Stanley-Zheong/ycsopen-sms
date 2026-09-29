@@ -17,6 +17,16 @@ import '@/styles/number-attribution.css';
 
 const SAMPLE_ROWS = '139,MOBILE,广东,广州\n1391234,UNICOM,广东,深圳';
 
+interface AttributionCriteria {
+  mobile: string;
+  forceFailure: boolean;
+}
+
+const DEFAULT_ATTRIBUTION_CRITERIA: AttributionCriteria = {
+  mobile: '13912345678',
+  forceFailure: false,
+};
+
 export default function NumberAttributionPage() {
   const userType = useAuthStore((state) => state.userType);
   const platformRole = isPlatformRole(userType);
@@ -34,8 +44,9 @@ export default function NumberAttributionPage() {
   const [updateType, setUpdateType] = useState('FULL');
   const [sourceName, setSourceName] = useState('官方号段');
   const [rowsText, setRowsText] = useState(SAMPLE_ROWS);
-  const [mobile, setMobile] = useState('13912345678');
-  const [forceFailure, setForceFailure] = useState(false);
+  const [mobile, setMobile] = useState(DEFAULT_ATTRIBUTION_CRITERIA.mobile);
+  const [forceFailure, setForceFailure] = useState(DEFAULT_ATTRIBUTION_CRITERIA.forceFailure);
+  const [appliedCriteria, setAppliedCriteria] = useState<AttributionCriteria>(DEFAULT_ATTRIBUTION_CRITERIA);
   const [lookupResult, setLookupResult] = useState<AttributionResult | null>(null);
   const [portabilityMobile, setPortabilityMobile] = useState('13900000001');
   const [originalCarrier, setOriginalCarrier] = useState('MOBILE');
@@ -69,7 +80,7 @@ export default function NumberAttributionPage() {
     onError: (failure) => onError(failure, '号段导入失败'),
   });
   const lookupMutation = useMutation({
-    mutationFn: () => lookupAttribution(mobile, forceFailure),
+    mutationFn: (criteria: AttributionCriteria) => lookupAttribution(criteria.mobile, criteria.forceFailure),
     onSuccess: (result) => {
       setLookupResult(result);
       setMessage(`归属查询完成：${result.carrier} ${result.province}${result.city}`);
@@ -128,8 +139,30 @@ export default function NumberAttributionPage() {
       </section>
 
       <QueryPanel
-        onSubmit={() => lookupMutation.mutate()}
-        onReset={() => { setMobile('13912345678'); setForceFailure(false); setLookupResult(null); }}
+        onSubmit={() => {
+          const criteria = { mobile, forceFailure };
+          if (criteria.mobile === appliedCriteria.mobile && criteria.forceFailure === appliedCriteria.forceFailure) return;
+          setAppliedCriteria(criteria);
+          lookupMutation.mutate(criteria);
+        }}
+        onReset={() => {
+          setMobile(DEFAULT_ATTRIBUTION_CRITERIA.mobile);
+          setForceFailure(DEFAULT_ATTRIBUTION_CRITERIA.forceFailure);
+          setAppliedCriteria(DEFAULT_ATTRIBUTION_CRITERIA);
+          setLookupResult(null);
+          lookupMutation.reset();
+          setMessage('');
+          setError('');
+        }}
+        onRefresh={() => lookupMutation.mutate(appliedCriteria)}
+        queryStatus={{
+          testId: 'admin-number-attribution-query-status',
+          label: '号码归属查询',
+          isFetching: lookupMutation.isPending,
+          isError: lookupMutation.isError,
+          isEmpty: lookupResult === null,
+          count: lookupResult ? 1 : 0,
+        }}
         legacyPanelTestId="admin-number-attribution-lookup-panel"
         submitLegacyTestId="admin-number-attribution-lookup"
         submitDisabled={!canRead}

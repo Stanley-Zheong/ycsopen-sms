@@ -195,12 +195,20 @@ export default function AdminAlertsPage() {
         </div>
         <QueryPanel
           onSubmit={() => setHistoryFilter({ ...historyFilterDraft })}
-          onRefresh={() => void refresh()}
+          onRefresh={() => void history.refetch()}
           refreshLegacyTestId="admin-alert-engine-refresh"
           onReset={() => {
             setHistoryFilterDraft({ status: '', severity: '' });
             setHistoryFilter({ status: '', severity: '' });
             setActiveTab('ALL');
+          }}
+          queryStatus={{
+            testId: 'admin-alert-engine-alert-history-query-status',
+            label: '告警历史',
+            isFetching: history.isFetching,
+            isError: history.isError,
+            isEmpty: visibleAlerts.length === 0,
+            count: visibleAlerts.length,
           }}
           result={(
             <>
