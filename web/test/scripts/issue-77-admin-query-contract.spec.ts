@@ -198,7 +198,7 @@ async function fillDifferentValue(control: Locator, baseline: string, index: num
     const values = await control.locator('option').evaluateAll((options) =>
       options.map((option) => (option as HTMLOptionElement).value));
     const nextValue = values.find((candidate) => candidate !== baseline);
-    expect(nextValue, `${route} select ${index + 1} has a testable alternative`).toBeTruthy();
+    expect(nextValue, `${route} select ${index + 1} has a testable alternative`).toBeDefined();
     await control.selectOption(nextValue!);
     return;
   }
