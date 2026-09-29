@@ -49,6 +49,20 @@ export default function TenantConsumptionLedgerPage() {
           }}
           result={(
             <>
+              {ledger.isFetching && (
+                <span
+                  aria-hidden="true"
+                  data-testid="tenant-trial-prepaid-consumption-ledger-loading"
+                  data-query-status-alias-for="tenant-trial-prepaid-consumption-ledger-query-status"
+                />
+              )}
+              {!ledger.isFetching && ledger.isError && (
+                <span
+                  aria-hidden="true"
+                  data-testid="tenant-trial-prepaid-consumption-ledger-error"
+                  data-query-status-alias-for="tenant-trial-prepaid-consumption-ledger-query-status"
+                />
+              )}
               <table className="ratio-table" data-testid="tenant-trial-prepaid-consumption-ledger-table">
                 <thead>
                   <tr><th>消息/业务单</th><th>业务类型</th><th>额度变化</th><th>金额(厘)</th><th>类型</th><th>状态</th><th>操作人</th><th>时间</th></tr>

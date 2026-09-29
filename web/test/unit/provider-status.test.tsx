@@ -120,4 +120,15 @@ describe('Phase 20 provider status taxonomy UI', () => {
     fireEvent.click(screen.getByTestId('query-submit'));
     await waitFor(() => expect(providerStatusApi.normalizeStatus).toHaveBeenCalledTimes(2));
   });
+
+  it('does not normalize status while read access is loading', () => {
+    vi.mocked(identityApi.getAccountOverview).mockImplementationOnce(() => new Promise(() => undefined));
+    renderWithProviders(<ProviderStatusPage />);
+
+    expect(screen.getByTestId('query-submit')).toBeDisabled();
+    expect(screen.getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    expect(providerStatusApi.normalizeStatus).not.toHaveBeenCalled();
+  });
 });

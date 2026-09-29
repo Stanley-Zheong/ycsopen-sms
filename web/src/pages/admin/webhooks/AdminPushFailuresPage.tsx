@@ -106,11 +106,12 @@ export default function AdminPushFailuresPage() {
           isError: failures.isError,
           isEmpty: (failures.data ?? []).length === 0,
           count: failures.data?.length,
+          errorDetailsId: 'admin-webhook-delivery-push-failures-error-details',
         }}
         result={(
           <section className="card">
             {failures.isLoading && <p>正在加载推送失败记录…</p>}
-            {failures.isError && <p role="alert">推送失败记录加载失败。</p>}
+            {failures.isError && <p id="admin-webhook-delivery-push-failures-error-details">推送失败记录加载失败。</p>}
             {!failures.isLoading && !failures.isError && (failures.data ?? []).length === 0 && <p>暂无推送失败记录。</p>}
             <table className="webhook-delivery-table">
               <thead>

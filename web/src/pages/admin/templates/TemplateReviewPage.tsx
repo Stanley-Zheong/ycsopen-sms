@@ -83,11 +83,12 @@ export default function TemplateReviewPage() {
           isError: queue.isError,
           isEmpty: rows.length === 0,
           count: rows.length,
+          errorDetailsId: 'admin-template-lifecycle-template-review-error-details',
         }}
         result={(
           <>
             {queue.isLoading && <p>正在加载…</p>}
-            {queue.isError && <p role="alert">模板审核数据加载失败。</p>}
+            {queue.isError && <p id="admin-template-lifecycle-template-review-error-details">模板审核数据加载失败。</p>}
             {!queue.isLoading && !queue.isError && rows.length === 0 && <p>暂无模板审核数据。</p>}
             {rows.length > 0 && (
               <table className="ratio-table">

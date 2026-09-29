@@ -157,10 +157,11 @@ export default function AdminUplinksPage() {
           isError: uplinks.isError,
           isEmpty: (uplinks.data ?? []).length === 0,
           count: uplinks.data?.length,
+          errorDetailsId: 'admin-uplink-normalization-uplinks-error-details',
         }}
         result={<>
         {uplinks.isLoading && <p>正在加载上行记录…</p>}
-        {uplinks.isError && <p role="alert">上行记录加载失败。</p>}
+        {uplinks.isError && <p id="admin-uplink-normalization-uplinks-error-details">上行记录加载失败。</p>}
         <table className="uplink-table" data-testid="admin-uplink-normalization-uplinks-table">
           <thead>
             <tr><th>租户</th><th>来源</th><th>手机号</th><th>内容关键词</th><th>状态</th><th>运营商</th><th>目的地</th><th>位置</th><th>通道</th><th>接收时间</th><th>操作</th></tr>

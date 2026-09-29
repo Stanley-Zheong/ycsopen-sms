@@ -68,10 +68,11 @@ export default function OperationAuditPage() {
           isError: audits.isError,
           isEmpty: (result?.items ?? []).length === 0,
           count: result?.items.length,
+          errorDetailsId: 'admin-privileged-data-system-logs-error-details',
         }}
         result={<>
           {audits.isLoading && <p data-testid="admin-privileged-data-system-logs-loading">加载操作日志…</p>}
-          {audits.isError && <div data-testid="admin-privileged-data-system-logs-error" role="alert">
+          {audits.isError && <div id="admin-privileged-data-system-logs-error-details" data-testid="admin-privileged-data-system-logs-error">
             <p>操作日志加载失败，请保留筛选条件后重试。</p>
             <button data-testid="admin-privileged-data-system-logs-retry" type="button" onClick={() => void audits.refetch()}>重试加载操作日志</button>
           </div>}

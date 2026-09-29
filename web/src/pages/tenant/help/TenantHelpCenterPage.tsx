@@ -53,7 +53,11 @@ function Guide() {
   return (
     <QueryPanel
       className="tenant-help-card"
-      onSubmit={() => setQuery(draftQuery)}
+      onSubmit={() => {
+        if (draftQuery.trim().toLowerCase() === query.trim().toLowerCase()) return false;
+        setQuery(draftQuery);
+        return true;
+      }}
       onReset={() => { setDraftQuery(''); setQuery(''); }}
       onRefresh={() => setRefreshCount((current) => current + 1)}
       legacyPanelTestId="tenant-tenant-help-guide-search-region"

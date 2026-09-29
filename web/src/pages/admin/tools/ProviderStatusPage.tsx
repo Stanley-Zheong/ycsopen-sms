@@ -123,7 +123,7 @@ export default function ProviderStatusPage() {
         </div>
       </header>
       {message && <p role="status" data-testid="admin-provider-status-taxonomy-message" className="provider-status-alert success">{message}</p>}
-      {error && <p role="alert" data-testid="admin-provider-status-taxonomy-error" className="provider-status-alert error">{error}</p>}
+      {error && <p id="admin-provider-status-taxonomy-error-details" role={normalizeMutation.isError ? undefined : 'alert'} data-testid="admin-provider-status-taxonomy-error" className="provider-status-alert error">{error}</p>}
 
       <section className="card">
         <h2>导入映射</h2>
@@ -162,6 +162,7 @@ export default function ProviderStatusPage() {
           isError: normalizeMutation.isError,
           isEmpty: normalized === null,
           count: normalized ? 1 : 0,
+          errorDetailsId: 'admin-provider-status-taxonomy-error-details',
         }}
         submitLegacyTestId="admin-provider-status-taxonomy-normalize"
         submitDisabled={!canRead}

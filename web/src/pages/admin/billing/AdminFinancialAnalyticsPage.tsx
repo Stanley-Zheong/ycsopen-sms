@@ -73,7 +73,14 @@ export default function AdminFinancialAnalyticsPage() {
   });
 
   const apply = () => {
-    setFilter(filterFromDraft(draft));
+    const next = filterFromDraft(draft);
+    const changed = next.startDate !== filter.startDate
+      || next.endDate !== filter.endDate
+      || !Object.is(next.tenantId, filter.tenantId)
+      || !Object.is(next.channelId, filter.channelId);
+    if (!changed) return false;
+    setFilter(next);
+    return true;
   };
 
   const reset = () => {
@@ -114,6 +121,7 @@ export default function AdminFinancialAnalyticsPage() {
           isError: summaries.isError,
           isEmpty: rows.length === 0,
           count: rows.length,
+          errorDetailsId: 'admin-financial-source-financial-analytics-status admin-financial-source-channel-statistics-status',
         }}
         initiallyExpanded
         submitLabel="查询"
@@ -145,7 +153,7 @@ export default function AdminFinancialAnalyticsPage() {
 
       <section className="card" data-testid="admin-financial-source-financial-analytics-page">
         <h2>成本 / 收入 / 毛利</h2>
-        <p data-testid="admin-financial-source-financial-analytics-status" role={summaries.isError ? 'alert' : 'status'} aria-live={summaries.isError ? 'assertive' : 'polite'}>{financeStatus}</p>
+        <p id="admin-financial-source-financial-analytics-status" data-testid="admin-financial-source-financial-analytics-status" role={summaries.isError ? undefined : 'status'} aria-live={summaries.isError ? undefined : 'polite'}>{financeStatus}</p>
         <div className="financial-table-region" data-testid="data-table">
           <table className="financial-data-table" data-testid="admin-financial-source-financial-analytics-table" aria-label="财务汇总">
             <thead><tr><th title="机构">机构</th><th title="通道">通道</th><th title="源记录">源记录</th><th title="计费条数">计费条数</th><th title="成本">成本</th><th title="收入">收入</th><th title="毛利">毛利</th><th title="价格版本">价格版本</th><th title="刷新时间">刷新</th></tr></thead>
@@ -179,7 +187,7 @@ export default function AdminFinancialAnalyticsPage() {
 
       <section className="card" data-testid="admin-financial-source-channel-statistics-page">
         <h2>通道财务统计</h2>
-        <p data-testid="admin-financial-source-channel-statistics-status" role={summaries.isError ? 'alert' : 'status'} aria-live={summaries.isError ? 'assertive' : 'polite'}>{channelStatus}</p>
+        <p id="admin-financial-source-channel-statistics-status" data-testid="admin-financial-source-channel-statistics-status" role={summaries.isError ? undefined : 'status'} aria-live={summaries.isError ? undefined : 'polite'}>{channelStatus}</p>
         <div className="financial-table-region" data-testid="data-table">
           <table className="financial-data-table" data-testid="admin-financial-source-channel-statistics-table" aria-label="通道财务统计">
             <thead><tr><th title="通道">通道</th><th title="发送源">发送源</th><th title="最终成功">最终成功</th><th title="成本">成本</th><th title="收入">收入</th><th title="毛利">毛利</th></tr></thead>

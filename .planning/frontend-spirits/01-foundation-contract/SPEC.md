@@ -48,8 +48,8 @@ loaded source data; all other query panels invoke their existing page-owned requ
 
 | Action/state | Required behavior | Stable selector |
 |---|---|---|
-| Search with changed criteria | Apply every draft field once and invoke the page-owned query with the changed URL/body, or visibly change a declared local result. | `query-submit` |
-| Search with unchanged criteria | Re-run the applied query so a failed request can recover; it must not issue two requests. | `query-submit` |
+| Search with changed criteria | Apply every draft field once and invoke the page-owned query with the changed URL/body, or visibly change a declared local result. The page owner compares canonical criteria when raw input can normalize to an existing value. | `query-submit` |
+| Search with unchanged criteria | Re-run the applied query so a failed request can recover; it must not issue two requests. A page owner returns `false` when a raw-form change is a canonical no-op, and the shared panel routes that submit to Refresh exactly once. | `query-submit` |
 | Reset | Restore the page-defined canonical criteria and synchronize the retry signature before the next edit or submit. | `query-reset` |
 | Refresh | Re-run only the owning query with the currently applied criteria. | `query-refresh` |
 | Loading / error / empty / success | Render exactly one page-owned status inside the query result region; error is assertive, other states are polite, and loading exposes `aria-busy`. | page-owned `*-query-status`, `query-result-table`, `data-query-result-state` |

@@ -184,6 +184,7 @@ export default function ContentSafetyPage() {
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
           onRefresh={() => void policies.refetch()}
+          submitDisabled={!canRead}
           queryStatus={{
             testId: 'admin-runtime-content-content-safety-query-status',
             label: '内容审核策略',

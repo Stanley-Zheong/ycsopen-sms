@@ -36,7 +36,7 @@ test('OBL-F-7-8-A C-P46-CENTER pw-p46-export-center OBL-F-7-8-C C-P46-DOWNLOAD p
   await expect(page.getByTestId('admin-secure-async-export-center-message')).toContainText('导出任务已重试');
 });
 
-test('pw-issue-88-export-center-narrow C-ISSUE-88-EXPORT-CARDS OBL-ISSUE-88-ACTIONABLE-CONTROLS', async ({ page }) => {
+test('pw-issue-88-export-center-narrow C-ISSUE-88-EXPORT-CARDS OBL-ISSUE-88-EXPORT-CARDS', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 900 });
   await mockExportCenter(page);
   await loginAs(page, 'OPERATOR');

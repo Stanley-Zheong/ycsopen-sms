@@ -143,7 +143,12 @@ export default function AdminTenantRiskPage() {
       </section>
 
       <QueryPanel
-        onSubmit={() => setQueryTenantApplied(queryTenantDraft)}
+        onSubmit={() => {
+          const nextTenantId = queryTenantDraft ? Number(queryTenantDraft) : undefined;
+          if (Object.is(nextTenantId, queryTenantId)) return false;
+          setQueryTenantApplied(queryTenantDraft);
+          return true;
+        }}
         onReset={() => {
           setQueryTenantDraft('');
           setQueryTenantApplied('');
@@ -157,13 +162,16 @@ export default function AdminTenantRiskPage() {
           isError: rules.isError || episodes.isError,
           isEmpty: (rules.data ?? []).length === 0 && (episodes.data ?? []).length === 0,
           count: (rules.data?.length ?? 0) + (episodes.data?.length ?? 0),
+          errorDetailsId: rules.isError && episodes.isError
+            ? 'admin-tenant-risk-rules-error admin-tenant-risk-load-error'
+            : rules.isError ? 'admin-tenant-risk-rules-error' : 'admin-tenant-risk-load-error',
         }}
         result={(
           <>
       <section className="card" data-testid="admin-tenant-risk-current-rules">
         <h2>当前规则</h2>
         {rules.isLoading && <p data-testid="admin-tenant-risk-rules-loading">正在加载规则…</p>}
-        {rules.isError && <p role="alert" data-testid="admin-tenant-risk-rules-error">规则加载失败。</p>}
+        {rules.isError && <p id="admin-tenant-risk-rules-error" data-testid="admin-tenant-risk-rules-error">规则加载失败。</p>}
         <table className="alert-engine-table" data-testid="admin-tenant-risk-rules-table">
           <thead><tr><th>名称</th><th>指标</th><th>阈值</th><th>窗口</th><th>动作</th><th>通知</th></tr></thead>
           <tbody>
@@ -184,7 +192,7 @@ export default function AdminTenantRiskPage() {
       <section className="card" data-testid="admin-tenant-risk-tenant-risk-pause-detail">
         <h2>风险 episode / 暂停详情</h2>
         {episodes.isLoading && <p data-testid="admin-tenant-risk-loading">正在加载风险 episode…</p>}
-        {episodes.isError && <p role="alert" data-testid="admin-tenant-risk-load-error">风险 episode 加载失败。</p>}
+        {episodes.isError && <p id="admin-tenant-risk-load-error" data-testid="admin-tenant-risk-load-error">风险 episode 加载失败。</p>}
         <div className="alert-engine-cards">
           <article><span>数据质量</span><strong data-testid="admin-tenant-risk-data-quality">{firstEpisode?.dataQuality ?? '-'}</strong></article>
           <article><span>来源比例</span><strong data-testid="admin-tenant-risk-rate">{firstEpisode ? displayRate(firstEpisode) : '-'}</strong></article>

@@ -21,25 +21,26 @@ Environment: managed Linux arm64 workspace, Node.js 20 or newer, Java 21.
 | Gate | Command | Current result |
 |---|---|---|
 | Frontend install | `npm --prefix web ci` | **Pass** — 357 packages installed; npm reported 7 audit findings |
-| Shared and page unit tests | `npm --prefix web test` | **Pass** — 50 files / 203 tests |
+| Shared and page unit tests | `npm --prefix web test` | **Pass after review follow-up** — 50 files / 213 tests |
 | Production build | `npm --prefix web run build` | **Pass** — 306 modules; Vite reported the existing large-chunk advisory |
 | Backend regression | `MAVEN_OPTS='-Xmx768m -XX:MaxMetaspaceSize=256m' mvn -f core/pom.xml test` | **Environment failure** — 986 tests: 7 failures, 4 errors, 33 skipped; failures require unavailable Ruby, process-tree reaping, or migration configuration. No backend file is changed. |
-| Admin and Tenant Chrome acceptance | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep pw-issue-88` | **Pass in PR CI** — 3/3 tests in 1.6 minutes with Google Chrome 153.0.8010.52; run `36505281630`, job `109205237036`, commit `b0de2dd` |
-| Narrow export Chrome acceptance | Same PR CI command, case `pw-issue-88-export-center-narrow` | **Pass in PR CI** — all six cards remain contained at 1024x900; evidence in `EVIDENCE/playwright-issue-88-report.json` |
+| Admin and Tenant Chrome acceptance | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep pw-issue-88` | **Pending final PR CI** — prior 3/3 pass at `b0de2dd` is superseded by the review follow-up; discovery now lists four atomic cases, including archive-result containment |
+| Narrow export Chrome acceptance | Same PR CI command, case `pw-issue-88-export-center-narrow` | **Pending final PR CI** — prior pass at `b0de2dd` is retained only as historical evidence until regenerated for the review-follow-up commit |
 | ESLint | `npm --prefix web run lint` | **Baseline warning** — 0 errors; one unchanged `react-refresh/only-export-components` warning in `DashboardPage.tsx` makes `--max-warnings 0` exit 1 |
-| Playwright discovery | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --list` | **Pass** — 7 tests in 2 files |
+| Changed-file ESLint | ESLint over changed TypeScript/TSX files with `--max-warnings 0` | **Pass** after review follow-up |
+| Playwright discovery | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep pw-issue-88 --list` | **Pass** — 4 tests in 2 files |
 | Diff hygiene | `git diff --check` | **Pass** |
-| Pull-request Google Chrome / Docker release | CI job `Docker release / Google Chrome` | **Pass** — Google Chrome issue cases 3/3; Docker fresh, upgrade, and restart lanes each 3/3; [run `36505281630`](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/36505281630) |
+| Pull-request Google Chrome / Docker release | CI job `Docker release / Google Chrome` | **Pending final PR CI** — historical run `36505281630` passed Google Chrome 3/3 and all three Docker lanes before the review follow-up |
 
 ### Issue-scoped TODO
 
 | Item | Status | Evidence target |
 |---|---|---|
-| Every current Admin and Tenant QueryPanel has Search, Reset, Refresh and one four-state result status | Done | Static inventory: 34 panels / 34 `onRefresh` / 34 `queryStatus`; 203 unit tests and PR Chrome acceptance pass |
-| Every filter independently changes a request URL/body or a declared local result | Done | `pw-issue-88-admin-actionable-controls` and `pw-issue-88-tenant-actionable-controls` pass in run `36505281630` |
-| Unchanged criteria can retry the exact owning query | Done | QueryPanel and page-owner unit coverage, including initial and post-reset criteria |
-| Archive result containment and export-card narrow layout | Done | archive and export unit tests pass; `pw-issue-88-export-center-narrow` passes in run `36505281630` |
-| Review, commit, pull request, CI and merge | Ready for merge | Independent review found no blocking/high/medium findings; PR `#111`; implementation commit `b0de2dd`; required implementation CI passes |
+| Every current Admin and Tenant QueryPanel has Search, Reset, Refresh and one four-state result status | Implementation done; CI pending | Static inventory: 34 panels / 34 `onRefresh` / 34 `queryStatus`; 213 unit tests pass |
+| Every filter independently changes a request URL/body or a declared local result | Implementation done; CI pending | Atomic Admin and Tenant Chrome cases are listed and await final PR execution |
+| Unchanged criteria can retry the exact owning query | Done locally | Shared and page-owner regressions prove one exact current-page request; Search and Refresh share the access-loading gate |
+| Archive result containment and export-card narrow layout | Implementation done; CI pending | Archive and export unit tests pass; atomic Chrome cases are listed |
+| Review, commit, pull request, CI and merge | In progress | PR `#111`; review blockers addressed locally; final independent review, CI evidence regeneration, and merge remain |
 
 ### Verification boundaries
 
@@ -54,7 +55,10 @@ Environment: managed Linux arm64 workspace, Node.js 20 or newer, Java 21.
 - The backend command was executed to completion. Its 11 failures/errors are confined to test
   harness prerequisites unavailable in this runtime (`ruby`, owned-process reaping, and migration
   configuration); the branch changes no `core/` file. The pull-request backend job remains required.
-- The evidence-only follow-up commit is still subject to the same pull-request checks. GitHub merge
+- The prior `b0de2dd` browser report is superseded by the review follow-up. The evidence report and
+  its checksum anchor are regenerated only after the final implementation commit passes the real
+  Chrome/Docker CI lane.
+- The evidence-only follow-up commit remains subject to the same pull-request checks. GitHub merge
   status and the live issue discussion are re-read immediately before merge; no pending check is
   treated as a pass.
 

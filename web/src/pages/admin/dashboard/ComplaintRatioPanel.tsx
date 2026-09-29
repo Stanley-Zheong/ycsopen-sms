@@ -127,6 +127,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
         isError: query.isError,
         isEmpty: rows.length === 0,
         count: rows.length,
+        errorDetailsId: `admin-complaint-ratio-dashboard-${dimension}-error-details`,
       }}
       legacyPanelTestId={dimension === 'channel'
         ? 'admin-complaint-ratio-dashboard-complaint-ratio-period'
@@ -144,7 +145,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
             </p>
           )}
           {query.isLoading && <p>加载中…</p>}
-          {query.isError && <p role="alert">加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
+          {query.isError && <p id={`admin-complaint-ratio-dashboard-${dimension}-error-details`}>加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
           {!query.isLoading && !query.isError && rows.length === 0 && <p style={{ color: '#888' }}>暂无数据</p>}
           {rows.length > 0 && dimension === 'channel' && (
             <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-channel">

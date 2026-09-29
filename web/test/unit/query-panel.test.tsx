@@ -97,7 +97,7 @@ describe('QueryPanel', () => {
     expect(within(panel).getByTestId('query-panel-fields')).toBeVisible();
 
     fireEvent.click(within(panel).getByTestId('query-submit'));
-    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit).not.toHaveBeenCalled();
     expect(onReset).not.toHaveBeenCalled();
     expect(within(panel).getByTestId('legacy-search')).toBeInTheDocument();
     fireEvent.click(within(panel).getByTestId('query-reset'));
@@ -148,12 +148,13 @@ describe('QueryPanel', () => {
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it('can disable submission while page permissions are unresolved', () => {
+  it('disables search and refresh together while page permissions are unresolved', () => {
+    const onRefresh = vi.fn();
     render(
       <QueryPanel
         onSubmit={vi.fn()}
         onReset={vi.fn()}
-        onRefresh={vi.fn()}
+        onRefresh={onRefresh}
         queryStatus={READY_QUERY_STATUS}
         submitDisabled
       >
@@ -162,6 +163,9 @@ describe('QueryPanel', () => {
     );
 
     expect(screen.getByTestId('query-submit')).toBeDisabled();
+    expect(screen.getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+    expect(onRefresh).not.toHaveBeenCalled();
   });
 
   it('collapses two fields when the responsive grid wraps to one column', () => {
@@ -235,7 +239,7 @@ describe('QueryPanel', () => {
     const calls: string[] = [];
     render(
       <QueryPanel
-        onSubmit={() => calls.push('submit')}
+        onSubmit={() => { calls.push('submit'); }}
         onReset={vi.fn()}
         onRefresh={() => calls.push('refresh')}
         queryStatus={READY_QUERY_STATUS}
@@ -249,18 +253,18 @@ describe('QueryPanel', () => {
     expect(calls).toEqual(['submit']);
 
     fireEvent.click(screen.getByTestId('query-submit'));
-    expect(calls).toEqual(['submit', 'submit', 'refresh']);
+    expect(calls).toEqual(['submit', 'refresh']);
 
     fireEvent.change(screen.getByLabelText('关键字'), { target: { value: 'gamma' } });
     fireEvent.click(screen.getByTestId('query-submit'));
-    expect(calls).toEqual(['submit', 'submit', 'refresh', 'submit']);
+    expect(calls).toEqual(['submit', 'refresh', 'submit']);
   });
 
   it('retries when the initial applied criteria are submitted unchanged', () => {
     const calls: string[] = [];
     render(
       <QueryPanel
-        onSubmit={() => calls.push('submit')}
+        onSubmit={() => { calls.push('submit'); }}
         onReset={vi.fn()}
         onRefresh={() => calls.push('refresh')}
         queryStatus={READY_QUERY_STATUS}
@@ -269,6 +273,28 @@ describe('QueryPanel', () => {
       </QueryPanel>,
     );
 
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    expect(calls).toEqual(['refresh']);
+  });
+
+  it('refreshes once when the page owner reports a canonical no-op submission', () => {
+    const calls: string[] = [];
+    render(
+      <QueryPanel
+        onSubmit={() => {
+          calls.push('submit');
+          return false;
+        }}
+        onReset={vi.fn()}
+        onRefresh={() => calls.push('refresh')}
+        queryStatus={READY_QUERY_STATUS}
+      >
+        <QueryField name="tenant-id" label="机构 ID"><input defaultValue="42" /></QueryField>
+      </QueryPanel>,
+    );
+
+    fireEvent.change(screen.getByLabelText('机构 ID'), { target: { value: '042' } });
     fireEvent.click(screen.getByTestId('query-submit'));
 
     expect(calls).toEqual(['submit', 'refresh']);
@@ -301,7 +327,7 @@ describe('QueryPanel', () => {
     rerender(queryPanel(true));
     fireEvent.click(screen.getByTestId('query-submit'));
 
-    expect(onSubmit).toHaveBeenCalledTimes(2);
+    expect(onSubmit).not.toHaveBeenCalled();
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
@@ -400,5 +426,28 @@ describe('QueryPanel', () => {
     expect(resultStatus).toHaveAttribute('aria-busy', busy);
     expect(resultStatus).toHaveTextContent(text);
     expect(result).toContainElement(screen.getByTestId('page-owned-result'));
+  });
+
+  it('associates page-owned error details with the single assertive status', () => {
+    render(
+      <QueryPanel
+        onSubmit={vi.fn()}
+        onReset={vi.fn()}
+        onRefresh={vi.fn()}
+        queryStatus={{
+          ...READY_QUERY_STATUS,
+          testId: 'admin-example-query-status',
+          isError: true,
+          errorDetailsId: 'admin-example-query-error-details',
+        }}
+        result={<div id="admin-example-query-error-details">详细错误与重试动作</div>}
+      >
+        <QueryField name="keyword" label="关键字"><input /></QueryField>
+      </QueryPanel>,
+    );
+
+    const status = screen.getByTestId('admin-example-query-status');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(status).toHaveAttribute('aria-describedby', 'admin-example-query-error-details');
   });
 });

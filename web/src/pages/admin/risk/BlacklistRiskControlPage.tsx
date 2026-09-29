@@ -197,6 +197,7 @@ export default function BlacklistRiskControlPage() {
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(DEFAULT_FILTERS); setFilters(DEFAULT_FILTERS); }}
           onRefresh={() => void entries.refetch()}
+          submitDisabled={!canRead}
           queryStatus={{
             testId: 'admin-blacklist-risk-black-white-lists-query-status',
             label: '黑白名单',

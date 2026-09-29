@@ -39,4 +39,17 @@ describe('tenant help center query controls', () => {
     fireEvent.click(screen.getByTestId('query-refresh'));
     expect(screen.getByTestId('tenant-tenant-help-guide-refresh-result')).toHaveTextContent('已刷新 1 次');
   });
+
+  it('refreshes on the first submit when local criteria canonicalize to the applied query', () => {
+    render(
+      <MemoryRouter>
+        <TenantHelpCenterPage section="guide" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByTestId('tenant-tenant-help-guide-search-input'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    expect(screen.getByTestId('tenant-tenant-help-guide-refresh-result')).toHaveTextContent('已刷新 1 次');
+  });
 });

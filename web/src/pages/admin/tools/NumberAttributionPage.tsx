@@ -119,7 +119,7 @@ export default function NumberAttributionPage() {
         </div>
       </header>
       {message && <p role="status" data-testid="admin-number-attribution-message" className="number-attribution-alert success">{message}</p>}
-      {error && <p role="alert" data-testid="admin-number-attribution-error" className="number-attribution-alert error">{error}</p>}
+      {error && <p id="admin-number-attribution-error-details" role={lookupMutation.isError ? undefined : 'alert'} data-testid="admin-number-attribution-error" className="number-attribution-alert error">{error}</p>}
 
       <section className="card" data-testid="admin-number-attribution-portability-prefixes-page">
         <h2>号段版本</h2>
@@ -162,6 +162,7 @@ export default function NumberAttributionPage() {
           isError: lookupMutation.isError,
           isEmpty: lookupResult === null,
           count: lookupResult ? 1 : 0,
+          errorDetailsId: 'admin-number-attribution-error-details',
         }}
         legacyPanelTestId="admin-number-attribution-lookup-panel"
         submitLegacyTestId="admin-number-attribution-lookup"

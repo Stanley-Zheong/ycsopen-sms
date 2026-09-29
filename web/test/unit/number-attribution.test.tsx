@@ -114,4 +114,15 @@ describe('Phase 19 number attribution and portability UI', () => {
     fireEvent.click(screen.getByTestId('admin-number-portability-save'));
     await waitFor(() => expect(numberApi.savePortability).toHaveBeenCalled());
   });
+
+  it('does not query attribution while read access is loading', () => {
+    vi.mocked(identityApi.getAccountOverview).mockImplementationOnce(() => new Promise(() => undefined));
+    renderWithProviders(<NumberAttributionPage />);
+
+    expect(screen.getByTestId('query-submit')).toBeDisabled();
+    expect(screen.getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    expect(numberApi.lookupAttribution).not.toHaveBeenCalled();
+  });
 });

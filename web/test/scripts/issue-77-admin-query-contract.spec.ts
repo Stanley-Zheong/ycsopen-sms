@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { apiResponse, loginAs, mockEmptyDashboard } from './helpers';
 
 const ADMIN_ROUTES = [
@@ -181,6 +181,31 @@ async function mockIssue88RouteData(page: Page, route: string) {
         { id: 1, dataDomain: 'MESSAGE_TASKS', sourceTable: 'sms_task', retentionDays: 730, hotMonths: 3, partitionUnit: 'MONTH', legalHoldUntil: null, encryptionRequired: true, status: 'ACTIVE', updatedBy: 'admin', updatedAt: '2026-09-01T00:00:00Z' },
         { id: 2, dataDomain: 'RECEIPTS', sourceTable: 'sms_receipt', retentionDays: 365, hotMonths: 2, partitionUnit: 'MONTH', legalHoldUntil: null, encryptionRequired: true, status: 'ACTIVE', updatedBy: 'admin', updatedAt: '2026-09-01T00:00:00Z' },
       ]),
+    }));
+    await page.route('**/api/v1/console/archive/manifests**', (request) => request.fulfill({
+      json: apiResponse([{
+        id: 47,
+        policyId: 1,
+        dataDomain: 'MESSAGE_TASKS',
+        sourceTable: 'sms_task',
+        partitionKey: '2026-08',
+        tenantId: 42,
+        archiveStatus: 'COMPLETED',
+        rowCount: 128,
+        sourceIdentityJson: '{"partition":"2026-08"}',
+        manifestJson: '{"rowCount":128}',
+        checksumSha256: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        encryptionKeyVersion: 'archive-v1',
+        retentionUntil: '2028-08-31T00:00:00Z',
+        legalHoldUntil: null,
+        deletionEligible: false,
+        failureReason: null,
+        createdBy: 'admin',
+        createdAt: '2026-09-01T00:00:00Z',
+        verifiedAt: '2026-09-01T00:01:00Z',
+        restoredAt: null,
+        exportedTaskId: null,
+      }]),
     }));
   }
 }
@@ -373,9 +398,7 @@ async function abortPageDataRequests(page: Page) {
 test.describe.configure({ mode: 'serial' });
 test.use({ viewport: { width: 1440, height: 900 } });
 
-test('pw-issue-77-admin-query-controls C-ISSUE-77-ADMIN-QUERY-CONTROLS OBL-ISSUE-77-QUERY-CONTROLS pw-issue-88-admin-actionable-controls C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS OBL-ISSUE-88-ACTIONABLE-CONTROLS', async ({ browser }, testInfo) => {
-  test.setTimeout(600_000);
-  expect(testInfo.project.name).toBe('local-google-chrome');
+async function expectAdminQueryContract(browser: Browser, issue: '#77' | '#88') {
   const loginContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const loginPage = await loginContext.newPage();
   await mockEmptyDashboard(loginPage);
@@ -424,16 +447,52 @@ test('pw-issue-77-admin-query-controls C-ISSUE-77-ADMIN-QUERY-CONTROLS OBL-ISSUE
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
         expect(overflow, `${route} has no page-level horizontal overflow`).toBeLessThanOrEqual(1);
       } catch (error) {
-        throw new Error(`Issue #77 admin route acceptance failed at ${route}: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`Issue ${issue} admin route acceptance failed at ${route}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
   } finally {
     await context.close();
   }
+}
+
+test('pw-issue-77-admin-query-controls C-ISSUE-77-ADMIN-QUERY-CONTROLS OBL-ISSUE-77-ADMIN-QUERY-CONTROLS', async ({ browser, page }, testInfo) => {
+  test.setTimeout(600_000);
+  expect(testInfo.project.name).toBe('local-google-chrome');
+  await mockEmptyDashboard(page);
+  await loginAs(page, 'ADMIN');
+  await abortPageDataRequests(page);
+  await page.goto('/admin/dashboard');
+  await expect(page.getByTestId('query-panel')).toHaveCount(2);
+  await expectAdminQueryContract(browser, '#77');
 });
 
-test('pw-issue-77-tenant-query-controls C-ISSUE-77-TENANT-QUERY-CONTROLS OBL-ISSUE-77-QUERY-CONTROLS pw-issue-88-tenant-actionable-controls C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS', async ({ browser }) => {
-  test.setTimeout(90_000);
+test('pw-issue-88-admin-actionable-controls C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS OBL-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS', async ({ browser, page }, testInfo) => {
+  test.setTimeout(600_000);
+  expect(testInfo.project.name).toBe('local-google-chrome');
+  await mockEmptyDashboard(page);
+  await loginAs(page, 'ADMIN');
+  await abortPageDataRequests(page);
+  await page.goto('/admin/dashboard');
+  await expect(page.getByTestId('query-panel')).toHaveCount(2);
+  await expectAdminQueryContract(browser, '#88');
+});
+
+test('pw-issue-88-archive-result C-ISSUE-88-ARCHIVE-RESULT OBL-ISSUE-88-ARCHIVE-RESULT', async ({ page }, testInfo) => {
+  expect(testInfo.project.name).toBe('local-google-chrome');
+  await mockEmptyDashboard(page);
+  await loginAs(page, 'ADMIN');
+  await abortPageDataRequests(page);
+  await mockIssue88RouteData(page, '/admin/archive');
+
+  await page.goto('/admin/archive');
+
+  const result = page.getByTestId('query-result-table');
+  await expect(result.getByTestId('admin-retention-archive-manifest-table')).toBeVisible();
+  await expect(result.getByTestId('admin-retention-archive-manifest-query-status')).toHaveAttribute('data-state', 'success');
+  await expect(result.getByTestId('admin-retention-archive-manifest-row')).toContainText('2026-08');
+});
+
+async function expectTenantQueryContract(browser: Browser) {
   const loginContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const loginPage = await loginContext.newPage();
   await loginAs(loginPage, 'TENANT_ADMIN');
@@ -469,4 +528,24 @@ test('pw-issue-77-tenant-query-controls C-ISSUE-77-TENANT-QUERY-CONTROLS OBL-ISS
       await context.close();
     }
   }
+}
+
+test('pw-issue-77-tenant-query-controls C-ISSUE-77-TENANT-QUERY-CONTROLS OBL-ISSUE-77-TENANT-QUERY-CONTROLS', async ({ browser, page }, testInfo) => {
+  test.setTimeout(90_000);
+  expect(testInfo.project.name).toBe('local-google-chrome');
+  await loginAs(page, 'TENANT_ADMIN');
+  await abortPageDataRequests(page);
+  await page.goto('/tenant/consumption-ledger');
+  await expect(page.getByTestId('query-panel')).toBeVisible();
+  await expectTenantQueryContract(browser);
+});
+
+test('pw-issue-88-tenant-actionable-controls C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS OBL-ISSUE-88-TENANT-ACTIONABLE-CONTROLS', async ({ browser, page }, testInfo) => {
+  test.setTimeout(90_000);
+  expect(testInfo.project.name).toBe('local-google-chrome');
+  await loginAs(page, 'TENANT_ADMIN');
+  await abortPageDataRequests(page);
+  await page.goto('/tenant/consumption-ledger');
+  await expect(page.getByTestId('query-panel')).toBeVisible();
+  await expectTenantQueryContract(browser);
 });

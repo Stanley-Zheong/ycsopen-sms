@@ -13,7 +13,7 @@ import {
 
 interface QueryPanelProps {
   children: ReactNode;
-  onSubmit: () => void;
+  onSubmit: () => void | boolean;
   onReset: () => void;
   onRefresh: () => void;
   queryStatus: QueryStatus;
@@ -48,6 +48,7 @@ interface QueryStatus {
   isError: boolean;
   isEmpty: boolean;
   count?: number;
+  errorDetailsId?: string;
 }
 
 type QueryResultState = 'loading' | 'error' | 'empty' | 'success';
@@ -162,8 +163,12 @@ export function QueryPanel({
     const signature = queryFormSignature(event.currentTarget);
     const unchanged = signature === lastSubmittedSignature.current;
     lastSubmittedSignature.current = signature;
-    onSubmit();
-    if (unchanged) onRefresh();
+    if (unchanged) {
+      onRefresh();
+      return;
+    }
+    const applied = onSubmit();
+    if (applied === false) onRefresh();
   };
 
   const reset = () => {
@@ -208,7 +213,13 @@ export function QueryPanel({
               {resetLegacyTestId ? <span data-testid={resetLegacyTestId}>重置</span> : '重置'}
             </button>
             {additionalActions}
-            <button type="button" className="button-secondary" data-testid="query-refresh" onClick={onRefresh}>
+            <button
+              type="button"
+              className="button-secondary"
+              data-testid="query-refresh"
+              disabled={submitDisabled}
+              onClick={onRefresh}
+            >
               {refreshLegacyTestId ? <span data-testid={refreshLegacyTestId}>刷新</span> : '刷新'}
             </button>
           </div>
@@ -236,6 +247,7 @@ export function QueryResult({ children, queryStatus, className = '' }: QueryResu
         role={isError ? 'alert' : 'status'}
         aria-live={isError ? 'assertive' : 'polite'}
         aria-busy={queryStatus.isFetching}
+        aria-describedby={isError ? queryStatus.errorDetailsId : undefined}
       >
         {queryResultText(queryStatus, state)}
       </div>

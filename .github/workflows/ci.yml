@@ -294,7 +294,7 @@ jobs:
         run: >-
           npm --prefix web run test:e2e --
           issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts
-          --project=local-google-chrome --grep pw-issue-88
+          --project=local-google-chrome --grep 'pw-issue-(77|88)'
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}

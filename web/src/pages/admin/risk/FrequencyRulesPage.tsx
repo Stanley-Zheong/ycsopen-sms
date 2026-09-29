@@ -178,6 +178,7 @@ export default function FrequencyRulesPage() {
           onSubmit={() => setFilters({ ...draftFilters })}
           onReset={() => { setDraftFilters(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
           onRefresh={() => void rules.refetch()}
+          submitDisabled={!canRead}
           queryStatus={{
             testId: 'admin-frequency-api-frequency-rules-query-status',
             label: '频控规则',

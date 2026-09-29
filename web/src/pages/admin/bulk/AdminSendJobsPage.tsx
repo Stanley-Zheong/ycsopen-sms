@@ -72,11 +72,12 @@ export default function AdminSendJobsPage() {
           isError: tasks.isError,
           isEmpty: (tasks.data ?? []).length === 0,
           count: tasks.data?.length,
+          errorDetailsId: 'admin-bulk-scheduled-send-jobs-error-details',
         }}
         result={(
           <section className="card" data-testid="admin-bulk-scheduled-send-jobs-control">
             {tasks.isLoading && <p>正在加载发送任务…</p>}
-            {tasks.isError && <p role="alert">发送任务加载失败。</p>}
+            {tasks.isError && <p id="admin-bulk-scheduled-send-jobs-error-details">发送任务加载失败。</p>}
             {!tasks.isLoading && !tasks.isError && (tasks.data ?? []).length === 0 && <p>暂无发送任务。</p>}
             <table className="bulk-table"><thead><tr><th>批次</th><th>租户</th><th>名称</th><th>类型</th><th>状态</th><th>进度</th><th>动作</th></tr></thead>
               <tbody>{(tasks.data ?? []).map((task) => <tr key={task.bulkId} data-testid="admin-bulk-scheduled-send-jobs-row"><td>{task.batchKey}</td><td>{task.tenantId}</td><td>{task.taskName}</td><td>{task.messageType}</td><td>{task.state}</td><td>{task.completedCount}/{task.totalCount}</td><td>

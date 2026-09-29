@@ -88,12 +88,17 @@ export default function AdminUnsubscribesPage() {
           isError: records.isError || statistics.isError,
           isEmpty: (records.data ?? []).length === 0 && (statistics.data ?? []).length === 0,
           count: (records.data?.length ?? 0) + (statistics.data?.length ?? 0),
+          errorDetailsId: 'admin-unsubscribe-compliance-query-error-details',
         }}
         result={(
           <section data-testid="admin-unsubscribe-compliance-unsubscribes-page">
             <h2>退订证据</h2>
             {records.isLoading && <p>正在加载退订证据…</p>}
-            {records.isError && <p role="alert">退订证据加载失败。</p>}
+            {(records.isError || statistics.isError) && (
+              <p id="admin-unsubscribe-compliance-query-error-details">
+                {records.isError ? '退订证据加载失败。' : '退订统计加载失败。'}
+              </p>
+            )}
             <table className="unsubscribe-table" data-testid="admin-unsubscribe-compliance-unsubscribes-table">
               <thead><tr><th>租户</th><th>手机号</th><th>关键词</th><th>签名/产品</th><th>处理</th><th>通知</th><th>上行</th><th>时间</th></tr></thead>
               <tbody>{(records.data ?? []).map((row) => (

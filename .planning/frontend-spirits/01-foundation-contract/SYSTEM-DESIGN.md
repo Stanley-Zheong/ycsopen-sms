@@ -47,8 +47,11 @@ User input flows into a typed query or form state object, then into a page-owned
 
 For issue `#88`, each `QueryField` supplies its semantic name to the native control. `QueryPanel`
 sorts the current `FormData` entries to create a stable signature. A changed signature applies the
-page's draft state. An unchanged signature invokes the exact-owner refresh path after `onSubmit`,
-which permits recovery after an initial failure without coupling retry to a state change. Reset
+page's draft state through `onSubmit` only. An unchanged signature invokes the exact-owner
+`onRefresh` path only, which permits recovery after an initial failure without coupling retry to a
+state change or dispatching the same request twice. If the raw signature changes but the page's
+canonical query criteria do not, the page returns `false` from `onSubmit` and the panel invokes the
+same exact-owner refresh path once. Reset
 increments a synchronization version; a layout effect captures the controlled post-reset values
 before the user can submit or edit again.
 

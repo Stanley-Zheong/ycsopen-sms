@@ -209,11 +209,12 @@ export default function AdminAlertsPage() {
             isError: history.isError,
             isEmpty: visibleAlerts.length === 0,
             count: visibleAlerts.length,
+            errorDetailsId: 'admin-alert-engine-alert-history-error-details',
           }}
           result={(
             <>
               {history.isLoading && <p>正在加载…</p>}
-              {history.isError && <p role="alert">告警历史加载失败。</p>}
+              {history.isError && <p id="admin-alert-engine-alert-history-error-details">告警历史加载失败。</p>}
               {!history.isLoading && !history.isError && visibleAlerts.length === 0 && <p>暂无告警历史。</p>}
               {visibleAlerts.length > 0 && (
                 <table className="alert-engine-table">

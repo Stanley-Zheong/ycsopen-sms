@@ -126,12 +126,13 @@ export default function AdminRetentionArchivePage() {
           isError: manifests.isError,
           isEmpty: rows.length === 0,
           count: rows.length,
+          errorDetailsId: 'admin-retention-archive-manifest-error-details',
         }}
         result={(
           <section className="card">
             <h2>归档清单</h2>
             {manifests.isLoading && <p>正在加载归档清单…</p>}
-            {manifests.isError && <p role="alert">归档清单加载失败。</p>}
+            {manifests.isError && <p id="admin-retention-archive-manifest-error-details">归档清单加载失败。</p>}
             {!manifests.isLoading && !manifests.isError && rows.length === 0 && <p>暂无归档清单。</p>}
             <table className="retention-archive-table" data-testid="admin-retention-archive-manifest-table">
               <thead>

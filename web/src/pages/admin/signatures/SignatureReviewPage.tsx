@@ -130,11 +130,12 @@ export default function SignatureReviewPage() {
           isError: queue.isError,
           isEmpty: rows.length === 0,
           count: rows.length,
+          errorDetailsId: 'admin-signature-lifecycle-signature-review-error-details',
         }}
         result={(
           <>
             {queue.isLoading && <p>正在加载…</p>}
-            {queue.isError && <p role="alert">签名审核数据加载失败。</p>}
+            {queue.isError && <p id="admin-signature-lifecycle-signature-review-error-details">签名审核数据加载失败。</p>}
             {!queue.isLoading && !queue.isError && rows.length === 0 && <p>暂无签名审核数据。</p>}
             {rows.length > 0 && (
               <table className="ratio-table">

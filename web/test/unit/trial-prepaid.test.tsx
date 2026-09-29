@@ -235,6 +235,38 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'success');
   });
 
+  it('keeps legacy ledger loading and error selectors as inert aliases of the four-state status', async () => {
+    let rejectLedger!: (reason?: unknown) => void;
+    vi.mocked(trialPrepaidApi.listConsumption).mockReset();
+    vi.mocked(trialPrepaidApi.listConsumption)
+      .mockImplementationOnce(() => new Promise<Awaited<ReturnType<typeof trialPrepaidApi.listConsumption>>>((_, reject) => {
+        rejectLedger = reject;
+      }))
+      .mockResolvedValue([]);
+
+    renderWithProviders(<TenantConsumptionLedgerPage />);
+
+    const result = screen.getByTestId('query-result-table');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'loading');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-loading')).toHaveAttribute(
+      'data-query-status-alias-for',
+      'tenant-trial-prepaid-consumption-ledger-query-status',
+    );
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-loading')).toHaveAttribute('aria-hidden', 'true');
+    expect(result.querySelectorAll('[role="status"], [role="alert"]')).toHaveLength(1);
+
+    act(() => rejectLedger(new Error('ledger unavailable')));
+
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'error'));
+    expect(screen.queryByTestId('tenant-trial-prepaid-consumption-ledger-loading')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-error')).toHaveAttribute(
+      'data-query-status-alias-for',
+      'tenant-trial-prepaid-consumption-ledger-query-status',
+    );
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-error')).toHaveAttribute('aria-hidden', 'true');
+    expect(result.querySelectorAll('[role="status"], [role="alert"]')).toHaveLength(1);
+  });
+
   it('activates trial quota/validity and shows append-only balance audits', async () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
     renderWithProviders(<TrialPrepaidAdminPage />);
@@ -257,5 +289,17 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     fireEvent.click(screen.getByTestId('admin-trial-prepaid-activate-trial'));
     await waitFor(() => expect(trialPrepaidApi.activateTrial).toHaveBeenCalledWith(42, 500, '2026-09-09T00:00:00', '2026-09-23T00:00:00'));
     expect(screen.getByTestId('admin-trial-prepaid-tenant-id')).toHaveValue('42');
+  });
+
+  it('does not load balance audits through refresh while read access is loading', () => {
+    vi.mocked(identityApi.getAccountOverview).mockImplementationOnce(() => new Promise(() => undefined));
+    useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
+    renderWithProviders(<TrialPrepaidAdminPage />);
+
+    expect(screen.getByTestId('query-submit')).toBeDisabled();
+    expect(screen.getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    expect(trialPrepaidApi.listBalanceAudits).not.toHaveBeenCalled();
   });
 });

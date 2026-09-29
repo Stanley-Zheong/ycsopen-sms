@@ -78,6 +78,7 @@ export default function ResourceReviewHistoryPage() {
         onSubmit={() => setFilters({ ...draft, page: 0, pageSize: EMPTY_FILTERS.pageSize })}
         onReset={() => { setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); }}
         onRefresh={() => void rowsQuery.refetch()}
+        submitDisabled={!canRead}
         queryStatus={{
           testId: 'admin-resource-review-history-review-query-status',
           label: '统一审核历史',
@@ -85,6 +86,7 @@ export default function ResourceReviewHistoryPage() {
           isError: rowsQuery.isError,
           isEmpty: rows.length === 0,
           count: rows.length,
+          errorDetailsId: 'admin-resource-review-history-error-details',
         }}
         result={(
           <div data-testid="admin-resource-review-history-review-table" className="review-history-table-region">
@@ -109,7 +111,7 @@ export default function ResourceReviewHistoryPage() {
                 )}
                 {!rowsLoading && rowsQuery.isError && (
                   <tr className="review-history-status error">
-                    <td colSpan={REVIEW_HISTORY_COLUMN_COUNT} role="alert">统一审核历史加载失败。</td>
+                    <td id="admin-resource-review-history-error-details" colSpan={REVIEW_HISTORY_COLUMN_COUNT}>统一审核历史加载失败。</td>
                   </tr>
                 )}
                 {rowsQuery.isSuccess && rows.length === 0 && (

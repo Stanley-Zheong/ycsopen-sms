@@ -35,11 +35,12 @@ export default function AdminBulkDetailsPage() {
           isError: tasks.isError,
           isEmpty: (tasks.data ?? []).length === 0,
           count: tasks.data?.length,
+          errorDetailsId: 'admin-bulk-scheduled-bulk-details-error-details',
         }}
         result={(
           <>
             {tasks.isLoading && <p>正在加载批量任务…</p>}
-            {tasks.isError && <p role="alert">批量任务加载失败。</p>}
+            {tasks.isError && <p id="admin-bulk-scheduled-bulk-details-error-details">批量任务加载失败。</p>}
             {!tasks.isLoading && !tasks.isError && (tasks.data ?? []).length === 0 && <p>暂无批量任务。</p>}
             <section className="bulk-cards" data-testid="admin-bulk-scheduled-bulk-details-cards">
               <article><span>总任务</span><strong>{tasks.data?.length ?? 0}</strong></article>
