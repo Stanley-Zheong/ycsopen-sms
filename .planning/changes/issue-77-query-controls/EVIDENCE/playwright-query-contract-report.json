@@ -43,9 +43,64 @@
     "tenantRoutesWithQueryPanels": 4,
     "sourceQueryPanelInstances": 34
   },
-  "expected": 4,
-  "coveredCaseCount": 4,
+  "evidenceKind": "production",
+  "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 153.0.8010.52",
+  "expected": 6,
   "cases": [
+    "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+    "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+    "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+    "C-ISSUE-88-ARCHIVE-RESULT",
+    "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+    "C-ISSUE-88-EXPORT-CARDS"
+  ],
+  "lowerLayerCases": [
+    {
+      "id": "C-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "obligationId": "OBL-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "layer": "vitest",
+      "status": "passed",
+      "command": "npm --prefix web test",
+      "result": "50 files / 213 tests passed"
+    }
+  ],
+  "dockerRelease": {
+    "result": "PASS",
+    "fresh": "3 passed (7.7s)",
+    "upgrade": "3 passed (7.7s)",
+    "restart": "3 passed (7.5s)",
+    "reports": {
+      "freshSha256": "a6b528a373eaf6e9f8b04ab3f21ebc93b24451f8ae8778d8c22a30ef11ab2a38",
+      "upgradeSha256": "f46ba9846181fccd2b2cf2223cd57219c639e302f0291c6ded6155975df57482",
+      "restartSha256": "01fc8b9005210824ff107e0c71b790163ea9aa647577411c76f3389ddb405304"
+    }
+  },
+  "boundary": {
+    "realReactDom": true,
+    "businessApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The browser contract proves rendered controls, action wiring, request initiation and signatures, deterministic state exposure, and layout against the real React DOM. Business API responses are deterministic interceptions, so this evidence does not claim production-service or production-data correctness."
+  },
+  "commit": "9d08923d111c005522960360e09fb239c33708d7",
+  "caseDetails": [
+    {
+      "id": "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-admin-query-controls",
+      "obligationId": "OBL-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "route": "/admin/dashboard",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive traversal of all 56 Admin routes and 38 query-panel route instances; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+    },
+    {
+      "id": "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-tenant-query-controls",
+      "obligationId": "OBL-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "route": "/tenant/consumption-ledger",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive traversal of the four Tenant query routes; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+    },
     {
       "id": "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
       "playwrightId": "pw-issue-88-admin-actionable-controls",
@@ -82,32 +137,5 @@
       "status": "passed",
       "coverage": "All six export summary cards remain within the grid and content width at 1024 by 900."
     }
-  ],
-  "lowerLayerCases": [
-    {
-      "id": "C-ISSUE-88-QUERY-STATE-AND-RETRY",
-      "obligationId": "OBL-ISSUE-88-QUERY-STATE-AND-RETRY",
-      "layer": "vitest",
-      "status": "passed",
-      "command": "npm --prefix web test",
-      "result": "50 files / 213 tests passed"
-    }
-  ],
-  "dockerRelease": {
-    "result": "PASS",
-    "fresh": "3 passed (7.7s)",
-    "upgrade": "3 passed (7.7s)",
-    "restart": "3 passed (7.5s)",
-    "reports": {
-      "freshSha256": "a6b528a373eaf6e9f8b04ab3f21ebc93b24451f8ae8778d8c22a30ef11ab2a38",
-      "upgradeSha256": "f46ba9846181fccd2b2cf2223cd57219c639e302f0291c6ded6155975df57482",
-      "restartSha256": "01fc8b9005210824ff107e0c71b790163ea9aa647577411c76f3389ddb405304"
-    }
-  },
-  "boundary": {
-    "realReactDom": true,
-    "businessApiRoutesIntercepted": true,
-    "realServiceAcceptance": false,
-    "reason": "The browser contract proves rendered controls, action wiring, request initiation and signatures, deterministic state exposure, and layout against the real React DOM. Business API responses are deterministic interceptions, so this evidence does not claim production-service or production-data correctness."
-  }
+  ]
 }
