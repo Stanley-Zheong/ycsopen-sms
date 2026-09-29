@@ -1,0 +1,72 @@
+{
+  "recordedAt": "2026-09-29T00:59:50Z",
+  "verifiedCommit": "b0de2dd55f100b98a99ad7e84d9d860ed3cc1a8b",
+  "result": "PASS",
+  "expected": 3,
+  "unexpected": 0,
+  "skipped": 0,
+  "project": "local-google-chrome",
+  "engine": "Google Chrome 153.0.8010.52",
+  "command": "npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep pw-issue-88",
+  "ci": {
+    "runId": 36505281630,
+    "runUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/36505281630",
+    "jobId": 109205237036,
+    "jobUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/36505281630/job/109205237036",
+    "duration": "1.6m",
+    "artifact": {
+      "id": 11007092512,
+      "name": "docker-release-36505281630",
+      "digest": "sha256:5b2b5f850718be07da1af1e03cd7972c882eafacdb3359e37225d1af2fe76467",
+      "expiresAt": "2026-10-13T00:59:46Z"
+    }
+  },
+  "sourceSha256": {
+    "web/src/components/common/QueryPanel.tsx": "173244fc170948723a05beefed8e0c3dc43f820a5519517f2bd0a59c548bd208",
+    "web/src/styles/secure-async-export.css": "b3280aeb0f59afdc95ab1ff1ac32fe114baf8ebdc07317d3704f05cd8f77db7d",
+    "web/test/scripts/issue-77-admin-query-contract.spec.ts": "c281db05511c0f16274392c33e4819fd35a9cfc3685928b402eb54991650af45",
+    "web/test/scripts/secure-async-export.spec.ts": "c5d3a61360356c5e8c25e744904bf1b9e021fc00d7d35a12e640e7ef06583748"
+  },
+  "inventory": {
+    "adminRoutesVisited": 56,
+    "adminRoutesWithQueryPanels": 36,
+    "adminQueryPanelRouteInstances": 38,
+    "tenantRoutesWithQueryPanels": 4,
+    "sourceQueryPanelInstances": 34
+  },
+  "cases": [
+    {
+      "id": "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-admin-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-ACTIONABLE-CONTROLS",
+      "status": "passed",
+      "coverage": "All 56 Admin routes; stable IDs and labels, canonical reset, every query field independently changing a request signature or declared local result, unchanged-query retry, four-state status, action placement, result ordering, and horizontal overflow."
+    },
+    {
+      "id": "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-tenant-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-ACTIONABLE-CONTROLS",
+      "status": "passed",
+      "coverage": "Tenant ledger, uplink, unsubscribe, and help routes; stable IDs and labels, canonical reset, every field's request or declared local-result effect, unchanged-query retry, and four-state status."
+    },
+    {
+      "id": "C-ISSUE-88-EXPORT-CARDS",
+      "playwrightId": "pw-issue-88-export-center-narrow",
+      "obligationId": "OBL-ISSUE-88-ACTIONABLE-CONTROLS",
+      "status": "passed",
+      "coverage": "All six export summary cards remain inside the card grid and content width at a 1024 by 900 viewport."
+    }
+  ],
+  "dockerRelease": {
+    "result": "PASS",
+    "fresh": "3 passed (7.4s)",
+    "upgrade": "3 passed (7.2s)",
+    "restart": "3 passed (7.4s)"
+  },
+  "boundary": {
+    "realReactDom": true,
+    "businessApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The issue acceptance verifies browser-rendered controls, action wiring, request initiation and signatures, state exposure, and layout. Business API fixtures are deterministic interceptions, so this evidence does not claim production-service or production-data correctness."
+  }
+}
