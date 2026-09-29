@@ -55,12 +55,14 @@ type QueryResultState = 'loading' | 'error' | 'empty' | 'success';
 
 const COMPACT_QUERY = '(max-width: 900px)';
 const MEDIUM_QUERY = '(max-width: 1200px)';
+const DESKTOP_QUERY = '(max-width: 1439px)';
 
 function queryColumnCount(): number {
-  if (typeof window === 'undefined' || !window.matchMedia) return 3;
+  if (typeof window === 'undefined' || !window.matchMedia) return 4;
   if (window.matchMedia(COMPACT_QUERY).matches) return 1;
   if (window.matchMedia(MEDIUM_QUERY).matches) return 2;
-  return 3;
+  if (window.matchMedia(DESKTOP_QUERY).matches) return 3;
+  return 4;
 }
 
 function compareText(left: string, right: string): number {
@@ -142,7 +144,11 @@ export function QueryPanel({
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
-    const media = [window.matchMedia(COMPACT_QUERY), window.matchMedia(MEDIUM_QUERY)];
+    const media = [
+      window.matchMedia(COMPACT_QUERY),
+      window.matchMedia(MEDIUM_QUERY),
+      window.matchMedia(DESKTOP_QUERY),
+    ];
     const update = () => setColumns(queryColumnCount());
     update();
     media.forEach((query) => query.addEventListener('change', update));

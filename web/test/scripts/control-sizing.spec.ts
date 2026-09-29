@@ -37,7 +37,7 @@ async function expectQueryGridAtBoundary(
   const fields = panel.getByTestId('query-panel-fields');
   const toggle = panel.getByTestId('query-panel-toggle');
 
-  if (columns === 3) {
+  if (columns >= 3) {
     await expect(toggle).toHaveCount(0);
     await expect(fields).toBeVisible();
   } else {
@@ -72,6 +72,7 @@ test('pw-issue-63-query-controls C-ISSUE-63-QUERY-CONTROLS OBL-ISSUE-63-QUERY-CO
   await loginAs(page, 'ADMIN');
   await page.goto('/admin/tenants');
 
+  await expectQueryGridAtBoundary(page, 1440, 4);
   await expectQueryGridAtBoundary(page, 1201, 3);
   await expectQueryGridAtBoundary(page, 1200, 2);
   await expectQueryGridAtBoundary(page, 901, 2);

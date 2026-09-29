@@ -15,8 +15,14 @@
 
 .secure-export-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  .secure-export-cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
+  }
 }
 
 .secure-export-cards article {
@@ -29,9 +35,9 @@
 
 .secure-export-cards strong {
   display: block;
+  overflow-wrap: anywhere;
   font-size: 24px;
   color: #183b56;
-  overflow-wrap: anywhere;
 }
 
 .secure-export-cards span {

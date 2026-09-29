@@ -115,5 +115,24 @@ Issue `#108` adds:
   the two consoles, brand-panel/form-panel split, control states, and
   `scrollWidth <= clientWidth` at 1440×900 and 390×844.
 
+## Issue #87 Ownership and Verification
+
+| Owner | Issue #87 responsibility |
+|---|---|
+| `AdminLayout` / `TenantLayout` | Select `consoleKind`; role gates, permissions, and route ownership remain unchanged. |
+| `AppShell` | Publish the audience data attribute while preserving every #108 class, test id, and direct-child invariant. |
+| `QueryPanel` | Keep collapse state synchronized with the 4/3/2/1 CSS column contract. |
+| `index.css` | Own Admin-only width tokens, container-query scope, ordinary-control exclusions, and the explicit field-grid allowlist. |
+| Page-local hooks | `custom-report-form-grid` identifies the report builder; the nested postpaid group spans its outer field grid; secure-export cards use shrinkable tracks to preserve document containment. Composite page card/panel grids and 720px modal grids keep their local column contracts. |
+
+There is no new data, command, or persistence flow. A missing expected form route, unexpected form
+route, control wider than 420px/30%, field child outside its track, altered composite/modal grid,
+select option clipped despite fitting within the cap, or
+document horizontal overflow fails `form-control-layout.spec.ts`. The fixture returns page-shaped
+empty data where a component requires a collection and otherwise uses controlled service errors;
+this is deliberately not real-backend evidence.
+
+## Issue #88 Ownership and Verification
+
 Issue `#88` adds shared-component state-transition tests, focused page retry tests, one Chrome
 route inventory covering every Admin query field independently, and a 1024×900 export-card check.

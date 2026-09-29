@@ -154,6 +154,40 @@ Added by issue #108:
   `shared-console-shell-breadcrumb`, `shared-console-shell-content`,
   `shared-console-shell-content-container`.
 
+## Issue #87: Admin Form Geometry
+
+### Goal, object, and scope
+
+The goal is to make Admin query and edit surfaces scannable: a field must not expand merely
+because adjacent grid cells are empty. The primary object is the geometry of an existing Admin
+single-line field and its containing field grid. The owned surface is the 56 terminal `/admin/*`
+routes in `web/src/router/routes.tsx`; 45 expose an ordinary input or single-value select under the
+layout fixture recorded by the issue acceptance test.
+
+The authorized platform user, page-owned data sources, validation, submit/reset commands, API
+payloads, loading messages, empty results, and error feedback are unchanged. This issue adds no
+editable field, request, mutation, or asynchronous link behavior. Loading, empty, success, and
+error states keep the same width and containment rules as the populated state.
+
+### Acceptance rules
+
+| Behavior ID | Required behavior | Observable acceptance |
+|---|---|---|
+| FE-SPIRIT-01-ADMIN-CONTROL-WIDTH | Every visible ordinary Admin single-line input/select is no wider than 420px or 30% of its query panel/Admin content container at the 1440px acceptance viewport. Checkbox, radio, file, hidden, range, colour, button-like inputs, multi-select, and textarea are excluded. | Chrome traverses all 56 terminal Admin routes and compares every visible ordinary control box with its actual container box; the explicit 45-route form allowlist must match. |
+| FE-SPIRIT-01-ADMIN-FOUR-COLUMN | At 1440px and wider a shared query/form field grid has exactly four aligned columns; it changes to three, two, and one column at 1439px, 1200px, and 900px. QueryPanel labels stack above controls at the four-column breakpoint. Composite card/panel and 720px modal grids remain page-owned. | Unit coverage freezes QueryPanel collapse parity; Chrome measures seven representative grids, a nested full-width group, child containment, three composite grids, and two modal grids. |
+| FE-SPIRIT-01-ADMIN-SELECT-FIT | Select options that fit the desktop cap receive their intrinsic width; selects do not fill an otherwise empty row and remain subject to the Admin cap. | Chrome checks every visible select in the 56-route traversal, five stable selectors, and a data-backed option long enough to exercise the 30% cap. |
+| FE-SPIRIT-01-ADMIN-NOOVERFLOW | Form geometry never creates document-level horizontal scrolling on an Admin route. | Chrome independently traverses all 56 routes and requires `documentElement.scrollWidth === clientWidth`. |
+
+### Stable selectors
+
+- The #108 shell selector remains `shared-console-shell`; `data-console-kind="admin"` is an
+  audience-scoping attribute, not a replacement selector or wrapper.
+- Static select evidence uses `admin-auditable-exemption-exemption-policy-type`,
+  `admin-blacklist-risk-black-white-lists-type`,
+  `admin-runtime-content-content-safety-category`,
+  `admin-frequency-api-frequency-rules-type`, and `admin-prefixes-update-type`.
+- The data-backed cap boundary uses `admin-channel-health-channel-pools-member-channel`.
+
 ## Acceptance
 
 - Layout follows `docs/frontend页面实现规范.md`.

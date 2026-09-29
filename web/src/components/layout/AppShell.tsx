@@ -4,6 +4,8 @@ import { useAuthStore } from '@/store/authStore';
 import SidebarMenu, { type SidebarMenuGroup } from './SidebarMenu';
 
 export interface AppShellProps {
+  /** Console audience used to scope audience-specific layout contracts without changing shell classes. */
+  consoleKind: 'admin' | 'tenant';
   /** Product identity shown in the sidebar brand row and the page-header badge. */
   workspaceLabel: string;
   /** Short console name, e.g. 平台管理后台 / 机构端. */
@@ -29,6 +31,7 @@ export interface AppShellProps {
  * `sidebar-*` / `sidebar-menu-panel` menu classes used by SidebarMenu.
  */
 export default function AppShell({
+  consoleKind,
   workspaceLabel,
   workspaceKind,
   navAriaLabel,
@@ -46,7 +49,7 @@ export default function AppShell({
     .filter((label, index, all) => all.indexOf(label) === index);
 
   return (
-    <div className="layout app-shell" data-testid="shared-console-shell">
+    <div className="layout app-shell" data-console-kind={consoleKind} data-testid="shared-console-shell">
       <aside className="sidebar app-sidebar" data-testid="shared-console-shell-sidebar">
         <div className="sidebar-brand app-sidebar-brand" data-testid="shared-console-shell-brand">
           <span className="app-sidebar-mark" aria-hidden="true">SMS</span>

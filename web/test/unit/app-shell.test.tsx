@@ -91,6 +91,7 @@ describe('AppShell shared console frame (issue #108)', () => {
     renderAdmin('/admin/dashboard');
 
     expectSharedShellContract();
+    expect(screen.getByTestId('shared-console-shell')).toHaveAttribute('data-console-kind', 'admin');
     expect(screen.getByTestId('shared-console-shell-brand')).toHaveTextContent('YCSAN-SMS 平台管理后台');
     expect(screen.getByTestId('shared-console-shell-workspace')).toHaveTextContent('平台管理后台');
     expect(screen.getByTestId('admin-console-navigation-overview-group-toggle')).toBeInTheDocument();
@@ -100,6 +101,7 @@ describe('AppShell shared console frame (issue #108)', () => {
     renderTenant('/tenant/overview');
 
     expectSharedShellContract();
+    expect(screen.getByTestId('shared-console-shell')).toHaveAttribute('data-console-kind', 'tenant');
     expect(screen.getByTestId('shared-console-shell-brand')).toHaveTextContent('YCSAN-SMS 机构端');
     expect(screen.getByTestId('shared-console-shell-workspace')).toHaveTextContent('机构端');
     expect(screen.getByTestId('tenant-console-navigation-overview-group-toggle')).toBeInTheDocument();
