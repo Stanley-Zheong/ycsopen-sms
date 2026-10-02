@@ -180,7 +180,7 @@ prepare_issue58_fixture() {
     )
     SELECT
         CONCAT('ISSUE58-Q', LPAD(seed.n, 2, '0')),
-        CONCAT('Issue58查询机构', LPAD(seed.n, 2, '0')),
+        CONCAT('I58Q', LPAD(seed.n, 2, '0')),
         CONCAT('Issue58查询机构', LPAD(seed.n, 2, '0'), '有限公司'),
         CONCAT('ISSUE58-CREDIT-', LPAD(seed.n, 2, '0')),
         'VERIFIED', 'SIGNED', 'release-acceptance'
