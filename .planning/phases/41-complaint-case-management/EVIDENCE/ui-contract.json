@@ -139,13 +139,13 @@
     ]
   },
   "execution": {
-    "command": "npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json",
+    "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
     "commit": "693317912641342261f6b7a790cb1d2086104f61",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/41-complaint-case-management/EVIDENCE/playwright-complaint-case-report.json",
-      "sha256": "3d38743d7cc7689fc8f3a2af0cb7a172a3d7f5068f0674bb74aeceb52f9b8026"
+      "sha256": "83fbbcafc3df37b8c342b7665389e8f074c378c2cda259f956a613f58fb261d9"
     }
   }
 }

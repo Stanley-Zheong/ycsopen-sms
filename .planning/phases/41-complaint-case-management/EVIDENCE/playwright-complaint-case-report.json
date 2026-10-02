@@ -1,5 +1,5 @@
 {
-  "command": "npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json",
+  "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
   "commit": "693317912641342261f6b7a790cb1d2086104f61",
   "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
   "result": "PASS",
