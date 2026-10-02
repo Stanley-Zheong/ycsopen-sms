@@ -291,11 +291,13 @@ jobs:
       - name: Verify complaint management in Google Chrome
         env:
           YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
-          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/complaint-case-google-chrome-report.json
+          PLAYWRIGHT_JSON_OUTPUT_NAME: complaint-case-evidence/playwright-report.json
         run: >-
           npm --prefix web run test:e2e --
           complaint-case.spec.ts --project=local-google-chrome
           --reporter=line,json
+      - name: Verify complaint management Chrome evidence
+        run: test -s web/complaint-case-evidence/playwright-report.json
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
@@ -307,6 +309,7 @@ jobs:
         with:
           name: docker-release-${{ github.run_id }}
           path: |
+            web/complaint-case-evidence/
             web/playwright-report/
             web/test-results/
           if-no-files-found: warn
