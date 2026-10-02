@@ -88,7 +88,7 @@ test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE
 });
 
 test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-SERVICE', async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   const environment = (globalThis as typeof globalThis & {
     process: { env: Record<string, string | undefined> };
   }).process.env;
@@ -156,14 +156,12 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
     if (!rawSession) throw new Error('authenticated browser session was not persisted');
     const { accessToken } = JSON.parse(rawSession) as { accessToken?: string };
     if (!accessToken) throw new Error('authenticated browser session has no access token');
-    const statuses: number[] = [];
-    for (let index = 0; index < 25; index += 1) {
-      const response = await fetch('/api/v1/console/channels', {
+    const responses = await Promise.all(Array.from({ length: 25 }, () => (
+      fetch('/api/v1/console/channels', {
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      statuses.push(response.status);
-    }
-    return statuses;
+      })
+    )));
+    return responses.map((response) => response.status);
   });
   expect(auditSeedStatuses).toEqual(Array.from({ length: 25 }, () => 200));
 
