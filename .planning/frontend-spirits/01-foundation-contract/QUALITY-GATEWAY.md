@@ -128,3 +128,25 @@ migration configuration; 33 tests were skipped. The focused repository release a
 passes 5/5. No backend file changed. The Docker release check was not run because no container,
 build, or deployment input changed. Raw Chrome evidence SHA-256 is
 `96af3e425fb9f3b79cbd3157d40cf353ff0968daa8dd18bae1aba37ed336a668`.
+
+## Issue #58 Real-Service Closure Gate
+
+Issue: `#58` — `统一所有业务页面查询表单与筛选区`.
+Branch: `feature/58-query-panel-production-acceptance`, based on `main` at `1091f637177a8781707e586b9dee8354c36d834e`.
+
+| Gate | Command | Current result | Evidence boundary |
+|---|---|---|---|
+| Frontend install | `npm --prefix web ci` | PASS; 357 packages installed. npm reported 8 dependency-audit findings (5 moderate, 2 high, 1 critical), unchanged by this issue. | Required because Web source and Docker Playwright source change. |
+| Focused unit | `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx` | RED before implementation: 1 failed/15 passed because `query-result-table` was absent. GREEN after implementation: 16/16 passed; the affected assertion also passed 1/1 after final review fixes. | Proves the tenant result uses the shared result boundary. Existing jsdom `ECONNREFUSED 127.0.0.1:3000` stderr remained non-failing. |
+| Targeted Docker spec discovery | `npm --prefix web run test:docker-release -- --list` | PASS; 4 cases discovered, including the unique Issue #58 real-service case. | Proves the new case is discoverable without claiming browser execution. |
+| Frontend unit | `npm --prefix web test` | FAIL in the constrained local runner after 1231.65s: 42/50 files and 176/187 tests passed; 11 failures were cross-suite five-second timeouts/unsettled async state. The affected focused file passes 16/16. | Must be adjudicated by the clean CI frontend lane; no completion claim is based on this local full-suite result. |
+| Frontend build | `npm --prefix web run build` | PASS after final fixes; 306 modules transformed in 51.19s, with the pre-existing chunk-size warning. | Production bundle gate. |
+| Backend regression | `mvn -f core/pom.xml test` | FAIL in this constrained runner after two dependency-download TLS interruptions: Ruby-dependent harness assertions failed because Ruby is absent, then the Surefire fork was killed with exit 137 during concurrent workspace load. The relevant `FinalReleaseAcceptanceTest` completed 5/5. | No Core source changed; the clean CI backend lane must adjudicate the full suite. |
+| Planning validators | `/usr/bin/env ruby .planning/tools/test-planning-validators.rb` | Pending | This runner currently has no Ruby; CI execution is required if the local boundary remains unavailable. |
+| Real Google Chrome + services | `scripts/verify-docker-release` | Pending | Must execute in the registered Docker-capable CI lane; the local Docker daemon is unavailable. No API interception is permitted. |
+| Diff hygiene | `bash -n scripts/verify-docker-release`; `shellcheck scripts/verify-docker-release`; `git diff --check` | PASS after final fixes. | Script syntax, static shell analysis, and whitespace hygiene. |
+| Independent review | Two bounded semantic reviews plus post-fix rechecks of the implementation and acceptance contract | PASS; all three test-stability and two documentation MEDIUM findings were repaired, and the final reviews found no BLOCKER/HIGH/MEDIUM. | CI remains the final production-environment gate. |
+
+The scoped work is exactly the real-service evidence gap from PR `#62` plus the discovered tenant
+result-selector mismatch. Implementation, independent review, and final local rechecks are complete;
+pull request and CI evidence remain open, so this record does not yet claim delivery completion.

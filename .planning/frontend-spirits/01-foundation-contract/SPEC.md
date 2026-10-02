@@ -140,8 +140,51 @@ error states keep the same width and containment rules as the populated state.
 | FE-SPIRIT-01-ADMIN-SELECT-FIT | Select options that fit the desktop cap receive their intrinsic width; selects do not fill an otherwise empty row and remain subject to the Admin cap. | Chrome checks every visible select in the 56-route traversal, five stable selectors, and a data-backed option long enough to exercise the 30% cap. |
 | FE-SPIRIT-01-ADMIN-NOOVERFLOW | Form geometry never creates document-level horizontal scrolling on an Admin route. | Chrome independently traverses all 56 routes and requires `documentElement.scrollWidth === clientWidth`. |
 
+## Issue #58: Real-Service Query Acceptance Closure
+
+### Goal, object, and scope
+
+The goal is to close the production-evidence gap left by the merged Issue `#58` implementation and
+PR `#62`. The primary object is the existing shared `QueryPanel` behavior on three representative
+Admin routes: `/admin/tenants`, `/admin/system/logs`, and `/admin/uplink`. The page components,
+permissions, selectors, and API contracts remain owned by their existing modules; this closure adds
+Google Chrome evidence through the repository's Docker Web/Core/MySQL topology without intercepting
+platform API requests.
+
+The later owner decisions remain authoritative: Issue `#64` removes reset from single-field query
+panels; Issue `#77` adds the `query-fields` and `query-actions` semantic regions, the 40px control
+contract, and the route inventory; and Issue `#87` makes collapse responsive to the 4/3/2/1
+field-grid contract. Issue `#77`'s mocked route traversal does not replace this real-service gate.
+The webhook push-failure default called out by PR `#62` review is already corrected on current
+`main` and remains `PUSH_FAILED`. The three
+representative routes all retain reset; the five- and seven-field routes start collapsed at the
+1440px acceptance viewport, while the three-field tenant route fits one row and starts expanded.
+
+| Route | Page goal and primary object | Data source and action contract | Required states and readback |
+|---|---|---|---|
+| `/admin/tenants` | Find and page through tenant qualification records. | Real `GET /api/v1/console/admin/tenants`; query applies keyword, verification, and operating-status filters to the returned tenant collection; reset clears all filters and returns to page one. | Loaded, filtered, second page, reset page one, stable table and pagination selectors. |
+| `/admin/system/logs` | Find append-only privileged operation audit records. | Real `GET /api/v1/console/operation-audits`; query serializes actor, operation, result, from/to time bounds, and paging parameters; reset removes filters and returns to page one. | Initial collapsed, expanded, filtered result, reset result, collapsed after reload, loading/error ownership unchanged. |
+| `/admin/uplink` | Find normalized uplink records without changing push state. | Real `GET /api/v1/console/uplinks`; query serializes tenant, phone, keyword, carrier, push state, and start/end time bounds; reset removes them and restores the initial rows. | Initial collapsed, expanded, filtered target row, reset baseline rows, collapsed after reload, loading/error ownership unchanged. |
+
+### Acceptance rules
+
+| Behavior ID | Required behavior | Observable acceptance |
+|---|---|---|
+| FE-SPIRIT-01-QUERY-REAL-SERVICE | Installed Google Chrome drives the production Web bundle through Nginx to the real Core and MySQL services; no platform API route is fulfilled, aborted, or replaced by Playwright. | The Docker release spec authenticates through the real login endpoint, receives HTTP 200 responses from each page-owned query API, observes submitted query parameters where the API supports server-side criteria, and reads the filtered and reset results from the real React tables. |
+| FE-SPIRIT-01-QUERY-RESET-PAGING | Query submission uses the existing page-owned parameters, and reset restores initial criteria and page one. | Tenant fixtures produce two pages before reset; operation-audit and uplink filters reach their real service queries; every reset restores baseline controls and result state. |
+| FE-SPIRIT-01-QUERY-DISCLOSURE | Multi-row panels start collapsed after first entry and reload under the current responsive grid; one-row panels remain expanded. | Chrome verifies the operation-audit and uplink panels are collapsed before expansion and again after reload, while the tenant panel is visible without a redundant toggle at 1440px. |
+
+The tenant page's existing loading, error, empty, table, and pagination states move into the shared
+result region so the documented `query-result-table` selector names the real result. No backend
+endpoint, permission, schema, or release seed migration is added. Deterministic test-owned rows are
+prepared only inside the disposable Docker release database and are removed with that Compose
+project.
+
 ### Stable selectors
 
+- Every shared query surface retains `query-panel`, `query-panel-fields`, `query-fields`, and
+  `query-actions`. The three Issue #58 acceptance routes also retain `query-result-table`; query,
+  reset, refresh, toggle, and page-owned field selectors remain scoped to their owning panel.
 - The #108 shell selector remains `shared-console-shell`; `data-console-kind="admin"` is an
   audience-scoping attribute, not a replacement selector or wrapper.
 - Static select evidence uses `admin-auditable-exemption-exemption-policy-type`,

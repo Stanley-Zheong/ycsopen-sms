@@ -373,6 +373,17 @@ describe('Phase 08 tenant qualification production UI', () => {
     }));
   });
 
+  it('keeps tenant result states inside the shared query result boundary', async () => {
+    useAuthStore.setState({ userType: 'OPERATOR', tenantId: null, principalKey: '7:test-token' });
+    renderPage(<TenantListPage />);
+
+    const row = await screen.findByTestId('admin-tenant-qualification-tenants-row');
+    const result = screen.getByTestId('query-result-table');
+    expect(result).toContainElement(row);
+    expect(result).toContainElement(screen.getByTestId('admin-tenant-qualification-tenants-table'));
+    expect(result).toContainElement(screen.getByTestId('admin-tenant-qualification-tenants-page-status'));
+  });
+
   it('hides every mutation action from a read-only operator', async () => {
     permissions = ['tenant:menu', 'tenant:read'];
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null, principalKey: '7:test-token' });

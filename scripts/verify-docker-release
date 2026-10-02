@@ -172,6 +172,85 @@ prepare_issue91_fixture() {
   [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_recharge_records WHERE transaction_ref_hash='11cfec599be87616d0305ac08b49c0d4e4b74a18eb33bb55af48a381d255584a' AND status='PENDING'")" == '1' ]]
 }
 
+prepare_issue58_fixture() {
+  mysql_scalar "
+    INSERT INTO tenants (
+        tenant_no, short_name, full_name, unified_social_credit_code,
+        verification_status, lifecycle_status, created_by
+    )
+    SELECT
+        CONCAT('ISSUE58-Q', LPAD(seed.n, 2, '0')),
+        CONCAT('Issue58查询机构', LPAD(seed.n, 2, '0')),
+        CONCAT('Issue58查询机构', LPAD(seed.n, 2, '0'), '有限公司'),
+        CONCAT('ISSUE58-CREDIT-', LPAD(seed.n, 2, '0')),
+        'VERIFIED', 'SIGNED', 'release-acceptance'
+    FROM (
+        SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+        UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+        UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+    ) seed
+    LEFT JOIN tenants existing
+      ON existing.tenant_no = CONCAT('ISSUE58-Q', LPAD(seed.n, 2, '0'))
+    WHERE existing.id IS NULL" >/dev/null
+
+  mysql_scalar "
+    INSERT INTO tenant_accounts (tenant_id, balance, frozen_amount, status, version)
+    SELECT t.id, 0, 0, 'NORMAL', 0
+      FROM tenants t
+     WHERE t.tenant_no LIKE 'ISSUE58-Q%'
+       AND NOT EXISTS (
+           SELECT 1 FROM tenant_accounts ta WHERE ta.tenant_id = t.id
+       )" >/dev/null
+
+  mysql_scalar "
+    INSERT INTO uplink_records (
+        tenant_id, mobile_encrypted, content, target_number, push_status,
+        source_protocol, source_connector, source_event_id, message_id,
+        phone_masked, phone_hash, content_keyword, state, carrier, province,
+        city, destination, product_code, push_state, receive_time
+    )
+    SELECT
+        t.id, X'00', 'Issue58查询目标上行', '1069058', 'FAILED',
+        'HTTP', 'RELEASE-ACCEPTANCE', 'ISSUE58-UPLINK-TARGET', 'ISSUE58-MSG-TARGET',
+        '138****8058', SHA2('13800138058', 256), 'Issue58查询目标', 'NORMALIZED',
+        'CMCC', '北京', '北京', 'https://issue58.invalid/uplink', 'ISSUE58',
+        'PUSH_FAILED', '2026-09-12 08:00:00'
+      FROM tenants t
+     WHERE t.tenant_no = 'DEV-TENANT'
+       AND NOT EXISTS (
+           SELECT 1 FROM uplink_records ur
+            WHERE ur.source_protocol = 'HTTP'
+              AND ur.source_connector = 'RELEASE-ACCEPTANCE'
+              AND ur.source_event_id = 'ISSUE58-UPLINK-TARGET'
+       )" >/dev/null
+
+  mysql_scalar "
+    INSERT INTO uplink_records (
+        tenant_id, mobile_encrypted, content, target_number, push_status,
+        source_protocol, source_connector, source_event_id, message_id,
+        phone_masked, phone_hash, content_keyword, state, carrier, province,
+        city, destination, product_code, push_state, receive_time
+    )
+    SELECT
+        t.id, X'00', 'Issue58基线上行', '1069058', 'SUCCESS',
+        'HTTP', 'RELEASE-ACCEPTANCE', 'ISSUE58-UPLINK-BASELINE', 'ISSUE58-MSG-BASELINE',
+        '138****8059', SHA2('13800138059', 256), 'Issue58基线', 'NORMALIZED',
+        'UNICOM', '上海', '上海', 'https://issue58.invalid/uplink', 'ISSUE58',
+        'DELIVERED', '2026-09-12 08:01:00'
+      FROM tenants t
+     WHERE t.tenant_no = 'DEV-TENANT'
+       AND NOT EXISTS (
+           SELECT 1 FROM uplink_records ur
+            WHERE ur.source_protocol = 'HTTP'
+              AND ur.source_connector = 'RELEASE-ACCEPTANCE'
+              AND ur.source_event_id = 'ISSUE58-UPLINK-BASELINE'
+       )" >/dev/null
+
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenants WHERE tenant_no LIKE 'ISSUE58-Q%'")" == '11' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM tenant_accounts ta JOIN tenants t ON t.id=ta.tenant_id WHERE t.tenant_no LIKE 'ISSUE58-Q%' AND ta.status='NORMAL'")" == '11' ]]
+  [[ "$(mysql_scalar "SELECT COUNT(*) FROM uplink_records WHERE source_connector='RELEASE-ACCEPTANCE' AND source_event_id IN ('ISSUE58-UPLINK-TARGET','ISSUE58-UPLINK-BASELINE')")" == '2' ]]
+}
+
 assert_project_unused "$fresh_project"
 assert_project_unused "$upgrade_project"
 docker compose config --quiet
@@ -188,6 +267,7 @@ export YCSOPEN_FLYWAY_LOCATIONS
 compose up --detach --build
 wait_for_core
 wait_for_web
+prepare_issue58_fixture
 prepare_issue91_fixture
 run_chrome_acceptance fresh
 assert_release_rows
@@ -212,6 +292,7 @@ export YCSOPEN_FLYWAY_LOCATIONS
 compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
+prepare_issue58_fixture
 prepare_issue91_fixture
 run_chrome_acceptance upgrade
 assert_release_rows
@@ -225,6 +306,7 @@ compose stop core web
 compose up --detach --build --force-recreate core web
 wait_for_core
 wait_for_web
+prepare_issue58_fixture
 prepare_issue91_fixture
 run_chrome_acceptance restart
 assert_release_rows

@@ -108,3 +108,27 @@ select option clipped despite fitting within the cap, or
 document horizontal overflow fails `form-control-layout.spec.ts`. The fixture returns page-shaped
 empty data where a component requires a collection and otherwise uses controlled service errors;
 this is deliberately not real-backend evidence.
+
+## Issue #58 Real-Service Verification Flow
+
+| Owner | Responsibility |
+|---|---|
+| `TenantListPage` | Place loading, error, empty, table, and pagination states in the shared `QueryPanel` result region so the documented `query-result-table` selector names the real result boundary. |
+| `scripts/verify-docker-release` | Create idempotent, test-owned tenant/account and uplink rows in the disposable MySQL volume before each fresh, upgrade, and restart Chrome lane; assert the fixture before browser execution; retain existing cleanup ownership. |
+| `web/test/docker-release/release-acceptance.spec.ts` | Authenticate as the release Admin in installed Google Chrome, exercise the three QueryPanels through real HTTP, assert request parameters and table/pagination readback, then prove reset and disclosure defaults. |
+| Existing API/Core owners | Continue to own query parameters, permissions, serialization, service filtering, audit append-only behavior, pagination, and response envelopes. No production API is modified for test convenience. |
+| Docker release report and CI check | Bind the executed browser result to `BUILD_COMMIT`, the built Web/Core images, the real Compose topology, and the JSON report checksum emitted by the lane. |
+
+The flow is:
+
+```text
+test-owned MySQL rows
+  -> real Core repositories/services/controllers
+  -> Nginx `/api/v1` proxy
+  -> production React API adapters and QueryPanel pages
+  -> installed Google Chrome actions and DOM readback
+```
+
+No `page.route()` or other network substitution is allowed in this acceptance case. Fixture rows
+use reserved test identifiers and contain no credential, production, or customer data. The existing
+Compose teardown removes their volume on success or failure.
