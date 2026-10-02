@@ -134,9 +134,9 @@ build, or deployment input changed. Raw Chrome evidence SHA-256 is
 Issue: `#76` — login checkbox, label, card spacing, and stable selector regression.
 Branch: `fix/76-login-card-layout`, based on `origin/main` at `1091f63`.
 
-The issue-scoped implementation and local evidence are recorded below. Branded Google Chrome and
-Docker release evidence remain owned by the existing pull-request CI lane; the local ARM runner
-can only execute the repository-cached bundled Chromium browser.
+The issue-scoped implementation, local evidence, and pull-request CI evidence are recorded below.
+The local ARM runner could only execute the repository-cached bundled Chromium browser, so branded
+Google Chrome and Docker release evidence came from the existing pull-request CI lane.
 
 | Gate | Command/evidence | Current result |
 |---|---|---|
@@ -144,19 +144,19 @@ can only execute the repository-cached bundled Chromium browser.
 | Targeted red-green unit | `npm --prefix web test -- --run test/unit/login-page.test.tsx --pool=forks --maxWorkers=1 --minWorkers=1` | Red reproduced the missing `login-card`; final pass, 8/8. |
 | Issue browser | `issue-76-login-card.spec.ts` from `web/` at 1280×800, one worker, isolated current-workspace Vite server | Pass across two resource-bounded local runs, 1/1 per scenario, using the repository-cached Chromium headless shell: selectors, 16px checkbox, one-line label, normal/error containment, invariant field/error spacing, exact payload, and ADMIN route. This is not branded-Chrome evidence. |
 | Affected browser regression | `issue-108-deepseek-shell.spec.ts` login cases plus `auth.spec.ts` ADMIN login, bundled Chromium, one worker | Pass, 6/6. |
-| Full frontend unit | `npm --prefix web test` | Executed: 180/186 pass. Six unrelated asynchronous tests timed out under shared-host load; a low-concurrency rerun passed 29/30, leaving one existing `identity-pages.test.tsx` 5-second wait failure. The changed login file passes 8/8 independently. |
-| Frontend build | `npm --prefix web run build` | Pass; 306 modules transformed. Existing chunk-size warning remains. |
+| Full frontend unit | `npm --prefix web test` | Local shared-host run: 180/186 pass, with six unrelated asynchronous timeouts; low-concurrency rerun passed 29/30, leaving one existing `identity-pages.test.tsx` 5-second wait failure. PR #113 retry passed all 50 files / 186 tests. The changed login file also passes 8/8 independently. |
+| Frontend build | `npm --prefix web run build` | Pass locally (306 modules transformed) and in PR #113 CI. Existing chunk-size warning remains. |
 | Backend boundary | `mvn -f core/pom.xml test` | Attempted twice; both stopped before compilation because Maven Central terminated TLS handshakes while downloading dependencies. No backend file changed. |
 | Planning validators | `/usr/bin/env ruby .planning/tools/test-planning-validators.rb` | Not executable locally: `/usr/bin/env` cannot find `ruby`. |
 | Diff hygiene | `git diff --check` | Pass before review. |
-| Branded Chrome / Docker release | Existing `Docker release / Google Chrome` PR job, now invoking `control-sizing.spec.ts issue-76-login-card.spec.ts --project=local-google-chrome --workers=1`, followed by `./scripts/verify-docker-release` | Pending pull-request CI; local runner has neither Google Chrome nor Docker. |
+| Branded Chrome / Docker release | Existing `Docker release / Google Chrome` PR job, invoking `control-sizing.spec.ts issue-76-login-card.spec.ts --project=local-google-chrome --workers=1`, followed by `./scripts/verify-docker-release` | Pass on PR #113, run `36964036815`: Google Chrome 154 browser contracts 5/5; Docker `fresh`, `upgrade`, and `restart` lanes each emitted PASS evidence for implementation commit `744427d`. |
 | Independent review | Full issue diff after all local checks | Final changed-slice recheck: 0 BLOCKER, 0 HIGH, 0 MEDIUM, 0 LOW. The initial premature branded-Chrome completion claim and narrow spacing oracle were corrected. Claude CLI is installed but `claude auth status` reports no authenticated session. |
 
 Scoped TODO:
 
 - [x] Reproduce the missing exact `login-card` selector with a failing targeted test.
 - [x] Add the standard card boundary while preserving all existing login selectors and behavior.
-- [ ] Prove 14–20px checkbox geometry, single-line label, consistent error containment, and no
+- [x] Prove 14–20px checkbox geometry, single-line label, consistent error containment, and no
       horizontal overflow in branded Google Chrome PR CI before merge.
 - [x] Prove exact default-admin credentials submit to an ADMIN session and route to
       `/admin/dashboard`; distinguish mocked frontend acceptance from any real-backend evidence.
