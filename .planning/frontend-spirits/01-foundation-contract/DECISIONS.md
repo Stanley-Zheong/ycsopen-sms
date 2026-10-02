@@ -325,3 +325,28 @@ The browser spec contains a literal 56-route Admin catalog and a literal 45-rout
 show ordinary controls. The two sets make route additions or disappeared form surfaces explicit
 review events. API interception proves rendered layout only; it does not claim real-service or
 backend integration behavior.
+
+## DR-FE01-014: Additive Standard Login Card Boundary
+
+### Status
+Accepted (issue `#76`)
+
+### Context
+The established login contract exposes `shared-auth-login-card`, while the unified frontend
+standard and issue acceptance require the exact selector `data-testid="login-card"`. Replacing the
+existing selector would break accepted compatibility coverage, and HTML cannot expose two exact
+`data-testid` values on one element.
+
+### Decision
+Add one non-interactive outer card boundary with `data-testid="login-card"`. Keep the existing form
+as `shared-auth-login-card`, with its authentication semantics and frozen `login-card` class hook
+unchanged. Add explicit `white-space: nowrap` to the remember label; retain the existing 16px
+checkbox rule and reserved error slot.
+
+### Consequences
+
+- Both the repository compatibility selector and the unified standard selector remain available.
+- The wrapper carries no command, field, state, or API responsibility and does not duplicate form
+  semantics.
+- Browser evidence must prove containment and no horizontal overflow so the additive boundary
+  cannot silently change layout.

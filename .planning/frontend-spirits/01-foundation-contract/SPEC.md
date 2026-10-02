@@ -116,6 +116,47 @@ Added by issue #108:
   `shared-console-shell-breadcrumb`, `shared-console-shell-content`,
   `shared-console-shell-content-container`.
 
+## Issue #76: Login Card Layout Regression
+
+### Goal, primary object, and scope
+
+Restore the unified login-card geometry on `/login` without changing authentication behavior. The
+primary object is the console sign-in form and its visible card boundary. This issue owns the
+standard `login-card` selector, the remember-username control geometry, label wrapping, field/error
+spacing, stable login selectors, and document containment.
+
+The actor remains an unauthenticated console user. The data source remains
+`POST /api/v1/console/auth/login`; no request shape, session storage, credential handling, role
+routing, or backend behavior changes. The alias route `/admin/auth/login` continues to render the
+same component but is regression coverage, not a second implementation.
+
+### Action and state contract
+
+| Surface | Contract |
+|---|---|
+| Submit | Username/password submission keeps the existing pending latch, auth request, controlled error mapping, and ADMIN redirect to `/admin/dashboard`. |
+| Remember username | The checkbox keeps username-only local storage behavior, measures 14–20px in both dimensions, and its visible label stays on one line. |
+| Loading | The existing disabled submit and `登录中…` label remain inside the card without horizontal overflow. |
+| Error | `shared-auth-login-error` remains in its reserved slot; showing an error does not push the submit action or card outside the form panel. |
+| Empty | Not applicable: username and password are required editable fields rather than a collection surface. |
+| Audit | Not applicable to the visual repair; authentication/audit behavior remains backend-owned and unchanged. |
+
+### Acceptance rules
+
+| Behavior ID | Required behavior | Observable acceptance |
+|---|---|---|
+| FE-SPIRIT-01-LOGIN-CARD | `/login` exposes a visible `data-testid="login-card"` card boundary while preserving `shared-auth-login-card`. | Chrome Playwright locates both selectors and proves the existing form is contained by the standard card boundary. |
+| FE-SPIRIT-01-LOGIN-REMEMBER | `shared-auth-login-remember` is 14–20px wide and high; `记住用户名` never wraps. | Chrome measures the checkbox and compares the label line box at 1280×800. |
+| FE-SPIRIT-01-LOGIN-CONTAINMENT | Username, password, remember, and submit selectors remain stable; the card and document have no horizontal overflow in normal and error states. | Unit coverage freezes the selector structure; Chrome checks card/document scroll width and form-panel containment. |
+| FE-SPIRIT-01-LOGIN-ADMIN-ROUTE | Entering `admin` / `Admin@123456` and activating `admin-console-identity-auth-login-submit` enters `/admin/dashboard` for an ADMIN response. | Playwright verifies the exact auth payload, fulfilled ADMIN session response, route, and dashboard heading. |
+
+### Stable selector contract
+
+- Standard card boundary: `login-card` (added by issue `#76`).
+- Preserved compatibility selectors: `shared-auth-login-card`, `shared-auth-login-username`,
+  `shared-auth-login-password`, `shared-auth-login-remember`, `shared-auth-login-submit`,
+  `shared-auth-login-error`, `admin-console-identity-auth-login-submit`.
+
 ## Issue #87: Admin Form Geometry
 
 ### Goal, object, and scope

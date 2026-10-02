@@ -108,3 +108,17 @@ select option clipped despite fitting within the cap, or
 document horizontal overflow fails `form-control-layout.spec.ts`. The fixture returns page-shaped
 empty data where a component requires a collection and otherwise uses controlled service errors;
 this is deliberately not real-backend evidence.
+
+## Issue #76 Ownership and Verification
+
+| Owner | Issue #76 responsibility |
+|---|---|
+| `LoginPage` | Expose the standard `login-card` boundary around the existing `shared-auth-login-card` form; preserve username, password, remember, submit, error, pending, storage, API, and routing behavior. |
+| `login.css` | Keep the boundary within the form panel, preserve 16px checkbox geometry, force the remember label to one line, and prevent card/document horizontal overflow. |
+| `login-page.test.tsx` | Freeze the additive selector structure without treating a class hook as a test-id substitute. |
+| `issue-76-login-card.spec.ts` | At 1280×800, measure checkbox and label geometry, assert selectors/containment/no overflow, and prove exact `admin` / `Admin@123456` submit payload and ADMIN dashboard routing. |
+| `Docker release / Google Chrome` CI lane | Run the issue-specific browser contract with the runner's branded Google Chrome; local ARM verification remains explicitly bundled Chromium evidence. |
+
+The outer boundary is presentational and introduces no data or command flow. The form remains the
+only submit owner, loading stays on the existing pending latch, and the existing reserved error
+slot remains the sole authentication feedback region.
