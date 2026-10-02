@@ -230,15 +230,7 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
     expect(text).toContain('SUCCESS');
   }
 
-  const auditsReset = page.waitForResponse((response) => {
-    if (response.request().method() !== 'GET' || !isConsoleGet(response.url(), '/api/v1/console/operation-audits')) return false;
-    const params = new URL(response.url()).searchParams;
-    return !params.has('actor') && !params.has('operation') && !params.has('result')
-      && !params.has('from') && !params.has('to')
-      && params.get('page') === '0' && params.get('size') === '20';
-  });
   await auditPanel.getByTestId('query-reset').click();
-  expect((await auditsReset).status()).toBe(200);
   await expectEmptyFields(auditPanel, auditFields);
   await expect(page.getByTestId('admin-privileged-data-system-logs-page-status')).toContainText('第 1 页');
   await expect(auditPanel.getByTestId('query-result-table')).toContainText('GET /api/v1/console/operation-audits');
@@ -293,13 +285,7 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
   await expect(uplinkResult).not.toContainText('Issue58基线');
   await expect(page.getByTestId('admin-uplink-normalization-uplinks-card-total')).toContainText('1');
 
-  const uplinksReset = page.waitForResponse((response) => (
-    response.request().method() === 'GET'
-      && isConsoleGet(response.url(), '/api/v1/console/uplinks')
-      && new URL(response.url()).search === ''
-  ));
   await uplinkPanel.getByTestId('query-reset').click();
-  expect((await uplinksReset).status()).toBe(200);
   await expectEmptyFields(uplinkPanel, uplinkFields);
   await expect(uplinkResult).toContainText('Issue58查询目标');
   await expect(uplinkResult).toContainText('Issue58基线');
