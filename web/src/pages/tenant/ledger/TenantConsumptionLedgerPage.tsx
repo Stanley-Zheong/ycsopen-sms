@@ -34,14 +34,35 @@ export default function TenantConsumptionLedgerPage() {
           legacyPanelTestId="tenant-trial-prepaid-consumption-ledger-filters"
           submitLegacyTestId="tenant-trial-prepaid-consumption-ledger-refresh"
           onSubmit={() => setBusinessType(draftBusinessType)}
+          onRefresh={() => void ledger.refetch()}
           onReset={() => {
             setDraftBusinessType('');
             setBusinessType('');
           }}
+          queryStatus={{
+            testId: 'tenant-trial-prepaid-consumption-ledger-query-status',
+            label: '消费账本',
+            isFetching: ledger.isFetching,
+            isError: ledger.isError,
+            isEmpty: !ledger.isFetching && !ledger.isError && (ledger.data?.length ?? 0) === 0,
+            count: ledger.data?.length,
+          }}
           result={(
             <>
-              {ledger.isLoading && <p data-testid="tenant-trial-prepaid-consumption-ledger-loading">正在加载消费账本…</p>}
-              {ledger.isError && <p role="alert" data-testid="tenant-trial-prepaid-consumption-ledger-error">消费账本加载失败。</p>}
+              {ledger.isFetching && (
+                <span
+                  aria-hidden="true"
+                  data-testid="tenant-trial-prepaid-consumption-ledger-loading"
+                  data-query-status-alias-for="tenant-trial-prepaid-consumption-ledger-query-status"
+                />
+              )}
+              {!ledger.isFetching && ledger.isError && (
+                <span
+                  aria-hidden="true"
+                  data-testid="tenant-trial-prepaid-consumption-ledger-error"
+                  data-query-status-alias-for="tenant-trial-prepaid-consumption-ledger-query-status"
+                />
+              )}
               <table className="ratio-table" data-testid="tenant-trial-prepaid-consumption-ledger-table">
                 <thead>
                   <tr><th>消息/业务单</th><th>业务类型</th><th>额度变化</th><th>金额(厘)</th><th>类型</th><th>状态</th><th>操作人</th><th>时间</th></tr>

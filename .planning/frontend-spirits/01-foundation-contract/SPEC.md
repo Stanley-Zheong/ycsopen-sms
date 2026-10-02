@@ -24,6 +24,44 @@ Create the reusable frontend foundation that prevents repeated layout, form, tab
   editing individual page stylesheets; page-level styles must keep working through the shared
   shell and token contract.
 
+## Issue #88 Scope
+
+### Issue reference and page goal
+
+- GitHub issue `#88` — `修复无动作孤立输入框并接入异步查询`.
+- Goal: every editable query control on the current Admin and Tenant query routes has a visible
+  label, a stable page-owned selector, and an observable Search, Reset, Refresh, or explicit
+  asynchronous-link behavior. Query state must never fail silently.
+- The primary object is the page-owned query result: list rows, lookup result, dashboard series,
+  or local guide/tenant-filter result. Mutation forms remain owned by their business action.
+
+### Owned routes and data sources
+
+The executable inventory is `web/test/scripts/issue-77-admin-query-contract.spec.ts`: 56 Admin
+routes, including 36 routes with 38 query panels, plus the four Tenant query routes
+`/tenant/consumption-ledger`, `/tenant/uplink`, `/tenant/unsubscribes`, and
+`/tenant/help/guide`. Each page keeps its existing API adapter, React Query key, permission gate,
+and result rendering. `/admin/tenants` and `/tenant/help/guide` apply filters locally to already
+loaded source data; all other query panels invoke their existing page-owned request or mutation.
+
+### Action and state contract
+
+| Action/state | Required behavior | Stable selector |
+|---|---|---|
+| Search with changed criteria | Apply every draft field once and invoke the page-owned query with the changed URL/body, or visibly change a declared local result. The page owner compares canonical criteria when raw input can normalize to an existing value. | `query-submit` |
+| Search with unchanged criteria | Re-run the applied query so a failed request can recover; it must not issue two requests. A page owner returns `false` when a raw-form change is a canonical no-op, and the shared panel routes that submit to Refresh exactly once. | `query-submit` |
+| Reset | Restore the page-defined canonical criteria and synchronize the retry signature before the next edit or submit. | `query-reset` |
+| Refresh | Re-run only the owning query with the currently applied criteria. | `query-refresh` |
+| Loading / error / empty / success | Render exactly one page-owned status inside the query result region; error is assertive, other states are polite, and loading exposes `aria-busy`. | page-owned `*-query-status`, `query-result-table`, `data-query-result-state` |
+
+### Boundaries
+
+- No backend contract, permission rule, or business mutation payload changes.
+- Operation reasons, approval evidence, archive-policy edits, export creation inputs, keyword
+  maintenance, and other mutation controls stay outside `QueryPanel`.
+- The archive manifest is moved into its query result region because it is the queried object.
+- Export summary cards wrap at a 1024px desktop viewport; overflow clipping is not accepted.
+
 ## Issue #108 Scope
 
 ### Issue reference

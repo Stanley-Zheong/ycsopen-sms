@@ -271,6 +271,13 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
   };
   const actionPending = resend.isPending || appeal.isPending || correct.isPending || replay.isPending
     || bulkRetry.isPending || markProblem.isPending || exportRequest.isPending;
+  const activeQuery = section === 'submissions'
+    ? submissions
+    : section === 'sends'
+      ? sends
+      : section === 'receipts'
+        ? receipts
+        : errors;
 
   return (
     <section className="message-operations-page" data-testid="admin-message-receipt-operations-page">
@@ -299,6 +306,15 @@ export default function MessageOperationsPage({ initialSection = 'submissions' }
         onReset={() => {
           setDraftFilter(DEFAULT_FILTER);
           setAppliedFilter(DEFAULT_FILTER);
+        }}
+        onRefresh={() => void activeQuery.refetch()}
+        queryStatus={{
+          testId: `admin-message-receipt-${section}-query-status`,
+          label: SECTION_LABELS[section],
+          isFetching: activeQuery.isFetching,
+          isError: activeQuery.isError,
+          isEmpty: (activeQuery.data ?? []).length === 0,
+          count: activeQuery.data?.length,
         }}
         result={(<>
       <div className="message-operations-tabs">

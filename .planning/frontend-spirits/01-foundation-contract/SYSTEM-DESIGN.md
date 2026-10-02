@@ -22,6 +22,14 @@
 | `shell.css` | `web/src/styles/shell.css` | Shell geometry and surface: app shell, sidebar rail, sidebar nav item states, page header band, content container, responsive stacking. | Page-specific layout, business components. |
 | `index.css` | `web/src/styles/index.css` | Base element styling plus the shared component vocabulary (`card`, `query-panel`, tables, dialogs, buttons, fields, badges, status text, empty states). | Shell frame geometry (owned by `shell.css`) or auth surface (owned by `login.css`). |
 
+## Issue #88 Query Ownership
+
+| Owner | Owns | Must not own |
+|---|---|---|
+| `QueryPanel` | Form semantics, named controls, deterministic applied-value signature, Search/Reset/Refresh placement, unchanged-query retry dispatch, and the accessible four-state result envelope. | Business parameters, API endpoints, permissions, or mutation state. |
+| Page query hook/mutation | Draft and applied criteria, exact request/refetch callback, error and fetching flags, data count, and page-specific result content. | Shared action layout or state precedence. |
+| Route acceptance | Complete route/panel inventory, independent field edits, request URL/body or local-result observation, stable selectors, labels, action geometry, result state, and overflow. | Production-service correctness; business responses are deterministic interceptions. |
+
 ## Dependency Direction
 
 ```
@@ -36,6 +44,16 @@ shell keeps a stable geometry contract.
 ## Data Flow
 
 User input flows into a typed query or form state object, then into a page-owned API adapter. Shared components do not invent business parameters; they expose structured submit/reset/confirm events to page owners.
+
+For issue `#88`, each `QueryField` supplies its semantic name to the native control. `QueryPanel`
+sorts the current `FormData` entries to create a stable signature. A changed signature applies the
+page's draft state through `onSubmit` only. An unchanged signature invokes the exact-owner
+`onRefresh` path only, which permits recovery after an initial failure without coupling retry to a
+state change or dispatching the same request twice. If the raw signature changes but the page's
+canonical query criteria do not, the page returns `false` from `onSubmit` and the panel invokes the
+same exact-owner refresh path once. Reset
+increments a synchronization version; a layout effect captures the controlled post-reset values
+before the user can submit or edit again.
 
 Issue `#108` adds no data flow. The shell reads only:
 
@@ -67,6 +85,8 @@ The two commands the shell owns are sign-in and sign-out:
 | Active route and active group | Router + `SidebarMenu` local state | `SidebarMenu` |
 | Auth form state (`username`, `password`, `remember`, `error`, `pending`) | `LoginPage` local state | `LoginPage` |
 | Remembers-username persistence | `localStorage['ycsopen.console.remembered-username']` | `LoginPage` |
+| Query draft/applied criteria and data | Owning page | Page fields and result content |
+| Query signature and result-state envelope | `QueryPanel` | Search retry dispatch and the page-owned `*-query-status` node |
 
 ## Failure Model
 
@@ -78,6 +98,9 @@ The two commands the shell owns are sign-in and sign-out:
 - Sign-out failure is non-blocking: revocation errors are swallowed by design, the local session is
   always cleared, and the user always returns to `/login` rather than being stranded with a stale
   sidebar.
+- Query request failure is visible as an assertive page-owned status inside the result region.
+  Search with unchanged criteria and Refresh both retain a retry path; no error recovery relies on
+  changing a filter value.
 
 ## Verification Model
 
@@ -108,3 +131,8 @@ select option clipped despite fitting within the cap, or
 document horizontal overflow fails `form-control-layout.spec.ts`. The fixture returns page-shaped
 empty data where a component requires a collection and otherwise uses controlled service errors;
 this is deliberately not real-backend evidence.
+
+## Issue #88 Ownership and Verification
+
+Issue `#88` adds shared-component state-transition tests, focused page retry tests, one Chrome
+route inventory covering every Admin query field independently, and a 1024×900 export-card check.

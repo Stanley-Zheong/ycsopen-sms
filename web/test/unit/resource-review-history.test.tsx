@@ -151,7 +151,7 @@ describe('Phase 15 unified resource review history UI', () => {
     const panel = await screen.findByTestId('query-panel');
     expect(panel).toBeVisible();
     fireEvent.click(within(panel).getByTestId('query-panel-toggle'));
-    expect(within(panel).getByTestId('query-submit')).toBeEnabled();
+    await waitFor(() => expect(within(panel).getByTestId('query-submit')).toBeEnabled());
     expect(within(panel).getByTestId('query-reset')).toBeEnabled();
 
     const table = await screen.findByTestId('data-table');
@@ -171,9 +171,15 @@ describe('Phase 15 unified resource review history UI', () => {
     const table = await screen.findByTestId('data-table');
     expect(within(table).getByRole('status')).toHaveTextContent('正在加载统一审核历史');
     expect(within(table).queryByTestId('table-empty')).not.toBeInTheDocument();
+    const panel = screen.getByTestId('query-panel');
+    expect(within(panel).getByTestId('query-submit')).toBeDisabled();
+    expect(within(panel).getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(within(panel).getByTestId('query-refresh'));
+    expect(urls.filter((url) => url.startsWith('/console/review-history'))).toHaveLength(0);
 
     await act(async () => { releaseOverview?.(); });
     expect(await within(table).findByTestId('table-empty')).toHaveTextContent('暂无审核记录');
     expect(within(table).queryByRole('status')).not.toBeInTheDocument();
+    expect(within(panel).getByTestId('query-refresh')).toBeEnabled();
   });
 });

@@ -64,9 +64,19 @@ export default function SecurityEventsPage() {
         resetLegacyTestId="admin-privileged-data-security-events-reset"
         onSubmit={submit}
         onReset={resetFilters}
+        onRefresh={() => void events.refetch()}
+        queryStatus={{
+          testId: 'admin-privileged-data-security-events-query-status',
+          label: '安全事件',
+          isFetching: events.isFetching,
+          isError: events.isError,
+          isEmpty: (result?.items ?? []).length === 0,
+          count: result?.items.length,
+          errorDetailsId: 'admin-privileged-data-security-events-error-details',
+        }}
         result={<>
           {events.isLoading && <p data-testid="admin-privileged-data-security-events-loading">加载安全事件…</p>}
-          {events.isError && <div data-testid="admin-privileged-data-security-events-error" role="alert">
+          {events.isError && <div id="admin-privileged-data-security-events-error-details" data-testid="admin-privileged-data-security-events-error">
             <p>安全事件加载失败，请保留筛选条件后重试。</p>
             <button data-testid="admin-privileged-data-security-events-retry" type="button" onClick={() => void events.refetch()}>重试加载安全事件</button>
           </div>}

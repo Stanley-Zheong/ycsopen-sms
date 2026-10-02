@@ -69,14 +69,20 @@ export default function TenantUnsubscribesPage() {
       <QueryPanel
         onSubmit={() => setFilters({ ...draft })}
         onReset={resetFilters}
-        onRefresh={() => void queryClient.invalidateQueries()}
+        onRefresh={() => void records.refetch()}
         refreshLegacyTestId="tenant-unsubscribe-compliance-refresh"
         submitLegacyTestId="tenant-unsubscribe-compliance-search"
+        queryStatus={{
+          testId: 'tenant-unsubscribe-compliance-unsubscribes-query-status',
+          label: '退订证据',
+          isFetching: records.isFetching,
+          isError: records.isError,
+          isEmpty: !records.isFetching && !records.isError && (records.data?.length ?? 0) === 0,
+          count: records.data?.length,
+        }}
         result={(
           <section>
             <h2>退订证据列表</h2>
-            {records.isLoading && <p>正在加载退订证据…</p>}
-            {records.isError && <p role="alert">退订证据加载失败。</p>}
             <table className="unsubscribe-table" data-testid="tenant-unsubscribe-compliance-unsubscribes-table">
               <thead><tr><th>手机号</th><th>关键词</th><th>签名/产品</th><th>处理</th><th>通知</th><th>确认</th><th>上行</th><th>时间</th></tr></thead>
               <tbody>{(records.data ?? []).map((row) => (

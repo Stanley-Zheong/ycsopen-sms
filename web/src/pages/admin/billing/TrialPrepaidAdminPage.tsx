@@ -154,14 +154,30 @@ export default function TrialPrepaidAdminPage() {
         <h2>余额审计</h2>
         <button type="button" data-testid="admin-secure-async-balance-audit-export" disabled={!canRead} onClick={() => balanceAuditExportMutation.mutate()}>请求安全异步导出</button>
         <QueryPanel
-          onSubmit={() => setAuditTenantApplied(auditTenantDraft)}
+          onSubmit={() => {
+            const nextTenantId = auditTenantDraft ? Number(auditTenantDraft) : null;
+            if (Object.is(nextTenantId, auditTenantId)) return false;
+            setAuditTenantApplied(auditTenantDraft);
+            return true;
+          }}
           onReset={() => {
             setAuditTenantDraft('');
             setAuditTenantApplied('');
           }}
+          onRefresh={() => void audits.refetch()}
+          submitDisabled={!canRead}
+          queryStatus={{
+            testId: 'admin-trial-prepaid-balance-audit-query-status',
+            label: '余额审计',
+            isFetching: audits.isFetching,
+            isError: audits.isError,
+            isEmpty: (audits.data ?? []).length === 0,
+            count: audits.data?.length,
+            errorDetailsId: 'admin-trial-prepaid-balance-audit-error-details',
+          }}
           result={(
             <>
-              {audits.isError && <p role="alert" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}
+              {audits.isError && <p id="admin-trial-prepaid-balance-audit-error-details" data-testid="admin-trial-prepaid-balance-audit-error">余额审计加载失败。</p>}
               <table className="ratio-table" data-testid="admin-trial-prepaid-balance-audit-table">
                 <thead>
                   <tr><th>机构</th><th>业务单</th><th>类型</th><th>金额(厘)</th><th>余额前/后</th><th>冻结前/后</th><th>版本</th><th>操作人</th><th>时间</th></tr>

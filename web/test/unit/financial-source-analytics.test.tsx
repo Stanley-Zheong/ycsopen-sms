@@ -111,6 +111,19 @@ describe('Phase 39 financial source analytics UI', () => {
     expect(screen.getByTestId('admin-financial-source-channel-statistics-table').querySelectorAll('th')).toHaveLength(6);
   });
 
+  it('refreshes on the first submit when a numeric draft canonicalizes to the applied criteria', async () => {
+    renderWithProviders(<AdminFinancialAnalyticsPage />);
+    await waitFor(() => expect(financialApi.listFinancialSummaries).toHaveBeenCalledTimes(1));
+
+    fireEvent.change(screen.getByTestId('admin-financial-source-financial-analytics-tenant-filter'), {
+      target: { value: '042' },
+    });
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => expect(financialApi.listFinancialSummaries).toHaveBeenCalledTimes(2));
+    expect(financialApi.listFinancialSummaries).toHaveBeenLastCalledWith(expect.objectContaining({ tenantId: 42 }));
+  });
+
   it('exposes semantic retry actions and recovers to an empty result', async () => {
     vi.mocked(financialApi.listFinancialSummaries)
       .mockRejectedValueOnce(new Error('unavailable'))
@@ -118,8 +131,15 @@ describe('Phase 39 financial source analytics UI', () => {
     renderWithProviders(<AdminFinancialAnalyticsPage />);
 
     const financeRetry = await screen.findByTestId('admin-financial-source-financial-analytics-retry');
-    expect(screen.getByTestId('admin-financial-source-financial-analytics-status')).toHaveAttribute('role', 'alert');
-    expect(screen.getByTestId('admin-financial-source-channel-statistics-status')).toHaveAttribute('role', 'alert');
+    const queryStatus = screen.getByTestId('admin-financial-source-financial-analytics-query-status');
+    expect(queryStatus).toHaveAttribute('role', 'alert');
+    expect(queryStatus).toHaveAttribute(
+      'aria-describedby',
+      'admin-financial-source-financial-analytics-status admin-financial-source-channel-statistics-status',
+    );
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByTestId('admin-financial-source-financial-analytics-status')).not.toHaveAttribute('role');
+    expect(screen.getByTestId('admin-financial-source-channel-statistics-status')).not.toHaveAttribute('role');
     expect(screen.getByTestId('admin-financial-source-channel-statistics-retry')).toBeVisible();
     fireEvent.click(financeRetry);
 

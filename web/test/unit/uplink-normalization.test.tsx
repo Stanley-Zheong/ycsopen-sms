@@ -116,4 +116,15 @@ describe('Phase 32 uplink normalization UI', () => {
       auditReason: '更新',
     })));
   });
+
+  it('refreshes only the tenant uplink query and exposes its result state', async () => {
+    renderWithQuery(<TenantUplinksPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tenant-uplink-normalization-uplinks-query-status')).toHaveAttribute('data-state', 'success'));
+    await waitFor(() => expect(api.getTenantUplinkAutoReply).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    await waitFor(() => expect(api.listTenantUplinks).toHaveBeenCalledTimes(2));
+    expect(api.getTenantUplinkAutoReply).toHaveBeenCalledTimes(1);
+  });
 });

@@ -77,14 +77,20 @@ export default function TenantUplinksPage() {
       <QueryPanel
         onSubmit={() => setFilters({ ...draftFilters })}
         onReset={resetFilters}
-        onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['tenant-uplinks'] })}
+        onRefresh={() => void uplinks.refetch()}
         refreshLegacyTestId="tenant-uplink-normalization-uplinks-refresh"
         submitLegacyTestId="tenant-uplink-normalization-uplinks-search"
+        queryStatus={{
+          testId: 'tenant-uplink-normalization-uplinks-query-status',
+          label: '上行记录',
+          isFetching: uplinks.isFetching,
+          isError: uplinks.isError,
+          isEmpty: !uplinks.isFetching && !uplinks.isError && (uplinks.data?.length ?? 0) === 0,
+          count: uplinks.data?.length,
+        }}
         result={(
           <section>
             <h2>上行记录</h2>
-            {uplinks.isLoading && <p>正在加载上行记录…</p>}
-            {uplinks.isError && <p role="alert">上行记录加载失败。</p>}
             <table className="uplink-table" data-testid="tenant-uplink-normalization-uplinks-table">
               <thead>
                 <tr><th>来源</th><th>手机号</th><th>内容关键词</th><th>状态</th><th>运营商</th><th>目的地</th><th>位置</th><th>接收时间</th></tr>
