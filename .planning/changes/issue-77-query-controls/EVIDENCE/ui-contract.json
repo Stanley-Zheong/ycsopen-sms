@@ -1,0 +1,85 @@
+{
+  "mode": "production",
+  "scope": "change-package-addendum",
+  "manifest": {
+    "routes": [
+      "/admin/dashboard",
+      "/tenant/consumption-ledger",
+      "/admin/archive",
+      "/admin/export-center"
+    ],
+    "test_ids": [
+      "query-panel",
+      "admin-retention-archive-manifest-table",
+      "admin-secure-async-export-center-cards"
+    ],
+    "sources": [
+      {
+        "path": ".planning/changes/issue-77-query-controls/UI-ELEMENTS.md",
+        "sha256": "52beb8bb1907af2aa5a512d3a6284c1b9a4da1884007b067c75079826334ddc9"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/dashboard",
+      "/tenant/consumption-ledger",
+      "/admin/archive",
+      "/admin/export-center"
+    ],
+    "test_ids": [
+      "query-panel",
+      "admin-retention-archive-manifest-table",
+      "admin-secure-async-export-center-cards"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "f4fb16ee9f94406e650b6f605469b41795d99d4ea0c0062c530809f2e3186a12"
+      },
+      {
+        "path": "web/src/components/common/QueryPanel.tsx",
+        "sha256": "9c8938318933768c436e51d2ff2bd7710733dc4596f606e6579e2e5254a1bab3"
+      },
+      {
+        "path": "web/src/pages/admin/archive/AdminRetentionArchivePage.tsx",
+        "sha256": "66ece66cdad0da626d57ea52dc2da0a9fa2da2ecc91f0451cca7cf8efe59cf47"
+      },
+      {
+        "path": "web/src/pages/admin/exports/AdminExportCenterPage.tsx",
+        "sha256": "f8bcbadf06ef7a902e66f503c4d98f1bfa6037ef0836a4fed83232595de5c37c"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "case_ids": [
+      "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+      "C-ISSUE-88-ARCHIVE-RESULT",
+      "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+      "C-ISSUE-88-EXPORT-CARDS"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/issue-77-admin-query-contract.spec.ts",
+        "sha256": "ce318f5f934fb66a3e70d61fdcc0a74653402314ca23a4eaa03f6b26ccaab50f"
+      },
+      {
+        "path": "web/test/scripts/secure-async-export.spec.ts",
+        "sha256": "23e1f8b7210262bea5949730856f0ce727881f5bb150a30307ae62971e7d4471"
+      }
+    ]
+  },
+  "execution": {
+    "command": "npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep 'pw-issue-(77|88)'",
+    "commit": "9d08923d111c005522960360e09fb239c33708d7",
+    "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 153.0.8010.52",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/changes/issue-77-query-controls/EVIDENCE/playwright-query-contract-report.json",
+      "sha256": "5527dad8a04abcc9dd93336ff1bad46d31b5d78ce6b8c18e0e6de006a9750302"
+    }
+  }
+}

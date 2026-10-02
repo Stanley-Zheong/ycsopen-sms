@@ -1,0 +1,141 @@
+{
+  "recordedAt": "2026-09-29T04:39:34Z",
+  "verifiedCommit": "9d08923d111c005522960360e09fb239c33708d7",
+  "result": "PASS",
+  "unexpected": 0,
+  "skipped": 0,
+  "project": "local-google-chrome",
+  "engine": "Google Chrome 153.0.8010.52",
+  "runtime": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "x64",
+    "node": "20.20.2",
+    "playwright": "1.62.1"
+  },
+  "command": "npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep 'pw-issue-(77|88)'",
+  "executionTotal": 6,
+  "ci": {
+    "runId": 36521952098,
+    "runUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/36521952098",
+    "jobId": 109256563363,
+    "jobUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/36521952098/job/109256563363",
+    "duration": "8m 5s",
+    "artifact": {
+      "id": 11012798737,
+      "name": "docker-release-36521952098",
+      "digest": "sha256:0efb82085b7ec7dc3022925963c292879a9ffd349eb1880cf130521708f02476",
+      "expiresAt": "2026-10-13T04:39:33Z"
+    }
+  },
+  "sourceSha256": {
+    "web/src/components/common/QueryPanel.tsx": "9c8938318933768c436e51d2ff2bd7710733dc4596f606e6579e2e5254a1bab3",
+    "web/src/styles/index.css": "eddba9c4c8c6931bc099874741f3e290119cf1fd6a9af094fd067fb97f56c8ff",
+    "web/src/styles/secure-async-export.css": "f31f7b85a33d2588794ea2eb2b6cab46b12a35c97763c644adca9802e2b216fd",
+    "web/src/pages/admin/archive/AdminRetentionArchivePage.tsx": "66ece66cdad0da626d57ea52dc2da0a9fa2da2ecc91f0451cca7cf8efe59cf47",
+    "web/src/pages/admin/exports/AdminExportCenterPage.tsx": "f8bcbadf06ef7a902e66f503c4d98f1bfa6037ef0836a4fed83232595de5c37c",
+    "web/test/scripts/issue-77-admin-query-contract.spec.ts": "ce318f5f934fb66a3e70d61fdcc0a74653402314ca23a4eaa03f6b26ccaab50f",
+    "web/test/scripts/secure-async-export.spec.ts": "23e1f8b7210262bea5949730856f0ce727881f5bb150a30307ae62971e7d4471"
+  },
+  "inventory": {
+    "adminRoutesVisited": 56,
+    "adminRoutesWithQueryPanels": 36,
+    "adminQueryPanelRouteInstances": 38,
+    "tenantRoutesWithQueryPanels": 4,
+    "sourceQueryPanelInstances": 34
+  },
+  "evidenceKind": "production",
+  "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 153.0.8010.52",
+  "expected": 6,
+  "cases": [
+    "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+    "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+    "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+    "C-ISSUE-88-ARCHIVE-RESULT",
+    "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+    "C-ISSUE-88-EXPORT-CARDS"
+  ],
+  "lowerLayerCases": [
+    {
+      "id": "C-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "obligationId": "OBL-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "layer": "vitest",
+      "status": "passed",
+      "command": "npm --prefix web test",
+      "result": "50 files / 213 tests passed"
+    }
+  ],
+  "dockerRelease": {
+    "result": "PASS",
+    "fresh": "3 passed (7.7s)",
+    "upgrade": "3 passed (7.7s)",
+    "restart": "3 passed (7.5s)",
+    "reports": {
+      "freshSha256": "a6b528a373eaf6e9f8b04ab3f21ebc93b24451f8ae8778d8c22a30ef11ab2a38",
+      "upgradeSha256": "f46ba9846181fccd2b2cf2223cd57219c639e302f0291c6ded6155975df57482",
+      "restartSha256": "01fc8b9005210824ff107e0c71b790163ea9aa647577411c76f3389ddb405304"
+    }
+  },
+  "boundary": {
+    "realReactDom": true,
+    "businessApiRoutesIntercepted": true,
+    "realServiceAcceptance": false,
+    "reason": "The browser contract proves rendered controls, action wiring, request initiation and signatures, deterministic state exposure, and layout against the real React DOM. Business API responses are deterministic interceptions, so this evidence does not claim production-service or production-data correctness."
+  },
+  "commit": "9d08923d111c005522960360e09fb239c33708d7",
+  "caseDetails": [
+    {
+      "id": "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-admin-query-controls",
+      "obligationId": "OBL-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "route": "/admin/dashboard",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive traversal of all 56 Admin routes and 38 query-panel route instances; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+    },
+    {
+      "id": "C-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "playwrightId": "pw-issue-77-tenant-query-controls",
+      "obligationId": "OBL-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "route": "/tenant/consumption-ledger",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive traversal of the four Tenant query routes; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+    },
+    {
+      "id": "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-admin-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+      "route": "/admin/dashboard",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive Admin traversal; canonical reset, every query field's request signature or declared local-result change, unchanged-query retry, and four-state result status."
+    },
+    {
+      "id": "C-ISSUE-88-ARCHIVE-RESULT",
+      "playwrightId": "pw-issue-88-archive-result",
+      "obligationId": "OBL-ISSUE-88-ARCHIVE-RESULT",
+      "route": "/admin/archive",
+      "selector": "admin-retention-archive-manifest-table",
+      "status": "passed",
+      "coverage": "The rendered manifest table and successful state are inside the archive query-result region."
+    },
+    {
+      "id": "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-tenant-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+      "route": "/tenant/consumption-ledger",
+      "selector": "query-panel",
+      "status": "passed",
+      "coverage": "Direct wrapper closure plus exhaustive Tenant traversal; canonical reset, every query field's request signature or declared local-result change, unchanged-query retry, and four-state result status."
+    },
+    {
+      "id": "C-ISSUE-88-EXPORT-CARDS",
+      "playwrightId": "pw-issue-88-export-center-narrow",
+      "obligationId": "OBL-ISSUE-88-EXPORT-CARDS",
+      "route": "/admin/export-center",
+      "selector": "admin-secure-async-export-center-cards",
+      "status": "passed",
+      "coverage": "All six export summary cards remain within the grid and content width at 1024 by 900."
+    }
+  ]
+}

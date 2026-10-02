@@ -43,28 +43,67 @@
     "tenantRoutesWithQueryPanels": 4,
     "sourceQueryPanelInstances": 34
   },
-  "expected": 2,
-  "coveredCaseCount": 2,
+  "expected": 4,
+  "coveredCaseCount": 4,
   "cases": [
     {
-      "id": "C-ISSUE-77-ADMIN-QUERY-CONTROLS",
-      "playwrightId": "pw-issue-77-admin-query-controls",
-      "obligationId": "OBL-ISSUE-77-ADMIN-QUERY-CONTROLS",
+      "id": "C-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-admin-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-ADMIN-ACTIONABLE-CONTROLS",
       "route": "/admin/dashboard",
       "selector": "query-panel",
       "status": "passed",
-      "coverage": "Direct wrapper closure plus exhaustive traversal of all 56 Admin routes and 38 query-panel route instances; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+      "coverage": "Direct wrapper closure plus exhaustive Admin traversal; canonical reset, every query field's request signature or declared local-result change, unchanged-query retry, and four-state result status."
     },
     {
-      "id": "C-ISSUE-77-TENANT-QUERY-CONTROLS",
-      "playwrightId": "pw-issue-77-tenant-query-controls",
-      "obligationId": "OBL-ISSUE-77-TENANT-QUERY-CONTROLS",
+      "id": "C-ISSUE-88-ARCHIVE-RESULT",
+      "playwrightId": "pw-issue-88-archive-result",
+      "obligationId": "OBL-ISSUE-88-ARCHIVE-RESULT",
+      "route": "/admin/archive",
+      "selector": "admin-retention-archive-manifest-table",
+      "status": "passed",
+      "coverage": "The rendered manifest table and successful state are inside the archive query-result region."
+    },
+    {
+      "id": "C-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
+      "playwrightId": "pw-issue-88-tenant-actionable-controls",
+      "obligationId": "OBL-ISSUE-88-TENANT-ACTIONABLE-CONTROLS",
       "route": "/tenant/consumption-ledger",
       "selector": "query-panel",
       "status": "passed",
-      "coverage": "Direct wrapper closure plus exhaustive traversal of the four Tenant query routes; labels, stable IDs, control geometry, action scoping, result ordering, and horizontal containment."
+      "coverage": "Direct wrapper closure plus exhaustive Tenant traversal; canonical reset, every query field's request signature or declared local-result change, unchanged-query retry, and four-state result status."
+    },
+    {
+      "id": "C-ISSUE-88-EXPORT-CARDS",
+      "playwrightId": "pw-issue-88-export-center-narrow",
+      "obligationId": "OBL-ISSUE-88-EXPORT-CARDS",
+      "route": "/admin/export-center",
+      "selector": "admin-secure-async-export-center-cards",
+      "status": "passed",
+      "coverage": "All six export summary cards remain within the grid and content width at 1024 by 900."
     }
   ],
+  "lowerLayerCases": [
+    {
+      "id": "C-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "obligationId": "OBL-ISSUE-88-QUERY-STATE-AND-RETRY",
+      "layer": "vitest",
+      "status": "passed",
+      "command": "npm --prefix web test",
+      "result": "50 files / 213 tests passed"
+    }
+  ],
+  "dockerRelease": {
+    "result": "PASS",
+    "fresh": "3 passed (7.7s)",
+    "upgrade": "3 passed (7.7s)",
+    "restart": "3 passed (7.5s)",
+    "reports": {
+      "freshSha256": "a6b528a373eaf6e9f8b04ab3f21ebc93b24451f8ae8778d8c22a30ef11ab2a38",
+      "upgradeSha256": "f46ba9846181fccd2b2cf2223cd57219c639e302f0291c6ded6155975df57482",
+      "restartSha256": "01fc8b9005210824ff107e0c71b790163ea9aa647577411c76f3389ddb405304"
+    }
+  },
   "boundary": {
     "realReactDom": true,
     "businessApiRoutesIntercepted": true,

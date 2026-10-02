@@ -41,6 +41,7 @@ function HelpShell({ children }: { children: ReactNode }) {
 function Guide() {
   const [draftQuery, setDraftQuery] = useState('');
   const [query, setQuery] = useState('');
+  const [refreshCount, setRefreshCount] = useState(0);
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return GUIDE_ARTICLES;
@@ -52,12 +53,30 @@ function Guide() {
   return (
     <QueryPanel
       className="tenant-help-card"
-      onSubmit={() => setQuery(draftQuery)}
+      onSubmit={() => {
+        if (draftQuery.trim().toLowerCase() === query.trim().toLowerCase()) return false;
+        setQuery(draftQuery);
+        return true;
+      }}
       onReset={() => { setDraftQuery(''); setQuery(''); }}
+      onRefresh={() => setRefreshCount((current) => current + 1)}
       legacyPanelTestId="tenant-tenant-help-guide-search-region"
+      queryStatus={{
+        testId: 'tenant-tenant-help-guide-query-status',
+        label: '使用指南',
+        isFetching: false,
+        isError: false,
+        isEmpty: filtered.length === 0,
+        count: filtered.length,
+      }}
       result={(
         <>
           <h2>版本化使用指南</h2>
+          {refreshCount > 0 && (
+            <p role="status" data-testid="tenant-tenant-help-guide-refresh-result">
+              本地结果已刷新 {refreshCount} 次
+            </p>
+          )}
           <div className="tenant-help-article-grid" data-testid="tenant-tenant-help-guide-results">
             {filtered.map((article) => (
               <article key={article.id} className="tenant-help-article" data-testid="tenant-tenant-help-guide-article">

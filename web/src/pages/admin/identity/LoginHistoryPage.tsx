@@ -31,7 +31,7 @@ export default function LoginHistoryPage() {
   const hasNextPage = Boolean(result && (page + 1) * result.size < result.totalElements);
   const historyResult = <>
     {history.isLoading && <p>加载登录历史…</p>}
-    {history.isError && <p role="alert">登录历史加载失败，请稍后重试</p>}
+    {history.isError && <p id="admin-identity-login-history-error-details">登录历史加载失败，请稍后重试</p>}
     {result && <>
       <table className="ratio-table">
         <caption className="visually-hidden">平台账号登录历史</caption>
@@ -59,8 +59,24 @@ export default function LoginHistoryPage() {
           legacyPanelTestId="admin-identity-login-history-filter"
           submitLegacyTestId="admin-identity-login-history-query"
           resetLegacyTestId="admin-identity-login-history-reset"
-          onSubmit={() => { setPage(0); setAppliedUserId(userIdFilter ? Number(userIdFilter) : undefined); }}
+          onSubmit={() => {
+            const nextUserId = userIdFilter ? Number(userIdFilter) : undefined;
+            if (Object.is(nextUserId, appliedUserId)) return false;
+            setPage(0);
+            setAppliedUserId(nextUserId);
+            return true;
+          }}
           onReset={() => { setUserIdFilter(''); setAppliedUserId(undefined); setPage(0); }}
+          onRefresh={() => void history.refetch()}
+          queryStatus={{
+            testId: 'admin-identity-login-history-query-status',
+            label: '登录历史',
+            isFetching: history.isFetching,
+            isError: history.isError,
+            isEmpty: (result?.items ?? []).length === 0,
+            count: result?.items.length,
+            errorDetailsId: 'admin-identity-login-history-error-details',
+          }}
           result={historyResult}
         >
           <QueryField name="user-id" label="用户 ID"><input data-testid="admin-identity-login-history-user-id-input" inputMode="numeric" pattern="[0-9]+" value={userIdFilter} onChange={(event) => setUserIdFilter(event.target.value)} /></QueryField>

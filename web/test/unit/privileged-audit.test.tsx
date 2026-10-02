@@ -74,6 +74,7 @@ describe('Phase 6 privileged audit UI', () => {
       }
       if (url === '/console/operation-audits') {
         if (failAuditRequest) throw new Error('audit unavailable');
+        const page = Number((request.params as { page?: number } | undefined)?.page ?? 0);
         return axiosResponse(request, apiResponse({
           items: [{
             id: 31,
@@ -88,9 +89,9 @@ describe('Phase 6 privileged audit UI', () => {
             requestSummary: 'parameterNames=[roleId]',
             occurredAt: '2026-09-07T09:00:00+08:00',
           }],
-          page: 0,
+          page,
           size: 20,
-          totalElements: 1,
+          totalElements: 41,
         }));
       }
       if (url === '/console/security-events') {
@@ -208,7 +209,12 @@ describe('Phase 6 privileged audit UI', () => {
   it('retains the audit filters and retries a failed request explicitly', async () => {
     failAuditRequest = true;
     const { queryClient } = renderPage(<OperationAuditPage />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('操作日志加载失败');
+    const status = await screen.findByTestId('admin-privileged-data-system-logs-query-status');
+    expect(status).toHaveTextContent('操作日志加载失败');
+    expect(status).toHaveAttribute('role', 'alert');
+    expect(status).toHaveAttribute('aria-describedby', 'admin-privileged-data-system-logs-error-details');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByTestId('admin-privileged-data-system-logs-error')).not.toHaveAttribute('role');
     const filters = screen.getByTestId('admin-privileged-data-system-logs-filter');
     fireEvent.change(within(filters).getByLabelText('操作人'), { target: { value: 'admin' } });
 
@@ -217,6 +223,25 @@ describe('Phase 6 privileged audit UI', () => {
     expect(await screen.findByText('UPDATE_PLATFORM_ROLE_PERMISSIONS')).toBeVisible();
     expect(within(filters).getByLabelText('操作人')).toHaveValue('admin');
     await settleQueries(queryClient);
+  });
+
+  it('retries exactly the current audit page when unchanged criteria are submitted', async () => {
+    const { queryClient } = renderPage(<OperationAuditPage />);
+    await screen.findByText('UPDATE_PLATFORM_ROLE_PERMISSIONS');
+
+    fireEvent.click(screen.getByTestId('admin-privileged-data-system-logs-next'));
+    await waitFor(() => expect(seen.filter((request) => request.url === '/console/operation-audits'
+      && (request.params as { page?: number } | undefined)?.page === 1)).toHaveLength(1));
+    await settleQueries(queryClient);
+
+    const requestCount = seen.filter((request) => request.url === '/console/operation-audits').length;
+    fireEvent.click(screen.getByTestId('admin-privileged-data-system-logs-query'));
+    await waitFor(() => expect(seen.filter((request) => request.url === '/console/operation-audits')).toHaveLength(requestCount + 1));
+    await settleQueries(queryClient);
+
+    const retryRequests = seen.filter((request) => request.url === '/console/operation-audits').slice(requestCount);
+    expect(retryRequests).toHaveLength(1);
+    expect(retryRequests[0].params).toMatchObject({ page: 1 });
   });
 
   it('reveals a phone only for a controlled purpose and clears plaintext on close', async () => {

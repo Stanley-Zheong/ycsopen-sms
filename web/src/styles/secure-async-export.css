@@ -4,7 +4,6 @@
   min-width: 0;
   max-width: 100%;
   gap: 16px;
-  overflow-x: hidden;
 }
 
 .secure-export-header {
@@ -20,7 +19,14 @@
   gap: 12px;
 }
 
+@media (max-width: 1200px) {
+  .secure-export-cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
+  }
+}
+
 .secure-export-cards article {
+  min-width: 0;
   border: 1px solid #dde4f0;
   border-radius: 12px;
   background: #fff;

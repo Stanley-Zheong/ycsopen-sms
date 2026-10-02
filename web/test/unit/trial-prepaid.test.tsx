@@ -189,6 +189,84 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledWith(42, 'SMS'));
   });
 
+  it('retries a failed ledger query when the submitted filter is unchanged', async () => {
+    vi.mocked(trialPrepaidApi.listConsumption).mockReset();
+    vi.mocked(trialPrepaidApi.listConsumption)
+      .mockResolvedValueOnce([
+        {
+          tenantId: 42,
+          messageRef: 'MSG-INITIAL',
+          businessType: 'NOTICE',
+          quotaDelta: -1,
+          amountMil: 0,
+          entryType: 'TRIAL_CONSUME',
+          state: 'CONFIRMED',
+          actor: 'tenant',
+          createdAt: '2026-09-09T01:00:00',
+        },
+      ])
+      .mockRejectedValueOnce(new Error('ledger unavailable'))
+      .mockResolvedValueOnce([
+        {
+          tenantId: 42,
+          messageRef: 'MSG-RETRY',
+          businessType: 'SMS',
+          quotaDelta: -1,
+          amountMil: 0,
+          entryType: 'TRIAL_CONSUME',
+          state: 'CONFIRMED',
+          actor: 'tenant',
+          createdAt: '2026-09-09T01:00:00',
+        },
+      ])
+      .mockResolvedValue([]);
+
+    renderWithProviders(<TenantConsumptionLedgerPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'success'));
+    fireEvent.change(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-business-type'), { target: { value: 'SMS' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'error'));
+
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => expect(trialPrepaidApi.listConsumption).toHaveBeenCalledTimes(3));
+    expect(await screen.findByTestId('tenant-trial-prepaid-consumption-ledger-row')).toHaveTextContent('MSG-RETRY');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'success');
+  });
+
+  it('keeps legacy ledger loading and error selectors as inert aliases of the four-state status', async () => {
+    let rejectLedger!: (reason?: unknown) => void;
+    vi.mocked(trialPrepaidApi.listConsumption).mockReset();
+    vi.mocked(trialPrepaidApi.listConsumption)
+      .mockImplementationOnce(() => new Promise<Awaited<ReturnType<typeof trialPrepaidApi.listConsumption>>>((_, reject) => {
+        rejectLedger = reject;
+      }))
+      .mockResolvedValue([]);
+
+    renderWithProviders(<TenantConsumptionLedgerPage />);
+
+    const result = screen.getByTestId('query-result-table');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'loading');
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-loading')).toHaveAttribute(
+      'data-query-status-alias-for',
+      'tenant-trial-prepaid-consumption-ledger-query-status',
+    );
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-loading')).toHaveAttribute('aria-hidden', 'true');
+    expect(result.querySelectorAll('[role="status"], [role="alert"]')).toHaveLength(1);
+
+    act(() => rejectLedger(new Error('ledger unavailable')));
+
+    await waitFor(() => expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-query-status')).toHaveAttribute('data-state', 'error'));
+    expect(screen.queryByTestId('tenant-trial-prepaid-consumption-ledger-loading')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-error')).toHaveAttribute(
+      'data-query-status-alias-for',
+      'tenant-trial-prepaid-consumption-ledger-query-status',
+    );
+    expect(screen.getByTestId('tenant-trial-prepaid-consumption-ledger-error')).toHaveAttribute('aria-hidden', 'true');
+    expect(result.querySelectorAll('[role="status"], [role="alert"]')).toHaveLength(1);
+  });
+
   it('activates trial quota/validity and shows append-only balance audits', async () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
     renderWithProviders(<TrialPrepaidAdminPage />);
@@ -211,5 +289,17 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     fireEvent.click(screen.getByTestId('admin-trial-prepaid-activate-trial'));
     await waitFor(() => expect(trialPrepaidApi.activateTrial).toHaveBeenCalledWith(42, 500, '2026-09-09T00:00:00', '2026-09-23T00:00:00'));
     expect(screen.getByTestId('admin-trial-prepaid-tenant-id')).toHaveValue('42');
+  });
+
+  it('does not load balance audits through refresh while read access is loading', () => {
+    vi.mocked(identityApi.getAccountOverview).mockImplementationOnce(() => new Promise(() => undefined));
+    useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
+    renderWithProviders(<TrialPrepaidAdminPage />);
+
+    expect(screen.getByTestId('query-submit')).toBeDisabled();
+    expect(screen.getByTestId('query-refresh')).toBeDisabled();
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    expect(trialPrepaidApi.listBalanceAudits).not.toHaveBeenCalled();
   });
 });
