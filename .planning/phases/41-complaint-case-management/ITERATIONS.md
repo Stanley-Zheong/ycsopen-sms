@@ -31,3 +31,6 @@
 29. Independent review HIGH: a global 200-record remediation query could omit a failed record for a complaint still visible in the 200-case list; the query now ranks records within the visible complaint set, and a 201-record interference regression test passes.
 30. Independent review MEDIUM: analytics loading and error states rendered zero-valued cards; cards now render only after successful data load, with focused loading/error tests.
 31. Incremental independent re-review: both findings are resolved with no new BLOCKER, HIGH, or MEDIUM finding.
+32. PR CI verification: full Node and Java suites, fresh/repeated Docker release, and five complaint-management tests in `/usr/bin/google-chrome` passed; the raw browser JSON was downloaded and normalized into the Phase 41 evidence contract.
+33. CI evidence hardening: the browser report moved outside Playwright's subsequently cleaned `test-results` directory, gained a non-empty assertion, and is uploaded with Docker diagnostics.
+34. Unrelated CI boundary: `Phase 03 real integration` was retried and failed before test execution both times because `quay.io` rejected the repository's existing pinned MinIO image; owned-resource cleanup passed.

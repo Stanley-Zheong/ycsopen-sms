@@ -145,6 +145,14 @@ jobs:
           ruby .planning/tools/test-planning-validators.rb
           ruby .planning/tools/test-phase-03-protected-inventory.rb
           ruby scripts/lib/phase-03/test_service_checks.rb
+      - name: Verify complaint management planning contracts
+        run: |
+          ruby .planning/tools/validate-prd-obligations.rb \
+            --owner complaint-case-management --assert-unique --assert-traced
+          ruby .planning/tools/validate-ui-contract.rb \
+            --phase 41 --package complaint-case-management --stage design
+          ruby .planning/tools/validate-ui-contract.rb \
+            --phase 41 --package complaint-case-management --stage production
       - name: Audit production source reachability
         run: ruby scripts/lib/phase-03/run_checks.rb --internal-source-audit
       - name: Verify production artifact excludes test bridges

@@ -21,5 +21,8 @@ Closed work:
 - Independent review findings for visible-case remediation readback and honest
   analytics loading/error states were fixed and passed incremental re-review.
 
-No scoped product TODO remains for Phase 41. Issue `#66` still requires the
-pull-request CI quality gate before merge.
+No scoped product TODO remains for Phase 41. Complaint-management backend,
+frontend, Docker-release, and real-Google-Chrome gates pass in PR CI. The PR's
+remaining failed check is an external `quay.io` authorization error while
+pulling the repository's existing Phase 03 MinIO image, before those unrelated
+integration tests execute.
