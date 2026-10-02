@@ -9,6 +9,9 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -203,12 +206,55 @@ class ComplaintCaseServiceTest {
 
         assertThat(failed.status()).isEqualTo("FAILED");
         assertThat(failed.failureReason()).contains("provider timeout");
+        assertThat(serviceWithFailure.remediations())
+                .singleElement()
+                .satisfies(row -> {
+                    assertThat(row.id()).isEqualTo(failed.id());
+                    assertThat(row.complaintId()).isEqualTo(id);
+                    assertThat(row.status()).isEqualTo("FAILED");
+                    assertThat(row.failureReason()).contains("provider timeout");
+                });
 
         var recovered = serviceWithFailure.recover(id, new ComplaintCaseService.RecoveryCommand(
                 failed.id(), "review-41-recovery", "operator-c", "复核后补偿完成"));
         assertThat(recovered.status()).isEqualTo("RECOVERED");
         assertThat(recovered.originalComplaintId()).isEqualTo(id);
         assertThat(recovered.authorizedReviewId()).isEqualTo("review-41-recovery");
+    }
+
+    @Test
+    void remediationReadbackKeepsVisibleCaseFailureBeyondGlobalRecordCutoff() {
+        long failedCaseId = service.create(sampleCreate(), "operator-a").id();
+        long noisyCaseId = service.create(sampleCreate(), "operator-a").id();
+        Timestamp base = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+        jdbc.update("""
+                INSERT INTO disposal_records(
+                    complaint_id, disposal_type, target_ref, disposed_by, disposed_at, status,
+                    authorized_review_id, failure_reason, original_complaint_id)
+                VALUES (?, 'SUSPEND_CHANNEL', 'channel:11', 'operator-a', ?, 'FAILED',
+                        'review-failed', 'provider timeout', ?)
+                """, failedCaseId, base, failedCaseId);
+        for (int index = 1; index <= 201; index++) {
+            jdbc.update("""
+                    INSERT INTO disposal_records(
+                        complaint_id, disposal_type, target_ref, disposed_by, disposed_at, status,
+                        authorized_review_id, original_complaint_id)
+                    VALUES (?, 'SUSPEND_CHANNEL', 'channel:11', 'operator-a', ?, 'APPLIED', ?, ?)
+                    """, noisyCaseId, Timestamp.valueOf(base.toLocalDateTime().plusSeconds(index)),
+                    "review-noisy-" + index, noisyCaseId);
+        }
+
+        assertThat(service.remediations())
+                .hasSize(2)
+                .anySatisfy(row -> {
+                    assertThat(row.complaintId()).isEqualTo(failedCaseId);
+                    assertThat(row.status()).isEqualTo("FAILED");
+                    assertThat(row.failureReason()).isEqualTo("provider timeout");
+                })
+                .anySatisfy(row -> {
+                    assertThat(row.complaintId()).isEqualTo(noisyCaseId);
+                    assertThat(row.status()).isEqualTo("APPLIED");
+                });
     }
 
     @Test
@@ -233,15 +279,21 @@ class ComplaintCaseServiceTest {
 
     @Test
     void analyticsReconcilesCasesAndUnknownAttributionQuality() {
-        service.create(sampleCreate(), "operator-a");
+        LocalDate today = LocalDate.now();
+        long previousDayId = service.create(sampleCreate(), "operator-a").id();
         service.create(new ComplaintCaseService.CreateCommand(
                 "USER_REPORT", "用户投诉：未知通道", null, null, null, null, null,
                 "MARKETING", "13900139000", null, "联系用户"), "operator-a");
+        jdbc.update("UPDATE complaints SET created_at=? WHERE id=?",
+                Timestamp.valueOf(today.minusDays(1).atStartOfDay()), previousDayId);
 
         var analytics = service.analytics();
 
         assertThat(analytics.totalCount()).isEqualTo(2);
         assertThat(analytics.unknownAttributionCount()).isEqualTo(1);
+        assertThat(analytics.trend()).containsExactly(
+                new ComplaintCaseService.TrendRow(today.minusDays(1).toString(), 1),
+                new ComplaintCaseService.TrendRow(today.toString(), 1));
         assertThat(analytics.byTenant()).anySatisfy(row -> {
             assertThat(row.dimension()).isEqualTo("tenant:7");
             assertThat(row.count()).isEqualTo(1);

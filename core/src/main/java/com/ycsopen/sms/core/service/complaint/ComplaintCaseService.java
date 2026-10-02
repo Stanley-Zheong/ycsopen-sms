@@ -85,6 +85,35 @@ public class ComplaintCaseService {
                 """, (rs, i) -> caseRow(rs));
     }
 
+    @Transactional(readOnly = true)
+    public List<RemediationRow> remediations() {
+        return jdbc.query("""
+                WITH visible_complaints AS (
+                    SELECT id
+                      FROM complaints
+                     ORDER BY created_at DESC, id DESC
+                     LIMIT 200
+                ), ranked_remediations AS (
+                    SELECT d.*,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY d.complaint_id
+                               ORDER BY d.disposed_at DESC, d.id DESC
+                           ) AS latest_rank,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY d.complaint_id, d.status
+                               ORDER BY d.disposed_at DESC, d.id DESC
+                           ) AS status_rank
+                      FROM disposal_records d
+                      JOIN visible_complaints c ON c.id = d.complaint_id
+                )
+                SELECT id, complaint_id, disposal_type, target_ref, status, authorized_review_id,
+                       failure_reason, original_complaint_id
+                  FROM ranked_remediations
+                 WHERE latest_rank = 1 OR (status = 'FAILED' AND status_rank = 1)
+                 ORDER BY disposed_at DESC, id DESC
+                """, (rs, i) -> remediationRow(rs));
+    }
+
     @Transactional
     public CaseRow accept(long id, StateCommand command) {
         ensureStatus(id, "PENDING");
@@ -174,6 +203,13 @@ public class ComplaintCaseService {
         int unknown = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM complaints WHERE attribution_quality='UNKNOWN'", Integer.class);
         return new AnalyticsResponse(total, unknown,
+                jdbc.query("""
+                        SELECT CAST(created_at AS DATE) AS complaint_day, COUNT(*) AS total
+                          FROM complaints
+                         GROUP BY CAST(created_at AS DATE)
+                         ORDER BY complaint_day ASC
+                        """, (rs, i) -> new TrendRow(
+                        rs.getDate("complaint_day").toLocalDate().toString(), rs.getInt("total"))),
                 dimensionRows("tenant", "tenant_id"),
                 dimensionRows("signature", "signature_id"),
                 jdbc.query("""
@@ -451,6 +487,9 @@ public class ComplaintCaseService {
 
     public record DimensionRow(String dimension, int count) { }
 
-    public record AnalyticsResponse(int totalCount, int unknownAttributionCount, List<DimensionRow> byTenant,
+    public record TrendRow(String day, int count) { }
+
+    public record AnalyticsResponse(int totalCount, int unknownAttributionCount, List<TrendRow> trend,
+                                    List<DimensionRow> byTenant,
                                     List<DimensionRow> bySignature, List<DimensionRow> byContentType) { }
 }

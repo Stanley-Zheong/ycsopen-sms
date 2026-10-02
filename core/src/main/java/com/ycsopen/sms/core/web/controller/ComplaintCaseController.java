@@ -29,6 +29,11 @@ public class ComplaintCaseController {
         return ApiResponse.ok(service.cases());
     }
 
+    @GetMapping("/complaint-remediations")
+    public ApiResponse<List<ComplaintCaseService.RemediationRow>> remediations() {
+        return ApiResponse.ok(service.remediations());
+    }
+
     @PostMapping("/complaints")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public ApiResponse<ComplaintCaseService.CaseRow> create(

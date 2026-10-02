@@ -7,6 +7,7 @@ import {
   createComplaintCase,
   handleComplaintCase,
   listComplaintCases,
+  listComplaintRemediations,
   recoverComplaintRemediation,
   remediateComplaintCase,
   type ComplaintCaseRow,
@@ -121,11 +122,14 @@ export default function AdminComplaintsPage() {
   const [recoveryDraft, setRecoveryDraft] = useState(defaultRecoveryDraft);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [disposalIdsByCase, setDisposalIdsByCase] = useState<Record<number, number>>({});
   const cases = useQuery({ queryKey: ['complaint-cases'], queryFn: listComplaintCases, retry: false });
+  const remediations = useQuery({ queryKey: ['complaint-remediations'], queryFn: listComplaintRemediations, retry: false });
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: ['complaint-cases'] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['complaint-cases'] }),
+      queryClient.invalidateQueries({ queryKey: ['complaint-remediations'] }),
+    ]);
   }
 
   function fail(failure: unknown, fallback: string) {
@@ -191,19 +195,18 @@ export default function AdminComplaintsPage() {
       });
     },
     onSuccess: (row) => refresh().then(() => {
-      setDisposalIdsByCase((current) => ({ ...current, [row.complaintId]: row.id }));
-      setMessage('处置已记录');
+      setMessage(row.status === 'FAILED' ? '处置失败，已保留恢复记录' : '处置已记录');
     }),
     onError: (failure) => fail(failure, '处置记录失败'),
   });
 
   const recoverCase = useMutation({
     mutationFn: (row: ComplaintCaseRow) => {
-      const disposalRecordId = disposalIdsByCase[row.id];
-      if (disposalRecordId == null) {
+      const failed = remediations.data?.find((item) => item.complaintId === row.id && item.status === 'FAILED');
+      if (failed == null) {
         throw new Error('没有可恢复的处置记录');
       }
-      return recoverComplaintRemediation(row.id, { ...recoveryDraft, disposalRecordId });
+      return recoverComplaintRemediation(row.id, { ...recoveryDraft, disposalRecordId: failed.id });
     },
     onSuccess: () => refresh().then(() => setMessage('恢复已记录')),
     onError: (failure) => fail(failure, '恢复记录失败'),
@@ -227,6 +230,11 @@ export default function AdminComplaintsPage() {
 
       {message && <p role="status" className="alert-engine-message success" data-testid="admin-complaint-case-complaints-message">{message}</p>}
       {error && <p role="alert" className="alert-engine-message error" data-testid="admin-complaint-case-complaints-error">{error}</p>}
+      {remediations.isError && (
+        <p role="alert" className="alert-engine-message error" data-testid="admin-complaint-case-complaints-remediation-load-error">
+          处置记录加载失败，恢复功能暂不可用。
+        </p>
+      )}
 
       <form
         className="complaint-intake-form"
@@ -319,6 +327,20 @@ export default function AdminComplaintsPage() {
               ) : (cases.data ?? []).map((row) => {
                 const resourceSummary = targetSummary(row);
                 const requirement = row.requirement ?? 'UNKNOWN';
+                const latestRemediation = remediations.data?.find((item) => item.complaintId === row.id);
+                const failedRemediation = remediations.data?.find((item) => item.complaintId === row.id && item.status === 'FAILED');
+                const remediationLabel = (item: NonNullable<typeof latestRemediation>) => (
+                  `${item.status} #${item.id}${item.failureReason ? `：${item.failureReason}` : ''}`
+                );
+                const remediationStatus = remediations.isLoading
+                  ? '正在加载处置记录…'
+                  : remediations.isError
+                    ? '处置记录加载失败'
+                    : latestRemediation == null
+                      ? '暂无处置记录'
+                      : `${remediationLabel(latestRemediation)}${failedRemediation != null && failedRemediation.id !== latestRemediation.id
+                        ? `；待恢复 ${remediationLabel(failedRemediation)}`
+                        : ''}`;
                 return (
                   <tr key={row.id} data-testid="admin-complaint-case-complaints-row">
                     <td><span className="complaint-table-truncate" title={row.source}>{row.source}</span></td>
@@ -335,10 +357,11 @@ export default function AdminComplaintsPage() {
                     <td><span className="complaint-table-truncate" title={requirement}>{requirement}</span></td>
                     <td>
                       <div className="complaint-table-actions">
+                        <span className="complaint-remediation-status" data-testid="admin-complaint-case-complaints-remediation-status" title={remediationStatus}>{remediationStatus}</span>
                         <button type="button" data-testid="admin-complaint-case-complaints-accept" onClick={() => acceptCase.mutate(row)}>接单</button>
                         <button type="button" data-testid="admin-complaint-case-complaints-handle" onClick={() => handleCase.mutate(row)}>处理</button>
                         <button type="button" data-testid="admin-complaint-case-complaints-remediation" onClick={() => remediateCase.mutate(row)}>资源处置</button>
-                        <button type="button" data-testid="admin-complaint-case-complaints-remediation-recovery" disabled={disposalIdsByCase[row.id] == null} onClick={() => recoverCase.mutate(row)}>恢复</button>
+                        <button type="button" data-testid="admin-complaint-case-complaints-remediation-recovery" title={failedRemediation == null ? '没有可恢复的失败处置' : `恢复处置记录 #${failedRemediation.id}`} disabled={failedRemediation == null} onClick={() => recoverCase.mutate(row)}>恢复</button>
                         <button type="button" data-testid="admin-complaint-case-complaints-close" onClick={() => closeCase.mutate(row)}>关闭</button>
                       </div>
                     </td>

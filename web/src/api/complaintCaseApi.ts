@@ -81,9 +81,15 @@ export interface ComplaintAnalyticsDimension {
   count: number;
 }
 
+export interface ComplaintTrendPoint {
+  day: string;
+  count: number;
+}
+
 export interface ComplaintAnalytics {
   totalCount: number;
   unknownAttributionCount: number;
+  trend: ComplaintTrendPoint[];
   byTenant: ComplaintAnalyticsDimension[];
   bySignature: ComplaintAnalyticsDimension[];
   byContentType: ComplaintAnalyticsDimension[];
@@ -95,6 +101,10 @@ function data<T>(res: { data: ApiResponse<T> }): T {
 
 export async function listComplaintCases(): Promise<ComplaintCaseRow[]> {
   return data(await apiClient.get<ApiResponse<ComplaintCaseRow[]>>('/console/complaints'));
+}
+
+export async function listComplaintRemediations(): Promise<ComplaintRemediationRow[]> {
+  return data(await apiClient.get<ApiResponse<ComplaintRemediationRow[]>>('/console/complaint-remediations'));
 }
 
 export async function createComplaintCase(input: ComplaintCaseCreateInput): Promise<ComplaintCaseRow> {

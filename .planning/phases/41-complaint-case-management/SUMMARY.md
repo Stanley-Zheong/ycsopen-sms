@@ -1,6 +1,6 @@
 # Phase 41 Summary
 
-Status: scoped TODO set closed.
+Status: scoped implementation complete; issue `#66` merge verification pending pull-request CI.
 
 Implemented:
 
@@ -17,8 +17,23 @@ Implemented:
 - Target-ownership verification before mutating any remediation resource.
 - Editable UI evidence fields and matching remediation target/type behavior.
 - Recovery UI guard that prevents arbitrary fallback disposal record ids.
+- Persisted remediation readback that preserves failed-recovery eligibility and
+  failure feedback across page refreshes.
+- Ordered daily complaint-volume trend with an explicit ISO date contract.
+- Pull-request Google Chrome execution of the complaint Playwright suite.
 
 Verification evidence:
+
+Issue `#66` closure verification on 2026-10-02:
+
+- `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest,ComplaintCaseControllerTest test` with the pre-populated public Maven cache in offline mode: PASS, 12 tests.
+- `npm --prefix web test -- --run test/unit/complaint-case.test.tsx`: PASS, 1 file / 10 tests.
+- `npm --prefix web run build`: PASS with the existing bundle-size warning.
+- `git diff --check`: PASS.
+- Independent pre-push and incremental review: PASS, no remaining BLOCKER, HIGH, or MEDIUM finding.
+- Required clean full-suite and real-Google-Chrome results: pending pull-request CI. The local shared-run full-suite attempt had 8 unrelated timeout/async-route failures while the changed complaint test file passed; the local host has no Google Chrome installation.
+
+Prior Phase 41 verification evidence:
 
 - `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest#mobileBlacklistRemediationRequiresTenantAttribution test`: PASS, 1 test.
 - `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest#remediationRequiresExistingTargetResourceBeforeRecordingApplied test`: PASS, 1 test.
@@ -40,7 +55,4 @@ Known verification boundaries:
 
 - Chrome is the only browser validation target by project decision.
 - Recovery records manual compensation for failed remediation records; it is not an automatic reversal API for successful disablement.
-
-Branch:
-
-- `phase/41-complaint-case-management`
+- Issue `#66` requires the pull-request CI result because this local worker cannot execute the configured Google Chrome project.

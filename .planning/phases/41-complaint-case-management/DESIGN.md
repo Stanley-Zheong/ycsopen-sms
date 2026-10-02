@@ -5,6 +5,8 @@ Backend design:
 - `V5000__complaint_case_management.sql` extends `complaints` and `disposal_records` with missing Phase41 fields.
 - `ComplaintCaseService` owns validation and state transitions.
 - `ComplaintCaseController` exposes platform-console endpoints under `/api/v1/console`.
+- Complaint remediation readback exposes persisted records so failed work and
+  recovery eligibility survive a client refresh.
 - Existing blacklist, tenant, channel, signature, and template tables are reused for remediation effects.
 - Mutations are authorized for ADMIN/OPERATOR and derive actor evidence from the authenticated principal.
 - Remediation is only allowed after complaint handling reaches `PROCESSED`.
@@ -17,11 +19,13 @@ Frontend design:
 
 - `complaintCaseApi.ts` wraps console complaint endpoints.
 - `AdminComplaintsPage.tsx` provides intake, case list, state actions, remediation, and recovery.
-- `AdminComplaintAnalyticsPage.tsx` provides distribution and attribution-quality analytics.
+- `AdminComplaintAnalyticsPage.tsx` provides daily trend, distribution, and attribution-quality analytics.
 - `AdminLayout.tsx` exposes complaint management and complaint analytics navigation for operations roles.
 - Handling, remediation, and recovery evidence are editable page inputs with stable test ids.
 - Remediation target/type defaults to automatic matching and can be explicitly selected by the operator.
-- Recovery action is disabled until this page has a remediation record id for that case.
+- Recovery action is enabled only when persisted readback contains a `FAILED`
+  remediation record for that case; `APPLIED` and `RECOVERED` records cannot be
+  submitted for recovery.
 
 Data-quality design:
 

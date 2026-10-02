@@ -3,7 +3,7 @@
 Routes:
 
 - `/admin/complaints`: complaint intake, list, state action, remediation, and recovery surface.
-- `/admin/complaint/analytics`: complaint distribution and attribution-quality analytics.
+- `/admin/complaint/analytics`: daily complaint trend, distribution, and attribution-quality analytics.
 
 Design style:
 
@@ -17,6 +17,7 @@ Interaction contract:
 - Accept: moves pending complaint to processing with actor/opinion evidence.
 - Handle: records opinion, remediation, requirement, actor, and handled timestamp.
 - Resource remediation: applies exact target action and writes an audited disposal record.
-- Recovery: records authorized review and resume condition against a prior disposal record.
+- Remediation readback: shows the persisted status and failure reason after refresh.
+- Recovery: is available only for a persisted failed disposal record and records the authorized review and resume condition against that exact record.
 - Close: closes only after handled state with closure confirmation.
-- Analytics: shows totals, unknown attribution, and tenant/signature/content type distribution.
+- Analytics: shows an ordered daily trend, totals, unknown attribution, and tenant/signature/content type distribution, with explicit loading, error, and empty states.

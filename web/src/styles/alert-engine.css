@@ -160,6 +160,15 @@
   gap: 8px;
 }
 
+.complaint-remediation-status {
+  flex-basis: 100%;
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .complaint-table-actions button {
   min-height: 32px;
   padding: 4px 8px;

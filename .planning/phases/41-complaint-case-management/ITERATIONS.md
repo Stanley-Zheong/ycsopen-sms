@@ -23,3 +23,11 @@
 21. Frontend fix: handling, remediation, and recovery evidence fields are editable inputs; recovery stays disabled until a remediation record id exists.
 22. Claude blocker RED: existing but unrelated remediation targets could be mutated under another complaint.
 23. Backend fix: remediation now rejects targets that do not match the complaint's own tenant/channel/signature/template/mobile attribution.
+24. Issue `#66` closure audit: F-9.4 still lacked the required complaint-volume trend, and recovery eligibility depended on a page-local record id that disappeared after refresh.
+25. Frontend RED: focused tests failed because successful remediation was recoverable, persisted failed remediation was neither displayed nor recoverable, and analytics had no daily trend.
+26. Backend and frontend fix: added persisted remediation readback, bound recovery to the newest persisted `FAILED` record, exposed failure feedback and readback errors, and added an ordered daily trend.
+27. Backend contract RED: the first trend DTO serialized `LocalDate` differently under the standalone controller mapper; the API now returns an explicit ISO `YYYY-MM-DD` string.
+28. Verification hardening: unit coverage distinguishes `APPLIED`, `FAILED`, and `RECOVERED` readback and proves trend grouping across two ordered dates; the pull-request Chrome lane now executes the complaint Playwright suite.
+29. Independent review HIGH: a global 200-record remediation query could omit a failed record for a complaint still visible in the 200-case list; the query now ranks records within the visible complaint set, and a 201-record interference regression test passes.
+30. Independent review MEDIUM: analytics loading and error states rendered zero-valued cards; cards now render only after successful data load, with focused loading/error tests.
+31. Incremental independent re-review: both findings are resolved with no new BLOCKER, HIGH, or MEDIUM finding.

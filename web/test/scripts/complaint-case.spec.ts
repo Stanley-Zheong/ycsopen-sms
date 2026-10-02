@@ -38,6 +38,7 @@ async function mockComplaintApis(page: Page, complaintRows = [caseRow]) {
   await page.route('**/api/v1/console/complaints/1/accept', (route: Route) => route.fulfill({ json: apiResponse({ ...caseRow, status: 'PROCESSING' }) }));
   await page.route('**/api/v1/console/complaints/1/handle', (route: Route) => route.fulfill({ json: apiResponse({ ...caseRow, status: 'PROCESSED', opinion: '投诉属实', remediation: '暂停通道' }) }));
   await page.route('**/api/v1/console/complaints/1/close', (route: Route) => route.fulfill({ json: apiResponse({ ...caseRow, status: 'CLOSED', closedNote: '复核关闭' }) }));
+  await page.route('**/api/v1/console/complaint-remediations', (route: Route) => route.fulfill({ json: apiResponse([]) }));
   await page.route('**/api/v1/console/complaints/1/remediations', (route: Route) => {
     expect(route.request().postDataJSON()).toEqual(expect.objectContaining({
       disposalType: 'SUSPEND_CHANNEL',
@@ -61,6 +62,7 @@ async function mockComplaintApis(page: Page, complaintRows = [caseRow]) {
     byTenant: [{ dimension: 'tenant:7', count: 1 }],
     bySignature: [{ dimension: 'signature:8', count: 1 }],
     byContentType: [{ dimension: 'MARKETING', count: 2 }],
+    trend: [{ day: '2026-09-12', count: 2 }],
   }) }));
 }
 
@@ -237,9 +239,30 @@ test.describe('Phase 41 complaint case management', () => {
     await expect(page.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
     await page.getByTestId('admin-complaint-case-complaints-remediation').click();
     await expect(page.getByTestId('admin-complaint-case-complaints-message')).toContainText('处置已记录');
+    await expect(page.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
+
+    let remediationStatus = 'FAILED';
+    await page.route('**/api/v1/console/complaint-remediations', (route: Route) => route.fulfill({ json: apiResponse([
+      { id: 2, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: remediationStatus, authorizedReviewId: 'review-41-1', failureReason: remediationStatus === 'FAILED' ? 'provider timeout' : null, originalComplaintId: 1 },
+    ]) }));
+    await page.unroute('**/api/v1/console/complaints/1/recoveries');
+    await page.route('**/api/v1/console/complaints/1/recoveries', (route: Route) => {
+      expect(route.request().postDataJSON()).toEqual(expect.objectContaining({
+        disposalRecordId: 2,
+        authorizedReviewId: 'review-41-recovery',
+        resumeCondition: '授权复核通过后恢复',
+      }));
+      remediationStatus = 'RECOVERED';
+      return route.fulfill({ json: apiResponse({ id: 2, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'RECOVERED', authorizedReviewId: 'review-41-recovery', failureReason: null, originalComplaintId: 1 }) });
+    });
+    await page.reload();
+    await expect(page.getByTestId('admin-complaint-case-complaints-remediation-status')).toContainText('FAILED');
+    await expect(page.getByTestId('admin-complaint-case-complaints-remediation-status')).toContainText('provider timeout');
     await expect(page.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeEnabled();
     await page.getByTestId('admin-complaint-case-complaints-remediation-recovery').click();
     await expect(page.getByTestId('admin-complaint-case-complaints-message')).toContainText('恢复已记录');
+    await expect(page.getByTestId('admin-complaint-case-complaints-remediation-status')).toContainText('RECOVERED');
+    await expect(page.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
   });
 
   test('pw-p41-analytics C-P41-ANALYTICS OBL-F-9-4-A', async ({ page }) => {
@@ -248,5 +271,6 @@ test.describe('Phase 41 complaint case management', () => {
     await page.goto('/admin/complaint/analytics');
     await expect(page.getByTestId('admin-complaint-case-analytics-page')).toContainText('投诉趋势与分布');
     await expect(page.getByTestId('admin-complaint-case-analytics-quality')).toContainText('未知归因 1');
+    await expect(page.getByTestId('admin-complaint-case-analytics-trend')).toContainText('2026-09-12：2');
   });
 });
