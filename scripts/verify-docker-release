@@ -122,7 +122,7 @@ wait_for_web() {
 mysql_scalar() {
   compose exec -T \
     -e "MYSQL_PWD=${YCSOPEN_DB_ROOT_PASSWORD:-root-local-only}" \
-    mysql --default-character-set=utf8mb4 --batch --skip-column-names --user=root \
+    mysql mysql --default-character-set=utf8mb4 --batch --skip-column-names --user=root \
     --database="${YCSOPEN_DB_NAME:-ycsopen_sms}" --execute="$1"
 }
 
