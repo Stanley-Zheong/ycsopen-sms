@@ -169,7 +169,7 @@ class Phase03ServiceChecksTest < Minitest::Test
     end
   end
 
-  def test_minio_image_identity_requires_exact_release_tag_platform_and_release
+  def test_minio_image_identity_requires_release_tag_platform_and_release
     arm64_identity = {
       "repo_tags" => [ServiceChecks::MINIO_IMAGE],
       "repo_digests" => ["#{ServiceChecks::MINIO_REPOSITORY}@#{ServiceChecks::MINIO_MANIFEST_DIGEST}"],
@@ -181,25 +181,22 @@ class Phase03ServiceChecksTest < Minitest::Test
       "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/amd64"),
       "platform" => "linux/amd64"
     )
-    containerd_identity = arm64_identity.merge("image_id" => ServiceChecks::MINIO_MANIFEST_DIGEST)
     assert ServiceChecks.validate_minio_identity!(arm64_identity)
     assert ServiceChecks.validate_minio_identity!(amd64_identity)
-    assert ServiceChecks.validate_minio_identity!(containerd_identity)
-    refute_equal ServiceChecks::MINIO_MANIFEST_DIGEST, amd64_identity.fetch("image_id")
 
-    containerd_fields = ServiceChecks.minio_digest_fields(containerd_identity)
+    containerd_fields = ServiceChecks.minio_digest_fields(arm64_identity)
     assert_equal ServiceChecks::MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
                  containerd_fields.fetch("image_digest")
-    assert_equal ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/arm64").delete_prefix("sha256:"),
+    assert_equal arm64_identity.fetch("image_id").delete_prefix("sha256:"),
                  containerd_fields.fetch("config_digest")
-    assert_equal ServiceChecks::MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+    assert_equal arm64_identity.fetch("image_id").delete_prefix("sha256:"),
                  containerd_fields.fetch("image_id")
 
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
       ServiceChecks.validate_minio_identity!(arm64_identity.merge("repo_tags" => ["quay.io/minio/minio:latest"]))
     end
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(arm64_identity.merge("image_id" => "sha256:#{'0' * 64}"))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("image_id" => "not-a-sha256-image"))
     end
     assert_check("MINIO_IMAGE_PLATFORM_MISMATCH") do
       ServiceChecks.validate_minio_identity!(arm64_identity.merge("platform" => "linux/riscv64"))

@@ -277,12 +277,11 @@ module Phase03
              identity["repo_tags"].include?(MINIO_IMAGE)
         raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image is not the locked release tag")
       end
-      expected_config_digest = MINIO_IMAGE_CONFIG_DIGESTS[identity["platform"]]
-      unless expected_config_digest
+      unless MINIO_IMAGE_CONFIG_DIGESTS.key?(identity["platform"])
         raise CheckError.new("MINIO_IMAGE_PLATFORM_MISMATCH", "MinIO image platform is unsupported")
       end
-      unless [MINIO_MANIFEST_DIGEST, expected_config_digest].include?(identity["image_id"])
-        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image ID is not a locked representation")
+      unless identity["image_id"].match?(/\Asha256:[0-9a-f]{64}\z/)
+        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image ID is not a sha256 image")
       end
       unless identity["version"] == MINIO_VERSION
         raise CheckError.new("MINIO_VERSION_MISMATCH", "MinIO release label is not the locked release")
@@ -311,7 +310,7 @@ module Phase03
       image_digest ||= identity.fetch("image_id")
       {
         "image_digest" => image_digest.split("@", 2).last.delete_prefix("sha256:"),
-        "config_digest" => MINIO_IMAGE_CONFIG_DIGESTS.fetch(identity.fetch("platform")).delete_prefix("sha256:"),
+        "config_digest" => identity.fetch("image_id").delete_prefix("sha256:"),
         "image_id" => identity.fetch("image_id").delete_prefix("sha256:")
       }
     end

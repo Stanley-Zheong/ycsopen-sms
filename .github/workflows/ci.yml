@@ -189,10 +189,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             build-essential cmake default-mysql-client libssl-dev
-      - name: Prepare digest-pinned service images
+      - name: Prepare real-integration service images
         run: |
           docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
-          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MINIO_IMAGE"
+          docker build --platform "$PHASE03_SERVICE_PLATFORM" \
+            --build-arg MINIO_VERSION=RELEASE.2025-09-07T16-13-09Z \
+            --tag "$PHASE03_MINIO_IMAGE" - <<'DOCKERFILE'
+          FROM alpine:3.22
+          ARG MINIO_VERSION
+          ARG TARGETARCH
+          RUN set -eu; \
+            case "$TARGETARCH" in \
+              amd64) minio_arch=amd64 ;; \
+              arm64) minio_arch=arm64 ;; \
+              *) echo "unsupported MinIO arch: $TARGETARCH" >&2; exit 1 ;; \
+            esac; \
+            wget -O /usr/local/bin/minio "https://dl.min.io/server/minio/release/linux-${minio_arch}/archive/minio.${MINIO_VERSION}"; \
+            chmod 0755 /usr/local/bin/minio
+          LABEL version="${MINIO_VERSION}"
+          ENTRYPOINT ["/usr/local/bin/minio"]
+          DOCKERFILE
       - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
         run: >-
           mvn -f core/pom.xml -Dphase03.integration.enabled=true
