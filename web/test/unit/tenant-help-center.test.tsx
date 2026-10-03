@@ -19,4 +19,37 @@ describe('tenant help center query controls', () => {
     expect(screen.getByTestId('tenant-tenant-help-guide-results')).toHaveTextContent('短链管理');
     expect(screen.getByTestId('tenant-tenant-help-guide-results')).not.toHaveTextContent('资质');
   });
+
+  it('resets the local guide filter and makes a local refresh observable', () => {
+    render(
+      <MemoryRouter>
+        <TenantHelpCenterPage section="guide" />
+      </MemoryRouter>,
+    );
+
+    const input = screen.getByTestId('tenant-tenant-help-guide-search-input');
+    fireEvent.change(input, { target: { value: '短链' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+    expect(screen.getByTestId('tenant-tenant-help-guide-query-status')).toHaveAttribute('data-state', 'success');
+
+    fireEvent.click(screen.getByTestId('query-reset'));
+    expect(input).toHaveValue('');
+    expect(screen.getByTestId('tenant-tenant-help-guide-results')).toHaveTextContent('资质');
+
+    fireEvent.click(screen.getByTestId('query-refresh'));
+    expect(screen.getByTestId('tenant-tenant-help-guide-refresh-result')).toHaveTextContent('已刷新 1 次');
+  });
+
+  it('refreshes on the first submit when local criteria canonicalize to the applied query', () => {
+    render(
+      <MemoryRouter>
+        <TenantHelpCenterPage section="guide" />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByTestId('tenant-tenant-help-guide-search-input'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    expect(screen.getByTestId('tenant-tenant-help-guide-refresh-result')).toHaveTextContent('已刷新 1 次');
+  });
 });

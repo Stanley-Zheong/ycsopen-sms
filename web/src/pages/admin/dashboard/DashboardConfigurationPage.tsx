@@ -22,9 +22,19 @@ export default function DashboardConfigurationPage() {
           setDraftRole('ADMIN');
           setRole('ADMIN');
         }}
+        onRefresh={() => void config.refetch()}
+        queryStatus={{
+          testId: 'admin-operational-dashboards-dashboard-configuration-query-status',
+          label: '仪表盘配置',
+          isFetching: config.isFetching,
+          isError: config.isError,
+          isEmpty: !data,
+          count: data ? 1 : 0,
+          errorDetailsId: 'admin-operational-dashboards-dashboard-configuration-error-details',
+        }}
         result={(
           <>
-            {config.isError && <p role="alert">仪表盘配置加载失败。</p>}
+            {config.isError && <p id="admin-operational-dashboards-dashboard-configuration-error-details">仪表盘配置加载失败。</p>}
             {data && (
               <dl className="form-grid">
                 <div><dt>全局卡片</dt><dd>{String(data.globalCards)}</dd></div>

@@ -24,6 +24,44 @@ Create the reusable frontend foundation that prevents repeated layout, form, tab
   editing individual page stylesheets; page-level styles must keep working through the shared
   shell and token contract.
 
+## Issue #88 Scope
+
+### Issue reference and page goal
+
+- GitHub issue `#88` — `修复无动作孤立输入框并接入异步查询`.
+- Goal: every editable query control on the current Admin and Tenant query routes has a visible
+  label, a stable page-owned selector, and an observable Search, Reset, Refresh, or explicit
+  asynchronous-link behavior. Query state must never fail silently.
+- The primary object is the page-owned query result: list rows, lookup result, dashboard series,
+  or local guide/tenant-filter result. Mutation forms remain owned by their business action.
+
+### Owned routes and data sources
+
+The executable inventory is `web/test/scripts/issue-77-admin-query-contract.spec.ts`: 56 Admin
+routes, including 36 routes with 38 query panels, plus the four Tenant query routes
+`/tenant/consumption-ledger`, `/tenant/uplink`, `/tenant/unsubscribes`, and
+`/tenant/help/guide`. Each page keeps its existing API adapter, React Query key, permission gate,
+and result rendering. `/admin/tenants` and `/tenant/help/guide` apply filters locally to already
+loaded source data; all other query panels invoke their existing page-owned request or mutation.
+
+### Action and state contract
+
+| Action/state | Required behavior | Stable selector |
+|---|---|---|
+| Search with changed criteria | Apply every draft field once and invoke the page-owned query with the changed URL/body, or visibly change a declared local result. The page owner compares canonical criteria when raw input can normalize to an existing value. | `query-submit` |
+| Search with unchanged criteria | Re-run the applied query so a failed request can recover; it must not issue two requests. A page owner returns `false` when a raw-form change is a canonical no-op, and the shared panel routes that submit to Refresh exactly once. | `query-submit` |
+| Reset | Restore the page-defined canonical criteria and synchronize the retry signature before the next edit or submit. | `query-reset` |
+| Refresh | Re-run only the owning query with the currently applied criteria. | `query-refresh` |
+| Loading / error / empty / success | Render exactly one page-owned status inside the query result region; error is assertive, other states are polite, and loading exposes `aria-busy`. | page-owned `*-query-status`, `query-result-table`, `data-query-result-state` |
+
+### Boundaries
+
+- No backend contract, permission rule, or business mutation payload changes.
+- Operation reasons, approval evidence, archive-policy edits, export creation inputs, keyword
+  maintenance, and other mutation controls stay outside `QueryPanel`.
+- The archive manifest is moved into its query result region because it is the queried object.
+- Export summary cards wrap at a 1024px desktop viewport; overflow clipping is not accepted.
+
 ## Issue #108 Scope
 
 ### Issue reference
@@ -115,6 +153,47 @@ Added by issue #108:
   `shared-console-shell-workspace`, `shared-console-shell-topbar`,
   `shared-console-shell-breadcrumb`, `shared-console-shell-content`,
   `shared-console-shell-content-container`.
+
+## Issue #76: Login Card Layout Regression
+
+### Goal, primary object, and scope
+
+Restore the unified login-card geometry on `/login` without changing authentication behavior. The
+primary object is the console sign-in form and its visible card boundary. This issue owns the
+standard `login-card` selector, the remember-username control geometry, label wrapping, field/error
+spacing, stable login selectors, and document containment.
+
+The actor remains an unauthenticated console user. The data source remains
+`POST /api/v1/console/auth/login`; no request shape, session storage, credential handling, role
+routing, or backend behavior changes. The alias route `/admin/auth/login` continues to render the
+same component but is regression coverage, not a second implementation.
+
+### Action and state contract
+
+| Surface | Contract |
+|---|---|
+| Submit | Username/password submission keeps the existing pending latch, auth request, controlled error mapping, and ADMIN redirect to `/admin/dashboard`. |
+| Remember username | The checkbox keeps username-only local storage behavior, measures 14–20px in both dimensions, and its visible label stays on one line. |
+| Loading | The existing disabled submit and `登录中…` label remain inside the card without horizontal overflow. |
+| Error | `shared-auth-login-error` remains in its reserved slot; showing an error does not push the submit action or card outside the form panel. |
+| Empty | Not applicable: username and password are required editable fields rather than a collection surface. |
+| Audit | Not applicable to the visual repair; authentication/audit behavior remains backend-owned and unchanged. |
+
+### Acceptance rules
+
+| Behavior ID | Required behavior | Observable acceptance |
+|---|---|---|
+| FE-SPIRIT-01-LOGIN-CARD | `/login` exposes a visible `data-testid="login-card"` card boundary while preserving `shared-auth-login-card`. | Chrome Playwright locates both selectors and proves the existing form is contained by the standard card boundary. |
+| FE-SPIRIT-01-LOGIN-REMEMBER | `shared-auth-login-remember` is 14–20px wide and high; `记住用户名` never wraps. | Chrome measures the checkbox and compares the label line box at 1280×800. |
+| FE-SPIRIT-01-LOGIN-CONTAINMENT | Username, password, remember, and submit selectors remain stable; the card and document have no horizontal overflow in normal and error states. | Unit coverage freezes the selector structure; Chrome checks card/document scroll width and form-panel containment. |
+| FE-SPIRIT-01-LOGIN-ADMIN-ROUTE | Entering `admin` / `Admin@123456` and activating `admin-console-identity-auth-login-submit` enters `/admin/dashboard` for an ADMIN response. | Playwright verifies the exact auth payload, fulfilled ADMIN session response, route, and dashboard heading. |
+
+### Stable selector contract
+
+- Standard card boundary: `login-card` (added by issue `#76`).
+- Preserved compatibility selectors: `shared-auth-login-card`, `shared-auth-login-username`,
+  `shared-auth-login-password`, `shared-auth-login-remember`, `shared-auth-login-submit`,
+  `shared-auth-login-error`, `admin-console-identity-auth-login-submit`.
 
 ## Issue #87: Admin Form Geometry
 

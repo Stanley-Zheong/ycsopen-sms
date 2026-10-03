@@ -44,7 +44,7 @@ export default function ProviderStatusPage() {
   const [sourceName, setSourceName] = useState('供应商文档');
   const [rowsText, setRowsText] = useState('YTO,HTTP,DELIVRD,SUCCESS,true,true,false,INFO,确认送达');
   const [draftCriteria, setDraftCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
-  const [appliedCriteria, setAppliedCriteria] = useState(DEFAULT_NORMALIZE_CRITERIA);
+  const [appliedCriteria, setAppliedCriteria] = useState<NormalizeCriteria>(DEFAULT_NORMALIZE_CRITERIA);
   const [normalized, setNormalized] = useState<NormalizedStatus | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -98,7 +98,10 @@ export default function ProviderStatusPage() {
     onError: (failure) => onError(failure, '归一化失败'),
   });
   const exportMutation = useMutation({
-    mutationFn: () => requestStatusExport(appliedCriteria.providerName, appliedCriteria.protocol),
+    mutationFn: () => {
+      const criteria = appliedCriteria;
+      return requestStatusExport(criteria.providerName, criteria.protocol);
+    },
     onSuccess: (result) => {
       setMessage(`导出请求已登记：${result.requestId}，匹配 ${result.matchedRows} 条`);
       setError('');
@@ -120,7 +123,7 @@ export default function ProviderStatusPage() {
         </div>
       </header>
       {message && <p role="status" data-testid="admin-provider-status-taxonomy-message" className="provider-status-alert success">{message}</p>}
-      {error && <p role="alert" data-testid="admin-provider-status-taxonomy-error" className="provider-status-alert error">{error}</p>}
+      {error && <p id="admin-provider-status-taxonomy-error-details" role={normalizeMutation.isError ? undefined : 'alert'} data-testid="admin-provider-status-taxonomy-error" className="provider-status-alert error">{error}</p>}
 
       <section className="card">
         <h2>导入映射</h2>
@@ -136,6 +139,10 @@ export default function ProviderStatusPage() {
       <QueryPanel
         onSubmit={() => {
           const criteria = { ...draftCriteria };
+          if (criteria.providerName === appliedCriteria.providerName
+            && criteria.protocol === appliedCriteria.protocol
+            && criteria.providerCode === appliedCriteria.providerCode
+          ) return;
           setAppliedCriteria(criteria);
           normalizeMutation.mutate(criteria);
         }}
@@ -143,6 +150,19 @@ export default function ProviderStatusPage() {
           setDraftCriteria(DEFAULT_NORMALIZE_CRITERIA);
           setAppliedCriteria(DEFAULT_NORMALIZE_CRITERIA);
           setNormalized(null);
+          normalizeMutation.reset();
+          setMessage('');
+          setError('');
+        }}
+        onRefresh={() => normalizeMutation.mutate(appliedCriteria)}
+        queryStatus={{
+          testId: 'admin-provider-status-taxonomy-query-status',
+          label: '供应商状态码归一化',
+          isFetching: normalizeMutation.isPending,
+          isError: normalizeMutation.isError,
+          isEmpty: normalized === null,
+          count: normalized ? 1 : 0,
+          errorDetailsId: 'admin-provider-status-taxonomy-error-details',
         }}
         submitLegacyTestId="admin-provider-status-taxonomy-normalize"
         submitDisabled={!canRead}

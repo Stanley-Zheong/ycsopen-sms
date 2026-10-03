@@ -356,3 +356,71 @@ Playwright configuration, page-local test bridge, production API, or release mig
 - Issues `#64`, `#77`, and `#87` remain the authority for single-field reset, semantic query
   regions/control sizing, and responsive collapse; closing the older Issue `#58` does not revert
   those later decisions.
+
+## DR-FE01-014: Additive Standard Login Card Boundary
+
+### Status
+Accepted (issue `#76`)
+
+### Context
+The established login contract exposes `shared-auth-login-card`, while the unified frontend
+standard and issue acceptance require the exact selector `data-testid="login-card"`. Replacing the
+existing selector would break accepted compatibility coverage, and HTML cannot expose two exact
+`data-testid` values on one element.
+
+### Decision
+Add one non-interactive outer card boundary with `data-testid="login-card"`. Keep the existing form
+as `shared-auth-login-card`, with its authentication semantics and frozen `login-card` class hook
+unchanged. Add explicit `white-space: nowrap` to the remember label; retain the existing 16px
+checkbox rule and reserved error slot.
+
+### Consequences
+
+- Both the repository compatibility selector and the unified standard selector remain available.
+- The wrapper carries no command, field, state, or API responsibility and does not duplicate form
+  semantics.
+- Browser evidence must prove containment and no horizontal overflow so the additive boundary
+  cannot silently change layout.
+
+## DR-FE01-014: QueryPanel Owns Retry Actions and the Result-State Envelope
+
+### Status
+Accepted (issue `#88`)
+
+### Context
+Page-local query panels could render inputs without Reset or Refresh, suppress retries when the
+applied filter did not change, and expose inconsistent or silent loading/error/empty feedback.
+Making every page independently rediscover the same state machine caused the contract to drift.
+
+### Decision
+`QueryPanel` always renders Search, Reset, and Refresh. It records a deterministic signature from
+named native form controls: changed Search delegates once to the page's `onSubmit`; unchanged
+Search delegates once, and only once, to the page's exact-owner `onRefresh`. Reset synchronizes the
+post-reset controlled values before a later edit is classified. Pages supply a required
+`queryStatus` object, while the shared component renders the single
+loading/error/empty/success envelope inside `query-result-table`.
+
+When a page canonicalizes raw input before constructing its query key or local predicate,
+`onSubmit` compares the canonical draft with the applied criteria and returns `false` for a no-op.
+`QueryPanel` then invokes `onRefresh` exactly once. This keeps inputs such as `042` versus `42`, or
+trimmed/case-folded local search text, on the same apply-versus-retry decision path as the owner.
+
+### Consequences
+
+- Page owners still own criteria, API calls, permissions, data, and business copy.
+- A retry cannot depend on a React state assignment changing a query key.
+- Search and Refresh share the page's read-permission/loading disable gate, so neither action can
+  start a protected request before access resolution.
+- Query fields need native `name` values; `QueryField` derives them from its stable semantic name.
+- Loading takes precedence over error, then empty, then success, so stale data cannot hide an
+  in-flight request or a failed refresh.
+- The envelope is the only assertive error live region; page-specific error details are linked with
+  `aria-describedby` and do not declare a second `role="alert"`.
+- Route acceptance can require one result state and three actions for every query panel.
+
+### References
+
+- `web/src/components/common/QueryPanel.tsx`
+- `web/test/unit/query-panel.test.tsx`
+- `web/test/scripts/issue-77-admin-query-contract.spec.ts`
+- GitHub issue `#88`

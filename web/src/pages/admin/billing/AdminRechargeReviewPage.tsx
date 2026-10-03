@@ -55,11 +55,21 @@ export default function AdminRechargeReviewPage() {
           setDraftStatus('PENDING');
           setAppliedStatus('PENDING');
         }}
+        onRefresh={() => void reviews.refetch()}
+        queryStatus={{
+          testId: 'admin-tenant-recharge-operations-review-query-status',
+          label: '充值审核列表',
+          isFetching: reviews.isFetching,
+          isError: reviews.isError,
+          isEmpty: (reviews.data ?? []).length === 0,
+          count: reviews.data?.length,
+          errorDetailsId: 'admin-tenant-recharge-operations-review-error-details',
+        }}
         result={(
           <section className="card" data-testid="admin-tenant-recharge-operations-review-table">
             <h2>充值申请</h2>
             {reviews.isLoading && <p>正在加载充值审核列表…</p>}
-            {reviews.isError && <p role="alert">充值审核列表加载失败。</p>}
+            {reviews.isError && <p id="admin-tenant-recharge-operations-review-error-details">充值审核列表加载失败。</p>}
             {!reviews.isLoading && !reviews.isError && (reviews.data ?? []).length === 0 && <p>暂无充值申请。</p>}
             <table className="ratio-table">
               <thead>

@@ -252,14 +252,34 @@ export default function TenantListPage() {
     <section data-testid="admin-tenant-qualification-tenants-page">
       <header className="qualification-page-header"><div><h1 data-testid="admin-tenant-qualification-tenants-heading">机构管理</h1><p className="page-description">审核机构资质并维护业务信息和账户运行状态。</p></div></header>
       <QueryPanel
-        onSubmit={() => { setApplied({ keyword, verification, operating }); setPage(0); void tenants.refetch(); }}
-        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); void tenants.refetch(); }}
+        onSubmit={() => {
+          const nextKeyword = keyword.trim().toLocaleLowerCase('zh-CN');
+          const appliedKeyword = applied.keyword.trim().toLocaleLowerCase('zh-CN');
+          if (nextKeyword === appliedKeyword
+            && verification === applied.verification
+            && operating === applied.operating
+          ) return false;
+          setApplied({ keyword, verification, operating });
+          setPage(0);
+          return true;
+        }}
+        onReset={() => { setKeyword(''); setVerification(''); setOperating(''); setApplied({ keyword: '', verification: '', operating: '' }); setPage(0); }}
+        onRefresh={() => void tenants.refetch()}
+        queryStatus={{
+          testId: 'admin-tenant-qualification-tenants-query-status',
+          label: '机构列表',
+          isFetching: tenants.isFetching,
+          isError: tenants.isError,
+          isEmpty: filtered.length === 0,
+          count: filtered.length,
+          errorDetailsId: 'admin-tenant-qualification-tenants-error-details',
+        }}
         legacyPanelTestId="admin-tenant-qualification-tenants-filter"
         submitLegacyTestId="admin-tenant-qualification-tenants-query"
         resetLegacyTestId="admin-tenant-qualification-tenants-reset"
         result={<>
           {tenants.isLoading && <p data-testid="admin-tenant-qualification-tenants-loading">正在加载机构列表…</p>}
-          {tenants.isError && <div data-testid="admin-tenant-qualification-tenants-error" className="qualification-alert error" role="alert">机构列表加载失败。<button data-testid="admin-tenant-qualification-tenants-retry" type="button" onClick={() => void tenants.refetch()}>重新加载</button></div>}
+          {tenants.isError && <div id="admin-tenant-qualification-tenants-error-details" data-testid="admin-tenant-qualification-tenants-error" className="qualification-alert error">机构列表加载失败。<button data-testid="admin-tenant-qualification-tenants-retry" type="button" onClick={() => void tenants.refetch()}>重新加载</button></div>}
           {!tenants.isLoading && !tenants.isError && rows.length === 0 && <p data-testid="admin-tenant-qualification-tenants-empty">没有符合条件的机构。</p>}
           {!tenants.isLoading && !tenants.isError && rows.length > 0 && (
             <div className="qualification-table-wrap">

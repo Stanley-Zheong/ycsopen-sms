@@ -88,69 +88,71 @@ export default function LoginPage() {
           <p className="login-intro-footnote">Secure access for verified console users only</p>
         </section>
         <section className="login-form-panel" aria-label="登录表单">
-          <form
-            data-testid="shared-auth-login-card"
-            onSubmit={handleSubmit}
-            className="login-card"
-            aria-busy={pending}
-          >
-            <div className="login-form-heading">
-              <p className="login-eyebrow">Welcome back</p>
-              <h2>YCSAN-SMS 登录</h2>
-              <p>使用控制台账号继续访问测试环境。</p>
-            </div>
-            <label className="login-field">
-              用户名
-              <input
-                data-testid="shared-auth-login-username"
-                aria-label="用户名"
-                autoComplete="username"
-                required
-                maxLength={20}
-                placeholder="请输入用户名"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </label>
-            <label className="login-field">
-              密码
-              <input
-                data-testid="shared-auth-login-password"
-                aria-label="密码"
-                required
-                type="password"
-                autoComplete="current-password"
-                placeholder="请输入密码"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-            <div className="login-options">
-              <label className="login-remember">
+          <div data-testid="login-card" className="login-card-boundary">
+            <form
+              data-testid="shared-auth-login-card"
+              onSubmit={handleSubmit}
+              className="login-card"
+              aria-busy={pending}
+            >
+              <div className="login-form-heading">
+                <p className="login-eyebrow">Welcome back</p>
+                <h2>YCSAN-SMS 登录</h2>
+                <p>使用控制台账号继续访问测试环境。</p>
+              </div>
+              <label className="login-field">
+                用户名
                 <input
-                  data-testid="shared-auth-login-remember"
-                  className="login-remember-input"
-                  type="checkbox"
-                  checked={rememberUsername}
-                  onChange={(event) => setRememberUsername(event.target.checked)}
+                  data-testid="shared-auth-login-username"
+                  aria-label="用户名"
+                  autoComplete="username"
+                  required
+                  maxLength={20}
+                  placeholder="请输入用户名"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
-                <span>记住用户名</span>
               </label>
-              <span className="login-storage-note">仅保存用户名，不保存密码</span>
-            </div>
-            {/* The slot always reserves one error line so showing or clearing the message never moves the submit button. */}
-            <div className="login-error-slot">
-              {error && (
-                <p data-testid="shared-auth-login-error" role="alert" className="login-error">
-                  {error}
-                </p>
-              )}
-            </div>
-            <button data-testid="admin-console-identity-auth-login-submit" className="login-submit" type="submit" disabled={pending}>
-              <span data-testid="shared-auth-login-submit">{pending ? '登录中…' : '登录'}</span>
-            </button>
-            <p className="login-security-note">如账号锁定或密码过期，请联系平台管理员处理。</p>
-          </form>
+              <label className="login-field">
+                密码
+                <input
+                  data-testid="shared-auth-login-password"
+                  aria-label="密码"
+                  required
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="请输入密码"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+              <div className="login-options">
+                <label className="login-remember">
+                  <input
+                    data-testid="shared-auth-login-remember"
+                    className="login-remember-input"
+                    type="checkbox"
+                    checked={rememberUsername}
+                    onChange={(event) => setRememberUsername(event.target.checked)}
+                  />
+                  <span>记住用户名</span>
+                </label>
+                <span className="login-storage-note">仅保存用户名，不保存密码</span>
+              </div>
+              {/* The slot always reserves one error line so showing or clearing the message never moves the submit button. */}
+              <div className="login-error-slot">
+                {error && (
+                  <p data-testid="shared-auth-login-error" role="alert" className="login-error">
+                    {error}
+                  </p>
+                )}
+              </div>
+              <button data-testid="admin-console-identity-auth-login-submit" className="login-submit" type="submit" disabled={pending}>
+                <span data-testid="shared-auth-login-submit">{pending ? '登录中…' : '登录'}</span>
+              </button>
+              <p className="login-security-note">如账号锁定或密码过期，请联系平台管理员处理。</p>
+            </form>
+          </div>
         </section>
       </div>
     </div>
