@@ -173,7 +173,7 @@ jobs:
     env:
       PHASE03_SERVICE_PLATFORM: linux/amd64
       PHASE03_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
-      PHASE03_MINIO_IMAGE: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+      PHASE03_MINIO_IMAGE: ycsopen/phase03-minio:phase03-real-integration
     steps:
       - uses: actions/checkout@v4
       - name: Verify checked-out event commit
@@ -193,7 +193,7 @@ jobs:
         run: |
           docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
           docker build --platform "$PHASE03_SERVICE_PLATFORM" \
-            --build-arg MINIO_VERSION=RELEASE.2025-09-07T16-13-09Z \
+            --build-arg MINIO_VERSION=phase03-real-integration \
             --tag "$PHASE03_MINIO_IMAGE" - <<'DOCKERFILE'
           FROM alpine:3.22
           ARG MINIO_VERSION
@@ -204,7 +204,7 @@ jobs:
               arm64) minio_arch=arm64 ;; \
               *) echo "unsupported MinIO arch: $TARGETARCH" >&2; exit 1 ;; \
             esac; \
-            wget -O /usr/local/bin/minio "https://dl.min.io/server/minio/release/linux-${minio_arch}/archive/minio.${MINIO_VERSION}"; \
+            wget -O /usr/local/bin/minio "https://dl.min.io/server/minio/release/linux-${minio_arch}/minio"; \
             chmod 0755 /usr/local/bin/minio
           LABEL version="${MINIO_VERSION}"
           ENTRYPOINT ["/usr/local/bin/minio"]

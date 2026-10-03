@@ -172,7 +172,7 @@ class Phase03ServiceChecksTest < Minitest::Test
   def test_minio_image_identity_requires_release_tag_platform_and_release
     arm64_identity = {
       "repo_tags" => [ServiceChecks::MINIO_IMAGE],
-      "repo_digests" => ["#{ServiceChecks::MINIO_REPOSITORY}@#{ServiceChecks::MINIO_MANIFEST_DIGEST}"],
+      "repo_digests" => [],
       "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/arm64"),
       "platform" => "linux/arm64",
       "version" => ServiceChecks::MINIO_VERSION
@@ -185,7 +185,7 @@ class Phase03ServiceChecksTest < Minitest::Test
     assert ServiceChecks.validate_minio_identity!(amd64_identity)
 
     containerd_fields = ServiceChecks.minio_digest_fields(arm64_identity)
-    assert_equal ServiceChecks::MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+    assert_equal arm64_identity.fetch("image_id").delete_prefix("sha256:"),
                  containerd_fields.fetch("image_digest")
     assert_equal arm64_identity.fetch("image_id").delete_prefix("sha256:"),
                  containerd_fields.fetch("config_digest")

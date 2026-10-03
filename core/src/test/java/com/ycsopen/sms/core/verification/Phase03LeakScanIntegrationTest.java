@@ -87,7 +87,7 @@ class Phase03LeakScanIntegrationTest {
     private static final String OBJECT_ALIAS = "ycs.object-capability-digest.v1";
     private static final String UPLOAD_ALIAS = "ycs.registration-upload-digest.v1";
     private static final String MINIO_IMAGE =
-            "quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z";
+            "ycsopen/phase03-minio:phase03-real-integration";
     private static final String ARTIFACT_REPORT =
             "core/target/phase03/artifact-leak-integration.json";
     private static final SecureRandom RANDOM = new SecureRandom();
