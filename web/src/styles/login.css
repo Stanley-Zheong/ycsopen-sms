@@ -157,9 +157,14 @@
   background: var(--color-surface);
 }
 
+.login-card-boundary,
 .login-card {
   width: 100%;
   max-width: 360px;
+  min-width: 0;
+}
+
+.login-card {
   margin: 0;
 }
 
@@ -252,6 +257,7 @@
   color: var(--color-text);
   font-size: var(--font-size-base);
   line-height: 20px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -393,6 +399,7 @@
     padding: 32px 20px 48px;
   }
 
+  .login-card-boundary,
   .login-card {
     max-width: 420px;
   }
