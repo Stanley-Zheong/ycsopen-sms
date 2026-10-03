@@ -2,7 +2,7 @@ phase03:
   integration:
     enabled: false
     mysql-image: "mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb"
-    minio-image: "ycsopen/phase03-minio:phase03-real-integration"
+    minio-image: "ycsopen/phase03-minio:RELEASE.2025-10-15T17-29-55Z"
     softhsm-version: "2.7.0"
     softhsm-source-sha256: "be14a5820ec457eac5154462ffae51ba5d8a643f6760514d4b4b83a77be91573"
     mock-substitution: false

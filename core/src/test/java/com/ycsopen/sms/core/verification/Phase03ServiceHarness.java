@@ -82,7 +82,7 @@ public final class Phase03ServiceHarness {
                     "PHASE03_MINIO_SECRET_KEY", secretKey));
             assertIdentity(identity, "minio", runId);
             if (!identity.path("image_reference").asText().equals(
-                    "ycsopen/phase03-minio:phase03-real-integration")) {
+                    "ycsopen/phase03-minio:RELEASE.2025-10-15T17-29-55Z")) {
                 throw new FixtureException("MINIO_IMAGE_IDENTITY_MISMATCH");
             }
             return ServiceSession.minio(runId, identity, accessKey, secretKey);

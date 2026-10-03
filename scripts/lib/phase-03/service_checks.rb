@@ -87,7 +87,7 @@ module Phase03
     SOFTHSM_MANIFEST = File.join(__dir__, "softhsm-source.json")
     MYSQL_IMAGE = Phase01::ServiceChecks::MYSQL_IMAGE
     MINIO_REPOSITORY = "ycsopen/phase03-minio"
-    MINIO_VERSION = "phase03-real-integration"
+    MINIO_VERSION = "RELEASE.2025-10-15T17-29-55Z"
     MINIO_IMAGE = "#{MINIO_REPOSITORY}:#{MINIO_VERSION}"
     MINIO_MANIFEST_DIGEST = "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
     MINIO_IMAGE_CONFIG_DIGESTS = {

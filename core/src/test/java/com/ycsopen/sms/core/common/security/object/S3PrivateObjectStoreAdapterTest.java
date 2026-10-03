@@ -394,7 +394,7 @@ class S3PrivateObjectStoreAdapterTest {
                     "PHASE03_MINIO_SECRET_KEY", secretKey));
             assertThat(service.path("status").asText()).isEqualTo("READY");
             assertThat(service.path("image_reference").asText()).isEqualTo(
-                    "ycsopen/phase03-minio:phase03-real-integration");
+                    "ycsopen/phase03-minio:RELEASE.2025-10-15T17-29-55Z");
             URI endpoint = URI.create("http://" + service.path("host").asText()
                     + ":" + service.path("port").asInt());
             S3Configuration pathStyle = S3Configuration.builder().pathStyleAccessEnabled(true).build();

@@ -211,7 +211,7 @@ class Phase03ObjectStorageIntegrationTest {
 
                 String mysqlIdentity = sha256(jdbc.queryForObject(
                         "SELECT CONCAT(@@version, '|', DATABASE())", String.class));
-                String minioIdentity = sha256("ycsopen/phase03-minio:phase03-real-integration");
+                String minioIdentity = sha256("ycsopen/phase03-minio:RELEASE.2025-10-15T17-29-55Z");
                 String pkcs11Identity = runtime.session().tokenIdentityHash();
                 cleanup(fixture);
                 assertThat(s3.listObjectsV2(request -> request.bucket(bucket)).contents()).isEmpty();
