@@ -326,6 +326,37 @@ show ordinary controls. The two sets make route additions or disappeared form su
 review events. API interception proves rendered layout only; it does not claim real-service or
 backend integration behavior.
 
+## DR-FE01-014: Close Issue #58 Through the Existing Docker Release Lane
+
+### Status
+Accepted (issue `#58` closure)
+
+### Context
+PR `#62` merged the shared query-panel implementation and checksum-bound mocked browser coverage,
+but its review correctly kept real Google Chrome plus real application-service acceptance open.
+The repository now has one release-owned Docker lane that already binds the Web bundle and Core
+image to the checked-out commit and runs installed Google Chrome against Nginx, Core, and MySQL.
+
+### Decision
+Extend `web/test/docker-release/release-acceptance.spec.ts` with one Issue `#58` acceptance case for
+the three representative routes. Prepare deterministic tenant and uplink rows from
+`scripts/verify-docker-release` inside each disposable Compose database. Operation-audit evidence
+comes from the real authenticated requests made by the same browser run. Do not add another
+Playwright configuration, page-local test bridge, production API, or release migration.
+
+### Consequences
+
+- The focused mocked specs remain the fast DOM/layout regression layer and keep their explicit
+  evidence boundary.
+- The Docker report and CI log become the production integration evidence: installed Chrome, real
+  login, real HTTP/controller/service/persistence flow, and commit identity are all checked in one
+  existing lane.
+- Test-owned rows never enter a production or development migration and disappear when the owned
+  Compose project is removed.
+- Issues `#64`, `#77`, and `#87` remain the authority for single-field reset, semantic query
+  regions/control sizing, and responsive collapse; closing the older Issue `#58` does not revert
+  those later decisions.
+
 ## DR-FE01-014: Additive Standard Login Card Boundary
 
 ### Status
@@ -350,6 +381,7 @@ checkbox rule and reserved error slot.
   semantics.
 - Browser evidence must prove containment and no horizontal overflow so the additive boundary
   cannot silently change layout.
+
 ## DR-FE01-014: QueryPanel Owns Retry Actions and the Result-State Envelope
 
 ### Status

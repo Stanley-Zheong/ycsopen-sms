@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 type ApiResult = { status: number; body: unknown };
 
@@ -9,6 +9,23 @@ async function loginAsAdmin(page: Page) {
   await page.getByTestId('shared-auth-login-password').fill('Admin@123456');
   await page.getByTestId('admin-console-identity-auth-login-submit').click();
   await expect(page).toHaveURL(/\/admin\/dashboard$/);
+}
+
+function isConsoleGet(responseUrl: string, pathname: string): boolean {
+  const url = new URL(responseUrl);
+  return url.pathname === pathname;
+}
+
+async function expectAssociatedField(panel: Locator, name: string) {
+  const label = panel.getByTestId(`query-label-${name}`);
+  const control = panel.getByTestId(`query-input-${name}`).locator('input, select, textarea');
+  await expect(label).toHaveAttribute('for', await control.getAttribute('id') ?? 'missing-control-id');
+}
+
+async function expectEmptyFields(panel: Locator, names: string[]) {
+  for (const name of names) {
+    await expect(panel.getByTestId(`query-input-${name}`).locator('input, select, textarea')).toHaveValue('');
+  }
 }
 
 test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE-60-DASHBOARD OBL-ISSUE-60-SEED OBL-ISSUE-60-IDENTITY', async ({ page }) => {
@@ -68,6 +85,198 @@ test('pw-issue-60-docker-release C-ISSUE-60-BROWSER OBL-ISSUE-60-FRESH OBL-ISSUE
   expect(prefixes.data.some((version) => version.versionNo === 'DEV-PREFIX-2026-09')).toBe(true);
   expect(coreInfo.build?.commit).toBe(buildCommit);
   await expect(page.locator('meta[name="ycsopen-build-commit"]')).toHaveAttribute('content', buildCommit!);
+});
+
+test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-SERVICE', async ({ page }) => {
+  test.setTimeout(300_000);
+  const environment = (globalThis as typeof globalThis & {
+    process: { env: Record<string, string | undefined> };
+  }).process.env;
+  const buildCommit = environment.BUILD_COMMIT;
+  expect(buildCommit, 'the acceptance run must identify the checked-out commit').toMatch(/^[0-9a-f]{40}$/);
+
+  await loginAsAdmin(page);
+  await expect(page.locator('meta[name="ycsopen-build-commit"]')).toHaveAttribute('content', buildCommit!);
+  expect(await page.evaluate(() => navigator.userAgent)).toContain('Chrome/');
+
+  const tenantsLoaded = page.waitForResponse((response) => (
+    response.request().method() === 'GET'
+      && isConsoleGet(response.url(), '/api/v1/console/admin/tenants')
+  ));
+  await page.goto('/admin/tenants');
+  expect((await tenantsLoaded).status()).toBe(200);
+
+  const tenantPanel = page.getByTestId('query-panel');
+  const tenantFields = ['keyword', 'verification-status', 'operating-status'];
+  await expect(tenantPanel.getByTestId('query-panel-fields')).toBeVisible();
+  await expect(tenantPanel.getByTestId('query-fields')).toBeVisible();
+  await expect(tenantPanel.getByTestId('query-actions')).toBeVisible();
+  await expect(tenantPanel.getByTestId('query-panel-toggle')).toHaveCount(0);
+  for (const name of tenantFields) await expectAssociatedField(tenantPanel, name);
+  await expect(tenantPanel.getByTestId('query-result-table')).toBeVisible();
+  const tenantPageStatus = page.getByTestId('admin-tenant-qualification-tenants-page-status');
+  await expect(tenantPageStatus).toBeVisible();
+  const initialTenantPageStatus = await tenantPageStatus.innerText();
+
+  await tenantPanel.getByTestId('query-input-keyword').locator('input').fill('Issue58查询机构');
+  await tenantPanel.getByTestId('query-input-verification-status').locator('select').selectOption('VERIFIED');
+  await tenantPanel.getByTestId('query-input-operating-status').locator('select').selectOption('NORMAL');
+  await tenantPanel.getByTestId('query-submit').click();
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 / 2 页，共 11 条');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(10);
+  await page.getByTestId('admin-tenant-qualification-tenants-next').click();
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 2 / 2 页，共 11 条');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(1);
+
+  await tenantPanel.getByTestId('query-reset').click();
+  await expectEmptyFields(tenantPanel, tenantFields);
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 /');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-previous')).toBeDisabled();
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toHaveText(
+    initialTenantPageStatus,
+  );
+
+  const auditSeedStatuses = await page.evaluate(async () => {
+    const rawSession = window.sessionStorage.getItem('ycsopen.console.auth-session');
+    if (!rawSession) throw new Error('authenticated browser session was not persisted');
+    const { accessToken } = JSON.parse(rawSession) as { accessToken?: string };
+    if (!accessToken) throw new Error('authenticated browser session has no access token');
+    const responses = await Promise.all(Array.from({ length: 25 }, () => (
+      fetch('/api/v1/console/channels', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+    )));
+    return responses.map((response) => response.status);
+  });
+  expect(auditSeedStatuses).toEqual(Array.from({ length: 25 }, () => 200));
+
+  const auditsLoaded = page.waitForResponse((response) => (
+    response.request().method() === 'GET'
+      && isConsoleGet(response.url(), '/api/v1/console/operation-audits')
+  ));
+  await page.goto('/admin/system/logs');
+  expect((await auditsLoaded).status()).toBe(200);
+
+  const auditPanel = page.getByTestId('query-panel');
+  const auditFields = ['actor', 'operation', 'result', 'from', 'to'];
+  await expect(auditPanel.getByTestId('query-panel-fields')).toBeHidden();
+  await auditPanel.getByTestId('query-panel-toggle').click();
+  await expect(auditPanel.getByTestId('query-fields')).toBeVisible();
+  await expect(auditPanel.getByTestId('query-actions')).toBeVisible();
+  for (const name of auditFields) await expectAssociatedField(auditPanel, name);
+  await auditPanel.getByTestId('query-input-actor').locator('input').fill('admin');
+  await auditPanel.getByTestId('query-input-operation').locator('input').fill('GET /api/v1/console/channels');
+  await auditPanel.getByTestId('query-input-result').locator('select').selectOption('SUCCESS');
+  const auditFrom = '2000-01-01T00:00';
+  const auditTo = '2099-12-31T23:59';
+  const [expectedAuditFrom, expectedAuditTo] = await page.evaluate(
+    ([from, to]) => [new Date(from).toISOString(), new Date(to).toISOString()],
+    [auditFrom, auditTo],
+  );
+  await auditPanel.getByTestId('query-input-from').locator('input').fill(auditFrom);
+  await auditPanel.getByTestId('query-input-to').locator('input').fill(auditTo);
+
+  const hasAuditQuery = (responseUrl: string, pageNumber: string) => {
+    const params = new URL(responseUrl).searchParams;
+    return params.get('actor') === 'admin'
+      && params.get('operation') === 'GET /api/v1/console/channels'
+      && params.get('result') === 'SUCCESS'
+      && params.get('from') === expectedAuditFrom
+      && params.get('to') === expectedAuditTo
+      && params.get('page') === pageNumber
+      && params.get('size') === '20';
+  };
+
+  const filteredAudits = page.waitForResponse((response) => {
+    if (response.request().method() !== 'GET' || !isConsoleGet(response.url(), '/api/v1/console/operation-audits')) return false;
+    return hasAuditQuery(response.url(), '0');
+  });
+  await auditPanel.getByTestId('query-submit').click();
+  expect((await filteredAudits).status()).toBe(200);
+  const auditRows = page.getByTestId('admin-privileged-data-system-logs-row');
+  await expect(auditRows).toHaveCount(20);
+  for (const text of await auditRows.allTextContents()) {
+    expect(text).toContain('GET /api/v1/console/channels');
+    expect(text).toContain('SUCCESS');
+  }
+  const filteredTotal = Number((await page.getByTestId('admin-privileged-data-system-logs-page-status').innerText()).match(/共 (\d+) 条/)?.[1]);
+  expect(filteredTotal).toBeGreaterThanOrEqual(25);
+
+  const auditPageTwo = page.waitForResponse((response) => {
+    if (response.request().method() !== 'GET' || !isConsoleGet(response.url(), '/api/v1/console/operation-audits')) return false;
+    return hasAuditQuery(response.url(), '1');
+  });
+  await page.getByTestId('admin-privileged-data-system-logs-next').click();
+  expect((await auditPageTwo).status()).toBe(200);
+  await expect(page.getByTestId('admin-privileged-data-system-logs-page-status')).toContainText('第 2 页');
+  await expect(auditRows.first()).toBeVisible();
+  for (const text of await auditRows.allTextContents()) {
+    expect(text).toContain('GET /api/v1/console/channels');
+    expect(text).toContain('SUCCESS');
+  }
+
+  await auditPanel.getByTestId('query-reset').click();
+  await expectEmptyFields(auditPanel, auditFields);
+  await expect(page.getByTestId('admin-privileged-data-system-logs-page-status')).toContainText('第 1 页');
+  await expect(auditPanel.getByTestId('query-result-table')).toContainText('GET /api/v1/console/operation-audits');
+  await auditPanel.getByTestId('query-panel-toggle').click();
+  await page.reload();
+  await expect(page.getByTestId('query-panel').getByTestId('query-panel-fields')).toBeHidden();
+
+  const uplinksLoaded = page.waitForResponse((response) => (
+    response.request().method() === 'GET'
+      && isConsoleGet(response.url(), '/api/v1/console/uplinks')
+      && new URL(response.url()).search === ''
+  ));
+  await page.goto('/admin/uplink');
+  expect((await uplinksLoaded).status()).toBe(200);
+
+  const uplinkPanel = page.getByTestId('query-panel').first();
+  const uplinkFields = ['tenant-id', 'phone-number', 'keyword', 'carrier', 'push-state', 'start-time', 'end-time'];
+  await expect(uplinkPanel.getByTestId('query-panel-fields')).toBeHidden();
+  await uplinkPanel.getByTestId('query-panel-toggle').click();
+  await expect(uplinkPanel.getByTestId('query-fields')).toBeVisible();
+  await expect(uplinkPanel.getByTestId('query-actions')).toBeVisible();
+  for (const name of uplinkFields) await expectAssociatedField(uplinkPanel, name);
+  const uplinkResult = uplinkPanel.getByTestId('query-result-table');
+  await expect(uplinkResult).toContainText('Issue58查询目标');
+  await expect(uplinkResult).toContainText('Issue58基线');
+  const targetRow = page.getByTestId('admin-uplink-normalization-uplinks-row').filter({ hasText: 'Issue58查询目标' });
+  const tenantId = (await targetRow.locator('td').first().innerText()).trim();
+
+  await uplinkPanel.getByTestId('query-input-tenant-id').locator('input').fill(tenantId);
+  await uplinkPanel.getByTestId('query-input-phone-number').locator('input').fill('13800138058');
+  await uplinkPanel.getByTestId('query-input-keyword').locator('input').fill('Issue58查询目标');
+  await uplinkPanel.getByTestId('query-input-carrier').locator('input').fill('CMCC');
+  await uplinkPanel.getByTestId('query-input-push-state').locator('select').selectOption('PUSH_FAILED');
+  await uplinkPanel.getByTestId('query-input-start-time').locator('input').fill('2026-09-12T00:00');
+  await uplinkPanel.getByTestId('query-input-end-time').locator('input').fill('2026-09-13T00:00');
+
+  const uplinksFiltered = page.waitForResponse((response) => {
+    if (response.request().method() !== 'GET' || !isConsoleGet(response.url(), '/api/v1/console/uplinks')) return false;
+    const params = new URL(response.url()).searchParams;
+    return params.get('tenantId') === tenantId
+      && params.get('phoneNumber') === '13800138058'
+      && params.get('keyword') === 'Issue58查询目标'
+      && params.get('carrier') === 'CMCC'
+      && params.get('pushState') === 'PUSH_FAILED'
+      && params.get('startTime') === '2026-09-12T00:00'
+      && params.get('endTime') === '2026-09-13T00:00';
+  });
+  await uplinkPanel.getByTestId('query-submit').click();
+  expect((await uplinksFiltered).status()).toBe(200);
+  await expect(page.getByTestId('admin-uplink-normalization-uplinks-row')).toHaveCount(1);
+  await expect(uplinkResult).toContainText('Issue58查询目标');
+  await expect(uplinkResult).not.toContainText('Issue58基线');
+  await expect(page.getByTestId('admin-uplink-normalization-uplinks-card-total')).toContainText('1');
+
+  await uplinkPanel.getByTestId('query-reset').click();
+  await expectEmptyFields(uplinkPanel, uplinkFields);
+  await expect(uplinkResult).toContainText('Issue58查询目标');
+  await expect(uplinkResult).toContainText('Issue58基线');
+  await uplinkPanel.getByTestId('query-panel-toggle').click();
+  await page.reload();
+  await expect(page.getByTestId('query-panel').first().getByTestId('query-panel-fields')).toBeHidden();
 });
 
 test('pw-issue-90-release-tenant-status-action C-ISSUE-90-RELEASE-TENANT-ACCOUNT OBL-ISSUE-90-RELEASE-TENANT-ACCOUNT', async ({ page }) => {
