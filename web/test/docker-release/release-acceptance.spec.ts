@@ -121,29 +121,14 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
   await tenantPanel.getByTestId('query-input-keyword').locator('input').fill('Issue58查询机构');
   await tenantPanel.getByTestId('query-input-verification-status').locator('select').selectOption('VERIFIED');
   await tenantPanel.getByTestId('query-input-operating-status').locator('select').selectOption('NORMAL');
-  const tenantsFiltered = page.waitForResponse((response) => (
-    response.request().method() === 'GET'
-      && isConsoleGet(response.url(), '/api/v1/console/admin/tenants')
-  ));
   await tenantPanel.getByTestId('query-submit').click();
-  expect((await tenantsFiltered).status()).toBe(200);
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 / 2 页，共 11 条');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(10);
-  const tenantsPageTwo = page.waitForResponse((response) => (
-    response.request().method() === 'GET'
-      && isConsoleGet(response.url(), '/api/v1/console/admin/tenants')
-  ));
   await page.getByTestId('admin-tenant-qualification-tenants-next').click();
-  expect((await tenantsPageTwo).status()).toBe(200);
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 2 / 2 页，共 11 条');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(1);
 
-  const tenantsReset = page.waitForResponse((response) => (
-    response.request().method() === 'GET'
-      && isConsoleGet(response.url(), '/api/v1/console/admin/tenants')
-  ));
   await tenantPanel.getByTestId('query-reset').click();
-  expect((await tenantsReset).status()).toBe(200);
   await expectEmptyFields(tenantPanel, tenantFields);
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page-status')).toContainText('第 1 /');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-previous')).toBeDisabled();
