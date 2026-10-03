@@ -86,13 +86,14 @@ module Phase03
     PROVISIONER = File.join(ROOT, "scripts/provision-phase-03-softhsm")
     SOFTHSM_MANIFEST = File.join(__dir__, "softhsm-source.json")
     MYSQL_IMAGE = Phase01::ServiceChecks::MYSQL_IMAGE
-    MINIO_IMAGE = "quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
+    MINIO_REPOSITORY = "quay.io/minio/minio"
+    MINIO_VERSION = "RELEASE.2025-09-07T16-13-09Z"
+    MINIO_IMAGE = "#{MINIO_REPOSITORY}:#{MINIO_VERSION}"
     MINIO_MANIFEST_DIGEST = "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"
     MINIO_IMAGE_CONFIG_DIGESTS = {
       "linux/amd64" => "sha256:69b2ec208575b69597784255eec6fa6a2985ee9e1a47f4411a51f7f5fdd193a9",
       "linux/arm64" => "sha256:8f08aee614800a237906bd48114d733e5ac5bfac4ccdf731f141b0e880d7a253"
     }.freeze
-    MINIO_VERSION = "RELEASE.2025-09-07T16-13-09Z"
     OWNER_LABEL = "com.ycsopen.phase03.owner=crypto-storage-bootstrap"
     RUN_LABEL = "com.ycsopen.phase03.run"
     RUN_ID_PATTERN = /\A(?:mysql|minio|softhsm)-[0-9a-f]{12}\z/
@@ -272,9 +273,9 @@ module Phase03
     end
 
     def validate_minio_identity!(identity)
-      unless identity.is_a?(Hash) && identity["repo_digests"].is_a?(Array) &&
-             identity["repo_digests"].include?(MINIO_IMAGE)
-        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO manifest is not the locked digest")
+      unless identity.is_a?(Hash) && identity["repo_tags"].is_a?(Array) &&
+             identity["repo_tags"].include?(MINIO_IMAGE)
+        raise CheckError.new("MINIO_IMAGE_IDENTITY_MISMATCH", "local MinIO image is not the locked release tag")
       end
       expected_config_digest = MINIO_IMAGE_CONFIG_DIGESTS[identity["platform"]]
       unless expected_config_digest
@@ -292,11 +293,11 @@ module Phase03
     def inspect_minio_image!
       stdout, = Phase01::ServiceChecks.command([
         Phase01::ServiceChecks.docker_binary, "image", "inspect", MINIO_IMAGE, "--format",
-        "{{json .RepoDigests}}|{{.Id}}|{{.Os}}/{{.Architecture}}|{{index .Config.Labels \"version\"}}"
+        "{{json .RepoTags}}|{{json .RepoDigests}}|{{.Id}}|{{.Os}}/{{.Architecture}}|{{index .Config.Labels \"version\"}}"
       ])
-      repo_json, image_id, platform, version = stdout.strip.split("|", 4)
+      tag_json, digest_json, image_id, platform, version = stdout.strip.split("|", 5)
       identity = {
-        "repo_digests" => JSON.parse(repo_json), "image_id" => image_id,
+        "repo_tags" => JSON.parse(tag_json), "repo_digests" => JSON.parse(digest_json), "image_id" => image_id,
         "platform" => platform, "version" => version
       }
       validate_minio_identity!(identity)
@@ -306,8 +307,10 @@ module Phase03
     end
 
     def minio_digest_fields(identity)
+      image_digest = identity.fetch("repo_digests", []).find { |digest| digest.start_with?("#{MINIO_REPOSITORY}@") }
+      image_digest ||= identity.fetch("image_id")
       {
-        "image_digest" => MINIO_MANIFEST_DIGEST.delete_prefix("sha256:"),
+        "image_digest" => image_digest.split("@", 2).last.delete_prefix("sha256:"),
         "config_digest" => MINIO_IMAGE_CONFIG_DIGESTS.fetch(identity.fetch("platform")).delete_prefix("sha256:"),
         "image_id" => identity.fetch("image_id").delete_prefix("sha256:")
       }

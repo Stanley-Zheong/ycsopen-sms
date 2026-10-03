@@ -169,9 +169,10 @@ class Phase03ServiceChecksTest < Minitest::Test
     end
   end
 
-  def test_minio_image_identity_requires_exact_digest_platform_and_release
+  def test_minio_image_identity_requires_exact_release_tag_platform_and_release
     arm64_identity = {
-      "repo_digests" => [ServiceChecks::MINIO_IMAGE],
+      "repo_tags" => [ServiceChecks::MINIO_IMAGE],
+      "repo_digests" => ["#{ServiceChecks::MINIO_REPOSITORY}@#{ServiceChecks::MINIO_MANIFEST_DIGEST}"],
       "image_id" => ServiceChecks::MINIO_IMAGE_CONFIG_DIGESTS.fetch("linux/arm64"),
       "platform" => "linux/arm64",
       "version" => ServiceChecks::MINIO_VERSION
@@ -195,7 +196,7 @@ class Phase03ServiceChecksTest < Minitest::Test
                  containerd_fields.fetch("image_id")
 
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
-      ServiceChecks.validate_minio_identity!(arm64_identity.merge("repo_digests" => ["minio/minio@sha256:#{'0' * 64}"]))
+      ServiceChecks.validate_minio_identity!(arm64_identity.merge("repo_tags" => ["quay.io/minio/minio:latest"]))
     end
     assert_check("MINIO_IMAGE_IDENTITY_MISMATCH") do
       ServiceChecks.validate_minio_identity!(arm64_identity.merge("image_id" => "sha256:#{'0' * 64}"))
