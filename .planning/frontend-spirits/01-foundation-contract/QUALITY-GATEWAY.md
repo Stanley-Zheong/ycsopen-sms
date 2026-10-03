@@ -10,6 +10,58 @@
 | Build | `npm --prefix web run build` | Pass | Not recorded |
 | Chrome Playwright | Spirit-specific Chrome command covering QueryPanel, form, table, and action confirmation | Pass | Not recorded |
 
+## Issue #88 Verification Record
+
+Issue: `#88` — `修复无动作孤立输入框并接入异步查询`.
+Branch: `fix/88-actionable-query-controls`, cut from `origin/main` at `d49828a` and synchronized through `1091f63`.
+Environment: managed Linux arm64 workspace, Node.js 20 or newer, Java 21.
+
+### Required evidence
+
+| Gate | Command | Current result |
+|---|---|---|
+| Frontend install | `npm --prefix web ci` | **Pass** — 357 packages installed; npm reported 7 audit findings |
+| Shared and page unit tests | `npm --prefix web test` | **Pass after review follow-up** — 50 files / 213 tests |
+| Production build | `npm --prefix web run build` | **Pass** — 306 modules; Vite reported the existing large-chunk advisory |
+| Backend regression | `MAVEN_OPTS='-Xmx768m -XX:MaxMetaspaceSize=256m' mvn -f core/pom.xml test` | **Environment failure** — 986 tests: 7 failures, 4 errors, 33 skipped; failures require unavailable Ruby, process-tree reaping, or migration configuration. No backend file is changed. |
+| Admin and Tenant Chrome acceptance | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep 'pw-issue-(77|88)'` | **Pass** — Google Chrome 153 ran six atomic cases (four for issue #88 and two retained issue #77 contracts), 6/6 passed in 3.5 minutes at `9d08923` |
+| Narrow export Chrome acceptance | Same PR CI command, case `pw-issue-88-export-center-narrow` | **Pass** — all six cards remained within the grid and content width at 1024×900 |
+| ESLint | `npm --prefix web run lint` | **Baseline warning** — 0 errors; one unchanged `react-refresh/only-export-components` warning in `DashboardPage.tsx` makes `--max-warnings 0` exit 1 |
+| Changed-file ESLint | ESLint over changed TypeScript/TSX files with `--max-warnings 0` | **Pass** after review follow-up |
+| Playwright discovery | `npm --prefix web run test:e2e -- issue-77-admin-query-contract.spec.ts secure-async-export.spec.ts --project=local-google-chrome --grep 'pw-issue-(77|88)' --list` | **Pass** — 6 tests in 2 files |
+| Diff hygiene | `git diff --check` | **Pass** |
+| Pull-request Google Chrome / Docker release | CI job `Docker release / Google Chrome` | **Pass** — run `36521952098`, job `109256563363`; Google Chrome 153 passed 6/6 and Docker fresh/upgrade/restart each passed 3/3 at `9d08923` |
+
+### Issue-scoped TODO
+
+| Item | Status | Evidence target |
+|---|---|---|
+| Every current Admin and Tenant QueryPanel has Search, Reset, Refresh and one four-state result status | Done | Static inventory: 34 panels / 34 `onRefresh` / 34 `queryStatus`; CI passed 50 files / 213 unit tests |
+| Every filter independently changes a request URL/body or a declared local result | Done | Atomic Admin and Tenant Chrome cases passed in run `36521952098` |
+| Unchanged criteria can retry the exact owning query | Done locally | Shared and page-owner regressions prove one exact current-page request; Search and Refresh share the access-loading gate |
+| Archive result containment and export-card narrow layout | Done | Archive/export unit tests and their atomic Chrome cases pass |
+| Review, commits, pull request, and implementation CI | Done | PR `#111`; independent review reports no code findings; implementation run `36521952098` is green and its checksum-bound evidence is committed for the final evidence-only validation |
+
+### Verification boundaries
+
+- Browser business APIs are intercepted with deterministic fixtures. The acceptance proves real
+  React DOM, action wiring, request initiation/signature, state exposure, and layout; it does not
+  claim production-service or production-data correctness.
+- A local Playwright run may use the managed Chromium headless shell when Google Chrome is not
+  installed in the workspace. In this run both the managed and an isolated Playwright Chromium
+  151 build crashed their ARM renderer while navigating `/login` or `/admin/dashboard`, including
+  with GPU disabled. This is recorded as blocked, not passed. Only the pull-request runner's
+  `/usr/bin/google-chrome` execution can close the Chrome gate.
+- The backend command was executed to completion. Its 11 failures/errors are confined to test
+  harness prerequisites unavailable in this runtime (`ruby`, owned-process reaping, and migration
+  configuration); the branch changes no `core/` file. The pull-request backend job remains required.
+- The prior `b0de2dd` browser report is superseded. Reports under
+  `.planning/changes/issue-77-query-controls/EVIDENCE/` bind the real Chrome/Docker result to
+  implementation commit `9d08923`, the six atomic browser cases, and current source checksums.
+- The evidence-only follow-up commit remains subject to the same pull-request checks. GitHub merge
+  status and the live issue discussion are re-read immediately before merge; no pending check is
+  treated as a pass.
+
 ## Issue #108 Verification Record
 
 Issue: `#108` — `[UI] 参考 DeepSeek Platform 重做登录页与登录后控制台风格`.
@@ -128,3 +180,36 @@ migration configuration; 33 tests were skipped. The focused repository release a
 passes 5/5. No backend file changed. The Docker release check was not run because no container,
 build, or deployment input changed. Raw Chrome evidence SHA-256 is
 `96af3e425fb9f3b79cbd3157d40cf353ff0968daa8dd18bae1aba37ed336a668`.
+
+## Issue #76 Quality Gate
+
+Issue: `#76` — login checkbox, label, card spacing, and stable selector regression.
+Branch: `fix/76-login-card-layout`, based on `origin/main` at `1091f63`.
+
+The issue-scoped implementation, local evidence, and pull-request CI evidence are recorded below.
+The local ARM runner could only execute the repository-cached bundled Chromium browser, so branded
+Google Chrome and Docker release evidence came from the existing pull-request CI lane.
+
+| Gate | Command/evidence | Current result |
+|---|---|---|
+| Frontend install | `npm --prefix web ci` | Pass; 357 packages installed. The existing audit baseline reports 5 moderate, 2 high, and 1 critical dependency vulnerabilities. |
+| Targeted red-green unit | `npm --prefix web test -- --run test/unit/login-page.test.tsx --pool=forks --maxWorkers=1 --minWorkers=1` | Red reproduced the missing `login-card`; final pass, 8/8. |
+| Issue browser | `issue-76-login-card.spec.ts` from `web/` at 1280×800, one worker, isolated current-workspace Vite server | Pass across two resource-bounded local runs, 1/1 per scenario, using the repository-cached Chromium headless shell: selectors, 16px checkbox, one-line label, normal/error containment, invariant field/error spacing, exact payload, and ADMIN route. This is not branded-Chrome evidence. |
+| Affected browser regression | `issue-108-deepseek-shell.spec.ts` login cases plus `auth.spec.ts` ADMIN login, bundled Chromium, one worker | Pass, 6/6. |
+| Full frontend unit | `npm --prefix web test` | Local shared-host run: 180/186 pass, with six unrelated asynchronous timeouts; low-concurrency rerun passed 29/30, leaving one existing `identity-pages.test.tsx` 5-second wait failure. PR #113 retry passed all 50 files / 186 tests. The changed login file also passes 8/8 independently. |
+| Frontend build | `npm --prefix web run build` | Pass locally (306 modules transformed) and in PR #113 CI. Existing chunk-size warning remains. |
+| Backend boundary | `mvn -f core/pom.xml test` | Attempted twice; both stopped before compilation because Maven Central terminated TLS handshakes while downloading dependencies. No backend file changed. |
+| Planning validators | `/usr/bin/env ruby .planning/tools/test-planning-validators.rb` | Not executable locally: `/usr/bin/env` cannot find `ruby`. |
+| Diff hygiene | `git diff --check` | Pass before review. |
+| Branded Chrome / Docker release | Existing `Docker release / Google Chrome` PR job, invoking `control-sizing.spec.ts issue-76-login-card.spec.ts --project=local-google-chrome --workers=1`, followed by `./scripts/verify-docker-release` | Pass on PR #113, run `36964036815`: Google Chrome 154 browser contracts 5/5; Docker `fresh`, `upgrade`, and `restart` lanes each emitted PASS evidence for implementation commit `744427d`. |
+| Independent review | Full issue diff after all local checks | Final changed-slice recheck: 0 BLOCKER, 0 HIGH, 0 MEDIUM, 0 LOW. The initial premature branded-Chrome completion claim and narrow spacing oracle were corrected. Claude CLI is installed but `claude auth status` reports no authenticated session. |
+
+Scoped TODO:
+
+- [x] Reproduce the missing exact `login-card` selector with a failing targeted test.
+- [x] Add the standard card boundary while preserving all existing login selectors and behavior.
+- [x] Prove 14–20px checkbox geometry, single-line label, consistent error containment, and no
+      horizontal overflow in branded Google Chrome PR CI before merge.
+- [x] Prove exact default-admin credentials submit to an ADMIN session and route to
+      `/admin/dashboard`; distinguish mocked frontend acceptance from any real-backend evidence.
+- [x] Complete required local repository checks and independent review, recording every boundary.

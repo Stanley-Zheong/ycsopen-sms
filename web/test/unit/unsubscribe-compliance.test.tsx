@@ -99,4 +99,15 @@ describe('Phase 33 unsubscribe compliance UI', () => {
     fireEvent.click(screen.getByTestId('tenant-unsubscribe-compliance-keyword-save'));
     await waitFor(() => expect(api.saveTenantUnsubscribeKeyword).toHaveBeenCalledWith(expect.objectContaining({ keyword: 'STOP', scope: 'TENANT' })));
   });
+
+  it('refreshes only tenant unsubscribe records and exposes their query state', async () => {
+    renderWithQuery(<TenantUnsubscribesPage />);
+
+    await waitFor(() => expect(screen.getByTestId('tenant-unsubscribe-compliance-unsubscribes-query-status')).toHaveAttribute('data-state', 'success'));
+    await waitFor(() => expect(api.listTenantUnsubscribeKeywords).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId('query-refresh'));
+
+    await waitFor(() => expect(api.listTenantUnsubscribes).toHaveBeenCalledTimes(2));
+    expect(api.listTenantUnsubscribeKeywords).toHaveBeenCalledTimes(1);
+  });
 });

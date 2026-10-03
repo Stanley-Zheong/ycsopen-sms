@@ -132,6 +132,7 @@ describe('Phase 45 complaint ratio intervention UI', () => {
       expect.stringMatching(/^\d{4}-\d{2}$/),
       '投诉率超阈值人工确认',
     ));
-    expect(await screen.findByRole('status')).toHaveTextContent('complaint-ratio:CHANNEL:11:2026-08:default-v1');
+    expect(await screen.findByTestId('admin-complaint-ratio-dashboard-intervention-status'))
+      .toHaveTextContent('complaint-ratio:CHANNEL:11:2026-08:default-v1');
   });
 });

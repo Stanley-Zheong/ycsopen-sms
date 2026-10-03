@@ -54,7 +54,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
     },
   });
 
-  const rows = query.data ?? [];
+  const rows = useMemo(() => query.data ?? [], [query.data]);
   const breachedRows = useMemo(() => rows.filter((row) => thresholdResult(row) === 'BREACHED'), [rows]);
   const confirmReason = intervention?.reason.trim() ?? '';
   const thresholdSummary = rows[0]
@@ -120,6 +120,15 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
         setShowAll(false);
       }}
       onRefresh={() => { void query.refetch(); }}
+      queryStatus={{
+        testId: `admin-complaint-ratio-dashboard-${dimension}-query-status`,
+        label: title,
+        isFetching: query.isFetching,
+        isError: query.isError,
+        isEmpty: rows.length === 0,
+        count: rows.length,
+        errorDetailsId: `admin-complaint-ratio-dashboard-${dimension}-error-details`,
+      }}
       legacyPanelTestId={dimension === 'channel'
         ? 'admin-complaint-ratio-dashboard-complaint-ratio-period'
         : 'admin-complaint-ratio-dashboard-complaint-ratio-period-tenant'}
@@ -136,7 +145,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
             </p>
           )}
           {query.isLoading && <p>加载中…</p>}
-          {query.isError && <p role="alert">加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
+          {query.isError && <p id={`admin-complaint-ratio-dashboard-${dimension}-error-details`}>加载失败，请稍后重试（网络异常，见 PRD 5.15 节异常流规范）。</p>}
           {!query.isLoading && !query.isError && rows.length === 0 && <p style={{ color: '#888' }}>暂无数据</p>}
           {rows.length > 0 && dimension === 'channel' && (
             <table className="ratio-table" data-testid="admin-complaint-ratio-dashboard-complaint-ratio-channel">
@@ -149,7 +158,7 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
             </table>
           )}
           {pauseMutation.data && (
-            <p role="status">
+            <p role="status" data-testid="admin-complaint-ratio-dashboard-intervention-status">
               干预完成：{pauseMutation.data.dimensionType}:{pauseMutation.data.dimensionId} {pauseMutation.data.status}
               {' '}证据：{pauseMutation.data.sourceKey}
             </p>

@@ -40,6 +40,7 @@ describe('LoginPage remembered username', () => {
 
     expect(screen.getByTestId('shared-auth-login-page')).toHaveClass('login-page');
     expect(screen.getByTestId('shared-auth-login-background')).toBeVisible();
+    expect(screen.getByTestId('login-card')).toContainElement(screen.getByTestId('shared-auth-login-card'));
     expect(screen.getByTestId('shared-auth-login-card')).toHaveClass('login-card');
     expect(screen.getByTestId('shared-auth-login-remember')).toHaveClass('login-remember-input');
   });

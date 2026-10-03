@@ -191,6 +191,15 @@ export default function AdminTenantTerminationPage() {
           setDraftFilter(INITIAL_TERMINATION_FILTER);
           setFilter(INITIAL_TERMINATION_FILTER);
         }}
+        onRefresh={() => void terminations.refetch()}
+        queryStatus={{
+          testId: 'admin-tenant-cooperation-tenant-termination-query-status',
+          label: '终止请求',
+          isFetching: terminations.isFetching,
+          isError: terminations.isError,
+          isEmpty: rows.length === 0,
+          count: rows.length,
+        }}
         result={(
           <section>
             <h2>终止请求列表</h2>

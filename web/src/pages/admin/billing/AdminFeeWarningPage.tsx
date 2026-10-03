@@ -115,18 +115,34 @@ export default function AdminFeeWarningPage() {
       </section>
 
       <QueryPanel
-        onSubmit={() => setQueryTenantApplied(queryTenantDraft)}
+        onSubmit={() => {
+          const nextTenantId = queryTenantDraft ? Number(queryTenantDraft) : undefined;
+          if (Object.is(nextTenantId, queryTenantId)) return false;
+          setQueryTenantApplied(queryTenantDraft);
+          return true;
+        }}
         onReset={() => {
           setQueryTenantDraft('');
           setQueryTenantApplied('');
         }}
         onRefresh={() => void refresh()}
         refreshLegacyTestId="admin-fee-warning-refresh"
+        queryStatus={{
+          testId: 'admin-fee-warning-query-status',
+          label: '费用预警规则与事件',
+          isFetching: rules.isFetching || episodes.isFetching,
+          isError: rules.isError || episodes.isError,
+          isEmpty: (rules.data ?? []).length === 0 && (episodes.data ?? []).length === 0,
+          count: (rules.data?.length ?? 0) + (episodes.data?.length ?? 0),
+          errorDetailsId: rules.isError && episodes.isError
+            ? 'admin-fee-warning-rules-error admin-fee-warning-load-error'
+            : rules.isError ? 'admin-fee-warning-rules-error' : 'admin-fee-warning-load-error',
+        }}
         result={(
           <section className="card" data-testid="admin-fee-warning-current-rules">
             <h2>当前规则</h2>
             {rules.isLoading && <p data-testid="admin-fee-warning-rules-loading">正在加载规则…</p>}
-            {rules.isError && <p role="alert" data-testid="admin-fee-warning-rules-error">规则加载失败。</p>}
+            {rules.isError && <p id="admin-fee-warning-rules-error" data-testid="admin-fee-warning-rules-error">规则加载失败。</p>}
             <table className="alert-engine-table" data-testid="admin-fee-warning-rules-table">
               <thead><tr><th>名称</th><th>指标</th><th>阈值</th><th>动作</th><th>状态</th><th>通知</th></tr></thead>
               <tbody>
@@ -159,7 +175,7 @@ export default function AdminFeeWarningPage() {
       <section className="card" data-testid="admin-fee-warning-fee-warning-credit-action">
         <h2>预警 episode 与授信动作</h2>
         {episodes.isLoading && <p data-testid="admin-fee-warning-loading">正在加载费用预警…</p>}
-        {episodes.isError && <p role="alert" data-testid="admin-fee-warning-load-error">费用预警加载失败。</p>}
+        {episodes.isError && <p id="admin-fee-warning-load-error" data-testid="admin-fee-warning-load-error">费用预警加载失败。</p>}
         <label>审批原因<input data-testid="admin-fee-warning-fee-warning-approval-reason" value={approvalReason} onChange={(event) => setApprovalReason(event.target.value)} /></label>
         <table className="alert-engine-table" data-testid="admin-fee-warning-episode-table">
           <thead><tr><th>机构</th><th>指标</th><th>来源金额</th><th>授信</th><th>比例</th><th>动作</th><th>审批</th><th>投递</th><th>操作</th></tr></thead>

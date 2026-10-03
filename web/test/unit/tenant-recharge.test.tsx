@@ -142,6 +142,34 @@ describe('Phase 36 tenant recharge operations UI', () => {
     expect(await screen.findByTestId('admin-tenant-recharge-operations-review-message')).toHaveTextContent('APPROVED');
   });
 
+  it('retries the same recharge-review filter exactly once', async () => {
+    useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
+    renderWithProviders(<AdminRechargeReviewPage />);
+
+    await screen.findByTestId('admin-tenant-recharge-operations-review-row');
+    expect(rechargeApi.listRechargeReviews).toHaveBeenCalledTimes(1);
+
+    fireEvent.change(screen.getByTestId('admin-tenant-recharge-operations-review-status'), { target: { value: 'APPROVED' } });
+    fireEvent.click(screen.getByTestId('query-submit'));
+    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledTimes(2));
+    fireEvent.click(screen.getByTestId('query-submit'));
+
+    await waitFor(() => expect(rechargeApi.listRechargeReviews).toHaveBeenCalledTimes(3));
+    expect(screen.getByTestId('admin-tenant-recharge-operations-review-query-status')).toHaveAttribute('data-state', 'success');
+  });
+
+  it('announces a failed recharge-review query through one assertive live region', async () => {
+    vi.mocked(rechargeApi.listRechargeReviews).mockRejectedValueOnce(new Error('review unavailable'));
+    useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
+    renderWithProviders(<AdminRechargeReviewPage />);
+
+    const status = await screen.findByTestId('admin-tenant-recharge-operations-review-query-status');
+    await waitFor(() => expect(status).toHaveAttribute('data-state', 'error'));
+    expect(status).toHaveAttribute('aria-describedby', 'admin-tenant-recharge-operations-review-error-details');
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(document.getElementById('admin-tenant-recharge-operations-review-error-details')).not.toHaveAttribute('role');
+  });
+
   it('keeps the review dialog open during the synchronous submit latch window', async () => {
     vi.mocked(rechargeApi.reviewRecharge).mockImplementationOnce(() => new Promise(() => undefined));
     useAuthStore.setState({ userType: 'FINANCE', tenantId: null });
