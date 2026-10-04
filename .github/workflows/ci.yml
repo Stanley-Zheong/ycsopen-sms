@@ -199,10 +199,13 @@ jobs:
           ARG MINIO_VERSION
           RUN apk add --no-cache git
           RUN CGO_ENABLED=0 go install "github.com/minio/minio@${MINIO_VERSION}"
+          RUN CGO_ENABLED=0 go install github.com/minio/mc@latest
 
           FROM alpine:3.22
           ARG MINIO_VERSION
+          RUN apk add --no-cache curl
           COPY --from=build /go/bin/minio /usr/local/bin/minio
+          COPY --from=build /go/bin/mc /usr/local/bin/mc
           LABEL version="${MINIO_VERSION}"
           ENTRYPOINT ["/usr/local/bin/minio"]
           DOCKERFILE
