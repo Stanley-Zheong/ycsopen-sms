@@ -29,6 +29,8 @@ const USER_TYPES = new Set<LoginResponse['userType']>([
   'ADMIN',
   'OPERATOR',
   'FINANCE',
+  'SALES',
+  'TECH_SUPPORT',
   'TENANT_ADMIN',
   'TENANT_USER',
   'TENANT_DEV',
@@ -206,5 +208,6 @@ export function protectedQueryKey(name: string, ...parts: unknown[]): readonly u
 
 /** 平台方角色 vs 机构方角色，用于路由守卫（对应 PRD 3.1 节角色定义）。 */
 export function isPlatformRole(userType: LoginResponse['userType'] | null): boolean {
-  return userType === 'ADMIN' || userType === 'OPERATOR' || userType === 'FINANCE';
+  return userType === 'ADMIN' || userType === 'OPERATOR' || userType === 'FINANCE'
+    || userType === 'SALES' || userType === 'TECH_SUPPORT';
 }

@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import type { ApiResponse, LoginResponse } from '@/types/api';
 
-export type PlatformUserType = Extract<LoginResponse['userType'], 'ADMIN' | 'OPERATOR' | 'FINANCE'>;
+export type PlatformUserType = Extract<LoginResponse['userType'], 'ADMIN' | 'OPERATOR' | 'FINANCE' | 'SALES' | 'TECH_SUPPORT'>;
 export type PlatformAccountStatus = 'ACTIVE' | 'DISABLED' | 'LOCKED';
 export type PermissionResourceType = 'MENU' | 'BUTTON' | 'API' | 'DATA';
 

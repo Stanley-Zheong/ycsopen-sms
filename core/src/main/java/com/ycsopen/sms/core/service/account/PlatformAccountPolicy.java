@@ -31,7 +31,8 @@ public final class PlatformAccountPolicy {
         if (username == null || !USERNAME.matcher(username).matches()) {
             throw new IllegalArgumentException("username must be 4-20 letters, digits, or underscores");
         }
-        if (!("ADMIN".equals(userType) || "OPERATOR".equals(userType) || "FINANCE".equals(userType))) {
+        if (!("ADMIN".equals(userType) || "OPERATOR".equals(userType) || "FINANCE".equals(userType)
+                || "SALES".equals(userType) || "TECH_SUPPORT".equals(userType))) {
             throw new IllegalArgumentException("unsupported platform user type");
         }
         if (today == null || validity != null && validity.isBefore(today)) {

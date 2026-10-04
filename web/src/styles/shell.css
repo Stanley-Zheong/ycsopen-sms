@@ -276,6 +276,106 @@
   white-space: nowrap;
 }
 
+.app-user-center {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.app-user-center-trigger {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.app-user-center-trigger:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+}
+
+.app-user-avatar {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: var(--color-brand);
+  border-radius: 50%;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  place-items: center;
+}
+
+.app-user-label {
+  white-space: nowrap;
+}
+
+.app-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  width: 180px;
+  padding: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-3);
+}
+
+.app-user-menu-heading {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 10px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.app-user-menu-heading span {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.app-user-menu-item {
+  min-height: 36px;
+  padding: 0 10px;
+  color: var(--color-text);
+  background: transparent;
+  border-color: transparent;
+  border-radius: var(--radius-menu-item);
+  text-align: left;
+}
+
+.app-user-menu-item:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+}
+
+.app-user-menu-item.danger {
+  color: var(--color-danger);
+}
+
+.app-password-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: var(--shell-gutter-inline);
+  z-index: 29;
+  display: grid;
+  width: min(360px, calc(100vw - 32px));
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-3);
+}
+
 .app-content-container {
   flex: 1;
   width: 100%;

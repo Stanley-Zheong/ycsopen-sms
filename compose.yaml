@@ -76,5 +76,23 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  simulator:
+    image: curlimages/curl:8.10.1
+    environment:
+      BASE_URL: http://core:8080
+      INTERVAL_SECONDS: ${YCSOPEN_SIMULATOR_INTERVAL_SECONDS:-900}
+      BATCH_SIZE: ${YCSOPEN_SIMULATOR_BATCH_SIZE:-3}
+      USERNAME: ${YCSOPEN_SIMULATOR_USERNAME:-tenant_admin}
+      PASSWORD: ${YCSOPEN_SIMULATOR_PASSWORD:-Admin@123456}
+      TEMPLATE_IDS: ${YCSOPEN_SIMULATOR_TEMPLATE_IDS:-2 1}
+      SIGN_IDS: ${YCSOPEN_SIMULATOR_SIGN_IDS:-2 1}
+    volumes:
+      - ./deploy/simulator/sms-simulator.sh:/simulator.sh:ro
+    command: ["sh", "/simulator.sh"]
+    depends_on:
+      core:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   mysql-data:

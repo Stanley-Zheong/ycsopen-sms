@@ -1,5 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { logout as revokeSession } from '@/api/auth';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { changePassword, logout as revokeSession } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
 import SidebarMenu, { type SidebarMenuGroup } from './SidebarMenu';
 
@@ -41,6 +43,37 @@ export default function AppShell({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const clearSession = useAuthStore((state) => state.logout);
+  const userType = useAuthStore((state) => state.userType);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+
+  async function signOut() {
+    try {
+      await revokeSession();
+    } finally {
+      clearSession();
+      navigate('/login');
+    }
+  }
+
+  async function submitPasswordChange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordSubmitting(true);
+    setPasswordMessage(null);
+    try {
+      await changePassword(currentPassword, newPassword);
+      clearSession();
+      navigate('/login');
+    } catch {
+      setPasswordMessage('修改失败，请检查当前密码和新密码复杂度。');
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  }
 
   const activeGroup = groups.find((group) => group.items.some((item) => item.to === pathname));
   const activeItem = activeGroup?.items.find((item) => item.to === pathname);
@@ -59,23 +92,6 @@ export default function AppShell({
           </span>
         </div>
         <SidebarMenu ariaLabel={navAriaLabel} groups={groups} testIdPrefix={navTestIdPrefix} />
-        <div className="app-sidebar-footer">
-          <button
-            className="sidebar-logout app-sidebar-logout"
-            data-testid="shared-console-identity-profile-logout"
-            type="button"
-            onClick={async () => {
-              try {
-                await revokeSession();
-              } finally {
-                clearSession();
-                navigate('/login');
-              }
-            }}
-          >
-            退出登录
-          </button>
-        </div>
       </aside>
       <main className="content app-content" data-testid="shared-console-shell-content">
         <header className="app-topbar" data-testid="shared-console-shell-topbar">
@@ -95,6 +111,82 @@ export default function AppShell({
           <span className="app-workspace-badge" data-testid="shared-console-shell-workspace">
             {workspaceKind}
           </span>
+          <div className="app-user-center" data-testid="shared-console-identity-user-center">
+            <button
+              type="button"
+              className="app-user-center-trigger"
+              data-testid="shared-console-identity-user-center-trigger"
+              aria-haspopup="menu"
+              aria-expanded={profileOpen}
+              onClick={() => setProfileOpen((open) => !open)}
+            >
+              <span className="app-user-avatar" aria-hidden="true">{(userType ?? 'U').slice(0, 1)}</span>
+              <span className="app-user-label">用户中心</span>
+            </button>
+            {profileOpen && (
+              <div className="app-user-menu" role="menu" data-testid="shared-console-identity-user-center-menu">
+                <div className="app-user-menu-heading" data-testid="shared-console-identity-user-center-summary">
+                  <strong>个人中心</strong>
+                  <span>{userType ?? '未登录'}</span>
+                </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-user-menu-item"
+                  data-testid="shared-console-identity-profile-password"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setPasswordOpen(true);
+                  }}
+                >
+                  修改密码
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="app-user-menu-item danger"
+                  data-testid="shared-console-identity-profile-logout"
+                  onClick={() => void signOut()}
+                >
+                  退出登录
+                </button>
+              </div>
+            )}
+          </div>
+          {passwordOpen && (
+            <form
+              className="app-password-popover"
+              data-testid="shared-console-identity-password-form"
+              onSubmit={(event) => void submitPasswordChange(event)}
+            >
+              <strong>修改密码</strong>
+              <label>
+                当前密码
+                <input
+                  data-testid="shared-console-identity-password-current"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                />
+              </label>
+              <label>
+                新密码
+                <input
+                  data-testid="shared-console-identity-password-new"
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                />
+              </label>
+              {passwordMessage && <p role="alert">{passwordMessage}</p>}
+              <div className="form-actions">
+                <button type="button" className="button-secondary" onClick={() => setPasswordOpen(false)}>取消</button>
+                <button data-testid="shared-console-identity-password-submit" type="submit" disabled={passwordSubmitting}>
+                  {passwordSubmitting ? '提交中' : '保存'}
+                </button>
+              </div>
+            </form>
+          )}
         </header>
         <div className="app-content-container" data-testid="shared-console-shell-content-container">
           <Outlet />

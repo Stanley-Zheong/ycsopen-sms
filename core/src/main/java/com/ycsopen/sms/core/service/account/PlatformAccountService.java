@@ -22,7 +22,8 @@ import java.util.List;
 public class PlatformAccountService {
 
     private static final EnumSet<User.UserType> PLATFORM_TYPES = EnumSet.of(
-            User.UserType.ADMIN, User.UserType.OPERATOR, User.UserType.FINANCE);
+            User.UserType.ADMIN, User.UserType.OPERATOR, User.UserType.FINANCE,
+            User.UserType.SALES, User.UserType.TECH_SUPPORT);
 
     private final UserRepository users;
     private final PasswordEncoder passwords;
