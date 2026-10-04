@@ -424,3 +424,23 @@ trimmed/case-folded local search text, on the same apply-versus-retry decision p
 - `web/test/unit/query-panel.test.tsx`
 - `web/test/scripts/issue-77-admin-query-contract.spec.ts`
 - GitHub issue `#88`
+
+## DR-FE01-015: Table Row Actions Stay Inline When Scoped
+
+### Status
+Accepted (issue `#89` follow-up)
+
+### Context
+Some table cells render two direct buttons without a shared action container. Narrow action columns
+could stack those adjacent buttons vertically even after the global spacing baseline existed.
+
+### Decision
+For verified table action cells, wrap adjacent row actions in `.inline-action-buttons` and mark the
+cell `.action-cell-nowrap`. The wrapper uses `inline-flex`, `flex-wrap: nowrap`, an 8px gap, and
+button sizing of 92% shared control height, 3px radius, and one-character inline padding.
+
+### Consequences
+
+- Adjacent buttons in the verified充值审核 and投诉占比 rows stay on one line.
+- The fix is scoped to opted-in action cells instead of changing every table cell in the console.
+- Wider unresolved issue `#89` form-grid and checkbox findings remain outside this change.

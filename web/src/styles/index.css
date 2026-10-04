@@ -407,6 +407,29 @@ main :where(td, .query-panel-actions) > button + button {
   margin-left: 8px;
 }
 
+.action-cell-nowrap {
+  white-space: nowrap;
+}
+
+.inline-action-buttons {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: max-content;
+  white-space: nowrap;
+}
+
+.inline-action-buttons > button {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: calc(var(--control-height) * .92);
+  padding-inline: 1em;
+  border-radius: 3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .query-panel-heading {
   justify-content: space-between;
 }

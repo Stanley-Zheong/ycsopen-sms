@@ -235,3 +235,19 @@ Scoped TODO:
 - [x] Prove exact default-admin credentials submit to an ADMIN session and route to
       `/admin/dashboard`; distinguish mocked frontend acceptance from any real-backend evidence.
 - [x] Complete required local repository checks and independent review, recording every boundary.
+
+## Issue #89 Inline Row Action Check
+
+Scope: recharge review and dashboard complaint-ratio table action cells only.
+
+| Gate | Command/evidence | Current result |
+|---|---|---|
+| Targeted unit | `npm --prefix web test -- --run tenant-recharge complaint-ratio-intervention dashboard-page` | Pass, 3 files / 7 tests |
+| Diff hygiene | `git diff --check` | Pass |
+| Frontend build | `npm --prefix web run build` | Pass, existing chunk-size warning retained |
+| Docker web refresh | `COMPOSE_PROJECT_NAME=ycsopen-sms BUILD_COMMIT=local-button-inline-check YCSOPEN_CORE_PORT=18081 YCSOPEN_WEB_PORT=19089 docker compose up -d --build web` | Pass; web restarted, core healthy |
+| Browser geometry | Docker-served Playwright measurement at 1440x1000 | Recharge approve/reject: same y=559.6, height=36.8, radius=3px, padding 14px; dashboard drill/pause: same y=1898, height=36.8, radius=3px, padding 14px |
+| Visual screenshots | `/private/tmp/ycsopen-recharge-buttons.png`, `/private/tmp/ycsopen-dashboard-buttons.png` | Both target action cells render adjacent buttons left-to-right |
+
+Remaining boundary: the broader issue `#89` still includes other form-grid, label alignment, button
+width, and checkbox findings that are not claimed by this scoped fix.
