@@ -14,5 +14,15 @@ Closed work:
 - Mobile blacklist remediation tenant-attribution guard added and verified RED/GREEN.
 - Claude second-pass blocker findings fixed and verified RED/GREEN.
 - Claude final blocker finding for unrelated remediation target ownership fixed and verified RED/GREEN.
+- Issue `#66` closure audit added persisted failed-remediation readback and
+  ordered daily complaint-volume trend coverage.
+- Pull-request Google Chrome lane includes the complaint management Playwright
+  suite so the changed behavior is verified on the required browser.
+- Independent review findings for visible-case remediation readback and honest
+  analytics loading/error states were fixed and passed incremental re-review.
 
-No scoped TODO remains for Phase 41.
+No scoped product TODO remains for Phase 41. Complaint-management backend,
+frontend, Docker-release, and real-Google-Chrome gates pass in PR CI. The PR's
+remaining failed check is an external `quay.io` authorization error while
+pulling the repository's existing Phase 03 MinIO image, before those unrelated
+integration tests execute.

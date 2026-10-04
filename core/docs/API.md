@@ -36,6 +36,12 @@
 | POST | `/api/v1/console/channels` | 新建通道 | F-4.1 |
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |
 | POST | `/api/v1/console/channels/{id}/resume` | 恢复通道 | F-4.7 |
+| GET/POST | `/api/v1/console/complaints` | 查询或登记投诉工单，保留可用归因和显式未知状态 | F-9.1 |
+| POST | `/api/v1/console/complaints/{id}/{accept,handle,close}` | 按状态机受理、处理或关闭投诉并记录服务端操作人证据 | F-9.2 |
+| POST | `/api/v1/console/complaints/{id}/remediations` | 对投诉归因的确切号码、机构、签名、模板或通道执行幂等处置 | F-9.3 |
+| GET | `/api/v1/console/complaint-remediations` | 查询最近 200 个可见投诉各自的最新处置与最新失败状态，供补偿入口读回 | F-9.3 |
+| POST | `/api/v1/console/complaints/{id}/recoveries` | 对失败处置记录授权复核与人工补偿证据 | F-9.3 |
+| GET | `/api/v1/console/complaint-analytics` | 查询按创建日期的投诉趋势、归因质量及机构/签名/内容类型分布 | F-9.4 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/channel` | **通道投诉占比排行（本次新增需求）** | F-11.9 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/tenant` | **机构投诉占比排行（本次新增需求）** | F-11.9 |
 

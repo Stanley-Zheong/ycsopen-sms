@@ -6,7 +6,7 @@ Admin operations pages own business API adapters and row eligibility rules. Shar
 
 ## Data Flow
 
-Operations data flows from list APIs into row models with explicit eligibility and next-action metadata. Unknown or incomplete attribution remains a distinct UI state.
+Operations data flows from list APIs into row models with explicit eligibility and next-action metadata. Complaint rows are joined in the page with persisted remediation records so recovery is derived from server-owned `FAILED` state rather than transient page state. Unknown or incomplete attribution remains a distinct UI state. Complaint analytics includes an ordered daily trend derived from stored case creation dates.
 
 ## Command Flow
 
@@ -15,9 +15,13 @@ Operations data flows from list APIs into row models with explicit eligibility a
 3. Shared confirmation captures reason or approval input.
 4. Page submits one request, refreshes data, and records success or error feedback.
 
+For complaint recovery, the page first resolves the complaint's latest persisted
+failed remediation. A successful or already recovered record never produces a
+recoverable command.
+
 ## Failure Model
 
-Business rejection stays in the modal or row context. System failure releases retry only after the first request has completed or failed.
+Business rejection stays in the modal or row context. A failed complaint remediation displays its stored failure reason and recovery action. System failure releases retry only after the first request has completed or failed.
 
 ## Audit Expectations
 

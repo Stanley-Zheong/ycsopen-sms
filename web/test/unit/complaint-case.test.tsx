@@ -12,6 +12,7 @@ vi.mock('@/api/complaintCaseApi', async (importOriginal) => {
   return {
     ...actual,
     listComplaintCases: vi.fn(),
+    listComplaintRemediations: vi.fn(),
     createComplaintCase: vi.fn(),
     acceptComplaintCase: vi.fn(),
     handleComplaintCase: vi.fn(),
@@ -53,6 +54,7 @@ describe('Phase 41 complaint case management UI', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.listComplaintCases).mockResolvedValue([caseRow]);
+    vi.mocked(api.listComplaintRemediations).mockResolvedValue([]);
     vi.mocked(api.createComplaintCase).mockResolvedValue(caseRow);
     vi.mocked(api.acceptComplaintCase).mockResolvedValue({ ...caseRow, status: 'PROCESSING' });
     vi.mocked(api.handleComplaintCase).mockResolvedValue({ ...caseRow, status: 'PROCESSED', opinion: '投诉属实', remediation: '暂停通道' });
@@ -65,6 +67,7 @@ describe('Phase 41 complaint case management UI', () => {
       byTenant: [{ dimension: 'tenant:7', count: 1 }],
       bySignature: [{ dimension: 'signature:8', count: 1 }],
       byContentType: [{ dimension: 'MARKETING', count: 2 }],
+      trend: [{ day: '2026-09-12', count: 2 }],
     });
   });
 
@@ -92,8 +95,7 @@ describe('Phase 41 complaint case management UI', () => {
     await waitFor(() => expect(api.handleComplaintCase).toHaveBeenCalledWith(1, expect.objectContaining({ opinion: '投诉属实' })));
     fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-remediation'));
     await waitFor(() => expect(api.remediateComplaintCase).toHaveBeenCalledWith(1, expect.objectContaining({ targetRef: 'channel:11' })));
-    fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-remediation-recovery'));
-    await waitFor(() => expect(api.recoverComplaintRemediation).toHaveBeenCalledWith(1, expect.objectContaining({ authorizedReviewId: 'review-41-recovery' })));
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
     fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-close'));
     await waitFor(() => expect(api.closeComplaintCase).toHaveBeenCalledWith(1, expect.objectContaining({ opinion: '复核关闭' })));
 
@@ -142,14 +144,59 @@ describe('Phase 41 complaint case management UI', () => {
     })));
   });
 
-  it('does not submit recovery without a remediation record from the current case action', async () => {
+  it('enables recovery only for a persisted failed remediation after refresh', async () => {
+    vi.mocked(api.listComplaintRemediations).mockResolvedValue([{ id: 4, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'FAILED', authorizedReviewId: 'review-41-fail', failureReason: 'provider timeout', originalComplaintId: 1 }]);
     renderWithQuery(<AdminComplaintsPage />);
 
     const recover = await screen.findByTestId('admin-complaint-case-complaints-remediation-recovery');
 
-    expect(recover).toBeDisabled();
+    await waitFor(() => expect(recover).toBeEnabled());
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-status')).toHaveTextContent('FAILED');
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-status')).toHaveTextContent('provider timeout');
     fireEvent.click(recover);
+    await waitFor(() => expect(api.recoverComplaintRemediation).toHaveBeenCalledWith(1, expect.objectContaining({
+      disposalRecordId: 4,
+      authorizedReviewId: 'review-41-recovery',
+    })));
+  });
+
+  it('keeps applied remediation visible but not recoverable', async () => {
+    vi.mocked(api.listComplaintRemediations).mockResolvedValue([{ id: 2, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'APPLIED', authorizedReviewId: 'review-41-1', failureReason: null, originalComplaintId: 1 }]);
+    renderWithQuery(<AdminComplaintsPage />);
+
+    expect(await screen.findByTestId('admin-complaint-case-complaints-remediation-status')).toHaveTextContent('APPLIED');
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
     expect(api.recoverComplaintRemediation).not.toHaveBeenCalled();
+  });
+
+  it('identifies and recovers the newest failed record when a newer applied record exists', async () => {
+    vi.mocked(api.listComplaintRemediations).mockResolvedValue([
+      { id: 5, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'APPLIED', authorizedReviewId: 'review-41-5', failureReason: null, originalComplaintId: 1 },
+      { id: 4, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'FAILED', authorizedReviewId: 'review-41-4', failureReason: 'latest failure', originalComplaintId: 1 },
+      { id: 3, complaintId: 1, disposalType: 'SUSPEND_CHANNEL', targetRef: 'channel:11', status: 'FAILED', authorizedReviewId: 'review-41-3', failureReason: 'older failure', originalComplaintId: 1 },
+    ]);
+    renderWithQuery(<AdminComplaintsPage />);
+
+    const status = await screen.findByTestId('admin-complaint-case-complaints-remediation-status');
+    expect(status).toHaveTextContent('APPLIED #5');
+    expect(status).toHaveTextContent('待恢复 FAILED #4：latest failure');
+    const recover = screen.getByTestId('admin-complaint-case-complaints-remediation-recovery');
+    expect(recover).toHaveAttribute('title', '恢复处置记录 #4');
+    fireEvent.click(recover);
+    await waitFor(() => expect(api.recoverComplaintRemediation).toHaveBeenCalledWith(1, expect.objectContaining({
+      disposalRecordId: 4,
+    })));
+  });
+
+  it('reports remediation readback failure and keeps recovery unavailable', async () => {
+    vi.mocked(api.listComplaintRemediations).mockRejectedValue(new Error('network unavailable'));
+    renderWithQuery(<AdminComplaintsPage />);
+
+    expect(await screen.findByTestId('admin-complaint-case-complaints-remediation-load-error'))
+      .toHaveTextContent('处置记录加载失败，恢复功能暂不可用');
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-status'))
+      .toHaveTextContent('处置记录加载失败');
+    expect(screen.getByTestId('admin-complaint-case-complaints-remediation-recovery')).toBeDisabled();
   });
 
   it('renders analytics trend and distribution with unknown attribution quality', async () => {
@@ -157,8 +204,27 @@ describe('Phase 41 complaint case management UI', () => {
 
     expect(await screen.findByTestId('admin-complaint-case-analytics-page')).toHaveTextContent('投诉趋势与分布');
     await waitFor(() => expect(screen.getByTestId('admin-complaint-case-analytics-quality')).toHaveTextContent('未知归因 1'));
+    expect(screen.getByTestId('admin-complaint-case-analytics-trend')).toHaveTextContent('2026-09-12：2');
     expect(screen.getByTestId('admin-complaint-case-analytics-tenant')).toHaveTextContent('tenant:7');
     expect(screen.getByTestId('admin-complaint-case-analytics-signature')).toHaveTextContent('signature:8');
     expect(screen.getByTestId('admin-complaint-case-analytics-content-type')).toHaveTextContent('MARKETING');
+  });
+
+  it('does not present zero analytics while the request is loading', () => {
+    vi.mocked(api.getComplaintAnalytics).mockReturnValue(new Promise<never>(() => {}));
+    renderWithQuery(<AdminComplaintAnalyticsPage />);
+
+    expect(screen.getByTestId('admin-complaint-case-analytics-loading')).toHaveTextContent('正在加载投诉分析');
+    expect(screen.queryByTestId('admin-complaint-case-analytics-quality')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-complaint-case-analytics-trend')).not.toBeInTheDocument();
+  });
+
+  it('shows only the analytics error state when the request fails', async () => {
+    vi.mocked(api.getComplaintAnalytics).mockRejectedValue(new Error('analytics unavailable'));
+    renderWithQuery(<AdminComplaintAnalyticsPage />);
+
+    expect(await screen.findByTestId('admin-complaint-case-analytics-error')).toHaveTextContent('投诉分析加载失败');
+    expect(screen.queryByTestId('admin-complaint-case-analytics-quality')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-complaint-case-analytics-trend')).not.toBeInTheDocument();
   });
 });

@@ -13,4 +13,7 @@
 - Record remediation as `APPLIED` only when the target resource update affects one existing row.
 - Require remediation targets to match the complaint's own attribution before any resource mutation.
 - Keep the UI remediation control compact: automatic target/type matching by default, with an explicit type selector for operator override.
-- Do not guess recovery record ids in the UI; require the page to have a remediation record id from the current case action.
+- Do not guess recovery record ids in the UI; use persisted remediation
+  readback and allow recovery only for the latest `FAILED` record of that case.
+- Define the F-9.4 trend as daily complaint counts grouped by the stored case
+  `created_at` calendar date and returned in ascending date order.

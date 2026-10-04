@@ -1,6 +1,6 @@
 # Phase 41 Summary
 
-Status: scoped TODO set closed.
+Status: scoped implementation and complaint-management quality gates complete; pull request has one unrelated external-registry check failure before test execution.
 
 Implemented:
 
@@ -17,8 +17,26 @@ Implemented:
 - Target-ownership verification before mutating any remediation resource.
 - Editable UI evidence fields and matching remediation target/type behavior.
 - Recovery UI guard that prevents arbitrary fallback disposal record ids.
+- Persisted remediation readback that preserves failed-recovery eligibility and
+  failure feedback across page refreshes.
+- Ordered daily complaint-volume trend with an explicit ISO date contract.
+- Pull-request Google Chrome execution of the complaint Playwright suite.
 
 Verification evidence:
+
+Issue `#66` closure verification on 2026-10-02:
+
+- `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest,ComplaintCaseControllerTest test` with the pre-populated public Maven cache in offline mode: PASS, 12 tests.
+- `npm --prefix web test -- --run test/unit/complaint-case.test.tsx`: PASS, 1 file / 10 tests.
+- `npm --prefix web run build`: PASS with the existing bundle-size warning.
+- `git diff --check`: PASS.
+- Independent pre-push and incremental review: PASS, no remaining BLOCKER, HIGH, or MEDIUM finding.
+- PR run `36967118021` `Web / Node 20`: PASS, including the clean full frontend suite and build.
+- PR run `36967118021` `Core / Java 21`: PASS, including the full backend suite.
+- PR run `36967118021` `Docker release / Google Chrome`: PASS, including fresh/repeated Docker release and complaint Playwright 5/5 with `expected=5`, `unexpected=0`, `flaky=0`.
+- The raw Chrome JSON artifact is preserved in `EVIDENCE/playwright-complaint-case-raw.json`; its normalized execution record and source hashes are checked by the Phase 41 production UI contract.
+
+Prior Phase 41 verification evidence:
 
 - `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest#mobileBlacklistRemediationRequiresTenantAttribution test`: PASS, 1 test.
 - `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest#remediationRequiresExistingTargetResourceBeforeRecordingApplied test`: PASS, 1 test.
@@ -40,7 +58,5 @@ Known verification boundaries:
 
 - Chrome is the only browser validation target by project decision.
 - Recovery records manual compensation for failed remediation records; it is not an automatic reversal API for successful disablement.
-
-Branch:
-
-- `phase/41-complaint-case-management`
+- The local worker cannot execute the configured Google Chrome project; PR run `36967118021` supplied the required real-browser result.
+- `Phase 03 real integration` did not start its test suites: two CI attempts failed while pulling the repository's existing digest-pinned MinIO image because `quay.io` returned `unauthorized`. Cleanup checks passed. This external Phase 03 dependency is outside complaint-management behavior.

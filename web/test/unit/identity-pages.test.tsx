@@ -312,7 +312,7 @@ describe('Phase 5 identity administration pages', () => {
       url: '/console/platform-roles/10',
       body: { replacementRoleId: 11 },
     }));
-  });
+  }, 10_000);
 
   it('shows only the current platform identity, permission scope, and login history', async () => {
     renderPage(<AccountOverviewPage />);

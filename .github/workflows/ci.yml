@@ -145,6 +145,14 @@ jobs:
           ruby .planning/tools/test-planning-validators.rb
           ruby .planning/tools/test-phase-03-protected-inventory.rb
           ruby scripts/lib/phase-03/test_service_checks.rb
+      - name: Verify complaint management planning contracts
+        run: |
+          ruby .planning/tools/validate-prd-obligations.rb \
+            --owner complaint-case-management --assert-unique --assert-traced
+          ruby .planning/tools/validate-ui-contract.rb \
+            --phase 41 --package complaint-case-management --stage design
+          ruby .planning/tools/validate-ui-contract.rb \
+            --phase 41 --package complaint-case-management --stage production
       - name: Audit production source reachability
         run: ruby scripts/lib/phase-03/run_checks.rb --internal-source-audit
       - name: Verify production artifact excludes test bridges
@@ -165,7 +173,7 @@ jobs:
     env:
       PHASE03_SERVICE_PLATFORM: linux/amd64
       PHASE03_MYSQL_IMAGE: mysql@sha256:1d6b6a8fcee8ff758ff151d017f5203cd06792a0e698f0a593c9dfcb14609cf0
-      PHASE03_MINIO_IMAGE: quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+      PHASE03_MINIO_IMAGE: ycsopen/phase03-minio:RELEASE.2025-10-15T17-29-55Z
     steps:
       - uses: actions/checkout@v4
       - name: Verify checked-out event commit
@@ -181,10 +189,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             build-essential cmake default-mysql-client libssl-dev
-      - name: Prepare digest-pinned service images
+      - name: Prepare real-integration service images
         run: |
           docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
-          docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MINIO_IMAGE"
+          docker build --platform "$PHASE03_SERVICE_PLATFORM" \
+            --build-arg MINIO_VERSION=RELEASE.2025-10-15T17-29-55Z \
+            --tag "$PHASE03_MINIO_IMAGE" - <<'DOCKERFILE'
+          FROM golang:1.24-alpine AS build
+          ARG MINIO_VERSION
+          RUN apk add --no-cache git
+          RUN CGO_ENABLED=0 go install "github.com/minio/minio@${MINIO_VERSION}"
+          RUN CGO_ENABLED=0 go install github.com/minio/mc@latest
+
+          FROM alpine:3.22
+          ARG MINIO_VERSION
+          RUN apk add --no-cache curl
+          COPY --from=build /go/bin/minio /usr/local/bin/minio
+          COPY --from=build /go/bin/mc /usr/local/bin/mc
+          LABEL version="${MINIO_VERSION}"
+          ENTRYPOINT ["/usr/local/bin/minio"]
+          DOCKERFILE
       - name: Run Phase 03 against MySQL, MinIO, and SoftHSM
         run: >-
           mvn -f core/pom.xml -Dphase03.integration.enabled=true
@@ -289,6 +313,16 @@ jobs:
           npm --prefix web run test:e2e --
           control-sizing.spec.ts issue-76-login-card.spec.ts
           --project=local-google-chrome --workers=1
+      - name: Verify complaint management in Google Chrome
+        env:
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+          PLAYWRIGHT_JSON_OUTPUT_NAME: complaint-case-evidence/playwright-report.json
+        run: >-
+          npm --prefix web run test:e2e --
+          complaint-case.spec.ts --project=local-google-chrome
+          --reporter=line,json
+      - name: Verify complaint management Chrome evidence
+        run: test -s web/complaint-case-evidence/playwright-report.json
       - name: Verify fresh and repeated Docker release
         env:
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
@@ -300,6 +334,7 @@ jobs:
         with:
           name: docker-release-${{ github.run_id }}
           path: |
+            web/complaint-case-evidence/
             web/playwright-report/
             web/test-results/
           if-no-files-found: warn

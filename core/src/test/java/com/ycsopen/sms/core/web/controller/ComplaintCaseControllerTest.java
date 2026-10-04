@@ -39,10 +39,13 @@ class ComplaintCaseControllerTest {
         when(service.close(eq(1L), any())).thenReturn(row.withStatus("CLOSED"));
         when(service.remediate(eq(1L), any())).thenReturn(new ComplaintCaseService.RemediationRow(
                 2L, 1L, "SUSPEND_CHANNEL", "channel:11", "APPLIED", "review-1", null, 1L));
+        when(service.remediations()).thenReturn(List.of(new ComplaintCaseService.RemediationRow(
+                2L, 1L, "SUSPEND_CHANNEL", "channel:11", "FAILED", "review-1", "provider timeout", 1L)));
         when(service.recover(eq(1L), any())).thenReturn(new ComplaintCaseService.RemediationRow(
                 2L, 1L, "SUSPEND_CHANNEL", "channel:11", "RECOVERED", "review-2", null, 1L));
         when(service.analytics()).thenReturn(new ComplaintCaseService.AnalyticsResponse(
-                1, 0, List.of(new ComplaintCaseService.DimensionRow("tenant:7", 1)),
+                1, 0, List.of(new ComplaintCaseService.TrendRow("2026-09-12", 1)),
+                List.of(new ComplaintCaseService.DimensionRow("tenant:7", 1)),
                 List.of(new ComplaintCaseService.DimensionRow("signature:8", 1)),
                 List.of(new ComplaintCaseService.DimensionRow("MARKETING", 1))));
 
@@ -78,6 +81,10 @@ class ComplaintCaseControllerTest {
                                 "SUSPEND_CHANNEL", "channel:11", "forged", "review-1", "投诉集中"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status", is("APPLIED")));
+        mvc.perform(get("/api/v1/console/complaint-remediations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].status", is("FAILED")))
+                .andExpect(jsonPath("$.data[0].failureReason", is("provider timeout")));
         mvc.perform(post("/api/v1/console/complaints/1/recoveries").contentType(MediaType.APPLICATION_JSON)
                         .principal(new UsernamePasswordAuthenticationToken("operator-auth", "N/A"))
                         .content(json.writeValueAsString(new ComplaintCaseService.RecoveryCommand(
@@ -86,6 +93,7 @@ class ComplaintCaseControllerTest {
                 .andExpect(jsonPath("$.data.status", is("RECOVERED")));
         mvc.perform(get("/api/v1/console/complaint-analytics"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.trend[0].day", is("2026-09-12")))
                 .andExpect(jsonPath("$.data.byTenant[0].dimension", is("tenant:7")));
 
         verify(service).create(any(), eq("operator-auth"));
