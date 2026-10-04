@@ -28,7 +28,8 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/console/operational-dashboards")
 public class OperationalDashboardController {
-    private static final List<String> PLATFORM_ROLES = List.of("ROLE_ADMIN", "ROLE_OPERATOR", "ROLE_FINANCE");
+    private static final List<String> PLATFORM_ROLES = List.of(
+            "ROLE_ADMIN", "ROLE_OPERATOR", "ROLE_FINANCE", "ROLE_SALES", "ROLE_TECH_SUPPORT");
 
     private final OperationalDashboardService service;
     private final UserRepository users;
@@ -39,7 +40,7 @@ public class OperationalDashboardController {
     }
 
     @GetMapping("/platform")
-    @PreAuthorize("hasAuthority('operational-dashboard:read')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'FINANCE', 'SALES', 'TECH_SUPPORT') or hasAuthority('operational-dashboard:read')")
     public ApiResponse<PlatformDashboard> platform() {
         return ApiResponse.ok(service.platformDashboard());
     }

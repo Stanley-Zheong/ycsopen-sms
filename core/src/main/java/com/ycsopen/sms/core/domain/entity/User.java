@@ -77,6 +77,6 @@ public class User {
         return validUntil != null && validUntil.isBefore(today);
     }
 
-    public enum UserType { ADMIN, OPERATOR, FINANCE, TENANT_ADMIN, TENANT_USER, TENANT_DEV }
+    public enum UserType { ADMIN, OPERATOR, FINANCE, SALES, TECH_SUPPORT, TENANT_ADMIN, TENANT_USER, TENANT_DEV }
     public enum UserStatus { ACTIVE, DISABLED, LOCKED }
 }

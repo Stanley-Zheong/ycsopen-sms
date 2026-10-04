@@ -44,10 +44,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/v1/auth/**",
-                            "/api/v1/console/auth/**",
+                            "/api/v1/console/auth/login",
                             "/api/v1/sms/**",
                             "/actuator/health").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/console/auth/password").authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/v1/console/session/logout").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/console/account-overview")
+                    .hasAnyRole("ADMIN", "OPERATOR", "FINANCE", "SALES", "TECH_SUPPORT",
+                            "TENANT_ADMIN", "TENANT_USER", "TENANT_DEV")
+                    .requestMatchers(HttpMethod.GET, "/api/v1/console/operational-dashboards/platform")
+                    .hasAnyRole("ADMIN", "OPERATOR", "FINANCE", "SALES", "TECH_SUPPORT")
                     .requestMatchers(HttpMethod.POST,
                             "/api/v1/console/tenants/registration-object-sessions",
                             "/api/v1/console/tenants/registration-object-sessions/{sessionId}/objects/{purpose}").permitAll()

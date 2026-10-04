@@ -21,6 +21,28 @@ WHERE tenant_no = 'DEMO-001'
       WHERE account.tenant_id = tenants.id
   );
 
+INSERT INTO users (
+    username,
+    password_hash,
+    real_name,
+    user_type,
+    tenant_id,
+    status,
+    failed_login_count,
+    created_by
+)
+SELECT 'tenant_admin',
+       '$2a$10$Zfn0WBm0FBiNkDFuGgsZv.OnOUL8sBR7GdvZTEtgh9O4ssEA6QQe2',
+       '客户管理员',
+       'TENANT_ADMIN',
+       id,
+       'ACTIVE',
+       0,
+       'flyway-dev'
+FROM tenants
+WHERE tenant_no = 'DEMO-001'
+  AND NOT EXISTS (SELECT 1 FROM users WHERE username = 'tenant_admin');
+
 INSERT INTO signatures (
     tenant_id, biz_type, sign_code, sign_content, sign_type,
     usage_type, risk_level, applicant_name, audit_status, audit_time
@@ -40,7 +62,7 @@ INSERT INTO templates (
 )
 SELECT tenant.id, 'DOMESTIC', 'DEMO_LOGIN', '演示验证码', 'VERIFY',
        '您的验证码是$${code}，5分钟内有效。', signature_row.id,
-       '{"code":"^[0-9]{6}$"}', 'APPROVED', CURRENT_TIMESTAMP
+       'code:digits(6-6)', 'APPROVED', CURRENT_TIMESTAMP
 FROM tenants tenant
 JOIN signatures signature_row
   ON signature_row.tenant_id = tenant.id AND signature_row.sign_code = 'DEMO'

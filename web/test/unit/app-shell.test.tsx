@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import AdminLayout from '@/components/layout/AdminLayout';
 import TenantLayout from '@/components/layout/TenantLayout';
-import { logout as revokeSession } from '@/api/auth';
+import { changePassword, logout as revokeSession } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
 
 const access = vi.hoisted(() => ({ allowed: true }));
@@ -11,13 +11,16 @@ const access = vi.hoisted(() => ({ allowed: true }));
 vi.mock('@/pages/admin/identity/useIdentityAccess', () => ({
   useIdentityAccess: () => ({ can: () => access.allowed }),
 }));
-vi.mock('@/api/auth', () => ({ logout: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/api/auth', () => ({
+  logout: vi.fn().mockResolvedValue(undefined),
+  changePassword: vi.fn().mockResolvedValue(undefined),
+}));
 
 function token(subject: string): string {
   return `${btoa(JSON.stringify({ alg: 'HS256' }))}.${btoa(JSON.stringify({ sub: subject, exp: Date.now() / 1_000 + 300 }))}.signature`;
 }
 
-type PlatformUser = 'ADMIN' | 'OPERATOR' | 'FINANCE';
+type PlatformUser = 'ADMIN' | 'OPERATOR' | 'FINANCE' | 'SALES' | 'TECH_SUPPORT';
 type TenantUser = 'TENANT_ADMIN' | 'TENANT_USER' | 'TENANT_DEV';
 
 function renderAdmin(path: string, userType: PlatformUser = 'ADMIN') {
@@ -83,6 +86,7 @@ afterEach(() => {
   cleanup();
   access.allowed = true;
   vi.mocked(revokeSession).mockClear();
+  vi.mocked(changePassword).mockClear();
   useAuthStore.getState().logout();
 });
 
@@ -144,6 +148,7 @@ describe('AppShell shared console frame (issue #108)', () => {
   it('signs out through the shared sidebar command and returns to login', async () => {
     renderAdmin('/admin/dashboard');
 
+    fireEvent.click(screen.getByTestId('shared-console-identity-user-center-trigger'));
     fireEvent.click(screen.getByTestId('shared-console-identity-profile-logout'));
 
     await waitFor(() => expect(screen.getByTestId('login-route')).toBeInTheDocument());
@@ -151,13 +156,31 @@ describe('AppShell shared console frame (issue #108)', () => {
     expect(useAuthStore.getState().userType).toBeNull();
   });
 
-  it('keeps the session command inside the sidebar footer', () => {
+  it('keeps the session commands inside the topbar user center', () => {
     renderAdmin('/admin/dashboard');
 
-    const logout = screen.getByTestId('shared-console-identity-profile-logout');
-    expect(logout).toHaveClass('app-sidebar-logout');
-    expect(logout.closest('[data-testid="shared-console-shell-sidebar"]')).not.toBeNull();
-    expect(logout.closest('.app-sidebar-footer')).not.toBeNull();
+    const trigger = screen.getByTestId('shared-console-identity-user-center-trigger');
+    expect(trigger.closest('[data-testid="shared-console-shell-topbar"]')).not.toBeNull();
+    expect(screen.queryByTestId('shared-console-identity-profile-logout')).not.toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    expect(screen.getByTestId('shared-console-identity-user-center-menu')).toBeInTheDocument();
+    expect(screen.getByTestId('shared-console-identity-profile-password')).toHaveTextContent('修改密码');
+    expect(screen.getByTestId('shared-console-identity-profile-logout')).toHaveTextContent('退出登录');
+    expect(screen.getByTestId('shared-console-identity-profile-logout').closest('[data-testid="shared-console-shell-sidebar"]')).toBeNull();
+  });
+
+  it('submits a password change from the topbar user center', async () => {
+    renderAdmin('/admin/dashboard');
+
+    fireEvent.click(screen.getByTestId('shared-console-identity-user-center-trigger'));
+    fireEvent.click(screen.getByTestId('shared-console-identity-profile-password'));
+    fireEvent.change(screen.getByTestId('shared-console-identity-password-current'), { target: { value: 'Admin@123456' } });
+    fireEvent.change(screen.getByTestId('shared-console-identity-password-new'), { target: { value: 'NextAdmin123' } });
+    fireEvent.click(screen.getByTestId('shared-console-identity-password-submit'));
+
+    await waitFor(() => expect(changePassword).toHaveBeenCalledWith('Admin@123456', 'NextAdmin123'));
+    await waitFor(() => expect(screen.getByTestId('login-route')).toBeInTheDocument());
   });
 
   it('renders navigation inside the shell sidebar with the shared item hooks', () => {

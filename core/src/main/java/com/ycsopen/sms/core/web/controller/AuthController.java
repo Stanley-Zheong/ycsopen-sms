@@ -5,8 +5,11 @@ import com.ycsopen.sms.core.service.account.AuthService;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import com.ycsopen.sms.core.web.dto.LoginRequest;
 import com.ycsopen.sms.core.web.dto.LoginResponse;
+import com.ycsopen.sms.core.web.dto.PasswordChangeRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +34,14 @@ public class AuthController {
                 request,
                 clientIps.resolve(httpRequest),
                 httpRequest.getHeader("User-Agent")));
+    }
+
+    @PostMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request,
+                                            Authentication authentication) {
+        authService.changePassword(Long.parseLong(authentication.getName()),
+                request.currentPassword(), request.newPassword());
+        return ApiResponse.ok(null);
     }
 }

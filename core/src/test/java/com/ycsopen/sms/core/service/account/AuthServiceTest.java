@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Optional;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ class AuthServiceTest {
     @Mock IdentitySessionService sessions;
     @Mock LoginAnomalyService anomalies;
     @Mock PlatformConfigurationRuntime configuration;
+    @Mock JdbcTemplate jdbc;
 
     @BeforeEach
     void defaultRuntimeConfiguration() {
@@ -136,8 +138,23 @@ class AuthServiceTest {
         verify(sessions).open(user, issued, "192.0.2.2", "Chrome/152", false);
     }
 
+    @Test
+    void changePasswordValidatesCurrentPasswordAndRevokesSessions() {
+        User user = user();
+        when(users.findById(1L)).thenReturn(Optional.of(user));
+        when(encoder.matches("Admin@123456", "hash")).thenReturn(true);
+        when(encoder.encode("NextAdmin123")).thenReturn("next-hash");
+
+        service().changePassword(1L, "Admin@123456", "NextAdmin123");
+
+        org.assertj.core.api.Assertions.assertThat(user.getPasswordHash()).isEqualTo("next-hash");
+        verify(users).save(user);
+        verify(jdbc).update(org.mockito.ArgumentMatchers.contains("UPDATE user_sessions"), org.mockito.ArgumentMatchers.eq(1L));
+        verify(jdbc).update(org.mockito.ArgumentMatchers.contains("PASSWORD_CHANGE"), org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.eq(1L));
+    }
+
     private AuthService service() {
-        return new AuthService(users, encoder, tokens, sessions, anomalies, configuration);
+        return new AuthService(users, encoder, tokens, sessions, anomalies, configuration, jdbc);
     }
 
     private User user() {

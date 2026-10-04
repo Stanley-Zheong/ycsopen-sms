@@ -101,7 +101,7 @@
       },
       {
         "path": "web/src/components/layout/AdminLayout.tsx",
-        "sha256": "45f65d323c6b6e8dad744a626122313ce33ea772f1cef618e8c7f86042d0c5d4"
+        "sha256": "62937bc8cf80cb9f89d3ba9bbac31f2a51190f8c85962ee19ec4ebae3dafadbc"
       },
       {
         "path": "web/src/pages/admin/complaints/AdminComplaintsPage.tsx",

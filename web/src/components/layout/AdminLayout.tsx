@@ -18,7 +18,11 @@ import { TRIAL_PREPAID_PERMISSIONS } from '@/api/trialPrepaidApi';
 import AppShell from './AppShell';
 import { type SidebarMenuGroup, type SidebarMenuItem } from './SidebarMenu';
 
-const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE'];
+const OPERATIONS: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
+const FINANCE_ROLES: PlatformUserType[] = ['ADMIN', 'FINANCE'];
+const CUSTOMER_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'SALES'];
+const TECH_SUPPORT_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'TECH_SUPPORT'];
+const ANALYTICS_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR', 'FINANCE', 'SALES', 'TECH_SUPPORT'];
 const REVIEW_HISTORY_ROLES: PlatformUserType[] = ['ADMIN', 'OPERATOR'];
 
 interface AdminNavItem extends SidebarMenuItem {
@@ -34,22 +38,22 @@ interface AdminNavGroup extends Omit<SidebarMenuGroup, 'items'> {
 const NAV_GROUPS: AdminNavGroup[] = [
   {
     id: 'overview', label: '数据概览', items: [
-      { to: '/admin/dashboard', label: '仪表盘', roles: OPERATIONS },
+      { to: '/admin/dashboard', label: '仪表盘', roles: ANALYTICS_ROLES },
     ],
   },
   {
     id: 'tenant-management', label: '机构管理', items: [
-      { to: '/admin/tenants', label: '机构列表', roles: OPERATIONS, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read], testId: 'admin-tenant-qualification-tenants-nav-menu' },
+      { to: '/admin/tenants', label: '机构列表', roles: CUSTOMER_ROLES, permissions: [TENANT_PERMISSIONS.menu, TENANT_PERMISSIONS.read], testId: 'admin-tenant-qualification-tenants-nav-menu' },
       { to: '/admin/tenant-trial-contracts', label: '试用配置', roles: ['ADMIN', 'OPERATOR'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read], testId: 'admin-trial-prepaid-tenant-trial-nav-menu' },
-      { to: '/admin/tenant-recharge-review', label: '充值审核', roles: ['ADMIN', 'FINANCE'], permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read], testId: 'admin-tenant-recharge-operations-review-nav-menu' },
+      { to: '/admin/tenant-recharge-review', label: '充值审核', roles: FINANCE_ROLES, permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read], testId: 'admin-tenant-recharge-operations-review-nav-menu' },
     ],
   },
   {
     id: 'channel-management', label: '通道管理', items: [
-      { to: '/admin/channel/configuration', label: '通道配置', roles: ['ADMIN', 'OPERATOR'], testId: 'admin-channel-configuration-nav-menu' },
-      { to: '/admin/channel/health', label: '通道健康', roles: ['ADMIN', 'OPERATOR'], testId: 'admin-channel-health-nav-menu' },
-      { to: '/admin/channel/pools', label: '通道池', roles: ['ADMIN', 'OPERATOR'], testId: 'admin-channel-health-pools-nav-menu' },
-      { to: '/admin/routing-policy', label: '路由策略', roles: ['ADMIN', 'OPERATOR'], permissions: [ROUTING_POLICY_PERMISSIONS.menu, ROUTING_POLICY_PERMISSIONS.read], testId: 'admin-routing-circuit-routing-policy-nav-menu' },
+      { to: '/admin/channel/configuration', label: '通道配置', roles: TECH_SUPPORT_ROLES, testId: 'admin-channel-configuration-nav-menu' },
+      { to: '/admin/channel/health', label: '通道健康', roles: TECH_SUPPORT_ROLES, testId: 'admin-channel-health-nav-menu' },
+      { to: '/admin/channel/pools', label: '通道池', roles: TECH_SUPPORT_ROLES, testId: 'admin-channel-health-pools-nav-menu' },
+      { to: '/admin/routing-policy', label: '路由策略', roles: TECH_SUPPORT_ROLES, permissions: [ROUTING_POLICY_PERMISSIONS.menu, ROUTING_POLICY_PERMISSIONS.read], testId: 'admin-routing-circuit-routing-policy-nav-menu' },
     ],
   },
   {
@@ -62,15 +66,15 @@ const NAV_GROUPS: AdminNavGroup[] = [
   },
   {
     id: 'validation-rules', label: '验证规则', items: [
-      { to: '/admin/riskcontrol', label: '黑白名单', roles: ['ADMIN', 'OPERATOR'], permissions: [BLACKLIST_RISK_PERMISSIONS.menu, BLACKLIST_RISK_PERMISSIONS.read], testId: 'admin-blacklist-risk-nav-menu' },
-      { to: '/admin/content-safety', label: '内容审核', roles: ['ADMIN', 'OPERATOR'], permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read], testId: 'admin-runtime-content-content-safety-nav-menu' },
-      { to: '/admin/frequency/rules', label: '频控规则', roles: ['ADMIN', 'OPERATOR'], permissions: [FREQUENCY_PERMISSIONS.menu, FREQUENCY_PERMISSIONS.read], testId: 'admin-frequency-api-frequency-rules-nav-menu' },
-      { to: '/admin/number-attribution', label: '号码归属', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-number-attribution-nav-menu' },
+      { to: '/admin/riskcontrol', label: '黑白名单', roles: OPERATIONS, permissions: [BLACKLIST_RISK_PERMISSIONS.menu, BLACKLIST_RISK_PERMISSIONS.read], testId: 'admin-blacklist-risk-nav-menu' },
+      { to: '/admin/content-safety', label: '内容审核', roles: OPERATIONS, permissions: [CONTENT_SAFETY_PERMISSIONS.menu, CONTENT_SAFETY_PERMISSIONS.read], testId: 'admin-runtime-content-content-safety-nav-menu' },
+      { to: '/admin/frequency/rules', label: '频控规则', roles: OPERATIONS, permissions: [FREQUENCY_PERMISSIONS.menu, FREQUENCY_PERMISSIONS.read], testId: 'admin-frequency-api-frequency-rules-nav-menu' },
+      { to: '/admin/number-attribution', label: '号码归属', roles: TECH_SUPPORT_ROLES, permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-number-attribution-nav-menu' },
     ],
   },
   {
     id: 'complaints', label: '投诉管理', items: [
-      { to: '/admin/complaints', label: '投诉列表', roles: OPERATIONS },
+      { to: '/admin/complaints', label: '投诉列表', roles: ['ADMIN', 'OPERATOR', 'FINANCE'] },
     ],
   },
   {
@@ -93,8 +97,8 @@ const NAV_GROUPS: AdminNavGroup[] = [
   },
   {
     id: 'finance', label: '财务中心', items: [
-      { to: '/admin/finance', label: '财务总览', roles: ['ADMIN', 'FINANCE'] },
-      { to: '/admin/balance-audit', label: '余额审计', roles: OPERATIONS, permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read], testId: 'admin-trial-prepaid-balance-audit-nav-menu' },
+      { to: '/admin/finance', label: '财务总览', roles: FINANCE_ROLES },
+      { to: '/admin/balance-audit', label: '余额审计', roles: FINANCE_ROLES, permissions: [TRIAL_PREPAID_PERMISSIONS.menu, TRIAL_PREPAID_PERMISSIONS.read], testId: 'admin-trial-prepaid-balance-audit-nav-menu' },
     ],
   },
   {
@@ -106,8 +110,8 @@ const NAV_GROUPS: AdminNavGroup[] = [
   {
     id: 'tools', label: '工具管理', items: [
       { to: '/admin/tools', label: '工具总览', roles: OPERATIONS },
-      { to: '/admin/status-codes', label: '状态码映射', roles: ['ADMIN', 'OPERATOR'], permissions: [PROVIDER_STATUS_PERMISSIONS.menu, PROVIDER_STATUS_PERMISSIONS.read], testId: 'admin-provider-status-taxonomy-status-codes-nav-menu' },
-      { to: '/admin/prefixes', label: '号段管理', roles: ['ADMIN', 'OPERATOR'], permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-prefixes-nav-menu' },
+      { to: '/admin/status-codes', label: '状态码映射', roles: TECH_SUPPORT_ROLES, permissions: [PROVIDER_STATUS_PERMISSIONS.menu, PROVIDER_STATUS_PERMISSIONS.read], testId: 'admin-provider-status-taxonomy-status-codes-nav-menu' },
+      { to: '/admin/prefixes', label: '号段管理', roles: TECH_SUPPORT_ROLES, permissions: [NUMBER_ATTRIBUTION_PERMISSIONS.menu, NUMBER_ATTRIBUTION_PERMISSIONS.read], testId: 'admin-prefixes-nav-menu' },
       { to: '/admin/send/jobs', label: '发送任务', roles: OPERATIONS, testId: 'admin-bulk-scheduled-send-jobs-nav-menu' },
     ],
   },

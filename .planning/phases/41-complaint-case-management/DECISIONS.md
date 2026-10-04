@@ -17,3 +17,7 @@
   readback and allow recovery only for the latest `FAILED` record of that case.
 - Define the F-9.4 trend as daily complaint counts grouped by the stored case
   `created_at` calendar date and returned in ascending date order.
+- The shared `AdminLayout` may further restrict non-complaint navigation by
+  platform role; complaint pages remain visible to `ADMIN`, `OPERATOR`, and
+  `FINANCE`, preserving this phase's UI element contract while aligning the
+  shell with the later role-specific navigation model.

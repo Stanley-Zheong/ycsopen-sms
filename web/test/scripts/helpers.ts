@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-type UserType = 'ADMIN' | 'OPERATOR' | 'FINANCE' | 'TENANT_ADMIN' | 'TENANT_USER' | 'TENANT_DEV';
+type UserType = 'ADMIN' | 'OPERATOR' | 'FINANCE' | 'SALES' | 'TECH_SUPPORT' | 'TENANT_ADMIN' | 'TENANT_USER' | 'TENANT_DEV';
 
 function mockJwt(userType: UserType, tenantId: number | null): string {
   const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');

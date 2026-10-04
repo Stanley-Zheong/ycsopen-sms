@@ -212,6 +212,160 @@ a:focus-visible {
   border: 0;
 }
 
+/* ---- Dashboard charts ------------------------------------------------ */
+
+.dashboard-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dashboard-metric-grid,
+.dashboard-source-grid,
+.dashboard-kpi-visuals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-metric-card,
+.dashboard-gauge-card {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  padding: 14px;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.dashboard-metric-card dt,
+.dashboard-gauge-card span,
+.dashboard-source-note {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.dashboard-metric-card dd,
+.dashboard-gauge-card strong {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: var(--font-weight-strong);
+  line-height: 28px;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-trend-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(36px, 1fr));
+  align-items: end;
+  gap: 8px;
+  min-height: 220px;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--color-surface), var(--color-bg-hover));
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.dashboard-trend-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(8px, 1fr));
+  align-items: end;
+  gap: 3px;
+  height: 180px;
+  min-width: 0;
+}
+
+.dashboard-trend-column small {
+  grid-column: 1 / -1;
+  color: var(--color-caption);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.dashboard-trend-bar {
+  display: block;
+  min-height: 8px;
+  border-radius: 8px 8px 2px 2px;
+}
+
+.dashboard-trend-bar.send,
+.dashboard-bar-track span,
+.dashboard-gauge-track span {
+  background: var(--color-brand);
+}
+
+.dashboard-trend-bar.success {
+  background: var(--color-success);
+}
+
+.dashboard-table-alt {
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.dashboard-gauge-track,
+.dashboard-bar-track,
+.dashboard-status-bar div {
+  height: 8px;
+  overflow: hidden;
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+}
+
+.dashboard-gauge-track span,
+.dashboard-bar-track span,
+.dashboard-status-bar div span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.dashboard-bar-chart {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dashboard-bar-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 140px) minmax(120px, 1fr) minmax(92px, auto);
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-bar-row small {
+  color: var(--color-muted);
+}
+
+.dashboard-health-chart {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-status-bar {
+  display: grid;
+  grid-template-columns: 72px 48px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-status-bar.ok div span {
+  background: var(--color-success);
+}
+
+.dashboard-status-bar.warn div span {
+  background: var(--color-warning);
+}
+
+.dashboard-status-bar.danger div span {
+  background: var(--color-danger);
+}
+
 /* ---- Query panel ----------------------------------------------------- */
 /*
  * The 812px / 536px / 260px column minimums and the 40px control height are frozen by
@@ -236,6 +390,21 @@ a:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.card :where(.query-actions, .form-actions, .row-actions, .table-actions, .dialog-actions),
+main :where(td, .query-panel-actions) {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.card :where(.query-actions, .form-actions, .row-actions, .table-actions, .dialog-actions) {
+  display: flex;
+}
+
+main :where(td, .query-panel-actions) > button + button {
+  margin-left: 8px;
 }
 
 .query-panel-heading {

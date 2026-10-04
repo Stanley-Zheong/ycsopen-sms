@@ -8,6 +8,7 @@ import com.ycsopen.sms.core.web.dto.LoginRequest;
 import com.ycsopen.sms.core.web.dto.LoginResponse;
 import com.ycsopen.sms.core.service.configuration.PlatformConfigurationRuntime;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.MDC;
@@ -28,16 +29,19 @@ public class AuthService {
     private final IdentitySessionService sessions;
     private final LoginAnomalyService anomalies;
     private final PlatformConfigurationRuntime configuration;
+    private final JdbcTemplate jdbc;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider, IdentitySessionService sessions,
-                       LoginAnomalyService anomalies, PlatformConfigurationRuntime configuration) {
+                       LoginAnomalyService anomalies, PlatformConfigurationRuntime configuration,
+                       JdbcTemplate jdbc) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.sessions = sessions;
         this.anomalies = anomalies;
         this.configuration = configuration;
+        this.jdbc = jdbc;
     }
 
     @Transactional(noRollbackFor = BusinessException.class)
@@ -106,5 +110,33 @@ public class AuthService {
                     clientIp, MDC.get("traceId"));
         }
         return new LoginResponse(token.token(), user.getUserType().name(), user.getTenantId());
+    }
+
+    @Transactional
+    public void changePassword(long userId, String currentPassword, String newPassword) {
+        if (!PlatformAccountPolicy.fitsBcrypt(currentPassword)) {
+            throw new BusinessException("INVALID_CREDENTIALS", "当前密码错误");
+        }
+        try {
+            PlatformAccountPolicy.validatePassword(newPassword);
+        } catch (IllegalArgumentException failure) {
+            throw new BusinessException("INVALID_PASSWORD", "新密码不符合复杂度要求");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "账号不存在"));
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BusinessException("INVALID_CREDENTIALS", "当前密码错误");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordExpireTime(null);
+        userRepository.save(user);
+        jdbc.update("""
+                UPDATE user_sessions SET revoked_at = COALESCE(revoked_at, CURRENT_TIMESTAMP)
+                WHERE user_id = ? AND revoked_at IS NULL
+                """, userId);
+        jdbc.update("""
+                INSERT INTO account_change_history(user_id, actor_user_id, action, occurred_at)
+                VALUES (?, ?, 'PASSWORD_CHANGE', CURRENT_TIMESTAMP)
+                """, userId, userId);
     }
 }

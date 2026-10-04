@@ -16,7 +16,7 @@ function token(subject: string): string {
   return `${btoa(JSON.stringify({ alg: 'HS256' }))}.${btoa(JSON.stringify({ sub: subject, exp: Date.now() / 1_000 + 300 }))}.signature`;
 }
 
-function renderAdmin(path: string, userType: 'ADMIN' | 'OPERATOR' | 'FINANCE' = 'ADMIN') {
+function renderAdmin(path: string, userType: 'ADMIN' | 'OPERATOR' | 'FINANCE' | 'SALES' | 'TECH_SUPPORT' = 'ADMIN') {
   useAuthStore.getState().setSession({ accessToken: token(userType), userType, tenantId: null });
   return render(
     <MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
