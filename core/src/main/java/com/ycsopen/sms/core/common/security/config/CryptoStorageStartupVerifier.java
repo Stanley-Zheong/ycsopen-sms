@@ -49,6 +49,9 @@ public final class CryptoStorageStartupVerifier implements SmartInitializingSing
     public void verify() {
         settings.validate();
         if (!settings.enabled()) {
+            if (activeProfiles.contains("dev") && adapter instanceof LocalDevCryptoStorageAdapter) {
+                return;
+            }
             if (!(adapter instanceof DisabledCryptoStorageAdapter)) {
                 throw invalid("adapter");
             }

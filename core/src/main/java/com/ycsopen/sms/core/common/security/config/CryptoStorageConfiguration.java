@@ -5,6 +5,7 @@ import com.ycsopen.sms.core.common.security.key.BlindIndexPort;
 import com.ycsopen.sms.core.common.security.key.KeyHealth;
 import com.ycsopen.sms.core.common.security.key.KeyProtectionPort;
 import com.ycsopen.sms.core.common.security.key.OpaqueTokenDigestPort;
+import com.ycsopen.sms.core.common.security.key.VersionedBlindIndex;
 import com.ycsopen.sms.core.common.security.key.VersionedTokenDigest;
 import com.ycsopen.sms.core.common.security.key.WrappedDataKey;
 import com.ycsopen.sms.core.common.security.key.pkcs11.KekWrapUsageRepository;
@@ -22,6 +23,7 @@ import com.ycsopen.sms.core.common.security.key.lifecycle.EnvelopeReferenceInven
 import com.ycsopen.sms.core.common.security.migration.snapshot.SnapshotChunkStore;
 import com.ycsopen.sms.core.common.security.object.DenyAllObjectAccessAuthorization;
 import com.ycsopen.sms.core.common.security.object.ObjectAccessAuthorizationPort;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +32,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,6 +61,10 @@ public class CryptoStorageConfiguration {
         CryptoStorageStartupVerifier.Settings settings = settings(environment);
         settings.validate();
         if (!settings.enabled()) {
+            if (devProfile(environment)) {
+                LocalDevCryptoStorageAdapter local = new LocalDevCryptoStorageAdapter();
+                return new CryptoStorageRuntime(settings, local, local, local, local, null);
+            }
             DisabledCryptoStorageAdapter disabled = new DisabledCryptoStorageAdapter();
             return new CryptoStorageRuntime(settings, disabled, disabled, disabled, disabled, null);
         }
@@ -136,6 +151,20 @@ public class CryptoStorageConfiguration {
                 Set.copyOf(Arrays.asList(environment.getActiveProfiles())));
     }
 
+    @Bean
+    ApplicationRunner localDevCryptoStorageKeyReferenceSeeder(Environment environment, JdbcTemplate jdbcTemplate) {
+        return args -> {
+            if (!devProfile(environment)
+                    || environment.getProperty(PREFIX + "enabled", Boolean.class, false)) {
+                return;
+            }
+            seedReference(jdbcTemplate, "FIELD_ENCRYPTION_KEK", "dev-field-kek.v1");
+            seedReference(jdbcTemplate, "MOBILE_BLIND_INDEX", "dev-mobile-index.v1");
+            seedReference(jdbcTemplate, "OBJECT_CAPABILITY_DIGEST", "dev-object-digest.v1");
+            seedReference(jdbcTemplate, "REGISTRATION_UPLOAD_DIGEST", "dev-registration-digest.v1");
+        };
+    }
+
     static CryptoStorageStartupVerifier.Settings settings(Environment environment) {
         boolean enabled = environment.getProperty(PREFIX + "enabled", Boolean.class, false);
         return new CryptoStorageStartupVerifier.Settings(
@@ -175,6 +204,25 @@ public class CryptoStorageConfiguration {
         }
         return Arrays.stream(value.split(",", -1)).map(String::trim)
                 .filter(part -> !part.isEmpty()).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static boolean devProfile(Environment environment) {
+        return Arrays.stream(environment.getActiveProfiles()).anyMatch("dev"::equals);
+    }
+
+    private static void seedReference(JdbcTemplate jdbcTemplate, String purpose, String reference) {
+        Long existing = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*) FROM ycs_crypto_key_references
+                WHERE purpose = ? AND key_version = 1
+                """, Long.class, purpose);
+        if (!Long.valueOf(0L).equals(existing)) {
+            return;
+        }
+        jdbcTemplate.update("""
+                INSERT INTO ycs_crypto_key_references
+                    (purpose, key_version, provider_id, provider_key_reference, key_state)
+                VALUES (?, 1, 'pkcs11', ?, 'ACTIVE')
+                """, purpose, reference);
     }
 }
 
@@ -240,5 +288,121 @@ final class DisabledCryptoStorageAdapter
     @Override
     public KeyHealth health(OpaqueTokenDigestPort.Purpose purpose) {
         return new KeyHealth(KeyHealth.Status.UNAVAILABLE);
+    }
+}
+
+final class LocalDevCryptoStorageAdapter
+        implements KeyProtectionPort, BlindIndexPort, OpaqueTokenDigestPort {
+
+    private static final String FIELD_KEY_REFERENCE = "dev-field-kek.v1";
+    private static final int GCM_TAG_BITS = 128;
+    private final SecureRandom secureRandom = new SecureRandom();
+    private final byte[] wrapKey = sha256("ycsopen-sms-local-dev-wrap-key");
+    private final byte[] mobileIndexKey = sha256("ycsopen-sms-local-dev-mobile-index-key");
+    private final byte[] objectDigestKey = sha256("ycsopen-sms-local-dev-object-digest-key");
+    private final byte[] uploadDigestKey = sha256("ycsopen-sms-local-dev-upload-digest-key");
+
+    @Override
+    public WrappedDataKey wrap(byte[] dataEncryptionKey, byte[] authenticatedHeader,
+                               ProtectionContext semanticContext) {
+        byte[] nonce = new byte[WrappedDataKey.WRAP_NONCE_BYTES];
+        secureRandom.nextBytes(nonce);
+        byte[] wrapped = aesGcm(Cipher.ENCRYPT_MODE, wrapKey, nonce, authenticatedHeader, dataEncryptionKey);
+        return new WrappedDataKey(FIELD_KEY_REFERENCE, nonce, wrapped);
+    }
+
+    @Override
+    public byte[] unwrap(WrappedDataKey wrappedDataKey, byte[] authenticatedHeader,
+                         ProtectionContext semanticContext) {
+        return aesGcm(Cipher.DECRYPT_MODE, wrapKey, wrappedDataKey.wrapNonce(),
+                authenticatedHeader, wrappedDataKey.wrappedDek());
+    }
+
+    @Override
+    public OrderedIndexes writeIndexes(String normalizedMobile, BlindIndexPort.Context context) {
+        return indexes(normalizedMobile, context);
+    }
+
+    @Override
+    public OrderedIndexes queryIndexes(String normalizedMobile, BlindIndexPort.Context context) {
+        return indexes(normalizedMobile, context);
+    }
+
+    @Override
+    public VersionedTokenDigest issue(OpaqueTokenDigestPort.Purpose purpose,
+                                      Binding binding,
+                                      byte[] tokenSecret) {
+        return new VersionedTokenDigest(purpose, 1, hmac(tokenKey(purpose),
+                purpose.storagePurpose(), binding.tenant(), binding.subject(),
+                binding.resourceOrSession(), HexFormat.of().formatHex(tokenSecret)));
+    }
+
+    @Override
+    public boolean verify(OpaqueTokenDigestPort.Purpose purpose,
+                          Binding binding,
+                          byte[] tokenSecret,
+                          VersionedTokenDigest storedDigest) {
+        return issue(purpose, binding, tokenSecret).equals(storedDigest);
+    }
+
+    @Override
+    public KeyHealth health() {
+        return new KeyHealth(KeyHealth.Status.READY);
+    }
+
+    @Override
+    public KeyHealth health(OpaqueTokenDigestPort.Purpose purpose) {
+        return health();
+    }
+
+    private OrderedIndexes indexes(String normalizedMobile, BlindIndexPort.Context context) {
+        return new OrderedIndexes(List.of(new VersionedBlindIndex(1, hmac(mobileIndexKey,
+                context.targetType(), context.field(), context.purpose().wireValue(), context.scope(),
+                normalizedMobile))));
+    }
+
+    private byte[] tokenKey(OpaqueTokenDigestPort.Purpose purpose) {
+        return switch (purpose) {
+            case OBJECT_CAPABILITY -> objectDigestKey;
+            case REGISTRATION_UPLOAD -> uploadDigestKey;
+        };
+    }
+
+    private static byte[] aesGcm(int mode, byte[] key, byte[] nonce, byte[] aad, byte[] input) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(mode, new SecretKeySpec(key, "AES"), new GCMParameterSpec(GCM_TAG_BITS, nonce));
+            if (aad != null) {
+                cipher.updateAAD(aad);
+            }
+            return cipher.doFinal(input);
+        } catch (GeneralSecurityException failure) {
+            throw new IllegalStateException("LOCAL_DEV_CRYPTO_FAILED", failure);
+        }
+    }
+
+    private static byte[] hmac(byte[] key, String... parts) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(key, "HmacSHA256"));
+            for (String part : parts) {
+                byte[] bytes = part.getBytes(StandardCharsets.UTF_8);
+                mac.update((byte) (bytes.length >>> 8));
+                mac.update((byte) bytes.length);
+                mac.update(bytes);
+            }
+            return mac.doFinal();
+        } catch (GeneralSecurityException failure) {
+            throw new IllegalStateException("LOCAL_DEV_CRYPTO_FAILED", failure);
+        }
+    }
+
+    private static byte[] sha256(String value) {
+        try {
+            return MessageDigest.getInstance("SHA-256")
+                    .digest(value.getBytes(StandardCharsets.UTF_8));
+        } catch (GeneralSecurityException failure) {
+            throw new IllegalStateException("LOCAL_DEV_CRYPTO_FAILED", failure);
+        }
     }
 }
