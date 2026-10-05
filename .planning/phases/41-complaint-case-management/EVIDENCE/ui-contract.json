@@ -134,7 +134,7 @@
     "sources": [
       {
         "path": "web/test/scripts/complaint-case.spec.ts",
-        "sha256": "bbb3864fbb1ffc1c73678d8a5c2f537bc500d250d11eaf77d8b0c26b04fd830c"
+        "sha256": "26dd67bf1a7cd8572852ee9c2829e1cc074b7ee5a52bd9127e727ff4dc1c1c37"
       }
     ]
   },
