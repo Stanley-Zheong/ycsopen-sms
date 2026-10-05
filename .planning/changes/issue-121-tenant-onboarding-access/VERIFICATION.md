@@ -7,7 +7,7 @@
 - `npm --prefix web test` — PASS, 50 files and 224 tests.
 - `npm --prefix web run build` — PASS, 306 modules.
 - `YCSOPEN_USE_BUNDLED_CHROMIUM=true YCSOPEN_E2E_ISOLATED=true npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=bundled-chromium --workers=1 --timeout=60000 --reporter=line` — PASS on final source, 5 tests at 1440x900.
-- `git diff --check` — pending the final evidence and review update.
+- `git diff --check` — PASS after final evidence and independent review updates.
 
 The local full Maven suite reached 363 tests but did not form a valid product
 verdict: Ruby-dependent pre-existing harness tests failed with Ruby absent,

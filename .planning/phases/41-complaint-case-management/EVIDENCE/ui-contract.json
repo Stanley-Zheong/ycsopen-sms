@@ -97,7 +97,7 @@
     "sources": [
       {
         "path": "web/src/router/routes.tsx",
-        "sha256": "f4fb16ee9f94406e650b6f605469b41795d99d4ea0c0062c530809f2e3186a12"
+        "sha256": "bb19d18ba41c5fe312d8f0aae67cd7c28108008f706fb14d77cfb0dc04cc69ba"
       },
       {
         "path": "web/src/components/layout/AdminLayout.tsx",

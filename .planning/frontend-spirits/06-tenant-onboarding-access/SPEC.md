@@ -57,10 +57,10 @@ tenant-scoped HTTP API credentials from one production page.
 
 ## Scoped TODO
 
-- [ ] Extend the qualification decision projection and result UI.
-- [ ] Replace the configuration placeholder with the canonical API Key route.
-- [ ] Separate create-only secret and list-only mask contracts.
-- [ ] Add tenant-scoped credential audit readback.
-- [ ] Implement explicit page, table, form, handoff, revoke, and audit states.
-- [ ] Add focused backend, frontend, and Chrome coverage.
-- [ ] Complete the quality gateway and independent review.
+- [x] Extend the qualification decision projection and result UI.
+- [x] Replace the configuration placeholder with the canonical API Key route.
+- [x] Separate create-only secret and list-only mask contracts.
+- [x] Add tenant-scoped credential audit readback.
+- [x] Implement explicit page, table, form, handoff, revoke, and audit states.
+- [x] Add focused backend, frontend, and Chrome coverage.
+- [x] Complete the quality gateway and independent review.
