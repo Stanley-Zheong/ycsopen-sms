@@ -103,11 +103,23 @@ test.describe('Phase 41 complaint case management', () => {
 
     const requirementBox = await page.getByTestId('admin-complaint-case-complaints-requirement').boundingBox();
     const submitBox = await page.getByTestId('form-submit').boundingBox();
+    const submitMetrics = await page.getByTestId('form-submit').evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        height: rect.height,
+        borderRadius: style.borderRadius,
+        whiteSpace: style.whiteSpace,
+      };
+    });
     await expect(page.getByTestId('form-actions')).toContainText('登记投诉');
     expect(requirementBox).not.toBeNull();
     expect(submitBox).not.toBeNull();
-    expect(Math.abs(requirementBox!.y - submitBox!.y)).toBeLessThanOrEqual(2);
     expect(Math.abs(requirementBox!.y + requirementBox!.height - (submitBox!.y + submitBox!.height))).toBeLessThanOrEqual(2);
+    expect(submitMetrics.height).toBeGreaterThanOrEqual(36);
+    expect(submitMetrics.height).toBeLessThanOrEqual(38);
+    expect(submitMetrics.borderRadius).toBe('4px');
+    expect(submitMetrics.whiteSpace).toBe('nowrap');
 
     const table = page.getByTestId('data-table');
     const headers = table.locator('th');

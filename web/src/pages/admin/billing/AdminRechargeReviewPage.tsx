@@ -85,9 +85,11 @@ export default function AdminRechargeReviewPage() {
                   <td>{row.status}</td>
                   <td>{row.submitterActor}</td>
                   <td>{displayTime(row.createdAt)}</td>
-                  <td>
-                    <button type="button" data-testid="admin-tenant-recharge-operations-review-approve" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: true }); setReason(''); }}>通过</button>
-                    <button type="button" data-testid="admin-tenant-recharge-operations-review-reject" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: false }); setReason(''); }}>拒绝</button>
+                  <td className="action-cell-nowrap">
+                    <div className="inline-action-buttons">
+                      <button type="button" data-testid="admin-tenant-recharge-operations-review-approve" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: true }); setReason(''); }}>通过</button>
+                      <button type="button" data-testid="admin-tenant-recharge-operations-review-reject" disabled={row.status !== 'PENDING'} onClick={() => { setDecision({ row, approved: false }); setReason(''); }}>拒绝</button>
+                    </div>
                   </td>
                 </tr>
               ))}</tbody>

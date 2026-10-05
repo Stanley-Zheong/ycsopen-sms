@@ -8,6 +8,9 @@ USERNAME="${USERNAME:-tenant_admin}"
 PASSWORD="${PASSWORD:-Admin@123456}"
 TEMPLATE_IDS="${TEMPLATE_IDS:-2 1}"
 SIGN_IDS="${SIGN_IDS:-2 1}"
+TENANT_ID="${TENANT_ID:-2}"
+CHANNEL_ID="${CHANNEL_ID:-3}"
+UPLINK_ENABLED="${UPLINK_ENABLED:-true}"
 
 log() {
   printf '%s ycsopen-sms-simulator %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"
@@ -41,6 +44,21 @@ send_attempt() {
     "$BASE_URL/api/v1/console/tenant/send"
 }
 
+record_uplink() {
+  submit_id="$1"
+  message_id="$2"
+  phone="$3"
+  code="$4"
+  sign_id="$5"
+  event_id="uplink-${submit_id}"
+  [ -n "$message_id" ] || message_id="$submit_id"
+  payload="{\"tenantId\":$TENANT_ID,\"sourceConnector\":\"simulator-http\",\"sourceEventId\":\"$event_id\",\"messageId\":\"$message_id\",\"phoneNumber\":\"$phone\",\"content\":\"回复$code\",\"contentKeyword\":\"回复\",\"carrier\":\"CMCC\",\"province\":\"广东\",\"city\":\"深圳\",\"destination\":\"10690000\",\"channelId\":$CHANNEL_ID,\"signatureId\":$sign_id,\"productCode\":\"STANDARD\",\"pushRequested\":false}"
+  curl -sS \
+    -H 'Content-Type: application/json' \
+    -d "$payload" \
+    "$BASE_URL/api/v1/simulator/uplinks"
+}
+
 send_one() {
   token="$1"
   suffix="$2"
@@ -51,7 +69,14 @@ send_one() {
     for sign_id in $SIGN_IDS; do
       response="$(send_attempt "$token" "$submit_id" "$phone" "$code" "$template_id" "$sign_id" || true)"
       log "sent submitId=$submit_id phone=$phone templateId=$template_id signId=$sign_id response=$response"
-      echo "$response" | grep -q '"code":200' && return 0
+      if echo "$response" | grep -q '"code":200'; then
+        if [ "$UPLINK_ENABLED" = "true" ]; then
+          message_id="$(printf '%s' "$response" | json_value messageId)"
+          uplink_response="$(record_uplink "$submit_id" "$message_id" "$phone" "$code" "$sign_id" || true)"
+          log "uplink submitId=$submit_id phone=$phone response=$uplink_response"
+        fi
+        return 0
+      fi
     done
   done
   return 1

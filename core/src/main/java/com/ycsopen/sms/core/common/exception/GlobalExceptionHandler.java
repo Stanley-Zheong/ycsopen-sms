@@ -23,7 +23,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     private final SecurityEventLogger security;
 
     public GlobalExceptionHandler(SecurityEventLogger security) {

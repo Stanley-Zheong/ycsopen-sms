@@ -92,15 +92,17 @@ export default function ComplaintRatioPanel({ dimension, title }: ComplaintRatio
             <td>{qualityLabel(row.dataQuality)}</td>
             <td>{freshnessLabel(row.freshnessPolicy)} {row.calculatedAt ? row.calculatedAt.slice(0, 16).replace('T', ' ') : '-'}</td>
             <td>{statusLabel(row)}</td>
-            <td>
-              <button type="button" onClick={() => setDrilldown({ dimension, row })}>钻取</button>
-              <button
-                type="button"
-                disabled={!row.interventionAvailable || pauseMutation.isPending}
-                onClick={() => setIntervention({ row, reason: DEFAULT_PAUSE_REASON })}
-              >
-                {dimension === 'channel' ? '暂停通道' : '暂停机构'}
-              </button>
+            <td className="action-cell-nowrap">
+              <div className="inline-action-buttons">
+                <button type="button" onClick={() => setDrilldown({ dimension, row })}>钻取</button>
+                <button
+                  type="button"
+                  disabled={!row.interventionAvailable || pauseMutation.isPending}
+                  onClick={() => setIntervention({ row, reason: DEFAULT_PAUSE_REASON })}
+                >
+                  {dimension === 'channel' ? '暂停通道' : '暂停机构'}
+                </button>
+              </div>
             </td>
           </tr>
         ))}

@@ -82,28 +82,54 @@ textarea {
   font: inherit;
 }
 
-button {
-  min-height: var(--control-height);
-  padding: 0 16px;
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  width: fit-content;
+  min-height: calc(var(--control-height) * .92);
+  padding: 0 1em;
   color: #fff;
   background: var(--color-brand);
   border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  border-radius: 4px;
   font-weight: var(--font-weight-strong);
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 
-button:hover {
+button[type="submit"],
+input[type="submit"] {
+  width: fit-content;
+  height: auto;
+  min-height: calc(var(--control-height) * .92);
+  padding: 0 1em;
+  border-radius: 4px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+input[type="submit"]:hover {
   background: var(--color-brand-hover);
 }
 
-button:disabled {
+button:disabled,
+input[type="button"]:disabled,
+input[type="reset"]:disabled,
+input[type="submit"]:disabled {
   opacity: .5;
   cursor: not-allowed;
 }
 
-button:disabled:hover {
+button:disabled:hover,
+input[type="button"]:disabled:hover,
+input[type="reset"]:disabled:hover,
+input[type="submit"]:disabled:hover {
   background: var(--color-brand);
 }
 
@@ -405,6 +431,24 @@ main :where(td, .query-panel-actions) {
 
 main :where(td, .query-panel-actions) > button + button {
   margin-left: 8px;
+}
+
+.action-cell-nowrap {
+  white-space: nowrap;
+}
+
+.inline-action-buttons {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: max-content;
+  white-space: nowrap;
+}
+
+.inline-action-buttons > button {
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 .query-panel-heading {

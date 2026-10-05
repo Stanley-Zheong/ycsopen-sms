@@ -39,7 +39,7 @@ class UplinkNormalizationServiceTest {
     @Test
     void normalizesHttpAndCmppUplinksWithTenantCorrelationAndIdempotentPush() {
         transport.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
-                null, "https://example.com/uplink", null, 5, 1));
+                null, "https://93.184.216.34/uplink", null, 5, 1));
         var first = service.normalizeHttpUplink(7, "HTTP-API", "HTTP-UP-1", "MSG-HTTP-UP-1",
                 "13800138000", "回复帮助", "帮助", "CMCC", "北京", "北京", "10690000",
                 1L, 2L, "STANDARD", true, LocalDateTime.now());
@@ -89,7 +89,7 @@ class UplinkNormalizationServiceTest {
     @Test
     void cmppNormalizedEventCanEnterUplinkNormalizationBoundary() {
         transport.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
-                null, "https://example.com/uplink", null, 5, 1));
+                null, "https://93.184.216.34/uplink", null, 5, 1));
         var event = new CmppClientSession.NormalizedEvent("UPLINK", null, "13900001111",
                 "回复 OK", "UPLINK", false, false, false);
 
@@ -133,7 +133,7 @@ class UplinkNormalizationServiceTest {
     @Test
     void pushMonitorAndDestinationActionsReuseWebhookDeliveryTransport() {
         transport.saveConfig(7, new WebhookDeliveryTransportService.CallbackConfigCommand(
-                null, "https://example.com/uplink", null, 5, 1));
+                null, "https://93.184.216.34/uplink", null, 5, 1));
         client.next = new WebhookDeliveryClient.DeliveryResponse(500, "HTTP_500", "downstream down");
         var normalized = service.normalize(command(7, "HTTP", "HTTP-API", "HTTP-UP-1", true));
         for (int i = 0; i < 5; i++) {
@@ -236,6 +236,7 @@ class UplinkNormalizationServiceTest {
                 CREATE TABLE uplink_records (
                   id BIGINT AUTO_INCREMENT PRIMARY KEY,
                   tenant_id BIGINT NOT NULL,
+                  mobile_encrypted VARBINARY(255) NOT NULL,
                   source_protocol VARCHAR(16) NOT NULL,
                   source_connector VARCHAR(64) NOT NULL,
                   source_event_id VARCHAR(128) NOT NULL,

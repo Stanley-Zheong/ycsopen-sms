@@ -105,8 +105,7 @@
 }
 
 .complaint-field-grid input,
-.complaint-field-grid select,
-.complaint-form-actions button {
+.complaint-field-grid select {
   height: 40px;
   min-height: 40px;
 }
