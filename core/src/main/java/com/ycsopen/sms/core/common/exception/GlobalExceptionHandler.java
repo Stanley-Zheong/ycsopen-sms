@@ -16,8 +16,6 @@ import org.springframework.validation.BindException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 统一异常处理。对应 PRD 5.15 节"异常流与边界情况"：
@@ -25,8 +23,6 @@ import org.slf4j.LoggerFactory;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
     private final SecurityEventLogger security;
 
     public GlobalExceptionHandler(SecurityEventLogger security) {
@@ -74,7 +70,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
         security.error(Event.UNEXPECTED_FAILURE, Category.UNEXPECTED,
                 SafeLogValue.correlation(MDC.get("traceId")));
-        log.error("unexpected request failure traceId={}", MDC.get("traceId"), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "系统繁忙，请稍后再试"));
     }

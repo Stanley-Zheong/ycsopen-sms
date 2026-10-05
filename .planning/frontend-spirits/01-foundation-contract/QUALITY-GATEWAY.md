@@ -261,7 +261,7 @@ Scoped TODO:
 
 ## Issue #89 Inline Row Action Check
 
-Scope: recharge review and dashboard complaint-ratio table action cells only.
+Scope: global compact button geometry plus recharge review, dashboard complaint-ratio, and submit-button regression coverage.
 
 | Gate | Command/evidence | Current result |
 |---|---|---|
@@ -269,8 +269,11 @@ Scope: recharge review and dashboard complaint-ratio table action cells only.
 | Diff hygiene | `git diff --check` | Pass |
 | Frontend build | `npm --prefix web run build` | Pass, existing chunk-size warning retained |
 | Docker web refresh | `COMPOSE_PROJECT_NAME=ycsopen-sms BUILD_COMMIT=local-button-inline-check YCSOPEN_CORE_PORT=18081 YCSOPEN_WEB_PORT=19089 docker compose up -d --build web` | Pass; web restarted, core healthy |
-| Browser geometry | Docker-served Playwright measurement at 1440x1000 | Recharge approve/reject: same y=559.6, height=36.8, radius=3px, padding 14px; dashboard drill/pause: same y=1898, height=36.8, radius=3px, padding 14px |
+| Browser geometry | Docker-served Playwright measurement at 1440x1000 | Recharge approve/reject and dashboard drill/pause render on one line with height=36.8, radius=4px, padding 14px; login submit also inherits the same 4px compact submit contract |
 | Visual screenshots | `/private/tmp/ycsopen-recharge-buttons.png`, `/private/tmp/ycsopen-dashboard-buttons.png` | Both target action cells render adjacent buttons left-to-right |
+| Full frontend unit | `npm --prefix web test` | Pass, 50 files / 220 tests. Existing jsdom network stderr remains non-failing. |
+| Complaint browser regression | `npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json` | Pass, 5/5; complaint form submit keeps the global 4px, nowrap, 36-38px compact geometry while staying bottom-aligned with the adjacent field |
+| Uplink backend regression | `mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test` | Pass, 6/6; simulator uplink creation stores protected phone data and remains tenant-scoped |
 
-Remaining boundary: the broader issue `#89` still includes other form-grid, label alignment, button
-width, and checkbox findings that are not claimed by this scoped fix.
+Remaining boundary: PR CI is the final release gate for Docker Google Chrome and Phase 03 real
+integration after the follow-up fixes above are pushed.
