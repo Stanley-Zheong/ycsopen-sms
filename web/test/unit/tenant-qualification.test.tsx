@@ -81,6 +81,9 @@ const reviewTenant = {
   inspectionConfidence: 0.98,
   inspectionRequestId: 'inspection-safe-id',
   inspectionCompletedAt: '2026-09-08T08:01:00Z',
+  trialQuota: null,
+  trialStartAt: null,
+  trialEndAt: null,
 } as const;
 
 describe('Phase 08 tenant qualification production UI', () => {
@@ -190,7 +193,8 @@ describe('Phase 08 tenant qualification production UI', () => {
           throw responseError(request, 409, 'QUALIFICATION_REVISION_STALE');
         }
         return axiosResponse(request, apiResponse({
-          ...reviewTenant, verificationStatus: 'VERIFIED', qualificationRevision: 8,
+          ...reviewTenant, verificationStatus: 'VERIFIED', lifecycleStatus: 'TRIAL', qualificationRevision: 8,
+          trialQuota: 500, trialStartAt: '2026-09-08T09:00:00Z', trialEndAt: '2026-09-22T09:00:00Z',
         }));
       }
       if (url === '/console/tenants/registration-object-sessions' && method === 'POST') {
@@ -371,6 +375,11 @@ describe('Phase 08 tenant qualification production UI', () => {
       method: 'POST', url: '/console/admin/tenants/42/decision',
       body: { expectedRevision: 7, decision: 'APPROVE', reason: '资料核对一致', humanConfirmed: true },
     }));
+    const result = screen.getByTestId('admin-tenant-qualification-tenants-approval-result');
+    expect(within(result).getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-id')).toHaveTextContent('42');
+    expect(within(result).getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-no')).toHaveTextContent('TENANT-0042');
+    expect(within(result).getByTestId('admin-tenant-qualification-tenants-approval-result-trial-quota')).toHaveTextContent('500');
+    expect(result).not.toHaveTextContent(/password|App Secret|密码|密钥/i);
   });
 
   it('keeps tenant result states inside the shared query result boundary', async () => {

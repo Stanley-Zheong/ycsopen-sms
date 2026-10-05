@@ -27,6 +27,8 @@ describe('ActionReasonDialog', () => {
     );
 
     expect(screen.getByTestId('modal')).toBeVisible();
+    expect(document.querySelectorAll('.modal-backdrop')).toHaveLength(1);
+    expect(document.querySelector('.action-reason-dialog-backdrop')).not.toBeInTheDocument();
     expect(screen.getByTestId('test-action-dialog')).toHaveTextContent('确认暂停任务');
     expect(screen.getByTestId('test-action-target')).toHaveTextContent('BULK-301');
     expect(screen.getByTestId('test-action-consequence')).toHaveTextContent('不再派发');

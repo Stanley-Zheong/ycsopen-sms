@@ -147,7 +147,8 @@ public class TenantReviewService {
                 tenant.getQualificationSubmittedAt(), tenant.getQualificationReason(),
                 tenant.getInspectionStatus(), tenant.getInspectionCompanyName(),
                 tenant.getInspectionCreditCode(), tenant.getInspectionConfidence() == null ? null : tenant.getInspectionConfidence().doubleValue(),
-                tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt());
+                tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt(),
+                tenant.getTrialQuota(), tenant.getTrialStartAt(), tenant.getTrialEndAt());
     }
 
     private static void requireReason(String reason) {
@@ -189,7 +190,9 @@ public class TenantReviewService {
                              LocalDateTime submittedAt, String reason,
                              Tenant.InspectionStatus inspectionStatus, String inspectedCompanyName,
                              String inspectedCreditCode, Double inspectionConfidence,
-                             String inspectionRequestId, LocalDateTime inspectionCompletedAt) { }
+                             String inspectionRequestId, LocalDateTime inspectionCompletedAt,
+                             Integer trialQuota, LocalDateTime trialStartAt,
+                             LocalDateTime trialEndAt) { }
 
     public static final class ReviewFailure extends RuntimeException {
         ReviewFailure(String code) { super(code, null, false, false); }

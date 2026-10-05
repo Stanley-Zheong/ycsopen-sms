@@ -30,6 +30,7 @@ class OperationAuditServiceTest {
                     occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
                 """);
         jdbc.update("INSERT INTO users(id, username, user_type, tenant_id) VALUES (7, 'operator', 'OPERATOR', 9)");
+        jdbc.update("INSERT INTO users(id, username, user_type, tenant_id) VALUES (8, 'foreign', 'OPERATOR', 10)");
         service = new OperationAuditService(jdbc);
     }
 
@@ -54,6 +55,42 @@ class OperationAuditServiceTest {
         assertThat(own.items().getFirst().resource()).isEqualTo("CONSOLE_HTTP:roleId=12");
         assertThat(own.items().getFirst().requestSummary()).doesNotContain("never-store-this");
         assertThat(other.totalElements()).isZero();
+    }
+
+    @Test
+    void tenantResourceReadIsTenantAndResourceScopedAndNewestFirst() {
+        for (int index = 1; index <= 102; index++) {
+            service.append(new OperationAuditService.AuditCommand(
+                    7L, index % 2 == 0 ? "TENANT_API_KEY_REVOKE" : "TENANT_API_KEY_CREATE",
+                    "TENANT_API_KEY", String.valueOf(index), "INTERNAL", "/tenant/api/keys",
+                    index == 101 ? "{\"appSecret\":\"never-store-this\"}" : "{}",
+                    "SUCCESS", 200, "internal", null, 0));
+        }
+        service.append(new OperationAuditService.AuditCommand(
+                8L, "TENANT_API_KEY_CREATE", "TENANT_API_KEY", "foreign", "INTERNAL",
+                "/tenant/api/keys", "{}", "SUCCESS", 200, "internal", null, 0));
+        service.append(new OperationAuditService.AuditCommand(
+                7L, "UNRELATED", "CONSOLE_HTTP", "41", "GET",
+                "/unrelated", "{}", "SUCCESS", 200, "internal", null, 0));
+
+        var own = service.searchTenantResource(9L, "TENANT_API_KEY", 100);
+
+        assertThat(own).hasSize(100);
+        assertThat(own.getFirst().id()).isEqualTo(102L);
+        assertThat(own.getLast().id()).isEqualTo(3L);
+        assertThat(own).extracting(OperationAuditService.TenantResourceAuditEntry::id)
+                .isSortedAccordingTo(java.util.Comparator.reverseOrder());
+        assertThat(own).allSatisfy(entry -> {
+            assertThat(entry.actor()).isEqualTo("operator");
+            assertThat(entry.operation()).startsWith("TENANT_API_KEY_");
+            assertThat(entry.toString()).doesNotContain("never-store-this");
+        });
+        assertThat(service.searchTenantResource(10L, "TENANT_API_KEY", 100)).singleElement()
+                .satisfies(entry -> {
+                    assertThat(entry.actor()).isEqualTo("foreign");
+                    assertThat(entry.resourceId()).isEqualTo("foreign");
+                });
+        assertThat(service.searchTenantResource(11L, "TENANT_API_KEY", 100)).isEmpty();
     }
 
     @Test

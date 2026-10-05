@@ -34,6 +34,7 @@ Every spirit directory contains:
 | 03 | `03-tenant-commercial-finance` | Tenant lifecycle, trial, contract, recharge, billing, finance, and customer-facing commercial state are coherent. | `#79`, PRD V2 finance TODOs |
 | 04 | `04-delivery-data-workbench` | Send/detail/uplink/receipt/error/export/workbench flows expose reliable data lineage and command feedback. | `#88`, `#91`, PRD V2 message-flow TODOs |
 | 05 | `05-release-acceptance` | Frontend release evidence, Docker identity, default account, seed data, and acceptance reports become repeatable. | `#60`, release PR follow-ups |
+| 06 | `06-tenant-onboarding-access` | Qualification approval hands off safe tenant/trial identifiers to a complete tenant-scoped API Key lifecycle and audit page. | `#121` |
 
 ## Commit And Merge Rule
 

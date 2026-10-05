@@ -106,6 +106,8 @@ class AdminTenantStatusWorkflowTest {
                 TenantAccount.Status.NORMAL, accountRevision, 91L,
                 java.time.LocalDateTime.of(2026, 9, 7, 8, 0), null,
                 Tenant.InspectionStatus.COMPLETED, "机构全称", "91350211M000100Y46",
-                0.98, "request-safe", java.time.LocalDateTime.of(2026, 9, 7, 8, 1));
+                0.98, "request-safe", java.time.LocalDateTime.of(2026, 9, 7, 8, 1),
+                500, java.time.LocalDateTime.of(2026, 9, 7, 8, 0),
+                java.time.LocalDateTime.of(2026, 9, 21, 8, 0));
     }
 }

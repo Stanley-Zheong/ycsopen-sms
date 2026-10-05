@@ -1,0 +1,16 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 32px;
+  background: rgb(15 23 42 / 48%);
+}
+
+.modal-dialog {
+  width: min(680px, 100%);
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+}

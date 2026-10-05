@@ -75,6 +75,11 @@ class TenantReviewServiceTest {
         assertThat(administrator.getStatus()).isEqualTo(User.UserStatus.ACTIVE);
         assertThat(tenant.getTrialQuota()).isEqualTo(500);
         assertThat(tenant.getTrialStartAt()).isEqualTo(Instant.now(clock).atZone(ZoneOffset.UTC).toLocalDateTime());
+        assertThat(result.tenantId()).isEqualTo(42L);
+        assertThat(result.tenantNo()).isEqualTo("T42");
+        assertThat(result.trialQuota()).isEqualTo(500);
+        assertThat(result.trialStartAt()).isEqualTo(Instant.now(clock).atZone(ZoneOffset.UTC).toLocalDateTime());
+        assertThat(result.trialEndAt()).isEqualTo(Instant.now(clock).atZone(ZoneOffset.UTC).toLocalDateTime().plusDays(14));
         verify(accounts, times(1)).saveAndFlush(argThat(account ->
                 account.getTenantId().equals(42L) && account.getStatus() == TenantAccount.Status.NORMAL));
         verify(tenants).appendReviewEvent(42L, "APPROVED", "PENDING", "VERIFIED",
@@ -129,7 +134,8 @@ class TenantReviewServiceTest {
         TenantReviewService.ReviewView view = service.view(tenant, null);
         String json = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules()
                 .writeValueAsString(view);
-        assertThat(json).doesNotContain("objectId", "capability", "storage", "identity", "token", "hash");
+        assertThat(json).doesNotContain("objectId", "capability", "storage", "identity", "token", "hash",
+                "password", "appSecret", "encrypted");
     }
 
     @Test

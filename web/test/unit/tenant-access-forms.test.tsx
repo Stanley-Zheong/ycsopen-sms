@@ -1,14 +1,16 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as tenantAccessApi from '@/api/tenantAccessApi';
 import TenantApiKeysPage from '@/pages/tenant/TenantApiKeysPage';
 import TenantCmppAccessPage from '@/pages/tenant/TenantCmppAccessPage';
+import { useAuthStore } from '@/store/authStore';
 
 vi.mock('@/api/tenantAccessApi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/tenantAccessApi')>();
   return {
     ...actual,
     listTenantApiKeys: vi.fn(),
+    listTenantApiKeyAudits: vi.fn(),
     createTenantApiKey: vi.fn(),
     revokeTenantApiKey: vi.fn(),
     listTenantCmpp: vi.fn(),
@@ -19,7 +21,10 @@ vi.mock('@/api/tenantAccessApi', async (importOriginal) => {
 
 describe('tenant access creation forms', () => {
   beforeEach(() => {
+    useAuthStore.setState({ userType: 'TENANT_ADMIN', tenantId: 7 });
     vi.mocked(tenantAccessApi.listTenantApiKeys).mockResolvedValue([]);
+    vi.mocked(tenantAccessApi.listTenantApiKeyAudits).mockResolvedValue([]);
+    vi.mocked(tenantAccessApi.revokeTenantApiKey).mockResolvedValue(null);
     vi.mocked(tenantAccessApi.listTenantCmpp).mockResolvedValue([]);
     vi.mocked(tenantAccessApi.createTenantApiKey).mockResolvedValue({
       id: 1,
@@ -34,7 +39,8 @@ describe('tenant access creation forms', () => {
       perDay: 11111,
       expireTime: '2099-01-01T00:00',
       lastUsedTime: null,
-      secret: 'secret-once',
+      appSecretMask: '******',
+      appSecret: 'secret-once',
     });
     vi.mocked(tenantAccessApi.createTenantCmpp).mockResolvedValue({
       id: 2,
@@ -52,7 +58,10 @@ describe('tenant access creation forms', () => {
     });
   });
 
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ userType: null, tenantId: null });
+  });
 
   it('submits every editable API key field', async () => {
     render(<TenantApiKeysPage />);
@@ -136,7 +145,7 @@ describe('tenant access creation forms', () => {
     let rejectApiKey: (reason?: unknown) => void = () => undefined;
     vi.mocked(tenantAccessApi.createTenantApiKey).mockImplementationOnce(() => new Promise((_, reject) => {
       rejectApiKey = reject;
-    }));
+    })).mockRejectedValueOnce(new Error('second request failed'));
     const apiKeyView = render(<TenantApiKeysPage />);
     await screen.findByTestId('tenant-tenant-access-api-keys-page');
     fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
@@ -147,7 +156,27 @@ describe('tenant access creation forms', () => {
     fireEvent.click(createButton);
     expect(tenantAccessApi.createTenantApiKey).toHaveBeenCalledTimes(1);
     await act(async () => rejectApiKey(new Error('request failed')));
-    expect(await screen.findByRole('alert')).toHaveTextContent('创建 API Key 失败');
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-create-unknown')).toHaveTextContent('创建结果未知');
+    expect(screen.getByTestId('form-submit')).toBeDisabled();
+    expect(screen.getByTestId('form-cancel')).toHaveTextContent('关闭并检查列表');
+    fireEvent.click(screen.getByTestId('form-cancel'));
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-create-unknown-guard')).toHaveTextContent('single-submit');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'single-submit' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(within(screen.getByTestId('entity-form')).getByRole('alert')).toHaveTextContent('上一次同名创建结果仍未知');
+    expect(tenantAccessApi.createTenantApiKey).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'second-unknown' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-create-unknown')).toBeVisible();
+    expect(tenantAccessApi.createTenantApiKey).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByTestId('form-cancel'));
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-create-unknown-guard')).toHaveTextContent('single-submit、second-unknown');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'single-submit' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(within(screen.getByTestId('entity-form')).getByRole('alert')).toHaveTextContent('上一次同名创建结果仍未知');
+    expect(tenantAccessApi.createTenantApiKey).toHaveBeenCalledTimes(2);
     apiKeyView.unmount();
 
     vi.mocked(tenantAccessApi.createTenantCmpp).mockRejectedValueOnce(new Error('request failed'));
@@ -158,5 +187,74 @@ describe('tenant access creation forms', () => {
     fireEvent.change(screen.getByTestId('tenant-tenant-access-cmpp-password'), { target: { value: 'secret-password' } });
     fireEvent.click(screen.getByRole('button', { name: /^提交申请$/ }));
     expect(await screen.findByRole('alert')).toHaveTextContent('CMPP 申请失败');
+  });
+
+  it('keeps the one-time secret visible across list failure until explicit acknowledgement', async () => {
+    vi.mocked(tenantAccessApi.listTenantApiKeys)
+      .mockResolvedValueOnce([])
+      .mockRejectedValueOnce(new Error('refresh failed'));
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-empty');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'secret-safe' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+
+    const secret = await screen.findByTestId('tenant-tenant-access-api-keys-secret-once');
+    expect(secret).toHaveTextContent('secret-once');
+    fireEvent.keyDown(screen.getByTestId('modal'), { key: 'Escape' });
+    expect(secret).toBeVisible();
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-error')).toBeVisible();
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-secret-acknowledge'));
+    expect(screen.queryByText('secret-once')).not.toBeInTheDocument();
+  });
+
+  it('renders masks and uses a controlled revoke confirmation', async () => {
+    vi.mocked(tenantAccessApi.listTenantApiKeys).mockResolvedValue([{
+      id: 41, appKey: 'public-app-key', name: 'integration', description: null,
+      status: 'ACTIVE', ipWhitelist: null, perSecond: 10, perMinute: 100,
+      perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: null,
+      appSecretMask: '******',
+    }]);
+    render(<TenantApiKeysPage />);
+
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-secret-mask')).toHaveTextContent('******');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
+    const dialog = screen.getByTestId('tenant-tenant-access-api-keys-revoke-dialog');
+    expect(dialog).toHaveTextContent('integration');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke-cancel'));
+    expect(tenantAccessApi.revokeTenantApiKey).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke-confirm'));
+    await waitFor(() => expect(tenantAccessApi.revokeTenantApiKey).toHaveBeenCalledWith(41));
+  });
+
+  it('denies tenant users locally without sending credential requests', async () => {
+    useAuthStore.setState({ userType: 'TENANT_USER', tenantId: 7 });
+
+    render(<TenantApiKeysPage />);
+
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    expect(tenantAccessApi.listTenantApiKeys).not.toHaveBeenCalled();
+    expect(tenantAccessApi.listTenantApiKeyAudits).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-create-dialog')).not.toBeInTheDocument();
+  });
+
+  it('releases the create latch after a definite validation rejection', async () => {
+    vi.mocked(tenantAccessApi.createTenantApiKey)
+      .mockRejectedValueOnce(Object.assign(new Error('bad request'), { response: { status: 400 } }))
+      .mockResolvedValueOnce({
+        id: 2, appKey: 'retry-key', name: 'retryable', description: '', status: 'ACTIVE',
+        ipWhitelist: null, perSecond: 10, perMinute: 100, perHour: 1_000, perDay: 10_000,
+        expireTime: null, lastUsedTime: null, appSecretMask: '******', appSecret: 'retry-secret',
+      });
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-empty');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'retryable' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('请求被拒绝');
+    expect(screen.getByTestId('form-submit')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-secret-once')).toHaveTextContent('retry-secret');
   });
 });

@@ -1,0 +1,8 @@
+# Spirit 06 Iterations
+
+| Iteration ID | Trigger or finding | Evidence | Change made | Affected behavior/decision | Recheck |
+| --- | --- | --- | --- | --- | --- |
+| FE06-I-001 | Issue `#121` requires a safe approval-to-credential onboarding path. | Live issue body and owner command. | Defined the route, DTO, state, action, secret, audit, and verification contracts before implementation. | FE-SPIRIT-06-APPROVAL through FE-SPIRIT-06-AUDIT; DR-FE06-001 through DR-FE06-005 | Pending entry review. |
+| FE06-I-002 | Repository inspection found a live API Key page beside a stale `/tenant/config` placeholder. | `web/src/router/routes.tsx`, `TenantLayout.tsx`, `TenantApiKeysPage.tsx`. | Selected redirect-and-converge instead of a second page implementation. | FE-SPIRIT-06-ROUTE; DR-FE06-001 | Route and sidebar tests planned. |
+| FE06-I-003 | Security inspection found one DTO field mixing create plaintext with list masking and a default Java record string representation. | `TenantApiKeyResponse`, `TenantApiKeyService`, `tenantAccessApi.ts`. | Split create-only and list-only fields and require a redacted string representation. | FE-SPIRIT-06-SECRET; DR-FE06-002 | Backend and browser secret scans planned. |
+| FE06-I-004 | Independent entry reviews found ambiguous secret disposal, audit shape, permissions, Phase ownership, modal shielding, common table selectors, and unknown create outcomes. | Issue 121 `REVIEW.md`. | Defined page-lifecycle disposal, exact tenant audit response, existing obligation mappings, shared modal mode, required scoped selectors, and fail-closed unknown-create handling. | FE-SPIRIT-06-CREDENTIAL through FE-SPIRIT-06-AUDIT; DR-FE06-006 | Corrected entry readback passed. |

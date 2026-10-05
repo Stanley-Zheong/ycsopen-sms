@@ -12,3 +12,11 @@ The production UI contains exactly three documented Chrome routes: `/tenant/regi
 
 The 21 obligation TODO items are closed by executable evidence. Independent and
 Claude reviews are PASS; the scoped TODO set is empty.
+
+## Issue 121 follow-up
+
+Issue 121 adds a safe approval handoff: the existing verified review response
+and admin result card now show tenant ID, tenant number, trial quota, and trial
+validity. No password or credential secret is generated or returned by this
+Phase 08 surface. Incremental evidence is recorded in the Issue 121 change
+package and Frontend Spirit 06; the original Phase 08 verdict is unchanged.

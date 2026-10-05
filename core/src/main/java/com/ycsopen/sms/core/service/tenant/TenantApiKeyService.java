@@ -3,6 +3,7 @@ package com.ycsopen.sms.core.service.tenant;
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import com.ycsopen.sms.core.service.audit.OperationAuditService;
 import com.ycsopen.sms.core.web.dto.TenantApiKeyCreateRequest;
+import com.ycsopen.sms.core.web.dto.TenantApiKeyAuditResponse;
 import com.ycsopen.sms.core.web.dto.TenantApiKeyResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +20,8 @@ import java.util.regex.Pattern;
 /** Tenant-owned HTTP API key lifecycle. Secret plaintext exists only in create memory. */
 @Service
 public class TenantApiKeyService {
-    private static final Pattern IP = Pattern.compile("^[A-Za-z0-9:.\\-/]+$");
+    private static final Pattern IP_LIST = Pattern.compile(
+            "^[A-Za-z0-9:.\\-/]+(?:\\s*,\\s*[A-Za-z0-9:.\\-/]+)*$");
     private final JdbcTemplate jdbc;
     private final TenantCredentialSecretProtectionService protection;
     private final OperationAuditService audits;
@@ -46,6 +48,15 @@ public class TenantApiKeyService {
                 r.getTimestamp("last_used_time") == null ? null : r.getTimestamp("last_used_time").toLocalDateTime()), tenant);
     }
 
+    @Transactional(readOnly = true)
+    public List<TenantApiKeyAuditResponse> auditTrail(long actorId) {
+        long tenant = credentialTenant(actorId);
+        return audits.searchTenantResource(tenant, "TENANT_API_KEY", 100).stream()
+                .map(entry -> new TenantApiKeyAuditResponse(entry.id(), entry.actor(),
+                        entry.operation(), entry.resourceId(), entry.result(), entry.occurredAt()))
+                .toList();
+    }
+
     @Transactional
     public TenantApiKeyResponse create(long actorId, TenantApiKeyCreateRequest request) {
         long tenant = credentialTenant(actorId);
@@ -68,7 +79,7 @@ public class TenantApiKeyService {
             audit(actorId, id, "CREATE");
             return new TenantApiKeyResponse(id, appKey, request.name(), request.description(), "ACTIVE",
                     request.ipWhitelist(), request.perSecond(), request.perMinute(), request.perHour(), request.perDay(),
-                    request.expireTime(), null, new String(secret));
+                    request.expireTime(), null, "******", new String(secret));
         } finally { java.util.Arrays.fill(encrypted, (byte) 0); java.util.Arrays.fill(secret, '\0'); }
     }
 
@@ -93,7 +104,7 @@ public class TenantApiKeyService {
         if (r == null || r.name() == null || r.name().isBlank() || r.name().length() > 64
                 || r.perSecond() < 1 || r.perMinute() < r.perSecond() || r.perHour() < r.perMinute()
                 || r.perDay() < r.perHour() || (r.ipWhitelist() != null && !r.ipWhitelist().isBlank()
-                && !IP.matcher(r.ipWhitelist()).matches())) throw new BusinessException("INVALID_POLICY", "凭证策略不合法");
+                && !IP_LIST.matcher(r.ipWhitelist()).matches())) throw new BusinessException("INVALID_POLICY", "凭证策略不合法");
     }
     /** Stores MySQL JSON as a canonical array while accepting the documented comma-separated UI form. */
     static String normalizeWhitelist(String value) {
@@ -106,7 +117,7 @@ public class TenantApiKeyService {
     private char[] randomSecret() { byte[] value = new byte[32]; random.nextBytes(value); return Base64.getUrlEncoder().withoutPadding().encodeToString(value).toCharArray(); }
     /** Keep numeric IDs lossless when the browser sends them back as JSON numbers. */
     private long positiveId() { return random.nextLong(1, 9_000_000_000_000_000L); }
-    private static TenantApiKeyResponse view(long id,String key,String name,String description,String status,String ips,int s,int m,int h,int d,LocalDateTime exp,LocalDateTime last) { return new TenantApiKeyResponse(id,key,name,description,status,ips,s,m,h,d,exp,last,"******"); }
+    private static TenantApiKeyResponse view(long id,String key,String name,String description,String status,String ips,int s,int m,int h,int d,LocalDateTime exp,LocalDateTime last) { return new TenantApiKeyResponse(id,key,name,description,status,ips,s,m,h,d,exp,last,"******",null); }
     private void audit(long actor,long id,String op) { audits.append(new OperationAuditService.AuditCommand(actor,"TENANT_API_KEY_"+op,"TENANT_API_KEY",String.valueOf(id),"INTERNAL","/tenant/api/keys","{}","SUCCESS",200,"internal",null,0)); }
     private void publishAfterCommit(TenantCredentialRevokedEvent event) {
         if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {

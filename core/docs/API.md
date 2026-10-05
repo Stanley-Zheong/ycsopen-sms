@@ -32,6 +32,9 @@
 | POST | `/api/v1/console/tenants/register` | 旧机构注册路径，仅返回迁移提示；请使用 public tenant registration | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 旧审核路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/reject` | 旧驳回路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
+| GET/POST | `/api/v1/console/tenant/api-keys` | 当前机构 API Key 列表（仅掩码）与创建（`appSecret` 仅本次响应） | F-2.6 |
+| POST | `/api/v1/console/tenant/api-keys/{keyId}/revoke` | 撤销当前机构的活动 API Key | F-2.6 |
+| GET | `/api/v1/console/tenant/api-keys/audits` | 当前机构 API Key 创建/撤销审计，最多返回最新 100 条 | F-2.6/F-14.1 |
 | GET | `/api/v1/console/channels` | 通道列表 | F-4.1 |
 | POST | `/api/v1/console/channels` | 新建通道 | F-4.1 |
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |
@@ -51,6 +54,11 @@
 `STARTED` 表示请求已在进入控制器前持久化，但终态写入中断，需人工调查。安全事件类型限定为
 `UNUSUAL_LOGIN`、`REPEATED_LOGIN_FAILURE`、`BULK_EXPORT`，结果限定为 `DETECTED`、`BLOCKED`、
 `SUCCESS`、`FAILURE`。未知筛选值返回 HTTP 400。
+
+机构 API Key 接口只允许 `TENANT_ADMIN` 与 `TENANT_DEV`。服务端从已认证用户解析机构，任何请求都
+不接收机构 ID。列表使用 `appSecretMask`，且不包含 `appSecret`；创建响应额外返回一次
+`appSecret`。机构审计按当前机构和 `TENANT_API_KEY` 资源过滤，以审计 ID 倒序返回 `id`、
+`actor`、`operation`、`resourceId`、`result` 与 `occurredAt`，不返回请求正文、IP、追踪号或密钥。
 
 系统配置权限分为 `system:configuration:menu`、`system:configuration:read`、
 `system:configuration:write` 和 `system:configuration:activate`。服务端只接受登记的类型化 key 和

@@ -110,3 +110,24 @@ mobile layout or other browser tests.
 - `docs/PRD.md` section 6.3
 - `.planning/UI-TEST-CONTRACT.md`
 
+## DR-09-005 — Issue 121 one-time secret and redacted tenant audit
+
+### Status
+
+Accepted
+
+### Decision
+
+Split the API Key response contract into list-safe `appSecretMask` and
+create-only `appSecret`. Omit `appSecret` from serialized list responses,
+redact it from string representations, keep it only in mounted page memory,
+and discard it on explicit acknowledgement or page lifecycle end. Expose only
+the newest 100 own-tenant API Key create/revoke audit records through a fixed,
+redacted projection. Unknown create outcomes are not retried automatically.
+
+### Consequences
+
+- `/tenant/config` is a compatibility redirect to the single API Key owner.
+- `TENANT_ADMIN` and `TENANT_DEV` retain management access; `TENANT_USER` is
+  denied without issuing credential requests.
+- List, revoke, and audit scope continues to derive the tenant from the actor.
