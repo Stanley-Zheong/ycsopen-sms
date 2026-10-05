@@ -6,6 +6,9 @@ test.use({ viewport: { width: 1440, height: 900 } });
 const uplink = {
   id: 101,
   tenantId: 7,
+  tenantNo: 'TENANT-0007',
+  tenantShortName: '北斗短信',
+  tenantFullName: '北斗短信服务有限公司',
   sourceProtocol: 'HTTP',
   sourceConnector: 'HTTP-API',
   sourceEventId: 'HTTP-UP-1',
@@ -28,22 +31,95 @@ const uplink = {
   updatedAt: '2026-09-10T10:01:00',
 };
 
-async function mockUplinkApis(page: Page) {
+const missingTenantUplink = {
+  ...uplink,
+  id: 102,
+  tenantId: 8,
+  tenantNo: null,
+  tenantShortName: null,
+  tenantFullName: null,
+  sourceEventId: 'HTTP-UP-2',
+  messageId: 'MSG-2',
+  pushEventId: 502,
+};
+
+const monitorRow = {
+  eventId: 501,
+  tenantId: 7,
+  tenantNo: 'TENANT-0007',
+  tenantShortName: '北斗短信',
+  tenantFullName: '北斗短信服务有限公司',
+  sourceId: 'UPLINK:101',
+  logicalId: 'UPLINK:101',
+  destinationUrl: 'https://callback.example.com/uplink',
+  state: 'PUSH_FAILED',
+  attemptCount: 5,
+  maxAttempts: 5,
+  attemptRows: 5,
+  nextAttemptAt: null,
+  updatedAt: '2026-09-10T10:01:00',
+  latencyMs: 60000,
+};
+
+const missingTenantMonitorRow = {
+  ...monitorRow,
+  eventId: 502,
+  tenantId: 8,
+  tenantNo: null,
+  tenantShortName: null,
+  tenantFullName: null,
+  sourceId: 'UPLINK:102',
+  logicalId: 'UPLINK:102',
+};
+
+async function mockUplinkApis(page: Page, includeMissingTenant = false) {
   await mockEmptyDashboard(page);
+  await page.route(/\/api\/v1\/console\/uplinks\/tenant-options(?:\?.*)?$/, async (route: Route) => {
+    const query = new URL(route.request().url()).searchParams.get('query') ?? '';
+    if (query === '同名机构') {
+      await route.fulfill({ json: apiResponse([
+        { tenantId: 7, tenantNo: 'TENANT-0007', tenantShortName: '同名机构', tenantFullName: '同名机构一公司' },
+        { tenantId: 9, tenantNo: 'TENANT-0009', tenantShortName: '同名机构', tenantFullName: '同名机构二公司' },
+      ]) });
+      return;
+    }
+    if (query === '8') {
+      await route.fulfill({ status: 503, json: { code: 503, message: 'unavailable', data: null } });
+      return;
+    }
+    if (query === '延迟机构') {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      await route.fulfill({ json: apiResponse([
+        { tenantId: 7, tenantNo: 'TENANT-0007', tenantShortName: '延迟机构', tenantFullName: '延迟机构有限公司' },
+      ]) });
+      return;
+    }
+    const candidates = [
+      { tenantId: 7, tenantNo: 'TENANT-0007', tenantShortName: '北斗短信', tenantFullName: '北斗短信服务有限公司' },
+      { tenantId: 9, tenantNo: 'TENANT-0009', tenantShortName: '南方短信', tenantFullName: '南方短信服务有限公司' },
+    ];
+    const normalized = query.toLocaleLowerCase('zh-CN');
+    await route.fulfill({ json: apiResponse(candidates.filter((candidate) => !normalized || [
+      candidate.tenantNo,
+      candidate.tenantShortName,
+      candidate.tenantFullName,
+    ].some((value) => value.toLocaleLowerCase('zh-CN').includes(normalized)))) });
+  });
   await page.route(/\/api\/v1\/console\/uplinks(?:\?.*)?$/, async (route: Route) => {
-    await route.fulfill({ json: apiResponse([uplink]) });
+    await route.fulfill({ json: apiResponse(includeMissingTenant ? [uplink, missingTenantUplink] : [uplink]) });
   });
   await page.route('**/api/v1/console/uplinks/101', async (route: Route) => {
     await route.fulfill({ json: apiResponse(uplink) });
+  });
+  await page.route('**/api/v1/console/uplinks/102', async (route: Route) => {
+    await route.fulfill({ json: apiResponse(missingTenantUplink) });
   });
   await page.route('**/api/v1/console/uplinks/101/replay', async (route: Route) => {
     expect(route.request().postDataJSON()).toEqual(expect.objectContaining({ reason: '上行内容复核通过' }));
     await route.fulfill({ json: apiResponse({ eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'HTTP_200', resultMessage: 'ok' }) });
   });
   await page.route(/\/api\/v1\/console\/uplinks\/push-monitor(?:\?.*)?$/, async (route: Route) => {
-    await route.fulfill({ json: apiResponse([
-      { eventId: 501, tenantId: 7, sourceId: 'UPLINK:101', logicalId: 'UPLINK:101', destinationUrl: 'https://callback.example.com/uplink', state: 'PUSH_FAILED', attemptCount: 5, maxAttempts: 5, attemptRows: 5, nextAttemptAt: null, updatedAt: '2026-09-10T10:01:00', latencyMs: 60000 },
-    ]) });
+    await route.fulfill({ json: apiResponse(includeMissingTenant ? [monitorRow, missingTenantMonitorRow] : [monitorRow]) });
   });
   await page.route('**/api/v1/console/uplinks/push-monitor/501/replay', async (route: Route) => {
     await route.fulfill({ json: apiResponse({ eventId: 501, tenantId: 7, state: 'DELIVERED', resultCode: 'HTTP_200', resultMessage: 'ok' }) });
@@ -117,5 +193,86 @@ test.describe('Phase 32 uplink normalization operations', () => {
     await page.getByTestId('admin-uplink-normalization-push-action-reason').fill('目的地维护暂停');
     await page.getByTestId('admin-uplink-normalization-action-confirm').click();
     await expect(page.getByTestId('admin-uplink-normalization-operation-message')).toContainText('目的地暂停完成');
+  });
+
+  test('pw-issue-120-uplink-identity C-120-UPLINK-LIST-IDENTITY OBL-F-10-1-A pw-issue-120-uplink-detail-identity C-120-UPLINK-DETAIL-IDENTITY OBL-F-7-5-A pw-issue-120-push-monitor-identity C-120-PUSH-MONITOR-IDENTITY OBL-F-10-4-A', async ({ page }) => {
+    await mockUplinkApis(page, true);
+    await loginAs(page, 'OPERATOR');
+    await page.goto('/admin/uplink');
+
+    const listIdentities = page.getByTestId('admin-uplink-normalization-uplinks-tenant-cell');
+    await expect(listIdentities.nth(0)).toContainText('北斗短信');
+    await expect(listIdentities.nth(0)).toContainText('TENANT-0007');
+    await expect(listIdentities.nth(1)).toContainText('机构 ID 8');
+
+    await page.getByTestId('admin-uplink-normalization-uplink-detail').nth(0).click();
+    await expect(page.getByTestId('admin-uplink-normalization-detail-tenant-identity')).toContainText('北斗短信服务有限公司');
+    await expect(page.getByTestId('admin-uplink-normalization-detail-tenant-identity')).toContainText('内部 ID7');
+    await page.getByRole('button', { name: '关闭详情' }).click();
+    await page.getByTestId('admin-uplink-normalization-uplink-detail').nth(1).click();
+    await expect(page.getByTestId('admin-uplink-normalization-detail-tenant-identity')).toContainText('名称不可用');
+    await expect(page.getByTestId('admin-uplink-normalization-detail-tenant-identity')).toContainText('内部 ID8');
+
+    const monitorIdentities = page.getByTestId('admin-uplink-normalization-push-monitor-tenant-cell');
+    await expect(monitorIdentities.nth(0)).toContainText('北斗短信');
+    await expect(monitorIdentities.nth(1)).toContainText('机构 ID 8');
+  });
+
+  test('pw-issue-120-uplink-filter C-120-UPLINK-FILTER OBL-F-10-1-A pw-issue-120-push-filter C-120-PUSH-FILTER OBL-F-10-4-A pw-issue-120-tenant-options C-120-TENANT-OPTIONS OBL-F-10-1-A OBL-F-10-4-A', async ({ page }) => {
+    await mockUplinkApis(page);
+    await loginAs(page, 'OPERATOR');
+    await page.goto('/admin/uplink');
+
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-options').locator('option')).toHaveAttribute('value', 'TENANT-0007');
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-options').locator('option')).toHaveAttribute('label', '北斗短信（TENANT-0007）');
+    await page.getByTestId('query-panel').first().getByTestId('query-panel-toggle').click();
+    await page.getByTestId('admin-uplink-normalization-uplinks-filter-tenant').fill('北斗短信');
+    await page.getByTestId('admin-uplink-normalization-push-filter-tenant').fill('南方短信');
+    await expect(page.locator('#admin-uplink-push-tenant-options option')).toHaveAttribute('value', 'TENANT-0009');
+    await expect(page.locator('#admin-uplink-push-tenant-options option')).toHaveAttribute('label', '南方短信（TENANT-0009）');
+    const uplinkRequest = page.waitForRequest((request) => request.url().includes('/api/v1/console/uplinks?'));
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    const uplinkUrl = new URL((await uplinkRequest).url());
+    expect(uplinkUrl.searchParams.get('tenantId')).toBe('7');
+    expect(uplinkUrl.searchParams.has('tenantName')).toBeFalsy();
+
+    const monitorRequest = page.waitForRequest((request) => request.url().includes('/api/v1/console/uplinks/push-monitor?'));
+    await page.getByTestId('query-panel').nth(1).getByTestId('query-submit').click();
+    expect(new URL((await monitorRequest).url()).searchParams.get('tenantId')).toBe('9');
+  });
+
+  test('pw-issue-120-tenant-filter-feedback C-120-TENANT-FILTER-FEEDBACK OBL-F-10-1-A OBL-F-10-4-A', async ({ page }) => {
+    let uplinkRequests = 0;
+    await mockUplinkApis(page);
+    page.on('request', (request) => {
+      if (/\/api\/v1\/console\/uplinks(?:\?.*)?$/.test(request.url())) uplinkRequests += 1;
+    });
+    await loginAs(page, 'OPERATOR');
+    await page.goto('/admin/uplink');
+    await page.getByTestId('query-panel').first().getByTestId('query-panel-toggle').click();
+    await expect.poll(() => uplinkRequests).toBe(1);
+
+    await page.getByTestId('admin-uplink-normalization-uplinks-filter-tenant').fill('同名机构');
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-options').locator('option')).toHaveCount(2);
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-filter-feedback')).toContainText('匹配到多个机构');
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    expect(uplinkRequests).toBe(1);
+
+    await page.getByTestId('admin-uplink-normalization-uplinks-filter-tenant').fill('8');
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-filter-feedback')).toContainText('机构名称搜索暂不可用');
+    const numericRequest = page.waitForRequest((request) => request.url().includes('/api/v1/console/uplinks?tenantId=8'));
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    await numericRequest;
+
+    const delayedOptionRequest = page.waitForRequest((request) => new URL(request.url()).searchParams.get('query') === '延迟机构');
+    await page.getByTestId('admin-uplink-normalization-uplinks-filter-tenant').fill('延迟机构');
+    await delayedOptionRequest;
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-filter-feedback')).toContainText('正在查找机构');
+    await expect(page.getByTestId('admin-uplink-normalization-tenant-options').locator('option')).toHaveAttribute('label', '延迟机构（TENANT-0007）');
+    const delayedTenantRequest = page.waitForRequest((request) => request.url().includes('/api/v1/console/uplinks?tenantId=7'));
+    await page.getByTestId('query-panel').first().getByTestId('query-submit').click();
+    await delayedTenantRequest;
   });
 });
