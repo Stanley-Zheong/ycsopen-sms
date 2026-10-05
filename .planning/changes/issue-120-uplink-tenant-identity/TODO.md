@@ -8,4 +8,4 @@
 - [x] Full backend, frontend, build, planning, and diff gates pass or have an explicit verified boundary.
 - [x] Independent implementation review has no remaining BLOCKER/HIGH finding.
 - [x] Final pre-push review has no BLOCKER/HIGH finding.
-- [ ] Branch, commit, pull request, CI, and merge evidence are recorded.
+- [x] Branch `feature/120-uplink-tenant-identity`, implementation commit `2dd4aeb`, and PR `#125` are recorded; final CI and merge receipts are published by GitHub and the provider response after this package closes.
