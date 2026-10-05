@@ -44,6 +44,17 @@
 | GET | `/api/v1/console/complaint-analytics` | 查询按创建日期的投诉趋势、归因质量及机构/签名/内容类型分布 | F-9.4 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/channel` | **通道投诉占比排行（本次新增需求）** | F-11.9 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/tenant` | **机构投诉占比排行（本次新增需求）** | F-11.9 |
+| GET | `/api/v1/console/uplinks` | 按稳定 `tenantId`、号码、关键词、运营商、推送状态和时间查询上行记录 | F-7.5/F-10.1 |
+| GET | `/api/v1/console/uplinks/{id}` | 查询一条上行详情 | F-7.5 |
+| GET | `/api/v1/console/uplinks/push-monitor` | 按稳定 `tenantId`、状态和目的地查询上行推送证据 | F-10.4 |
+| GET | `/api/v1/console/uplinks/tenant-options` | ADMIN/OPERATOR 按机构编号、简称或全称查询最多 20 个安全机构选项 | F-10.1/F-10.4 |
+
+上行记录、详情和推送监控响应在原有 `tenantId` 外，附带 `tenantNo`、
+`tenantShortName` 和 `tenantFullName`。这些字段由服务端在列表查询中一次投影，不要求客户端逐行查询。
+历史上行对应的机构资料不存在或不可用时，三个展示字段可以为 `null`，`tenantId` 仍然保留。
+`tenant-options` 只返回上述四个机构身份字段；`query` 最多取前 100 个字符参与包含匹配，响应按简称、
+机构编号和内部 ID 排序并限制为 20 条。上行列表和推送监控的正式筛选参数始终是 `tenantId`，名称和编号
+只用于选择该稳定 ID。
 
 其余控制台 API（详单查询、审核中心、财务、告警、工具管理等）的真实边界见 ROADMAP.md。
 

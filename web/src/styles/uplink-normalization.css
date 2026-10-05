@@ -65,6 +65,21 @@
   vertical-align: top;
 }
 
+.uplink-tenant-identity {
+  display: grid;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.uplink-tenant-identity small,
+.uplink-filter-feedback {
+  color: var(--color-text-secondary, #5f7389);
+}
+
+.uplink-filter-feedback {
+  margin: 0 0 12px;
+}
+
 .uplink-table th {
   background: #f9fafb;
   color: #4b5563;

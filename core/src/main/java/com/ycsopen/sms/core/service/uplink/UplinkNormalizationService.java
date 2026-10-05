@@ -134,11 +134,19 @@ public class UplinkNormalizationService {
         List<UplinkRecord> rows;
         if (requiredTenantId == null) {
             rows = jdbc.query("""
-                    SELECT * FROM uplink_records WHERE id=?
+                    SELECT u.*, t.tenant_no, t.short_name AS tenant_short_name,
+                           t.full_name AS tenant_full_name
+                      FROM uplink_records u
+                      LEFT JOIN tenants t ON t.id=u.tenant_id
+                     WHERE u.id=?
                     """, (rs, row) -> record(rs), id);
         } else {
             rows = jdbc.query("""
-                    SELECT * FROM uplink_records WHERE id=? AND tenant_id=?
+                    SELECT u.*, t.tenant_no, t.short_name AS tenant_short_name,
+                           t.full_name AS tenant_full_name
+                      FROM uplink_records u
+                      LEFT JOIN tenants t ON t.id=u.tenant_id
+                     WHERE u.id=? AND u.tenant_id=?
                     """, (rs, row) -> record(rs), id, requiredTenantId);
         }
         if (rows.isEmpty()) {
@@ -206,11 +214,14 @@ public class UplinkNormalizationService {
         PushMonitorFilter checked = filter == null ? new PushMonitorFilter(null, null, null) : filter;
         List<Object> params = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
-                SELECT e.id, e.tenant_id, e.source_id, e.logical_id, e.destination_url, e.state,
+                SELECT e.id, e.tenant_id, t.tenant_no, t.short_name AS tenant_short_name,
+                       t.full_name AS tenant_full_name,
+                       e.source_id, e.logical_id, e.destination_url, e.state,
                        e.attempt_count, e.max_attempts, e.next_attempt_at, e.created_at, e.updated_at,
                        COUNT(a.id) AS attempt_rows
                   FROM webhook_delivery_events e
                   LEFT JOIN webhook_delivery_attempts a ON a.event_id=e.id
+                  LEFT JOIN tenants t ON t.id=e.tenant_id
                  WHERE e.event_type='UPLINK'
                 """);
         if (checked.tenantId() != null) {
@@ -226,12 +237,37 @@ public class UplinkNormalizationService {
             params.add("%" + checked.destination().trim() + "%");
         }
         sql.append("""
-                 GROUP BY e.id, e.tenant_id, e.source_id, e.logical_id, e.destination_url, e.state,
+                 GROUP BY e.id, e.tenant_id, t.tenant_no, t.short_name, t.full_name,
+                          e.source_id, e.logical_id, e.destination_url, e.state,
                           e.attempt_count, e.max_attempts, e.next_attempt_at, e.created_at, e.updated_at
                  ORDER BY e.updated_at DESC, e.id DESC
                  LIMIT 200
                 """);
         return jdbc.query(sql.toString(), (rs, row) -> pushRow(rs), params.toArray());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TenantOption> tenantOptions(String query) {
+        String normalized = text(query);
+        List<Object> params = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
+                SELECT t.id AS tenant_id, t.tenant_no, t.short_name AS tenant_short_name,
+                       t.full_name AS tenant_full_name
+                  FROM tenants t
+                 WHERE 1=1
+                """);
+        if (normalized != null) {
+            String pattern = "%" + normalized.substring(0, Math.min(normalized.length(), 100))
+                    .toLowerCase(Locale.ROOT) + "%";
+            sql.append(" AND (LOWER(t.tenant_no) LIKE ? OR LOWER(t.short_name) LIKE ? OR LOWER(t.full_name) LIKE ?)");
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+        sql.append(" ORDER BY t.short_name, t.tenant_no, t.id LIMIT 20");
+        return jdbc.query(sql.toString(), (rs, row) -> new TenantOption(
+                rs.getLong("tenant_id"), rs.getString("tenant_no"),
+                rs.getString("tenant_short_name"), rs.getString("tenant_full_name")), params.toArray());
     }
 
     @Transactional(readOnly = true)
@@ -334,52 +370,62 @@ public class UplinkNormalizationService {
 
     private UplinkRecord bySource(long tenantId, String protocol, String sourceConnector, String sourceEventId) {
         return jdbc.queryForObject("""
-                SELECT * FROM uplink_records
-                 WHERE tenant_id=? AND source_protocol=? AND source_connector=? AND source_event_id=?
+                SELECT u.*, t.tenant_no, t.short_name AS tenant_short_name,
+                       t.full_name AS tenant_full_name
+                  FROM uplink_records u
+                  LEFT JOIN tenants t ON t.id=u.tenant_id
+                 WHERE u.tenant_id=? AND u.source_protocol=? AND u.source_connector=? AND u.source_event_id=?
                 """, (rs, row) -> record(rs), tenantId, protocol, sourceConnector, sourceEventId);
     }
 
     private List<UplinkRecord> search(SearchFilter filter, Long requiredTenantId) {
         SearchFilter checked = filter == null ? new SearchFilter(null, null, null, null, null, null, null) : filter;
         List<Object> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM uplink_records WHERE 1=1");
+        StringBuilder sql = new StringBuilder("""
+                SELECT u.*, t.tenant_no, t.short_name AS tenant_short_name,
+                       t.full_name AS tenant_full_name
+                  FROM uplink_records u
+                  LEFT JOIN tenants t ON t.id=u.tenant_id
+                 WHERE 1=1
+                """);
         if (requiredTenantId != null) {
-            sql.append(" AND tenant_id=?");
+            sql.append(" AND u.tenant_id=?");
             params.add(requiredTenantId);
         } else if (checked.tenantId() != null) {
-            sql.append(" AND tenant_id=?");
+            sql.append(" AND u.tenant_id=?");
             params.add(checked.tenantId());
         }
         if (text(checked.phoneNumber()) != null) {
-            sql.append(" AND phone_hash=?");
+            sql.append(" AND u.phone_hash=?");
             params.add(phoneHash(checked.phoneNumber()));
         }
         if (text(checked.keyword()) != null) {
-            sql.append(" AND content LIKE ?");
+            sql.append(" AND u.content LIKE ?");
             params.add("%" + checked.keyword().trim() + "%");
         }
         if (text(checked.carrier()) != null) {
-            sql.append(" AND carrier=?");
+            sql.append(" AND u.carrier=?");
             params.add(checked.carrier().trim());
         }
         if (text(checked.pushState()) != null) {
-            sql.append(" AND push_state=?");
+            sql.append(" AND u.push_state=?");
             params.add(checked.pushState().trim().toUpperCase(Locale.ROOT));
         }
         if (checked.startTime() != null) {
-            sql.append(" AND receive_time>=?");
+            sql.append(" AND u.receive_time>=?");
             params.add(checked.startTime());
         }
         if (checked.endTime() != null) {
-            sql.append(" AND receive_time<=?");
+            sql.append(" AND u.receive_time<=?");
             params.add(checked.endTime());
         }
-        sql.append(" ORDER BY receive_time DESC, id DESC LIMIT 200");
+        sql.append(" ORDER BY u.receive_time DESC, u.id DESC LIMIT 200");
         return jdbc.query(sql.toString(), (rs, row) -> record(rs), params.toArray());
     }
 
     private static UplinkRecord record(ResultSet rs) throws SQLException {
-        return new UplinkRecord(rs.getLong("id"), rs.getLong("tenant_id"), rs.getString("source_protocol"),
+        return new UplinkRecord(rs.getLong("id"), rs.getLong("tenant_id"), rs.getString("tenant_no"),
+                rs.getString("tenant_short_name"), rs.getString("tenant_full_name"), rs.getString("source_protocol"),
                 rs.getString("source_connector"), rs.getString("source_event_id"), rs.getString("message_id"),
                 rs.getString("phone_masked"), rs.getString("content"), rs.getString("content_keyword"),
                 rs.getString("state"), rs.getString("carrier"), rs.getString("province"), rs.getString("city"),
@@ -393,7 +439,8 @@ public class UplinkNormalizationService {
         LocalDateTime createdAt = timestamp(rs.getTimestamp("created_at"));
         LocalDateTime updatedAt = timestamp(rs.getTimestamp("updated_at"));
         long latency = createdAt == null || updatedAt == null ? 0 : Math.max(0, Duration.between(createdAt, updatedAt).toMillis());
-        return new PushMonitorRow(rs.getLong("id"), rs.getLong("tenant_id"), rs.getString("source_id"),
+        return new PushMonitorRow(rs.getLong("id"), rs.getLong("tenant_id"), rs.getString("tenant_no"),
+                rs.getString("tenant_short_name"), rs.getString("tenant_full_name"), rs.getString("source_id"),
                 rs.getString("logical_id"), rs.getString("destination_url"), rs.getString("state"),
                 rs.getInt("attempt_count"), rs.getInt("max_attempts"), rs.getInt("attempt_rows"),
                 timestamp(rs.getTimestamp("next_attempt_at")), updatedAt, latency);
@@ -501,17 +548,22 @@ public class UplinkNormalizationService {
         }
     }
 
-    public record UplinkRecord(long id, long tenantId, String sourceProtocol, String sourceConnector,
+    public record UplinkRecord(long id, long tenantId, String tenantNo, String tenantShortName,
+                               String tenantFullName, String sourceProtocol, String sourceConnector,
                                String sourceEventId, String messageId, String phoneMasked, String content,
                                String contentKeyword, String state, String carrier, String province, String city,
                                String destination, Long channelId, Long signatureId, String productCode,
                                String pushState, Long pushEventId, LocalDateTime receiveTime,
                                LocalDateTime createdAt, LocalDateTime updatedAt) { }
 
-    public record PushMonitorRow(long eventId, long tenantId, String sourceId, String logicalId,
+    public record PushMonitorRow(long eventId, long tenantId, String tenantNo, String tenantShortName,
+                                 String tenantFullName, String sourceId, String logicalId,
                                  String destinationUrl, String state, int attemptCount, int maxAttempts,
                                  int attemptRows, LocalDateTime nextAttemptAt, LocalDateTime updatedAt,
                                  long latencyMs) { }
+
+    public record TenantOption(long tenantId, String tenantNo, String tenantShortName,
+                               String tenantFullName) { }
 
     public record AutoReplyConfig(long tenantId, boolean enabled, String keyword, String templateId,
                                   String responseContent, int loopGuardMinutes, String auditReason,
