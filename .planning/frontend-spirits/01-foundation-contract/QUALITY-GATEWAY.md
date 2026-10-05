@@ -10,6 +10,29 @@
 | Build | `npm --prefix web run build` | Pass | Not recorded |
 | Chrome Playwright | Spirit-specific Chrome command covering QueryPanel, form, table, and action confirmation | Pass | Not recorded |
 
+## Issue #89 Follow-up Verification Record
+
+Issue: `#89` — button compact sizing and adjacent row-action layout follow-up.
+Branch: `fix/89-inline-row-action-buttons`.
+
+| Gate | Command | Current result |
+|---|---|---|
+| Frontend unit | `npm --prefix web test` | **Pass** — 50 files / 220 tests |
+| Frontend build | `npm --prefix web run build` | **Pass** — 306 modules; existing large-chunk advisory only |
+| Backend package | `mvn -f core/pom.xml -DskipTests package` | **Pass** — Java 21 compile and repackaged jar |
+| Backend targeted uplink | `mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest#tenantSearchNeverLeaksOtherTenantsAndAdminCanFilterByProtectedPhone test` | **Pass** — core write/search path verified |
+| Backend full uplink service class | `mvn -f core/pom.xml -Dtest=UplinkNormalizationServiceTest test` | **Pass** — 6 tests / 0 failures after using DNS-independent callback fixtures |
+| Diff hygiene | `git diff --check` | **Pass** |
+| Docker release check | `COMPOSE_PROJECT_NAME=ycsopen-sms BUILD_COMMIT=local-button-uplink-protected YCSOPEN_CORE_PORT=18081 YCSOPEN_WEB_PORT=19089 docker compose up -d --build web` plus health checks | **Pass** — core `/actuator/health` 200/UP; web `/login` 200; simulator generated 6 total uplink rows |
+| Chrome Playwright geometry | Docker-served登录 submit,充值审核 and仪表盘 adjacent-button metrics | **Pass** — all measured buttons use 4px radius, 36.8px height, nowrap text, and reported adjacent pairs share one line |
+
+### Scope
+
+- Global button and submit-input geometry is implemented in `web/src/styles/index.css`.
+- The recharge-review and complaint-ratio row actions keep explicit nowrap wrappers because those
+  table cells were the reported visible regressions.
+- Simulator uplink generation is verified with Docker core logs, simulator logs, and database rows.
+
 ## Issue #88 Verification Record
 
 Issue: `#88` — `修复无动作孤立输入框并接入异步查询`.

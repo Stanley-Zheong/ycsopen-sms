@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.uplink;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.common.security.persistence.UplinkRecordProtectionAdapter;
 import com.ycsopen.sms.core.cmpp.CmppClientSession;
 import com.ycsopen.sms.core.service.unsubscribe.UnsubscribeComplianceService;
 import com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportService;
@@ -23,25 +24,30 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class UplinkNormalizationService {
     private final JdbcTemplate jdbc;
     private final WebhookDeliveryTransportService webhookTransport;
     private final ObjectProvider<UnsubscribeComplianceService> unsubscribeService;
+    private final ObjectProvider<UplinkRecordProtectionAdapter> uplinkRecordProtection;
 
     @Autowired
     public UplinkNormalizationService(JdbcTemplate jdbc, WebhookDeliveryTransportService webhookTransport,
-                                      ObjectProvider<UnsubscribeComplianceService> unsubscribeService) {
+                                      ObjectProvider<UnsubscribeComplianceService> unsubscribeService,
+                                      ObjectProvider<UplinkRecordProtectionAdapter> uplinkRecordProtection) {
         this.jdbc = jdbc;
         this.webhookTransport = webhookTransport;
         this.unsubscribeService = unsubscribeService;
+        this.uplinkRecordProtection = uplinkRecordProtection;
     }
 
     public UplinkNormalizationService(JdbcTemplate jdbc, WebhookDeliveryTransportService webhookTransport) {
         this.jdbc = jdbc;
         this.webhookTransport = webhookTransport;
         this.unsubscribeService = null;
+        this.uplinkRecordProtection = null;
     }
 
     @Transactional
@@ -75,13 +81,16 @@ public class UplinkNormalizationService {
         String phoneHash = phoneHash(checked.phoneNumber());
         String phoneMasked = maskPhone(checked.phoneNumber());
         String keyword = contentKeyword(checked.contentKeyword(), checked.content());
+        var protectedMobile = protectedMobile(checked);
         try {
             jdbc.update("""
-                    INSERT INTO uplink_records(tenant_id, source_protocol, source_connector, source_event_id,
-                        message_id, phone_masked, phone_hash, content, content_keyword, state, carrier, province,
-                        city, destination, channel_id, signature_id, product_code, push_state, receive_time)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                    """, checked.tenantId(), checked.sourceProtocol(), checked.sourceConnector(), checked.sourceEventId(),
+                    INSERT INTO uplink_records(id, tenant_id, mobile_encrypted, source_protocol,
+                        source_connector, source_event_id, message_id, phone_masked, phone_hash, content,
+                        content_keyword, state, carrier, province, city, destination, channel_id, signature_id,
+                        product_code, push_state, receive_time)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, protectedMobile.recordId(), checked.tenantId(), protectedMobile.mobileEnvelope(),
+                    checked.sourceProtocol(), checked.sourceConnector(), checked.sourceEventId(),
                     text(checked.messageId()), phoneMasked, phoneHash, checked.content(), keyword, "NORMALIZED",
                     text(checked.carrier()), text(checked.province()), text(checked.city()), text(checked.destination()),
                     checked.channelId(), checked.signatureId(), text(checked.productCode()), "NOT_REQUESTED",
@@ -96,6 +105,17 @@ public class UplinkNormalizationService {
             return detail(record.id(), record.tenantId());
         }
         return record;
+    }
+
+    private UplinkRecordProtectionAdapter.ProtectedUplinkMobile protectedMobile(NormalizeCommand checked) {
+        if (uplinkRecordProtection != null) {
+            UplinkRecordProtectionAdapter adapter = uplinkRecordProtection.getIfAvailable();
+            if (adapter != null) {
+                return adapter.protect(checked.tenantId(), checked.phoneNumber());
+            }
+        }
+        return new UplinkRecordProtectionAdapter.ProtectedUplinkMobile(
+                positiveFallbackRecordId(), phoneHash(checked.phoneNumber()).getBytes(StandardCharsets.UTF_8));
     }
 
     @Transactional(readOnly = true)
@@ -422,6 +442,14 @@ public class UplinkNormalizationService {
 
     private static String text(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static long positiveFallbackRecordId() {
+        long value;
+        do {
+            value = ThreadLocalRandom.current().nextLong() & Long.MAX_VALUE;
+        } while (value == 0);
+        return value;
     }
 
     public record NormalizeCommand(long tenantId, String sourceProtocol, String sourceConnector, String sourceEventId,
