@@ -46,3 +46,14 @@ atomic update. The next independent rereview confirmed no remaining blocker,
 high, or medium implementation finding, including the ref-backed authorization
 read counter for non-visual post-mutation refreshes. Provider evidence remains
 open.
+
+The first provider run of that repaired diff passed the complete Web job and
+all five deterministic Issue 121 Chrome cases. Its wider Docker suite exposed
+a shared-modal integration regression: the complaint action dialog had both a
+legacy and a shared backdrop. The same run's real MySQL lane exposed fixture
+leakage because API-key audit rows survived between Phase09 test methods. The
+implementation now has one configurable shared backdrop with direct-click and
+pending guards, and Phase09 clears only its owned tenant/resource audit rows in
+`@BeforeEach`. Focused tests, build, diff hygiene, and a further independent
+rereview found no blocker, high, or medium issue. Fresh provider proof remains
+the completion boundary.

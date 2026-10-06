@@ -46,8 +46,9 @@ class Phase09TenantCredentialMySqlTest {
  @AfterAll static void stop(){if(mysql!=null)mysql.close();}
  @Autowired JdbcTemplate jdbc; @Autowired TenantApiKeyService apiKeys; @Autowired TenantProtocolCredentialService cmpp; @Autowired TestEvents events; @Autowired TestTenantApiKeyRepository repository; @Autowired TenantCredentialSecretProtectionService protection;
  @BeforeEach void seed(){
-  // Keep the fixture tenant-scoped and deterministic. Credential rows must be
+ // Keep the fixture tenant-scoped and deterministic. Credential rows must be
   // removed before the actor rows and tenant are recreated for each test.
+  jdbc.update("DELETE FROM privileged_operation_audits WHERE tenant_id=? AND resource_type=?",9001L,"TENANT_API_KEY");
   jdbc.update("DELETE FROM tenant_api_keys WHERE tenant_id=?",9001L);
   jdbc.update("DELETE FROM tenant_protocol_credentials WHERE tenant_id=?",9001L);
   jdbc.update("DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username IN ('phase09-admin','phase09-dev'))");

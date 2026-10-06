@@ -160,15 +160,13 @@ function ActionDialog({
   }, [pending]);
 
   return (
-    <div
-      className="action-reason-dialog-backdrop complaint-action-backdrop"
-      data-testid="admin-complaint-case-complaints-action-backdrop"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) requestClose();
-      }}
+    <ModalDialog
+      labelledBy="complaint-action-title"
+      onRequestClose={requestClose}
+      backdropTestId="admin-complaint-case-complaints-action-backdrop"
+      backdropClassName="complaint-action-backdrop"
     >
-      <ModalDialog labelledBy="complaint-action-title" onRequestClose={requestClose}>
-        <form
+      <form
           className="action-reason-dialog complaint-action-dialog"
           data-testid="admin-complaint-case-complaints-action-dialog"
           aria-busy={pending}
@@ -243,9 +241,8 @@ function ActionDialog({
             <button type="button" className="button-secondary" data-testid="admin-complaint-case-complaints-action-cancel" disabled={pending} onClick={requestClose}>取消</button>
             <button type="submit" data-testid="admin-complaint-case-complaints-action-confirm" disabled={!valid || pending}>{pending ? '提交中…' : `确认${copy.title}`}</button>
           </div>
-        </form>
-      </ModalDialog>
-    </div>
+      </form>
+    </ModalDialog>
   );
 }
 

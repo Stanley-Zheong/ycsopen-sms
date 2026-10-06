@@ -26,8 +26,22 @@ full-suite gate.
 
 ## Provider gates pending
 
-The prior PR 126 run `37334010539` and its Chrome report predate the owner-review
-repairs and are superseded. A fresh pull-request head must still prove:
+PR 126 run `37489547230` supplied partial repaired-source evidence:
+
+- the complete Web job passed;
+- all five deterministic Issue 121 Google Chrome cases passed with zero
+  skipped, unexpected, or flaky cases;
+- Phase09 started all four MySQL tests and its EXPLAIN assertion passed, but
+  the audit case found rows retained from preceding fixture methods;
+- the Docker job reached the unrelated complaint Chrome case and exposed a
+  duplicate shared/legacy backdrop;
+- the change-package validator correctly rejected evidence still bound to the
+  superseded source commit;
+- Core was held open by the delivery checkboxes and also repeated the known
+  non-deterministic `KeyLifecycleServiceTest` concurrency failure.
+
+The fixture isolation and shared-backdrop defects are repaired. A fresh
+pull-request head must still prove:
 
 - the full Java 21 suite;
 - Phase09 MySQL execution with more than zero tests, zero skips/failures/errors,
