@@ -19,6 +19,8 @@ class TrialPrepaidLedgerServiceTest {
         DriverManagerDataSource dataSource = new DriverManagerDataSource(
                 "jdbc:h2:mem:trial-prepaid-" + System.nanoTime() + ";MODE=MySQL;DB_CLOSE_DELAY=-1", "sa", "");
         jdbc = new JdbcTemplate(dataSource);
+        jdbc.execute("CREATE TABLE tenants(id BIGINT PRIMARY KEY, lifecycle_status VARCHAR(32) NOT NULL, trial_quota INT NULL, trial_quota_used INT NOT NULL DEFAULT 0, trial_start_at TIMESTAMP NULL, trial_end_at TIMESTAMP NULL)");
+        jdbc.update("INSERT INTO tenants(id,lifecycle_status) VALUES (7,'TRIAL'),(8,'TRIAL')");
         jdbc.execute("CREATE TABLE trial_accounts(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT NOT NULL UNIQUE, status VARCHAR(32) NOT NULL, quota_total INT NOT NULL, quota_remaining INT NOT NULL, start_at TIMESTAMP NOT NULL, end_at TIMESTAMP NOT NULL, version INT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
         jdbc.execute("CREATE TABLE trial_consumption_ledger(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT NOT NULL, message_ref VARCHAR(64) NOT NULL, business_type VARCHAR(64) NOT NULL, quota_delta INT NOT NULL, amount_mil BIGINT NOT NULL, entry_type VARCHAR(32) NOT NULL, state VARCHAR(32) NOT NULL, actor VARCHAR(64) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(tenant_id, message_ref))");
         jdbc.execute("CREATE TABLE prepaid_accounts(id BIGINT AUTO_INCREMENT PRIMARY KEY, tenant_id BIGINT NOT NULL UNIQUE, balance_mil BIGINT NOT NULL, frozen_mil BIGINT NOT NULL, status VARCHAR(32) NOT NULL, version INT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
@@ -39,6 +41,16 @@ class TrialPrepaidLedgerServiceTest {
         assertThat(frozen.trialStatus()).isEqualTo("TRIAL_FROZEN");
         service.consumeTrial(8, "MSG-1", "SMS", "tenant");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM trial_consumption_ledger WHERE tenant_id=8 AND entry_type='TRIAL_CONSUME'", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void activationRejectsInvalidWindowAndNonTrialTenant() {
+        LocalDateTime now = LocalDateTime.of(2026, 9, 9, 0, 0);
+        assertThatThrownBy(() -> service.activateTrial(7, 10, now, now, "operator"))
+                .hasMessageContaining("试用开始时间必须早于结束时间");
+        jdbc.update("UPDATE tenants SET lifecycle_status='SIGNED' WHERE id=7");
+        assertThatThrownBy(() -> service.activateTrial(7, 10, now, now.plusDays(1), "operator"))
+                .hasMessageContaining("机构生命周期不允许调整试用");
     }
 
     @Test

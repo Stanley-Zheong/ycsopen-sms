@@ -1,21 +1,37 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head><meta charset="utf-8"><title>Phase 37 Contract Pricing</title></head>
-  <body>
-    <main data-routes="/admin/tenant-trial-contracts /tenant/overview">
-      <section data-testid="admin-contract-pricing-tenant-contract-page">
-        <select data-testid="admin-contract-pricing-tenant-contract-billing-mode"><option>POSTPAID</option><option>PREPAID</option></select>
-        <input data-testid="admin-contract-pricing-tenant-contract-price-version" value="SMS_STANDARD_V1">
-        <input data-testid="admin-contract-pricing-tenant-contract-number" value="HT-2026-0001">
-        <input data-testid="admin-contract-pricing-tenant-contract-signed-date" value="2026-09-10">
-        <input data-testid="admin-contract-pricing-tenant-contract-attachment" value="oss://contracts/HT-2026-0001.pdf">
-        <div data-testid="admin-contract-pricing-tenant-contract-postpaid-fields">
-          <input data-testid="admin-contract-pricing-tenant-contract-credit-limit" value="1000000">
-          <label data-testid="admin-contract-pricing-tenant-contract-credit-period">账期<select data-testid="admin-contract-pricing-tenant-contract-billing-period"><option>MONTHLY</option></select></label>
-        </div>
-        <button data-testid="admin-contract-pricing-tenant-contract-approve">批准转正式签约</button>
-      </section>
-      <section data-testid="tenant-contract-pricing-overview-contract-status">CONTRACTED SMS_STANDARD_V1 MONTHLY</section>
-    </main>
-  </body>
-</html>
+<head>
+  <meta charset="utf-8"><title>试用转正式工作台</title>
+  <style>
+    body{margin:0;background:#f5f7fa;color:#1d2129;font:14px system-ui}.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}.side{background:#17233d;color:#fff;padding:24px}.main{padding:28px}.card{background:#fff;border:1px solid #e5e6eb;border-radius:8px;padding:20px;margin:16px 0}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:12px}input,select,button{min-height:36px;border:1px solid #c9cdd4;border-radius:4px;padding:0 10px}button{background:#165dff;color:#fff;border:0}table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid #e5e6eb;text-align:left}.muted{color:#86909c}.tag{background:#e8ffea;color:#00b42a;padding:3px 8px;border-radius:10px}.dialog{position:fixed;inset:0;background:#0007;display:none;place-items:center}.dialog.open{display:grid}.panel{width:min(720px,90vw);background:#fff;border-radius:8px;padding:24px}.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.secondary{background:#fff;color:#1d2129;border:1px solid #c9cdd4}
+  </style>
+</head>
+<body>
+<div class="shell" data-routes="/admin/tenant-trial-contracts /tenant/overview">
+  <aside class="side"><h2>YCS Open SMS</h2><p>机构商业化</p><p>试用与余额</p></aside>
+  <main class="main" data-testid="admin-contract-pricing-tenant-contract-page">
+    <h1>试用转正式工作台</h1><p class="muted">查询试用机构、核对真实使用证据并完成租户绑定签约。</p>
+    <section class="card" data-testid="admin-trial-conversion-workbench-filters">
+      <div class="filters"><input data-testid="admin-trial-conversion-workbench-filter-keyword" value="Acme"><input value="Alice"><input value="SaaS"><select><option>试用冻结</option></select><button>查询</button></div>
+      <p data-testid="admin-trial-conversion-workbench-query-status" data-state="success">共 1 条；来源已更新</p>
+    </section>
+    <section class="card" data-testid="shared-trial-conversion-workbench-data-table"><table data-testid="data-table"><thead><tr><th>机构</th><th>试用配置</th><th>使用与投诉</th><th>资格</th><th>操作</th></tr></thead><tbody>
+      <tr data-testid="admin-trial-conversion-workbench-row"><td>Acme 短信<br><span class="muted">TENANT-42 / Alice / SaaS</span></td><td>TRIAL-SNAPSHOT-V1-4234567890ABCDEF<br>500 条 · 09-01—09-30</td><td>消息 2 / 成功 50% / 投诉 1<br><span class="muted">COMPLETE · 09-07 12:00</span></td><td><span class="tag">可转正式</span></td><td><button class="secondary" data-testid="admin-trial-conversion-workbench-row-analysis" onclick="show('analysis')">试用分析</button> <button class="secondary" data-testid="admin-trial-conversion-workbench-row-adjust" onclick="show('adjustment')">调整试用</button> <button data-testid="admin-trial-conversion-workbench-row-convert" onclick="show('conversion')">转正式</button></td></tr>
+      <tr data-testid="table-empty" hidden><td colspan="5"><span data-testid="shared-trial-conversion-workbench-table-empty">没有符合条件的试用机构</span></td></tr>
+    </tbody></table></section>
+    <section class="card" data-testid="tenant-contract-pricing-overview-contract-status"><h2>机构签约档案</h2><p>CONTRACTED · POSTPAID · SMS_STANDARD_V1 · MONTHLY</p></section>
+  </main>
+</div>
+<div class="dialog" id="analysis"><section class="panel" data-testid="admin-trial-conversion-workbench-analysis-dialog"><h2>Acme 短信试用分析</h2><p>09-05：消息 2，成功 1，失败 1，投诉 1</p><p>状态：DELIVERED 1；FAILED 1</p><p>内容投诉 · PROCESSING</p><div class="actions"><button class="secondary" data-testid="admin-trial-conversion-workbench-analysis-close" onclick="hide('analysis')">关闭</button></div></section></div>
+<div class="dialog" id="adjustment"><section class="panel" data-testid="admin-trial-conversion-workbench-adjust-dialog"><h2>调整 Acme 短信（TENANT-42）的试用</h2><p>机构身份由工作台所选行绑定，不可编辑。</p><div data-testid="shared-trial-conversion-workbench-entity-form"><div class="form" data-testid="entity-form">
+  <label>试用额度<input value="500"></label><label>有效期开始<input value="2026-09-01T00:00"></label><label>有效期结束<input value="2026-09-30T00:00"></label>
+</div></div><div class="actions"><span data-testid="shared-trial-conversion-workbench-form-cancel"><button class="secondary" data-testid="form-cancel" onclick="hide('adjustment')"><span data-testid="admin-trial-conversion-workbench-adjust-cancel">取消</span></button></span><span data-testid="shared-trial-conversion-workbench-form-submit"><button data-testid="form-submit">保存试用调整</button></span></div></section></div>
+<div class="dialog" id="conversion"><section class="panel"><h2>转正式签约</h2><p data-testid="admin-trial-conversion-workbench-selected-tenant"><strong>Acme 短信（TENANT-42）</strong><br>机构身份不可编辑</p><div class="form" data-testid="entity-form">
+  <label>计费模式<select data-testid="admin-contract-pricing-tenant-contract-billing-mode"><option>POSTPAID</option><option>PREPAID</option></select></label>
+  <label>有效价目表<select data-testid="admin-contract-pricing-tenant-contract-price-version"><option>SMS_STANDARD_V1</option></select><button type="button" class="secondary" data-testid="admin-trial-conversion-workbench-price-retry">重试价目表</button></label>
+  <label>合同编号<input data-testid="admin-contract-pricing-tenant-contract-number" value="HT-2026-0001"></label><label>签约日期<input data-testid="admin-contract-pricing-tenant-contract-signed-date" value="2026-09-10"></label>
+  <label>附件引用<input data-testid="admin-contract-pricing-tenant-contract-attachment" value="oss://contracts/HT-2026-0001.pdf"></label>
+  <div data-testid="admin-contract-pricing-tenant-contract-postpaid-fields"><input data-testid="admin-contract-pricing-tenant-contract-credit-limit" value="1000000"><label data-testid="admin-contract-pricing-tenant-contract-credit-period">账期<select data-testid="admin-contract-pricing-tenant-contract-billing-period"><option>MONTHLY</option></select></label></div>
+</div><div class="actions"><button class="secondary" data-testid="form-cancel" onclick="hide('conversion')">取消</button><button data-testid="form-submit"><span data-testid="admin-contract-pricing-tenant-contract-approve">批准转正式签约</span></button></div></section></div>
+<script>function show(id){document.getElementById(id).classList.add('open')}function hide(id){document.getElementById(id).classList.remove('open')}</script>
+</body></html>

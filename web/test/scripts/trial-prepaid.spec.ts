@@ -52,6 +52,17 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/v1/console/trial-prepaid/balance-audits?**', async (route) => route.fulfill({
     json: response([{ tenantId: 42, businessDocId: 'DOC-22', mutationType: 'RESERVE', amountMil: 200, beforeBalanceMil: 1000, afterBalanceMil: 1000, beforeFrozenMil: 0, afterFrozenMil: 200, accountVersion: 1, actor: 'operator', createdAt: '2026-09-09T01:00:00' }]),
   }));
+  await page.route(/\/api\/v1\/console\/contracts\/workbench(?:\?.*)?$/, async (route) => route.fulfill({
+    json: response([{ tenantId: 42, tenantNo: 'TENANT-42', shortName: '测试机构', fullName: '测试机构有限公司',
+      salesOwner: 'Alice', industry: 'SaaS', configurationSnapshotVersion: 'TRIAL-SNAPSHOT-V1-1234567890ABCDEF',
+      lifecycleStatus: 'TRIAL_FROZEN', trialStatus: 'TRIAL_FROZEN', trialStartAt: '2026-09-09T00:00:00',
+      trialEndAt: '2026-09-23T00:00:00', remainingDays: 0, quotaUsed: 0, quotaTotal: 500,
+      messageCount: 0, successCount: 0, successRate: null, complaintCount: 0, complaintRate: null,
+      statisticsAt: '2026-09-09T00:00:00', dataQuality: 'NO_DATA',
+      sourceRegistry: 'tenants:trial_accounts:message_tasks:complaints', conversionEligible: true,
+      ineligibilityReasons: [] }]),
+  }));
+  await page.route('**/api/v1/console/contracts/price-books', async (route) => route.fulfill({ json: response([]) }));
   await page.route('**/api/v1/console/tenant/qualification', async (route) => route.fulfill({
     json: response({
       tenantId: 42,
@@ -103,10 +114,11 @@ test('pw-p22-trial-config C-P22-TRIAL-CONFIG OBL-F-2-8-A pw-p22-quota-field C-P2
     window.sessionStorage.setItem('ycsopen.console.auth-session', JSON.stringify(value));
   }, { accessToken: token('admin'), userType: 'OPERATOR', tenantId: null });
   await page.goto('/admin/tenant-trial-contracts');
+  await page.getByTestId('admin-trial-conversion-workbench-row-adjust').click();
   await expect(page.getByTestId('admin-trial-prepaid-tenant-trial-quota')).toHaveValue('500');
   await expect(page.getByTestId('admin-trial-prepaid-tenant-trial-validity')).toBeVisible();
   await page.getByTestId('admin-trial-prepaid-activate-trial').click();
-  await expect(page.getByTestId('admin-trial-prepaid-message')).toContainText('试用已启用');
+  await expect(page.getByTestId('admin-trial-prepaid-message')).toContainText('试用已调整');
   await page.goto('/admin/balance-audit');
   await expect(page.getByTestId('admin-balance-audit')).toBeVisible();
   await expect(page.getByTestId('admin-trial-prepaid-balance-audit-table')).toBeVisible();
