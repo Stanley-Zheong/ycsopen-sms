@@ -15,17 +15,17 @@
       <div class="filters"><input data-testid="admin-trial-conversion-workbench-filter-keyword" value="Acme"><input value="Alice"><input value="SaaS"><select><option>试用冻结</option></select><button>查询</button></div>
       <p data-testid="admin-trial-conversion-workbench-query-status" data-state="success">共 1 条；来源已更新</p>
     </section>
-    <section class="card" data-testid="shared-trial-conversion-workbench-data-table"><table data-testid="data-table"><thead><tr><th>机构</th><th>试用配置</th><th>使用与投诉</th><th>资格</th><th>操作</th></tr></thead><tbody>
+    <section class="card"><table data-testid="data-table"><thead><tr><th>机构</th><th>试用配置</th><th>使用与投诉</th><th>资格</th><th>操作</th></tr></thead><tbody>
       <tr data-testid="admin-trial-conversion-workbench-row"><td>Acme 短信<br><span class="muted">TENANT-42 / Alice / SaaS</span></td><td>TRIAL-SNAPSHOT-V1-4234567890ABCDEF<br>500 条 · 09-01—09-30</td><td>消息 2 / 成功 50% / 投诉 1<br><span class="muted">COMPLETE · 09-07 12:00</span></td><td><span class="tag">可转正式</span></td><td><button class="secondary" data-testid="admin-trial-conversion-workbench-row-analysis" onclick="show('analysis')">试用分析</button> <button class="secondary" data-testid="admin-trial-conversion-workbench-row-adjust" onclick="show('adjustment')">调整试用</button> <button data-testid="admin-trial-conversion-workbench-row-convert" onclick="show('conversion')">转正式</button></td></tr>
-      <tr data-testid="table-empty" hidden><td colspan="5"><span data-testid="shared-trial-conversion-workbench-table-empty">没有符合条件的试用机构</span></td></tr>
+      <tr data-testid="table-empty" hidden><td colspan="5">没有符合条件的试用机构</td></tr>
     </tbody></table></section>
     <section class="card" data-testid="tenant-contract-pricing-overview-contract-status"><h2>机构签约档案</h2><p>CONTRACTED · POSTPAID · SMS_STANDARD_V1 · MONTHLY</p></section>
   </main>
 </div>
 <div class="dialog" id="analysis"><section class="panel" data-testid="admin-trial-conversion-workbench-analysis-dialog"><h2>Acme 短信试用分析</h2><p>09-05：消息 2，成功 1，失败 1，投诉 1</p><p>状态：DELIVERED 1；FAILED 1</p><p>内容投诉 · PROCESSING</p><div class="actions"><button class="secondary" data-testid="admin-trial-conversion-workbench-analysis-close" onclick="hide('analysis')">关闭</button></div></section></div>
-<div class="dialog" id="adjustment"><section class="panel" data-testid="admin-trial-conversion-workbench-adjust-dialog"><h2>调整 Acme 短信（TENANT-42）的试用</h2><p>机构身份由工作台所选行绑定，不可编辑。</p><div data-testid="shared-trial-conversion-workbench-entity-form"><div class="form" data-testid="entity-form">
+<div class="dialog" id="adjustment"><section class="panel" data-testid="admin-trial-conversion-workbench-adjust-dialog"><h2>调整 Acme 短信（TENANT-42）的试用</h2><p>机构身份由工作台所选行绑定，不可编辑。</p><div class="form" data-testid="entity-form">
   <label>试用额度<input value="500"></label><label>有效期开始<input value="2026-09-01T00:00"></label><label>有效期结束<input value="2026-09-30T00:00"></label>
-</div></div><div class="actions"><span data-testid="shared-trial-conversion-workbench-form-cancel"><button class="secondary" data-testid="form-cancel" onclick="hide('adjustment')"><span data-testid="admin-trial-conversion-workbench-adjust-cancel">取消</span></button></span><span data-testid="shared-trial-conversion-workbench-form-submit"><button data-testid="form-submit">保存试用调整</button></span></div></section></div>
+</div><div class="actions"><button class="secondary" data-testid="form-cancel" onclick="hide('adjustment')"><span data-testid="admin-trial-conversion-workbench-adjust-cancel">取消</span></button><button data-testid="form-submit">保存试用调整</button></div></section></div>
 <div class="dialog" id="conversion"><section class="panel"><h2>转正式签约</h2><p data-testid="admin-trial-conversion-workbench-selected-tenant"><strong>Acme 短信（TENANT-42）</strong><br>机构身份不可编辑</p><div class="form" data-testid="entity-form">
   <label>计费模式<select data-testid="admin-contract-pricing-tenant-contract-billing-mode"><option>POSTPAID</option><option>PREPAID</option></select></label>
   <label>有效价目表<select data-testid="admin-contract-pricing-tenant-contract-price-version"><option>SMS_STANDARD_V1</option></select><button type="button" class="secondary" data-testid="admin-trial-conversion-workbench-price-retry">重试价目表</button></label>

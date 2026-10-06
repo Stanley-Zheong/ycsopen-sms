@@ -13,9 +13,7 @@ test('pw-p37-admin-contract C-P37-ADMIN-CONTRACT OBL-F-2-9-A pw-p37-billing-mode
   await expect(page.getByTestId('admin-trial-conversion-workbench-filters')).toBeVisible();
   await expect(page.getByTestId('admin-trial-conversion-workbench-query-status')).toHaveAttribute('data-state', 'success');
   await expect(page.getByTestId('data-table')).toContainText('TRIAL-SNAPSHOT-V1');
-  await expect(page.getByTestId('shared-trial-conversion-workbench-data-table')).toBeVisible();
   await expect(page.getByTestId('table-empty')).toHaveCount(1);
-  await expect(page.getByTestId('shared-trial-conversion-workbench-table-empty')).toHaveCount(1);
   await expect(page.getByTestId('admin-trial-conversion-workbench-row')).toContainText('TENANT-42');
 
   await page.getByTestId('admin-trial-conversion-workbench-row-analysis').click();
@@ -26,11 +24,8 @@ test('pw-p37-admin-contract C-P37-ADMIN-CONTRACT OBL-F-2-9-A pw-p37-billing-mode
   const adjustment = page.getByTestId('admin-trial-conversion-workbench-adjust-dialog');
   await expect(adjustment).toContainText('TENANT-42');
   await expect(adjustment.getByTestId('entity-form')).toBeVisible();
-  await expect(adjustment.getByTestId('shared-trial-conversion-workbench-entity-form')).toBeVisible();
   await expect(adjustment.getByTestId('form-submit')).toBeVisible();
-  await expect(adjustment.getByTestId('shared-trial-conversion-workbench-form-submit')).toBeVisible();
   await expect(adjustment.getByTestId('form-cancel')).toBeVisible();
-  await expect(adjustment.getByTestId('shared-trial-conversion-workbench-form-cancel')).toBeVisible();
   await adjustment.getByTestId('admin-trial-conversion-workbench-adjust-cancel').click();
   await expect(adjustment).toBeHidden();
 

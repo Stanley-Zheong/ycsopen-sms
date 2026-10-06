@@ -283,8 +283,7 @@ export default function TrialPrepaidAdminPage() {
                   试用机构加载失败，请使用刷新重试。
                 </p>
               )}
-              <div data-testid="admin-trial-conversion-workbench-table">
-                <div className="trial-workbench-table-wrap" data-testid="shared-trial-conversion-workbench-data-table">
+              <div className="trial-workbench-table-wrap" data-testid="admin-trial-conversion-workbench-table">
                   <table className="ratio-table trial-workbench-table" data-testid="data-table">
                     <thead>
                       <tr>
@@ -295,7 +294,7 @@ export default function TrialPrepaidAdminPage() {
                     <tbody>
                       {rows.length === 0 && (
                         <tr data-testid="table-empty"><td colSpan={9}>
-                          <span data-testid="shared-trial-conversion-workbench-table-empty">
+                          <span data-testid="admin-trial-conversion-workbench-empty">
                             {workbench.isError ? '试用机构暂不可用。' : workbench.isFetching ? '正在加载试用机构…' : '没有符合条件的试用机构，请调整筛选条件。'}
                           </span>
                         </td></tr>
@@ -328,7 +327,6 @@ export default function TrialPrepaidAdminPage() {
                       </tr>
                     ))}</tbody>
                   </table>
-                </div>
               </div>
             </>
           )}
@@ -386,15 +384,15 @@ export default function TrialPrepaidAdminPage() {
           <div data-testid="admin-trial-conversion-workbench-adjust-dialog" className="trial-workbench-dialog">
             <h2 id="trial-adjustment-title">调整 {candidateName(adjustmentTenant)} 的试用</h2>
             <p>机构身份由工作台所选行绑定，不可编辑。</p>
-            <div data-testid="shared-trial-conversion-workbench-entity-form"><div className="trial-prepaid-form" data-testid="entity-form">
+            <div className="trial-prepaid-form" data-testid="entity-form">
               <label>试用额度<input data-testid="admin-trial-prepaid-tenant-trial-quota" type="number" min="1" value={quota} onChange={(event) => setQuota(event.target.value)} /></label>
               <label>有效期开始<input data-testid="admin-trial-prepaid-tenant-trial-validity-start" type="datetime-local" value={startAt} onChange={(event) => setStartAt(event.target.value)} /></label>
               <label data-testid="admin-trial-prepaid-tenant-trial-validity">有效期结束<input data-testid="admin-trial-prepaid-tenant-trial-validity-end" type="datetime-local" value={endAt} onChange={(event) => setEndAt(event.target.value)} /></label>
-            </div></div>
+            </div>
             {adjustmentFeedback && <p role="alert" className="trial-prepaid-alert error">{adjustmentFeedback}</p>}
             <div className="trial-workbench-dialog-actions">
-              <span data-testid="shared-trial-conversion-workbench-form-cancel"><button type="button" className="button-secondary" data-testid="form-cancel" disabled={activateMutation.isPending} onClick={() => setAdjustmentTenant(null)}><span data-testid="admin-trial-conversion-workbench-adjust-cancel">取消</span></button></span>
-              <span data-testid="shared-trial-conversion-workbench-form-submit"><button type="button" data-testid="form-submit" disabled={activateMutation.isPending || !(Number(quota) > 0) || !startAt || !endAt || startAt >= endAt} onClick={() => activateMutation.mutate()}><span data-testid="admin-trial-prepaid-activate-trial">{activateMutation.isPending ? '保存中…' : '保存试用调整'}</span></button></span>
+              <button type="button" className="button-secondary" data-testid="form-cancel" disabled={activateMutation.isPending} onClick={() => setAdjustmentTenant(null)}><span data-testid="admin-trial-conversion-workbench-adjust-cancel">取消</span></button>
+              <button type="button" data-testid="form-submit" disabled={activateMutation.isPending || !(Number(quota) > 0) || !startAt || !endAt || startAt >= endAt} onClick={() => activateMutation.mutate()}><span data-testid="admin-trial-prepaid-activate-trial">{activateMutation.isPending ? '保存中…' : '保存试用调整'}</span></button>
             </div>
           </div>
         </ModalDialog>

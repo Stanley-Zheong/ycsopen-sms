@@ -98,7 +98,6 @@ test('pw-p37-admin-contract C-P37-ADMIN-CONTRACT OBL-F-2-9-A pw-p37-billing-mode
   await page.goto('/admin/tenant-trial-contracts');
   await expect(page.getByTestId('admin-contract-pricing-tenant-contract-page')).toBeVisible();
   await expect(page.getByTestId('admin-trial-conversion-workbench-row')).toHaveCount(2);
-  await expect(page.getByTestId('shared-trial-conversion-workbench-data-table')).toBeVisible();
   const filters = page.getByTestId('admin-trial-conversion-workbench-filters');
   await page.getByTestId('admin-trial-conversion-workbench-filter-keyword').fill('Acme');
   await page.getByTestId('admin-trial-conversion-workbench-filter-sales-owner').fill('Alice');
@@ -160,13 +159,10 @@ test('selected-row trial adjustment keeps tenant identity immutable', async ({ p
   await selectedRow.getByTestId('admin-trial-conversion-workbench-row-adjust').click();
   const dialog = page.getByTestId('admin-trial-conversion-workbench-adjust-dialog');
   await expect(dialog).toContainText('TENANT-42');
-  await expect(dialog.getByTestId('shared-trial-conversion-workbench-entity-form')).toBeVisible();
   await expect(dialog.getByTestId('entity-form')).toBeVisible();
   await dialog.getByTestId('admin-trial-prepaid-tenant-trial-quota').fill('600');
   await expect(dialog.getByTestId('form-submit')).toBeEnabled();
-  await expect(dialog.getByTestId('shared-trial-conversion-workbench-form-submit')).toBeVisible();
   await expect(dialog.getByTestId('form-cancel')).toBeEnabled();
-  await expect(dialog.getByTestId('shared-trial-conversion-workbench-form-cancel')).toBeVisible();
   await dialog.getByTestId('admin-trial-conversion-workbench-adjust-cancel').click();
   await expect(dialog).toBeHidden();
 });
@@ -185,7 +181,6 @@ test('workbench hides stale rows on error and retry restores the exact table con
   await expect(page.getByTestId('admin-trial-conversion-workbench-row')).toHaveCount(0);
   await expect(page.getByTestId('data-table')).toBeVisible();
   await expect(page.getByTestId('table-empty')).toBeVisible();
-  await expect(page.getByTestId('shared-trial-conversion-workbench-table-empty')).toBeVisible();
   await page.getByTestId('admin-trial-conversion-workbench-filters').getByTestId('query-refresh').click();
   await expect(page.getByTestId('admin-trial-conversion-workbench-row')).toHaveCount(1);
 });
