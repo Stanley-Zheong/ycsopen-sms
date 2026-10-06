@@ -11,13 +11,17 @@
       "admin-tenant-qualification-tenants-approval-result",
       "tenant-tenant-access-api-keys-page",
       "tenant-tenant-access-api-keys-table",
-      "tenant-tenant-access-api-keys-secret-dialog",
+      "tenant-tenant-access-api-keys-secret-once",
       "tenant-tenant-access-api-keys-audits-section"
     ],
     "sources": [
       {
         "path": ".planning/changes/issue-121-tenant-onboarding-access/UI-ELEMENTS.md",
-        "sha256": "243d8e631d6c0d99cd0dead7439a02075cbeb763d43196f16793622dcc68174d"
+        "sha256": "7c1b3f9a66cf29cd2536256d9c71fc70d886cd14185225a7c991f84fb0aa4d73"
+      },
+      {
+        "path": ".planning/changes/issue-121-tenant-onboarding-access/TEST-MATRIX.md",
+        "sha256": "2bd39d6265bcc1be3664a1ad65ca188b3d7afefca58e1292ac8f18d80be0c1ab"
       }
     ]
   },
@@ -31,13 +35,13 @@
       "admin-tenant-qualification-tenants-approval-result",
       "tenant-tenant-access-api-keys-page",
       "tenant-tenant-access-api-keys-table",
-      "tenant-tenant-access-api-keys-secret-dialog",
+      "tenant-tenant-access-api-keys-secret-once",
       "tenant-tenant-access-api-keys-audits-section"
     ],
     "sources": [
       {
         "path": "web/src/router/routes.tsx",
-        "sha256": "bb19d18ba41c5fe312d8f0aae67cd7c28108008f706fb14d77cfb0dc04cc69ba"
+        "sha256": "450f0298dbb6b473aeb37893ec85a73178fefd7c0c837586fa1436f8e5740a17"
       },
       {
         "path": "web/src/components/layout/TenantLayout.tsx",
@@ -49,7 +53,7 @@
       },
       {
         "path": "web/src/pages/tenant/TenantApiKeysPage.tsx",
-        "sha256": "b020f982e4b14684df6638945735e48a439b1b9739e82465793979b5d2b7d1a1"
+        "sha256": "341ac4a7d51bae701720c66ac8dcf886077afcba076024e5855d6e3fee34740d"
       },
       {
         "path": "web/src/api/tenantAccessApi.ts",
@@ -61,7 +65,7 @@
       },
       {
         "path": "web/src/components/common/ModalDialog.tsx",
-        "sha256": "cc6bd581aca7bceea1d8a9ae49357b63659c60556bfb45992801d28d6100bce2"
+        "sha256": "c7cfc0d46b7f71aee7a77f898fe30b261ad032b0f5d39624bf5c4c0e223dafb9"
       },
       {
         "path": "web/src/components/common/ActionReasonDialog.tsx",
@@ -71,6 +75,13 @@
   },
   "playwright": {
     "evidence_kind": "production",
+    "test_ids": [
+      "admin-tenant-qualification-tenants-approval-result",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-api-keys-audits-section",
+      "tenant-tenant-access-api-keys-table"
+    ],
     "case_ids": [
       "C-ISSUE-121-APPROVAL-RESULT",
       "C-ISSUE-121-API-KEY-LIFECYCLE",
@@ -81,7 +92,7 @@
     "sources": [
       {
         "path": "web/test/scripts/issue-121-tenant-onboarding-access.spec.ts",
-        "sha256": "a100a87f3fa9c1fd896a39219bf9953a9b6f5d949751a1bbab9e6443cde33a81"
+        "sha256": "a43b8e36f8bf413449de4807f2bd4ff2babca2a1d66df8107803bf9b1fded297"
       }
     ]
   },

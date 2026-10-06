@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long> {
@@ -49,18 +48,19 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
     Optional<SignatureAuthenticationProjection> findSignatureAuthenticationByAppKey(@Param("appKey") String appKey);
 
     /**
-     * Records recent successful use without writing on every authenticated request. The caller
-     * supplies a UTC cutoff so the update remains a single atomic statement under concurrency.
+     * Records recent successful use without writing on every authenticated request. Both the
+     * stored value and throttle cutoff use the database UTC clock, keeping the atomic comparison
+     * independent of the connection session time zone.
      */
     @Modifying
     @Transactional
     @Query(value = """
             UPDATE tenant_api_keys
-               SET last_used_time = CURRENT_TIMESTAMP
+               SET last_used_time = UTC_TIMESTAMP
              WHERE id = :id
-               AND (last_used_time IS NULL OR last_used_time < :cutoff)
+               AND (last_used_time IS NULL OR last_used_time < UTC_TIMESTAMP - INTERVAL 1 MINUTE)
             """, nativeQuery = true)
-    int touchLastUsedTime(@Param("id") Long id, @Param("cutoff") LocalDateTime cutoff);
+    int touchLastUsedTime(@Param("id") Long id);
 
     interface AuthenticationProjection {
         Long getId();

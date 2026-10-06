@@ -46,9 +46,9 @@ class Phase09TenantCredentialMySqlTest {
  @AfterAll static void stop(){if(mysql!=null)mysql.close();}
  @Autowired JdbcTemplate jdbc; @Autowired TenantApiKeyService apiKeys; @Autowired TenantProtocolCredentialService cmpp; @Autowired TestEvents events; @Autowired TestTenantApiKeyRepository repository; @Autowired TenantCredentialSecretProtectionService protection;
  @BeforeEach void seed(){
- // Keep the fixture tenant-scoped and deterministic. Credential rows must be
-  // removed before the actor rows and tenant are recreated for each test.
-  jdbc.update("DELETE FROM privileged_operation_audits WHERE tenant_id=? AND resource_type=?",9001L,"TENANT_API_KEY");
+  // Credential rows must be removed before the actor rows and tenant are recreated.
+  // Privileged audit rows are append-only, so assertions below scope themselves
+  // to the resource IDs created by the current test instead of deleting history.
   jdbc.update("DELETE FROM tenant_api_keys WHERE tenant_id=?",9001L);
   jdbc.update("DELETE FROM tenant_protocol_credentials WHERE tenant_id=?",9001L);
   jdbc.update("DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username IN ('phase09-admin','phase09-dev'))");
@@ -82,7 +82,9 @@ class Phase09TenantCredentialMySqlTest {
           """,9001L,"TENANT_API_KEY");
 
   assertThat(plan.get("key")).isEqualTo("idx_audit_tenant_resource_id");
-  assertThat(apiKeys.auditTrail(dev)).extracting(TenantApiKeyAuditResponse::operation)
+  assertThat(apiKeys.auditTrail(dev).stream()
+          .filter(entry->String.valueOf(created.id()).equals(entry.resourceId())).toList())
+          .extracting(TenantApiKeyAuditResponse::operation)
           .containsExactly("TENANT_API_KEY_REVOKE","TENANT_API_KEY_CREATE");
  }
  @Test void createdIpv6CidrSurvivesRepositoryProjectionAndAuthenticates(){
@@ -107,7 +109,22 @@ class Phase09TenantCredentialMySqlTest {
   authenticator.authenticate(request,body.getBytes(StandardCharsets.UTF_8));
 
   assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID)).isEqualTo(9001L);
-  assertThat(apiKeys.list(dev)).singleElement().satisfies(row->assertThat(row.lastUsedTime()).isNotNull());
+  var firstUse=jdbc.queryForObject("SELECT last_used_time FROM tenant_api_keys WHERE id=?",LocalDateTime.class,created.id());
+  jdbc.execute("SET time_zone = '+08:00'");
+  try {
+   assertThat(repository.touchLastUsedTime(created.id())).isZero();
+   jdbc.update("UPDATE tenant_api_keys SET last_used_time=UTC_TIMESTAMP - INTERVAL 61 SECOND WHERE id=?",created.id());
+   var staleUse=jdbc.queryForObject("SELECT last_used_time FROM tenant_api_keys WHERE id=?",LocalDateTime.class,created.id());
+   assertThat(repository.touchLastUsedTime(created.id())).isOne();
+   var refreshedUse=jdbc.queryForObject("SELECT last_used_time FROM tenant_api_keys WHERE id=?",LocalDateTime.class,created.id());
+   assertThat(firstUse).isNotNull();
+   assertThat(refreshedUse).isAfter(staleUse);
+   assertThat(apiKeys.list(dev)).singleElement().satisfies(row->{
+    assertThat(row.lastUsedTime()).isBetween(Instant.now().minusSeconds(5),Instant.now().plusSeconds(5));
+   });
+  } finally {
+   jdbc.execute("SET time_zone = '+00:00'");
+  }
  }
  @Test void phase09MigrationNamespacesAreDistinct(){assertThat("V1800__tenant_access_api_key_metadata.sql").startsWith("V1800");assertThat("V1801__tenant_access_cmpp_metadata.sql").startsWith("V1801");}
  private long lookup(String username){return jdbc.queryForObject("SELECT id FROM users WHERE username=?",Long.class,username);}

@@ -260,7 +260,8 @@ describe('tenant access creation forms', () => {
     render(<TenantApiKeysPage />);
 
     expect(await screen.findByTestId('tenant-tenant-access-api-keys-secret-mask')).toHaveTextContent('******');
-    expect(screen.getByTestId('tenant-tenant-access-api-keys-last-used-time')).not.toHaveTextContent('—');
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-last-used-time'))
+      .toHaveTextContent('2026/10/5 18:30:00');
     fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
     const dialog = screen.getByTestId('tenant-tenant-access-api-keys-revoke-dialog');
     expect(dialog).toHaveTextContent('integration');

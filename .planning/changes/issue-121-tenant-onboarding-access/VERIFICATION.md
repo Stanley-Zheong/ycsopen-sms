@@ -3,7 +3,7 @@
 ## Repaired-source local checks
 
 - `npm --prefix web ci` — PASS on 2026-10-06; 357 packages installed from the lockfile.
-- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` — PASS, 24 tests with 0 failures, errors, or skips.
+- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` — PASS, 25 tests with 0 failures, errors, or skips.
 - `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` — PASS, 3 files and 30 tests.
 - `npm --prefix web test` — the pre-rereview pass covered 50 files and 234
   tests. A later full rerun on the saturated local worker exceeded the shared
@@ -41,6 +41,19 @@ PR 126 run `37489547230` supplied partial repaired-source evidence:
   non-deterministic `KeyLifecycleServiceTest` concurrency failure.
 
 The fixture isolation and shared-backdrop defects are repaired. A fresh
+run `37491968246` then proved:
+
+- the full Web job passed;
+- deterministic Issue 121 Chrome, complaint Chrome, and fresh plus repeated
+  Docker release all passed;
+- Core executed 1,031 tests with zero errors and only the intentionally open
+  final-delivery checklist failure; `KeyLifecycleServiceTest` passed 10/10;
+- Phase09 started all four tests but the attempted audit cleanup produced three
+  errors because privileged audit rows are append-only, so Phase08 did not run.
+
+The audit oracle now filters by the resource ID created by the current test,
+without mutating history. The subsequent complete PR discussion also prompted
+database-UTC throttling and explicit-offset last-use projection. A fresh
 pull-request head must still prove:
 
 - the full Java 21 suite;

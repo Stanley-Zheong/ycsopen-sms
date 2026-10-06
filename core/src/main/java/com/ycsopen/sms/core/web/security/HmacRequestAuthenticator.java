@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.Locale;
@@ -24,8 +22,6 @@ import java.util.Locale;
 @Service
 public class HmacRequestAuthenticator {
     private static final Logger log = LoggerFactory.getLogger(HmacRequestAuthenticator.class);
-    private static final long LAST_USED_WRITE_INTERVAL_MINUTES = 1L;
-
     private final TenantApiKeyRepository apiKeys;
     private final HmacSignatureVerifier signatures;
     private final TenantCredentialSecretProtectionService secrets;
@@ -87,8 +83,7 @@ public class HmacRequestAuthenticator {
 
     private void recordSuccessfulUse(Long apiKeyId) {
         try {
-            apiKeys.touchLastUsedTime(apiKeyId,
-                    LocalDateTime.now(ZoneOffset.UTC).minusMinutes(LAST_USED_WRITE_INTERVAL_MINUTES));
+            apiKeys.touchLastUsedTime(apiKeyId);
         } catch (RuntimeException failure) {
             // Usage telemetry must not turn an otherwise valid, nonce-consumed request into a
             // client-visible authentication failure. The repository update is intentionally

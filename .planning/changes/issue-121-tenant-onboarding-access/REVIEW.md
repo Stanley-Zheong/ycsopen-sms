@@ -53,7 +53,22 @@ a shared-modal integration regression: the complaint action dialog had both a
 legacy and a shared backdrop. The same run's real MySQL lane exposed fixture
 leakage because API-key audit rows survived between Phase09 test methods. The
 implementation now has one configurable shared backdrop with direct-click and
-pending guards, and Phase09 clears only its owned tenant/resource audit rows in
-`@BeforeEach`. Focused tests, build, diff hygiene, and a further independent
-rereview found no blocker, high, or medium issue. Fresh provider proof remains
-the completion boundary.
+pending guards. Run `37491968246` proved that fix through both Issue 121 and
+complaint Chrome coverage plus repeated Docker release, while also proving the
+audit table rejects deletion by contract. Phase09 therefore retains append-only
+history and limits its exact audit assertion to the resource ID created by the
+current method.
+
+The complete PR discussion also identified two last-use findings missed by the
+earlier rereview: the throttle mixed a JVM UTC cutoff with the MySQL session
+clock, and the response exposed an offset-free `LocalDateTime`. The repository
+now performs both update and one-minute comparison with `UTC_TIMESTAMP`; the
+service interprets the canonical UTC `DATETIME` as `Instant`, and DTO, unit, and
+Chrome assertions require the explicit-offset wire/display contract. Fresh
+provider proof and another independent rereview remain the completion boundary.
+
+The next independent rereview found no blocker, high, or medium issue in those
+implementation and contract repairs. Its sole blocker was the deliberately
+stale production execution report, which cannot be truthfully regenerated
+until the repaired source has a pushed commit and provider Chrome run. That
+report/commit/checksum binding remains the only open review item.

@@ -48,8 +48,7 @@ class HmacRequestAuthenticatorTest {
                 "{\"submitId\":\"SUBMIT-1\",\"phoneNumber\":\"13900000002\"}".getBytes(StandardCharsets.UTF_8)))
                 .isInstanceOf(HmacRequestAuthenticator.HmacAuthenticationException.class)
                 .hasMessage("签名校验失败");
-        verify(apiKeys, times(1)).touchLastUsedTime(org.mockito.ArgumentMatchers.eq(19L),
-                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class));
+        verify(apiKeys, times(1)).touchLastUsedTime(19L);
     }
 
     @Test

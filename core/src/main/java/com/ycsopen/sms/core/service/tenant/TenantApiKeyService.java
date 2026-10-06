@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
 
@@ -43,7 +46,7 @@ public class TenantApiKeyService {
                 r.getInt("rate_limit_per_sec"), r.getInt("rate_limit_per_min"),
                 r.getInt("rate_limit_per_hour"), r.getInt("rate_limit_per_day"),
                 r.getTimestamp("expire_time") == null ? null : r.getTimestamp("expire_time").toLocalDateTime(),
-                r.getTimestamp("last_used_time") == null ? null : r.getTimestamp("last_used_time").toLocalDateTime()), tenant);
+                utcInstant(r, "last_used_time")), tenant);
     }
 
     @Transactional(readOnly = true)
@@ -114,7 +117,11 @@ public class TenantApiKeyService {
     private char[] randomSecret() { byte[] value = new byte[32]; random.nextBytes(value); return Base64.getUrlEncoder().withoutPadding().encodeToString(value).toCharArray(); }
     /** Keep numeric IDs lossless when the browser sends them back as JSON numbers. */
     private long positiveId() { return random.nextLong(1, 9_000_000_000_000_000L); }
-    private static TenantApiKeyResponse view(long id,String key,String name,String description,String status,String ips,int s,int m,int h,int d,LocalDateTime exp,LocalDateTime last) { return new TenantApiKeyResponse(id,key,name,description,status,ips,s,m,h,d,exp,last,"******",null); }
+    private static Instant utcInstant(ResultSet resultSet, String column) throws SQLException {
+        LocalDateTime value = resultSet.getObject(column, LocalDateTime.class);
+        return value == null ? null : value.toInstant(ZoneOffset.UTC);
+    }
+    private static TenantApiKeyResponse view(long id,String key,String name,String description,String status,String ips,int s,int m,int h,int d,LocalDateTime exp,Instant last) { return new TenantApiKeyResponse(id,key,name,description,status,ips,s,m,h,d,exp,last,"******",null); }
     private void audit(long actor,long id,String op) { audits.append(new OperationAuditService.AuditCommand(actor,"TENANT_API_KEY_"+op,"TENANT_API_KEY",String.valueOf(id),"INTERNAL","/tenant/api/keys","{}","SUCCESS",200,"internal",null,0)); }
     private void publishAfterCommit(TenantCredentialRevokedEvent event) {
         if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {

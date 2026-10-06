@@ -216,7 +216,7 @@ test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES OBL-ISSUE-121-PAGE-STATES
   state.keys = [{ ...safeKey }];
   await page.getByTestId('tenant-tenant-access-api-keys-retry').click();
   await expect(page.getByTestId('tenant-tenant-access-api-keys-row')).toBeVisible();
-  await expect(page.getByTestId('tenant-tenant-access-api-keys-last-used-time')).not.toHaveText('—');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-last-used-time')).toHaveText('2026/10/5 18:30:00');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   expect(await page.evaluate(() => {
     const legacy = document.createElement('section');

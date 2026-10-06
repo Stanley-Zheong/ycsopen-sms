@@ -31,8 +31,10 @@ Accepted
 
 A successful full HTTP HMAC verification attempts one atomic
 `last_used_time` update when the stored value is absent or older than one
-minute. Invalid signatures never update it. The timestamp is operational
-telemetry rather than part of the authentication decision, so a write failure
-is logged without converting a valid request whose nonce has already been
-consumed into an authentication failure. A later successful request repairs
-the timestamp.
+minute. The update and cutoff both use MySQL `UTC_TIMESTAMP`, so a connection
+session time zone cannot skew or suppress the throttle window. The stored UTC
+`DATETIME` is projected as an ISO-8601 `Instant` with an explicit `Z` offset.
+Invalid signatures never update it. The timestamp is operational telemetry
+rather than part of the authentication decision, so a write failure is logged
+without converting a valid request whose nonce has already been consumed into
+an authentication failure. A later successful request repairs the timestamp.

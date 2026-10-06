@@ -12,6 +12,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -26,10 +28,11 @@ import static org.mockito.Mockito.when;
 /** OBL-F-2-6-A/B lifecycle, tenant isolation, audit, and secret projection checks. */
 class TenantApiKeyServiceTest {
     private TenantApiKeyService service;
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void setUp() {
-        JdbcTemplate jdbc = new JdbcTemplate(new EmbeddedDatabaseBuilder()
+        jdbc = new JdbcTemplate(new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2).generateUniqueName(true).build());
         jdbc.execute("CREATE TABLE users (id BIGINT PRIMARY KEY, username VARCHAR(50), user_type VARCHAR(20), tenant_id BIGINT)");
         jdbc.execute("""
@@ -60,6 +63,20 @@ class TenantApiKeyServiceTest {
                 .thenReturn(new byte[]{1, 2, 3, 4});
         service = new TenantApiKeyService(jdbc, protection, new OperationAuditService(jdbc),
                 mock(ApplicationEventPublisher.class));
+    }
+
+    @Test
+    void returnsLastUsedTimeAsAnExplicitUtcInstant() throws Exception {
+        var created = service.create(11L, new TenantApiKeyCreateRequest("wire-time", "synthetic",
+                LocalDateTime.now().plusDays(1), null, 10, 100, 1_000, 10_000));
+        jdbc.update("UPDATE tenant_api_keys SET last_used_time=? WHERE id=?",
+                Timestamp.valueOf("2026-10-05 10:30:00"), created.id());
+
+        var listed = service.list(11L).getFirst();
+
+        assertThat(listed.lastUsedTime()).isEqualTo(Instant.parse("2026-10-05T10:30:00Z"));
+        assertThat(new ObjectMapper().findAndRegisterModules().writeValueAsString(listed))
+                .contains("\"lastUsedTime\":\"2026-10-05T10:30:00Z\"");
     }
 
     @Test

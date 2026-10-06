@@ -179,7 +179,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/invoices', element: <TenantStatementsInvoicesPage /> },
       { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
-      { path: 'config', element: <Navigate to="/tenant/api/keys" replace /> },
+      { path: '/tenant/config', element: <Navigate to="/tenant/api/keys" replace /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },
       { path: '/tenant/unsubscribes', element: <TenantUnsubscribesPage /> },
       { path: '/tenant/shortlink', element: <TenantShortLinkPage /> },
