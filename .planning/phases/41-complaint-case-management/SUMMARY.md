@@ -1,6 +1,6 @@
 # Phase 41 Summary
 
-Status: original Phase 41 delivery is complete. Issue `#124` is an active amendment for single-case context, append-only history, and concurrency feedback; its fresh quality-gate evidence supersedes the original complaint-page evidence only after implementation.
+Status: Phase 41 and the Issue `#124` single-case-context amendment are implemented. The amendment's checksum-bound Google Chrome evidence supersedes the original complaint-page browser evidence.
 
 Implemented:
 
@@ -35,6 +35,15 @@ Issue `#66` closure verification on 2026-10-02:
 - PR run `36967118021` `Core / Java 21`: PASS, including the full backend suite.
 - PR run `36967118021` `Docker release / Google Chrome`: PASS, including fresh/repeated Docker release and complaint Playwright 5/5 with `expected=5`, `unexpected=0`, `flaky=0`.
 - The raw Chrome JSON artifact is preserved in `EVIDENCE/playwright-complaint-case-raw.json`; its normalized execution record and source hashes are checked by the Phase 41 production UI contract.
+
+Issue `#124` amendment verification on 2026-10-06:
+
+- Focused backend matrix: PASS, 37 tests covering migration, service, transaction races, authorization, controller, and typed exception handling.
+- Focused React: PASS, 12 tests.
+- PR run `37403509270` `Web / Node 20`: PASS.
+- PR run `37403509270` `Docker release / Google Chrome`: PASS, including complaint Playwright 11/11 and fresh/repeated Docker release.
+- PR run `37403509270` `Phase 03 real integration`: PASS against MySQL, MinIO, and SoftHSM.
+- `EVIDENCE/playwright-complaint-case-report.json` binds the Google Chrome execution to commit `b402642ce5dcf0c129988091fc6e6074f93f42f5` and raw report SHA-256 `152642297a40e7bac02d4b33ea2294527f24b5dc50f82ffc18fe9cba8ce8ce1b`.
 
 Prior Phase 41 verification evidence:
 

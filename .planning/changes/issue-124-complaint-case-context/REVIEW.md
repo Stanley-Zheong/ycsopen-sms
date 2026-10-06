@@ -29,6 +29,6 @@ The final re-review additionally caught and closed over-eager migration nulling 
 
 ## Post-CI Review
 
-Verdict: `HIGH` delivery-gate finding remains open until the post-fix branded-Chrome run exists.
+Verdict: `PASS` after the post-fix branded-Chrome run.
 
-The bounded follow-up review found no implementation `BLOCKER`, `HIGH`, or `MEDIUM` in the shared modal, complaint backdrop, 40px selector, or regression tests. It did find that final Chrome/planning TODOs had been checked before executable evidence existed. Those items remain open for the next CI run; they may be checked only after the 11-test Chrome artifact and planning validation pass.
+The bounded follow-up review found no implementation `BLOCKER`, `HIGH`, or `MEDIUM` in the shared modal, complaint backdrop, 40px selector, or regression tests. It did find that final Chrome/planning TODOs had been checked before executable evidence existed; they were reopened before the browser fix was pushed. Run `37403509270` then passed all 11 complaint tests in Google Chrome 154, passed the JSON evidence check, and passed fresh/repeated Docker release. The checksum-bound planning artifacts are now ready for the final provider validation.

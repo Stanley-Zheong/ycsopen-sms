@@ -20,7 +20,7 @@
     "sources": [
       {
         "path": ".planning/phases/41-complaint-case-management/UI-ELEMENTS.md",
-        "sha256": "8e7abf470f3a95e6f14dc56b1c1c2da332a2f013890e66cfcd89aa71e24dd4dd"
+        "sha256": "98a04424595f0521164a2616e102cf557b83bb36c0b813a98d95199b1df1bd69"
       }
     ]
   },
@@ -105,7 +105,7 @@
       },
       {
         "path": "web/src/pages/admin/complaints/AdminComplaintsPage.tsx",
-        "sha256": "332693cc8081c7ff8fe3b9a469c681cdcdf5a8f46029c7e9f0060598ced1e01e"
+        "sha256": "778d12dbe5bbb8807e0a75ac09fe4dc048c83fd1c34f06395f594d1eeedfa4ac"
       },
       {
         "path": "web/src/pages/admin/complaints/AdminComplaintAnalyticsPage.tsx",
@@ -113,7 +113,11 @@
       },
       {
         "path": "web/src/api/complaintCaseApi.ts",
-        "sha256": "321cb6d43434260b2db331ecb04de63128ddd5b32b30ec88314babcce5767e62"
+        "sha256": "b1aee78898cfa9b8fbeca8dd6dd7a4999ea1670a6c0fd29185fae18a5cb2f006"
+      },
+      {
+        "path": "web/src/components/common/ModalDialog.tsx",
+        "sha256": "1b09b0f9381c5f7794cba6b96c1013369b7a0cfd6d43d3002038ce7ddb77533d"
       }
     ]
   },
@@ -134,18 +138,18 @@
     "sources": [
       {
         "path": "web/test/scripts/complaint-case.spec.ts",
-        "sha256": "26dd67bf1a7cd8572852ee9c2829e1cc074b7ee5a52bd9127e727ff4dc1c1c37"
+        "sha256": "2b8092e6d58f2c0d3c294d63fa17a6d39044a16c0c6b7ef71ef16a01dc55c958"
       }
     ]
   },
   "execution": {
-    "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
-    "commit": "693317912641342261f6b7a790cb1d2086104f61",
+    "command": "npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json",
+    "commit": "b402642ce5dcf0c129988091fc6e6074f93f42f5",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/41-complaint-case-management/EVIDENCE/playwright-complaint-case-report.json",
-      "sha256": "83fbbcafc3df37b8c342b7665389e8f074c378c2cda259f956a613f58fb261d9"
+      "sha256": "f92ae118c8022f812440fb04d4b919311409f112635868eda4f8b764baf674fc"
     }
   }
 }

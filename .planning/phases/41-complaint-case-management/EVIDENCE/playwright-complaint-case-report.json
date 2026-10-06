@@ -1,6 +1,6 @@
 {
-  "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
-  "commit": "693317912641342261f6b7a790cb1d2086104f61",
+  "command": "npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json",
+  "commit": "b402642ce5dcf0c129988091fc6e6074f93f42f5",
   "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
   "result": "PASS",
   "cases": [
@@ -16,12 +16,12 @@
     "C-P41-STATE"
   ],
   "raw_stats": {
-    "startTime": "2026-10-02T05:02:48.136Z",
-    "duration": 11852.176,
-    "expected": 5,
+    "startTime": "2026-10-06T02:19:35.581Z",
+    "duration": 13751.547999999999,
+    "expected": 11,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   },
-  "raw_sha256": "c056b88ae32e2ad0f6298f80f1e694f410efda8ada379a3ce49dcd87d4ce651a"
+  "raw_sha256": "152642297a40e7bac02d4b33ea2294527f24b5dc50f82ffc18fe9cba8ce8ce1b"
 }

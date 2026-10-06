@@ -12,7 +12,7 @@
 | Chrome Playwright | `npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json` | Pass | PASS, 5/5, in PR run `36967118021` with `/usr/bin/google-chrome`; raw JSON artifact preserved and checked non-empty |
 | Backend contract | `mvn -f core/pom.xml -Dtest=ComplaintCaseServiceTest,ComplaintCaseControllerTest test` | Pass | PASS, 12 tests, using the pre-populated public Maven cache in offline mode |
 | Issue 124 focused React | `npm --prefix web test -- --run test/unit/complaint-case.test.tsx` | Pass | PASS, 1 file / 12 tests, after the first CI feedback fix. |
-| Issue 124 Google Chrome | `npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --workers=1` | Pass | Local discovery PASS, 11 tests. First Google Chrome 154 run passed 9/11 and exposed control-height/focus findings; fixes are committed for a final CI rerun. |
+| Issue 124 Google Chrome | `npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json` | Pass | PASS, 11/11 with no skipped, unexpected, or flaky tests, Google Chrome 154, run `37403509270`. |
 | Issue 124 backend timeline/state | Focused backend matrix recorded in the Issue 124 verification package | Pass | PASS, 37 tests including service, controller, authorization, exception, migration, and transaction coverage. |
 | Issue 124 dependency install | `npm --prefix web ci` | Pass | PASS, 357 packages; the existing 8 dependency advisories remain visible. |
 | Issue 124 focused migration/transaction | Focused backend matrix recorded in the Issue 124 verification package | Pass | PASS within the 37-test matrix. |
@@ -21,7 +21,7 @@
 | Issue 124 frontend build | `npm --prefix web run build` | Pass | PASS on the final local diff; the existing bundle-size warning remains. |
 | Issue 124 full backend | `mvn -f core/pom.xml test` | Pass | First Java 21 CI ran 1,022 tests; the only failure was the then-open Issue 124 delivery TODO. Final rerun follows the now-empty TODO. |
 | Issue 124 diff hygiene | `git diff --check` | Pass | PASS on the final local diff. |
-| Issue 124 scoped release boundary | Complaint-management Google Chrome lane; no Compose/runtime/release identity changed | Pass or verified boundary | Final branded-Chrome execution and planning-validator evidence are assigned to PR CI. |
+| Issue 124 scoped release boundary | Complaint-management Google Chrome lane; no Compose/runtime/release identity changed | Pass or verified boundary | PASS, fresh/repeated Docker release in run `37403509270`; final planning validator follows the checksum evidence commit. |
 
 ## Merge Gate
 
