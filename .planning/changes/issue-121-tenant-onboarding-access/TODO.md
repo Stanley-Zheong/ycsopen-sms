@@ -8,5 +8,5 @@
 - [x] Add focused backend, frontend, and Google Chrome coverage.
 - [x] Run repository verification and record any environment boundaries.
 - [x] Complete independent review and resolve blocking findings.
-- [ ] Resolve the post-review CIDR, UTC, denied-state, audit-index, dialog, and last-use findings.
-- [ ] Execute fresh MySQL, real-service Google Chrome, production evidence-validator, and repository quality gates on the repaired source.
+- [x] Resolve the post-review CIDR, UTC, denied-state, audit-index, dialog, and last-use findings.
+- [x] Execute fresh MySQL, real-service Google Chrome, production evidence-validator, and repository quality gates on the repaired source.

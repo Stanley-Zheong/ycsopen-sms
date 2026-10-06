@@ -66,4 +66,4 @@ tenant-scoped HTTP API credentials from one production page.
 - [x] Implement explicit page, table, form, handoff, revoke, and audit states.
 - [x] Add focused backend, frontend, and Chrome coverage.
 - [x] Complete the quality gateway and independent review.
-- [ ] Re-close the quality gateway after the post-review implementation repairs and fresh evidence run.
+- [x] Re-close the quality gateway after the post-review implementation repairs and fresh evidence run.

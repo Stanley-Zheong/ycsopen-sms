@@ -1,85 +1,44 @@
 # Issue 121 Tenant Onboarding And API Access Verification
 
-## Repaired-source local checks
+## Local checks
 
 - `npm --prefix web ci` — PASS on 2026-10-06; 357 packages installed from the lockfile.
-- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` — PASS, 25 tests with 0 failures, errors, or skips.
-- `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` — PASS, 3 files and 30 tests.
-- `npm --prefix web test` — the pre-rereview pass covered 50 files and 234
-  tests. A later full rerun on the saturated local worker exceeded the shared
-  five-second timeout in both changed and unrelated files and was stopped
-  after eight minutes; the focused changed suite subsequently passed all 30
-  tests. This later attempt is not a product verdict; the clean provider Web
-  job remains authoritative for the final 237-test suite.
-- `npm --prefix web run build` — PASS, 306 modules; the existing chunk-size warning is non-failing.
-- `git diff --check` — PASS during implementation; it must be repeated after the final evidence update.
+- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` — PASS after the final `main` merge: 25 tests with zero failures, errors, or skips.
+- `mvn -f core/pom.xml -Dtest=FinalReleaseAcceptanceTest test` — PASS after sealing evidence and closing the delivery checkboxes: 5 tests with zero failures, errors, or skips.
+- `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` — PASS after the final `main` merge: 3 files and 30 tests.
+- `npm --prefix web run test:e2e -- tenant-qualification.spec.ts --list` — PASS: all 18 real-service browser cases are discoverable after fixture scoping.
+- `python3 -m unittest discover -s skills/flyway-migration/tests -p 'test_*.py'` — PASS: 6 tests. Before the renamed migration was created, the repository selector returned `NEXT=V6800` and `--check V6800` returned PASS for owner `issue-121-tenant-onboarding-access`.
+- `npm --prefix web run build` — PASS: 306 modules; the existing chunk-size warning is non-failing.
+- `git diff --check` — PASS after the base merge and before evidence sealing; repeated after final evidence changes.
 
-`mvn -f core/pom.xml test` executed 1,031 tests locally but is not a passing
-product verdict: 8 failures and 4 errors were confined to four infrastructure
-test classes. `Phase01ServiceHarnessProcessTest` requires Ruby, the
-`Phase08OwnedProcessTest` process-tree oracle cannot reap descendants in this
-worker, `ProductionMigrationCommandServicesFactoryTest` cannot obtain this
-worker's production migration configuration, and `FinalReleaseAcceptanceTest`
-correctly detected the still-open delivery checkboxes. The changed backend
-surface is green; the clean GitHub Ubuntu Core job remains the authoritative
-full-suite gate.
+The local worker has no Ruby executable, reachable Docker daemon, or browser
+runtime libraries, so it does not claim the provider-owned validator, Docker,
+MySQL, or Chrome gates.
 
-## Provider gates pending
+## Provider verification
 
-PR 126 run `37489547230` supplied partial repaired-source evidence:
+PR 126 run [`37499157472`](https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/37499157472) verified commit `6128e6fd9cd1588966d16da88f22be7ceb69543a` after merging the current `main`:
 
-- the complete Web job passed;
-- all five deterministic Issue 121 Google Chrome cases passed with zero
-  skipped, unexpected, or flaky cases;
-- Phase09 started all four MySQL tests and its EXPLAIN assertion passed, but
-  the audit case found rows retained from preceding fixture methods;
-- the Docker job reached the unrelated complaint Chrome case and exposed a
-  duplicate shared/legacy backdrop;
-- the change-package validator correctly rejected evidence still bound to the
-  superseded source commit;
-- Core was held open by the delivery checkboxes and also repeated the known
-  non-deterministic `KeyLifecycleServiceTest` concurrency failure.
+- Web passed 50 files and 243 tests, then built 306 modules.
+- Core executed 1,045 tests with zero errors and 36 conditional skips. Its only failure was `FinalReleaseAcceptanceTest.repositoryHasNoActiveUncheckedProjectTodos`, while the two evidence-dependent delivery checkboxes were deliberately still open; `KeyLifecycleServiceTest` passed 10/10.
+- The deterministic Issue 121 suite passed all five Google Chrome 154 cases with zero skipped, unexpected, or flaky results. Artifact `docker-release-37499157472` (ID `11429790507`) contains the raw JSON report with SHA-256 `4bf81161ec123de382176b34d213ba7647b4f8338d9ec04096de05c736cf042f`.
+- The Docker job passed layout, Issue 119 dashboard, Issue 121, and complaint Chrome coverage, then passed fresh, upgrade, and restart release lanes for the exact commit.
+- Phase08 real-service acceptance passed its wrapper test against Spring, MySQL, SoftHSM, MinIO, notification/inspection sandboxes, Vite, and installed Chrome. The wrapper executes the 18-case tenant qualification suite and rejects any failed Playwright result.
+- Phase09 passed 4/4 real-MySQL tests with zero skips, including IPv6 CIDR create-to-HMAC behavior, database-UTC last-use throttling under a non-UTC session, explicit-offset readback, append-only audit selection, and EXPLAIN selection of `idx_audit_tenant_resource_id` after migration V6800.
+- The real-integration proof found all nine named suites with more than zero tests and zero skips, failures, or errors.
+- Planning validator fixtures passed. The change-package validator then reported exactly the four deliberately stale execution-report errors and no structural, route, selector, source, matrix, or schema errors.
 
-The fixture isolation and shared-backdrop defects are repaired. A fresh
-run `37491968246` then proved:
-
-- the full Web job passed;
-- deterministic Issue 121 Chrome, complaint Chrome, and fresh plus repeated
-  Docker release all passed;
-- Core executed 1,031 tests with zero errors and only the intentionally open
-  final-delivery checklist failure; `KeyLifecycleServiceTest` passed 10/10;
-- Phase09 started all four tests but the attempted audit cleanup produced three
-  errors because privileged audit rows are append-only, so Phase08 did not run.
-
-The audit oracle now filters by the resource ID created by the current test,
-without mutating history. The subsequent complete PR discussion also prompted
-database-UTC throttling and explicit-offset last-use projection. A fresh
-pull-request head must still prove:
-
-- the full Java 21 suite;
-- Phase09 MySQL execution with more than zero tests, zero skips/failures/errors,
-  create-to-repository-to-HMAC IPv6 CIDR behavior, and EXPLAIN selection of
-  `idx_audit_tenant_resource_id`;
-- Phase08 real-service Google Chrome approval through API Key create, masked
-  readback, audit readback, and revoke against Spring, MySQL, SoftHSM, and Vite;
-- all five deterministic Issue 121 Google Chrome cases;
-- the change-package production evidence validator with fresh report and source
-  checksums;
-- fresh and repeated Docker release verification.
-
-## Local environment boundary
-
-The delivery worker is Debian 12 on ARM64. Ruby is absent, the Docker client
-cannot reach a daemon, and bundled Chromium cannot start because GTK/X11 shared
-libraries are absent. Consequently local Phase09, real-service Chrome,
-deterministic Chrome, Ruby validator, and Docker-release attempts do not provide
-success evidence. The provider Ubuntu jobs own those executable gates; no
-success is inferred from unavailable local capabilities.
+The fresh Chrome artifact has now replaced the stale report. Its normalized
+report and `ui-contract.json` have identical command, commit, config, result,
+case set, and checksum bindings. Closing the two evidence-dependent checkboxes
+removes the only Core failure; the next PR run is the authoritative final
+closed-checklist and production-validator verdict.
 
 ## Acceptance boundary
 
 The deterministic browser suite uses controlled API responses to exercise the
-real React routes, state transitions, selectors, and layout. Backend tests own
-authorization, tenant isolation, persistence, audit selection, shared IP/CIDR
-semantics, and secret-response shape. The separate real-service browser lane
-joins those boundaries for the approval-to-credential happy path.
+real React routes, state transitions, selectors, secret lifetime, and layout.
+Backend unit and MySQL tests own authorization, tenant isolation, persistence,
+audit selection, shared IP/CIDR semantics, and response shapes. The separate
+Phase08 real-service browser lane joins approval, API Key create, masked
+readback, audit readback, and revoke across the production service topology.

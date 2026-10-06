@@ -97,13 +97,13 @@
     ]
   },
   "execution": {
-    "command": "npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json",
-    "commit": "a86a89330490b04a99add169db52fb82d45f9785",
+    "command": "YCSOPEN_CHROME_PATH=/usr/bin/google-chrome PLAYWRIGHT_JSON_OUTPUT_NAME=issue-121-evidence/playwright-report.json npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json",
+    "commit": "6128e6fd9cd1588966d16da88f22be7ceb69543a",
     "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 154.0.8037.57",
     "result": "PASS",
     "report": {
       "path": ".planning/changes/issue-121-tenant-onboarding-access/EVIDENCE/playwright-issue-121-report.json",
-      "sha256": "096e7069843ecabc98d0e7f2554a5b47cbcc551f431941abed30860c01dc0252"
+      "sha256": "088f10ad5b041b894ebd8b6bca391dea06897e831bb1eabbe260173a5bf19c93"
     }
   }
 }

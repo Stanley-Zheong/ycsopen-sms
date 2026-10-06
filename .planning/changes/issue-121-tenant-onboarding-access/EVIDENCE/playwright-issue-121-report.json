@@ -1,48 +1,23 @@
 {
-  "recordedAt": "2026-10-05T15:39:56Z",
-  "verifiedCommit": "a86a89330490b04a99add169db52fb82d45f9785",
+  "recordedAt": "2026-10-06T16:54:04Z",
+  "command": "YCSOPEN_CHROME_PATH=/usr/bin/google-chrome PLAYWRIGHT_JSON_OUTPUT_NAME=issue-121-evidence/playwright-report.json npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json",
+  "commit": "6128e6fd9cd1588966d16da88f22be7ceb69543a",
+  "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 154.0.8037.57",
   "result": "PASS",
   "expected": 5,
   "unexpected": 0,
   "skipped": 0,
   "flaky": 0,
+  "durationMs": 10008.981,
   "project": "local-google-chrome",
-  "engine": "Google Chrome 154.0.8037.57",
-  "runtime": {
-    "os": "Ubuntu 24.04.5 LTS",
-    "architecture": "x64",
-    "playwright": "1.62.1"
-  },
-  "command": "npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json",
-  "durationMs": 8219.135,
-  "ci": {
-    "runId": 37334010539,
-    "runUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/37334010539",
-    "jobId": 111844130908,
-    "jobUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/37334010539/job/111844130908",
-    "artifact": {
-      "id": 11355661880,
-      "name": "docker-release-37334010539",
-      "digest": "sha256:43521caa760ba94783267e1fad936adfa784fd7314e3500c0c16d39d5bdbf463",
-      "expiresAt": "2026-10-19T15:39:55Z",
-      "rawReportSha256": "fdb59e77daf3824c97c1347d5485378c6330fb7647a1e5d18cce489230f9e3be"
-    }
-  },
-  "sourceSha256": {
-    "web/src/router/routes.tsx": "bb19d18ba41c5fe312d8f0aae67cd7c28108008f706fb14d77cfb0dc04cc69ba",
-    "web/src/components/layout/TenantLayout.tsx": "cfe4d393ce778ffb6ae0db0f912a8bf0579458ec796f0cbb2026ad48c67a1ce8",
-    "web/src/pages/admin/tenants/TenantListPage.tsx": "8bb0a90e993c39b80f3a0cc623453251c449cb4c985390fb1eb7cb8041fb0e09",
-    "web/src/pages/tenant/TenantApiKeysPage.tsx": "b020f982e4b14684df6638945735e48a439b1b9739e82465793979b5d2b7d1a1",
-    "web/src/api/tenantAccessApi.ts": "6b75705cb98cc0d37f1c48d0f9b36d86367fc8381c23148e70117c742fd17508",
-    "web/src/api/tenantQualificationApi.ts": "8fa241521f62db3ef6a318fdb82462c095ba626152073c615140d45ac800e803",
-    "web/src/components/common/ModalDialog.tsx": "cc6bd581aca7bceea1d8a9ae49357b63659c60556bfb45992801d28d6100bce2",
-    "web/src/components/common/ActionReasonDialog.tsx": "51481f1aece1a3f705584132166ed516f031504d88c29668c97a57f6f74b0f5a",
-    "web/src/styles/tenant-access.css": "f340822706f38829d3630652db4558fa408c8ed802c5162b3949382e5d68b31c",
-    "web/src/styles/tenant-qualification.css": "7b56acf1a31d343e162212cdcc26aaad6ee536bd40ff8a71f468bb9b329be39e",
-    "web/src/styles/modal-dialog.css": "028b03df69a4c9d3125934141fcd42b1d7c5d2120fa3a0c73ae167f20c5988d9",
-    "web/test/scripts/issue-121-tenant-onboarding-access.spec.ts": "a100a87f3fa9c1fd896a39219bf9953a9b6f5d949751a1bbab9e6443cde33a81"
-  },
   "cases": [
+    "C-ISSUE-121-APPROVAL-RESULT",
+    "C-ISSUE-121-API-KEY-LIFECYCLE",
+    "C-ISSUE-121-SECRET-SAFETY",
+    "C-ISSUE-121-TENANT-AUDIT",
+    "C-ISSUE-121-PAGE-STATES"
+  ],
+  "caseResults": [
     {
       "id": "C-ISSUE-121-APPROVAL-RESULT",
       "playwrightId": "pw-issue-121-approval-result",
@@ -74,10 +49,43 @@
       "status": "passed"
     }
   ],
+  "runtime": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "x64",
+    "playwright": "1.62.1",
+    "engine": "Google Chrome 154.0.8037.57"
+  },
+  "ci": {
+    "runId": 37499157472,
+    "runUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/37499157472",
+    "jobId": 112391430040,
+    "jobUrl": "https://github.com/Stanley-Zheong/ycsopen-sms/actions/runs/37499157472/job/112391430040",
+    "artifact": {
+      "id": 11429790507,
+      "name": "docker-release-37499157472",
+      "digest": "sha256:8e913a220229a555bccc3a84c3bf0121156aa0084d2d1ed7ca8e76301f712438",
+      "expiresAt": "2026-10-20T16:58:56Z",
+      "rawReportSha256": "4bf81161ec123de382176b34d213ba7647b4f8338d9ec04096de05c736cf042f"
+    }
+  },
+  "sourceSha256": {
+    "web/src/router/routes.tsx": "450f0298dbb6b473aeb37893ec85a73178fefd7c0c837586fa1436f8e5740a17",
+    "web/src/components/layout/TenantLayout.tsx": "cfe4d393ce778ffb6ae0db0f912a8bf0579458ec796f0cbb2026ad48c67a1ce8",
+    "web/src/pages/admin/tenants/TenantListPage.tsx": "8bb0a90e993c39b80f3a0cc623453251c449cb4c985390fb1eb7cb8041fb0e09",
+    "web/src/pages/tenant/TenantApiKeysPage.tsx": "341ac4a7d51bae701720c66ac8dcf886077afcba076024e5855d6e3fee34740d",
+    "web/src/api/tenantAccessApi.ts": "6b75705cb98cc0d37f1c48d0f9b36d86367fc8381c23148e70117c742fd17508",
+    "web/src/api/tenantQualificationApi.ts": "8fa241521f62db3ef6a318fdb82462c095ba626152073c615140d45ac800e803",
+    "web/src/components/common/ModalDialog.tsx": "c7cfc0d46b7f71aee7a77f898fe30b261ad032b0f5d39624bf5c4c0e223dafb9",
+    "web/src/components/common/ActionReasonDialog.tsx": "51481f1aece1a3f705584132166ed516f031504d88c29668c97a57f6f74b0f5a",
+    "web/src/styles/tenant-access.css": "f340822706f38829d3630652db4558fa408c8ed802c5162b3949382e5d68b31c",
+    "web/src/styles/tenant-qualification.css": "7b56acf1a31d343e162212cdcc26aaad6ee536bd40ff8a71f468bb9b329be39e",
+    "web/src/styles/modal-dialog.css": "f46c8018577df9f15bfb79040313a9ca4f366f04bb947dfd7e9944b3575b0142",
+    "web/test/scripts/issue-121-tenant-onboarding-access.spec.ts": "a43b8e36f8bf413449de4807f2bd4ff2babca2a1d66df8107803bf9b1fded297"
+  },
   "boundary": {
     "realReactDom": true,
     "businessApiRoutesIntercepted": true,
     "realServiceAcceptance": false,
-    "reason": "The browser contract proves rendered routes, action wiring, request signatures, state exposure, secret handoff, and layout against the real React DOM. Deterministic API interception keeps backend authorization, tenant isolation, persistence, and audit selection within the Java and real-integration gates."
+    "reason": "This deterministic browser report proves rendered routes, action wiring, state exposure, secret handoff, and layout against the real React DOM. Run 37499157472 separately passed the Phase08 real Spring/MySQL/SoftHSM/Vite/Chrome acceptance and Phase09 MySQL persistence gates."
   }
 }

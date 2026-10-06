@@ -32,10 +32,10 @@ dialog, real-service, evidence-validator, and last-use findings.
 
 ## Reopened final review
 
-The owner findings are being repaired on the rebased PR branch. Completion
-remains open until fresh local gates, provider MySQL/Google Chrome gates, the
-change-package production evidence validator, and a new independent review all
-pass on the repaired diff.
+The owner findings were repaired on the rebased PR branch. Completion remained
+open until fresh local gates, provider MySQL/Google Chrome gates, a fresh
+change-package execution artifact, and a new independent review could all be
+proved on the repaired diff.
 
 The first repaired-diff rereview found a remaining CSS-specificity collision,
 late mutation completion after a concurrent 403, and a missing writer for the
@@ -64,11 +64,22 @@ earlier rereview: the throttle mixed a JVM UTC cutoff with the MySQL session
 clock, and the response exposed an offset-free `LocalDateTime`. The repository
 now performs both update and one-minute comparison with `UTC_TIMESTAMP`; the
 service interprets the canonical UTC `DATETIME` as `Instant`, and DTO, unit, and
-Chrome assertions require the explicit-offset wire/display contract. Fresh
-provider proof and another independent rereview remain the completion boundary.
+Chrome assertions require the explicit-offset wire/display contract.
 
 The next independent rereview found no blocker, high, or medium issue in those
 implementation and contract repairs. Its sole blocker was the deliberately
 stale production execution report, which cannot be truthfully regenerated
 until the repaired source has a pushed commit and provider Chrome run. That
-report/commit/checksum binding remains the only open review item.
+provider boundary is now closed by run `37499157472`: Web, deterministic Issue
+121 Chrome, shared complaint Chrome, fresh/upgrade/restart Docker, Phase08 real
+service, Phase09 MySQL 4/4, and the nine-suite integration proof all passed.
+The normalized report preserves the raw artifact digest and binds the command,
+verified commit, Chrome configuration, five-case set, and reviewed source
+hashes. A final independent readback of this evidence and base-merge resolution
+then found no blocker, high, or medium issue. It independently re-downloaded
+the artifact, reproduced the raw and normalized report hashes, verified every
+manifest/source/case binding, confirmed that merged Issue 119 retains V6700
+unchanged while the unapplied Issue 121 migration moved to V6800, and checked
+the scoped Phase08 helper against all 18 serial cases. The final provider run
+remains the executable verdict for the newly closed checklist and report
+validator.
