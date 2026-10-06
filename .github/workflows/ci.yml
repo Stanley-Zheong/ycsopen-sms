@@ -232,9 +232,9 @@ jobs:
           YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
         run: |
           mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true \
-            -Dtest=Phase09TenantCredentialMySqlTest test
-          mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true \
             -Dtest=Phase08RealServicePlaywrightTest test
+          mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true \
+            -Dtest=Phase09TenantCredentialMySqlTest test
       - name: Prove every named real-integration suite executed
         run: |
           python3 - <<'PY'
