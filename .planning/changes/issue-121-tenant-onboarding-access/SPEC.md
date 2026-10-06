@@ -33,7 +33,7 @@ authentication now share one literal-IP/CIDR policy implementation.
   to the audit region and can be retried without hiding credential data.
 - Creation accepts only literal IPv4/IPv6 addresses and valid CIDR prefixes
   understood by the shared authentication matcher. The tenant/resource audit
-  lookup uses the V6700 composite index and retains the same response shape.
+  lookup uses the V6800 composite index and retains the same response shape.
 
 ## Verification Boundary
 

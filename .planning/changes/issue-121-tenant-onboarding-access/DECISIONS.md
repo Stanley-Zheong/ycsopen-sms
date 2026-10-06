@@ -38,3 +38,17 @@ Invalid signatures never update it. The timestamp is operational telemetry
 rather than part of the authentication decision, so a write failure is logged
 without converting a valid request whose nonce has already been consumed into
 an authentication failure. A later successful request repairs the timestamp.
+
+## DR-C121-003: Reserve A Non-Conflicting Migration Namespace
+
+### Status
+
+Accepted
+
+### Decision
+
+The Issue 119 statistics refresh package owns `V6700-V6799`, including its
+merged `V6700` migration. Issue 121 therefore owns `V6800-V6899`, and the
+tenant API Key audit lookup index is introduced by `V6800`. The Issue 121
+migration was renumbered before merge and before application in a shared
+environment; no applied Flyway history is rewritten.

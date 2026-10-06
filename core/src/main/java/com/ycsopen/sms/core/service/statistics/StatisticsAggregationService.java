@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.statistics;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -11,13 +12,17 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,11 +31,20 @@ import java.util.Objects;
 @Service
 public class StatisticsAggregationService {
     private static final List<String> METRIC_CODES = List.of("RESOURCE_USAGE", "CHANNEL_DELIVERY", "TENANT_BEHAVIOR");
+    public static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Shanghai");
+    private static final String PIPELINE_CODE = "STATISTICS_AGGREGATION";
 
     private final JdbcTemplate jdbc;
+    private final Clock clock;
 
+    @Autowired
     public StatisticsAggregationService(JdbcTemplate jdbc) {
+        this(jdbc, Clock.systemUTC());
+    }
+
+    StatisticsAggregationService(JdbcTemplate jdbc, Clock clock) {
         this.jdbc = Objects.requireNonNull(jdbc);
+        this.clock = Objects.requireNonNull(clock);
     }
 
     @Transactional(readOnly = true)
@@ -45,30 +59,77 @@ public class StatisticsAggregationService {
 
     @Transactional
     public RebuildResult rebuild(LocalDateTime startInclusive, LocalDateTime endExclusive, String actor) {
-        LocalDateTime start = startInclusive == null ? LocalDateTime.now().minusDays(1).truncatedTo(ChronoUnit.HOURS)
+        lockPipeline();
+        LocalDateTime utcNow = utcNow();
+        LocalDateTime start = startInclusive == null ? utcNow.minusDays(1).truncatedTo(ChronoUnit.HOURS)
                 : startInclusive.truncatedTo(ChronoUnit.HOURS);
-        LocalDateTime end = endExclusive == null ? LocalDateTime.now().plusHours(1).truncatedTo(ChronoUnit.HOURS)
+        LocalDateTime end = endExclusive == null ? utcNow.plusHours(1).truncatedTo(ChronoUnit.HOURS)
                 : endExclusive.truncatedTo(ChronoUnit.HOURS);
         if (!end.isAfter(start)) {
             throw new BusinessException("STATISTICS_REBUILD_PERIOD_INVALID", "统计重建时间范围不合法");
         }
+        return rebuildRange(start, end, actor(actor), null, utcNow);
+    }
+
+    /** Discovers every changed source date and atomically advances the scan watermark after replacement. */
+    @Transactional
+    public RefreshResult refreshAutomatically() {
+        LocalDateTime scannedThrough = lockPipeline();
+        LocalDateTime scanEnd = later(scannedThrough, utcNow());
+        LocalDateTime scanStart = scannedThrough.minusMinutes(1);
+        if (scanStart.isBefore(LocalDateTime.of(1970, 1, 1, 0, 0))) {
+            scanStart = LocalDateTime.of(1970, 1, 1, 0, 0);
+        }
+        LinkedHashSet<LocalDate> dates = new LinkedHashSet<>(changedBusinessDates(scanStart, scanEnd));
+        dates.add(businessDate(scanEnd));
+        List<LocalDate> ordered = dates.stream().sorted().toList();
+        int aggregateRows = 0;
+        for (LocalDate date : ordered) {
+            SourceWindow window = sourceWindow(date);
+            RebuildResult result = rebuildRange(window.start(), window.end(), "statistics-scheduler", date, scanEnd);
+            aggregateRows += result.aggregateRows();
+        }
         jdbc.update("""
-                DELETE FROM statistics_aggregates
-                 WHERE metric_code IN ('RESOURCE_USAGE','CHANNEL_DELIVERY','TENANT_BEHAVIOR')
-                   AND bucket_start>=? AND bucket_start<?
-                """, start, end);
+                UPDATE statistics_refresh_state
+                   SET scanned_through=?, updated_at=CURRENT_TIMESTAMP
+                 WHERE pipeline_code=?
+                """, scanEnd, PIPELINE_CODE);
+        return new RefreshResult(scannedThrough, scanEnd, ordered, aggregateRows);
+    }
+
+    private RebuildResult rebuildRange(LocalDateTime start, LocalDateTime end, String actor,
+                                       LocalDate businessDate, LocalDateTime refreshedAt) {
+        if (businessDate == null) {
+            jdbc.update("""
+                    DELETE FROM statistics_aggregates
+                     WHERE metric_code IN ('RESOURCE_USAGE','CHANNEL_DELIVERY','TENANT_BEHAVIOR')
+                       AND bucket_start>=? AND bucket_start<?
+                    """, businessTime(start), businessTime(end));
+        } else {
+            jdbc.update("""
+                    DELETE FROM statistics_aggregates
+                     WHERE metric_code IN ('RESOURCE_USAGE','CHANNEL_DELIVERY','TENANT_BEHAVIOR')
+                       AND bucket_date=?
+                    """, businessDate);
+        }
 
         Map<String, MutableAggregate> aggregates = new LinkedHashMap<>();
-        for (SourceTask task : sourceTasks(start, end)) {
+        List<SourceTask> tasks = sourceTasks(start, end);
+        List<RejectedSubmit> rejected = rejectedSubmits(start, end);
+        for (SourceTask task : tasks) {
             applyTask(aggregates, task);
         }
-        for (RejectedSubmit submit : rejectedSubmits(start, end)) {
+        for (RejectedSubmit submit : rejected) {
             applyRejectedSubmit(aggregates, submit);
         }
         for (MutableAggregate aggregate : aggregates.values()) {
             insertAggregate(aggregate.freeze());
         }
-        return new RebuildResult(start, end, aggregates.size(), actor(actor));
+        if (businessDate != null) {
+            upsertCheckpoint(businessDate, start, end, sourceChangedAt(start, end), refreshedAt,
+                    tasks.size() + rejected.size(), aggregates.size());
+        }
+        return new RebuildResult(start, end, aggregates.size(), actor);
     }
 
     @Transactional(readOnly = true)
@@ -140,7 +201,7 @@ public class StatisticsAggregationService {
     }
 
     private void applyTask(Map<String, MutableAggregate> aggregates, SourceTask task) {
-        LocalDateTime bucket = task.createdAt().truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime bucket = businessTime(task.createdAt()).truncatedTo(ChronoUnit.HOURS);
         String messageType = task.messageType() == null ? "UNKNOWN" : task.messageType();
         long latency = latencyMs(task);
         boolean success = List.of("SENT", "DELIVERED").contains(task.sendStatus());
@@ -157,7 +218,7 @@ public class StatisticsAggregationService {
     }
 
     private void applyRejectedSubmit(Map<String, MutableAggregate> aggregates, RejectedSubmit submit) {
-        LocalDateTime bucket = submit.createdAt().truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime bucket = businessTime(submit.createdAt()).truncatedTo(ChronoUnit.HOURS);
         MutableAggregate tenant = aggregate(aggregates, "TENANT_BEHAVIOR", bucket, submit.tenantId(), null,
                 null, submit.messageType(), null, null, null, null);
         tenant.recordRejected(submit.sourceVersion());
@@ -228,6 +289,128 @@ public class StatisticsAggregationService {
                 """, (rs, row) -> rejectedSubmit(rs), start, end);
     }
 
+    private LocalDateTime lockPipeline() {
+        LocalDateTime scannedThrough = jdbc.query("""
+                SELECT scanned_through
+                  FROM statistics_refresh_state
+                 WHERE pipeline_code=?
+                 FOR UPDATE
+                """, rs -> rs.next() ? rs.getObject(1, LocalDateTime.class) : null, PIPELINE_CODE);
+        if (scannedThrough == null) {
+            throw new IllegalStateException("STATISTICS_REFRESH_STATE_MISSING");
+        }
+        return scannedThrough;
+    }
+
+    private List<LocalDate> changedBusinessDates(LocalDateTime start, LocalDateTime end) {
+        LinkedHashSet<LocalDate> dates = new LinkedHashSet<>();
+        collectDates(dates, """
+                SELECT created_at FROM message_tasks
+                 WHERE updated_at>? AND updated_at<=?
+                """, start, end);
+        collectDates(dates, """
+                SELECT t.created_at
+                  FROM delivery_reports r
+                  JOIN message_tasks t ON t.message_id=r.message_id
+                 WHERE r.report_time>? AND r.report_time<=?
+                """, start, end);
+        collectDates(dates, """
+                SELECT t.created_at
+                  FROM billing_records b
+                  JOIN message_tasks t ON t.id=b.task_ref_id
+                 WHERE b.created_at>? AND b.created_at<=?
+                """, start, end);
+        collectDates(dates, """
+                SELECT created_at FROM message_submits
+                 WHERE status='REJECTED' AND updated_at>? AND updated_at<=?
+                """, start, end);
+        return List.copyOf(dates);
+    }
+
+    private void collectDates(LinkedHashSet<LocalDate> dates, String sql,
+                              LocalDateTime start, LocalDateTime end) {
+        jdbc.query(sql, rs -> {
+            while (rs.next()) {
+                LocalDateTime sourceTime = rs.getObject(1, LocalDateTime.class);
+                if (sourceTime != null) {
+                    dates.add(businessDate(sourceTime));
+                }
+            }
+            return null;
+        }, start, end);
+    }
+
+    private LocalDateTime sourceChangedAt(LocalDateTime start, LocalDateTime end) {
+        LocalDateTime latest = null;
+        latest = later(latest, timestampValue("""
+                SELECT MAX(updated_at) FROM message_tasks
+                 WHERE created_at>=? AND created_at<?
+                """, start, end));
+        latest = later(latest, timestampValue("""
+                SELECT MAX(r.report_time)
+                  FROM delivery_reports r
+                  JOIN message_tasks t ON t.message_id=r.message_id
+                 WHERE t.created_at>=? AND t.created_at<?
+                """, start, end));
+        latest = later(latest, timestampValue("""
+                SELECT MAX(b.created_at)
+                  FROM billing_records b
+                  JOIN message_tasks t ON t.id=b.task_ref_id
+                 WHERE t.created_at>=? AND t.created_at<?
+                """, start, end));
+        return later(latest, timestampValue("""
+                SELECT MAX(updated_at) FROM message_submits
+                 WHERE status='REJECTED' AND created_at>=? AND created_at<?
+                """, start, end));
+    }
+
+    private LocalDateTime timestampValue(String sql, Object... args) {
+        return jdbc.queryForObject(sql, LocalDateTime.class, args);
+    }
+
+    private void upsertCheckpoint(LocalDate businessDate, LocalDateTime start, LocalDateTime end,
+                                  LocalDateTime sourceChangedAt, LocalDateTime refreshedAt,
+                                  int sourceRecords, int aggregateRows) {
+        int updated = jdbc.update("""
+                UPDATE statistics_refresh_checkpoints
+                   SET source_window_start=?, source_window_end=?, source_changed_at=?, refreshed_at=?,
+                       source_record_count=?, aggregate_row_count=?, refresh_status='SUCCESS',
+                       updated_at=CURRENT_TIMESTAMP
+                 WHERE business_date=?
+                """, start, end, sourceChangedAt, refreshedAt, sourceRecords, aggregateRows, businessDate);
+        if (updated == 0) {
+            jdbc.update("""
+                    INSERT INTO statistics_refresh_checkpoints(
+                        business_date, source_window_start, source_window_end, source_changed_at,
+                        refreshed_at, source_record_count, aggregate_row_count, refresh_status)
+                    VALUES (?,?,?,?,?,?,?,'SUCCESS')
+                    """, businessDate, start, end, sourceChangedAt, refreshedAt, sourceRecords, aggregateRows);
+        }
+    }
+
+    private static LocalDateTime later(LocalDateTime left, LocalDateTime right) {
+        return left == null || right != null && right.isAfter(left) ? right : left;
+    }
+
+    public static LocalDate businessDate(LocalDateTime utcSourceTime) {
+        return businessTime(utcSourceTime).toLocalDate();
+    }
+
+    public static LocalDateTime businessTime(LocalDateTime utcSourceTime) {
+        return LocalDateTime.ofInstant(utcSourceTime.toInstant(ZoneOffset.UTC), BUSINESS_ZONE);
+    }
+
+    public static SourceWindow sourceWindow(LocalDate date) {
+        Instant start = date.atStartOfDay(BUSINESS_ZONE).toInstant();
+        Instant end = date.plusDays(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+        return new SourceWindow(LocalDateTime.ofInstant(start, ZoneOffset.UTC),
+                LocalDateTime.ofInstant(end, ZoneOffset.UTC));
+    }
+
+    private LocalDateTime utcNow() {
+        return LocalDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
+    }
+
     private static long latencyMs(SourceTask task) {
         if (task.sendTime() == null || task.deliverTime() == null || task.deliverTime().isBefore(task.sendTime())) {
             return 0;
@@ -239,48 +422,46 @@ public class StatisticsAggregationService {
         return new SourceTask(rs.getLong("id"), rs.getLong("tenant_id"), nullableLong(rs, "channel_id"),
                 rs.getString("carrier"), rs.getString("message_type"), rs.getString("province"), rs.getString("city"),
                 nullableLong(rs, "signature_id"), nullableLong(rs, "template_id"), rs.getString("send_status"),
-                rs.getBigDecimal("cost"), timestamp(rs.getTimestamp("send_time")),
-                timestamp(rs.getTimestamp("deliver_time")), timestamp(rs.getTimestamp("created_at")),
-                timestamp(rs.getTimestamp("updated_at")), rs.getLong("version"));
+                rs.getBigDecimal("cost"), rs.getObject("send_time", LocalDateTime.class),
+                rs.getObject("deliver_time", LocalDateTime.class),
+                rs.getObject("created_at", LocalDateTime.class),
+                rs.getObject("updated_at", LocalDateTime.class), rs.getLong("version"));
     }
 
     private static RejectedSubmit rejectedSubmit(ResultSet rs) throws SQLException {
         return new RejectedSubmit(rs.getLong("id"), rs.getLong("tenant_id"), rs.getString("product_type"),
                 nullableLong(rs, "signature_id"), nullableLong(rs, "template_id"),
-                timestamp(rs.getTimestamp("created_at")));
+                rs.getObject("created_at", LocalDateTime.class));
     }
 
     private static MetricRow metric(ResultSet rs) throws SQLException {
         return new MetricRow(rs.getString("metric_code"), rs.getString("metric_name"),
                 rs.getString("source_tables"), rs.getString("formula"), rs.getString("freshness_rule"),
                 rs.getString("permission_scope"), rs.getString("formula_version"), rs.getString("status"),
-                timestamp(rs.getTimestamp("updated_at")));
+                rs.getObject("updated_at", LocalDateTime.class));
     }
 
     private static AggregateRow aggregate(ResultSet rs) throws SQLException {
-        return new AggregateRow(rs.getString("metric_code"), timestamp(rs.getTimestamp("bucket_start")),
+        return new AggregateRow(rs.getString("metric_code"), rs.getObject("bucket_start", LocalDateTime.class),
                 rs.getDate("bucket_date").toLocalDate(), rs.getLong("tenant_id"), nullableLong(rs, "channel_id"),
                 rs.getString("carrier"), rs.getString("message_type"), rs.getString("province"), rs.getString("city"),
                 nullableLong(rs, "signature_id"), nullableLong(rs, "template_id"), rs.getInt("submit_count"),
                 rs.getInt("accepted_count"), rs.getInt("rejected_count"), rs.getInt("send_count"),
                 rs.getInt("success_count"), rs.getInt("failure_count"), rs.getBigDecimal("fee_amount"),
                 rs.getLong("avg_response_ms"), rs.getLong("source_version"), rs.getString("correction_identity"),
-                rs.getString("drilldown_key"), rs.getString("quality_state"), timestamp(rs.getTimestamp("freshness_at")));
+                rs.getString("drilldown_key"), rs.getString("quality_state"),
+                rs.getObject("freshness_at", LocalDateTime.class));
     }
 
     private static CorrectionEventRow correction(ResultSet rs) throws SQLException {
         return new CorrectionEventRow(rs.getLong("id"), rs.getString("source_table"), rs.getString("source_id"),
                 rs.getString("metric_code"), rs.getString("previous_state"), rs.getString("current_state"),
-                rs.getString("correction_identity"), timestamp(rs.getTimestamp("occurred_at")));
+                rs.getString("correction_identity"), rs.getObject("occurred_at", LocalDateTime.class));
     }
 
     private static Long nullableLong(ResultSet rs, String column) throws SQLException {
         long value = rs.getLong(column);
         return rs.wasNull() ? null : value;
-    }
-
-    private static LocalDateTime timestamp(Timestamp timestamp) {
-        return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 
     private static String actor(String actor) {
@@ -393,6 +574,11 @@ public class StatisticsAggregationService {
                                   LocalDateTime startTime, LocalDateTime endTime) { }
 
     public record RebuildResult(LocalDateTime startTime, LocalDateTime endTime, int aggregateRows, String actor) { }
+
+    public record RefreshResult(LocalDateTime previousWatermark, LocalDateTime scannedThrough,
+                                List<LocalDate> businessDates, int aggregateRows) { }
+
+    public record SourceWindow(LocalDateTime start, LocalDateTime end) { }
 
     public record MetricRow(String metricCode, String metricName, String sourceTables, String formula,
                             String freshnessRule, String permissionScope, String formulaVersion,

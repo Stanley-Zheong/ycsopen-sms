@@ -6,6 +6,8 @@ import com.ycsopen.sms.core.domain.entity.TenantAccount;
 import com.ycsopen.sms.core.repository.BillingRecordRepository;
 import com.ycsopen.sms.core.repository.TenantAccountRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,11 +25,20 @@ public class BillingService {
 
     private final TenantAccountRepository tenantAccountRepository;
     private final BillingRecordRepository billingRecordRepository;
+    private final JdbcTemplate jdbc;
 
     public BillingService(TenantAccountRepository tenantAccountRepository,
                            BillingRecordRepository billingRecordRepository) {
+        this(tenantAccountRepository, billingRecordRepository, null);
+    }
+
+    @Autowired
+    public BillingService(TenantAccountRepository tenantAccountRepository,
+                          BillingRecordRepository billingRecordRepository,
+                          JdbcTemplate jdbc) {
         this.tenantAccountRepository = tenantAccountRepository;
         this.billingRecordRepository = billingRecordRepository;
+        this.jdbc = jdbc;
     }
 
     /** 提交前预扣（reserve）。余额不足抛 BusinessException，调用方据此拒绝本次提交（F-8.1 验收标准）。 */
@@ -72,6 +83,7 @@ public class BillingService {
 
         record.setBillingStatus(BillingRecord.BillingStatus.CONFIRMED);
         billingRecordRepository.save(record);
+        touchStatisticsSource(record.getTaskRefId());
     }
 
     /** 发送失败且按规则不计费：冲正，仅释放冻结额度，不扣余额（F-8.1"失败且不计费的场景自动冲正释放额度"）。 */
@@ -90,5 +102,12 @@ public class BillingService {
 
         record.setBillingStatus(BillingRecord.BillingStatus.REVERSED);
         billingRecordRepository.save(record);
+        touchStatisticsSource(record.getTaskRefId());
+    }
+
+    private void touchStatisticsSource(Long taskRefId) {
+        if (jdbc != null && taskRefId != null) {
+            jdbc.update("UPDATE message_tasks SET updated_at=CURRENT_TIMESTAMP WHERE id=?", taskRefId);
+        }
     }
 }

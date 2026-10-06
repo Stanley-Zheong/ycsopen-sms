@@ -336,6 +336,13 @@ jobs:
           npm --prefix web run test:e2e --
           control-sizing.spec.ts issue-76-login-card.spec.ts
           --project=local-google-chrome --workers=1
+      - name: Verify operational dashboard refresh states in Google Chrome
+        env:
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+        run: >-
+          npm --prefix web run test:e2e --
+          operational-dashboards.spec.ts --project=local-google-chrome
+          --workers=1 --grep pw-issue-119
       - name: Verify Issue 121 tenant onboarding and API access in Google Chrome
         env:
           YCSOPEN_CHROME_PATH: /usr/bin/google-chrome

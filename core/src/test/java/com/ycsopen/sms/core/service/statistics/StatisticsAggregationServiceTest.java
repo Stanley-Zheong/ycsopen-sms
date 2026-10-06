@@ -3,12 +3,19 @@ package com.ycsopen.sms.core.service.statistics;
 import com.ycsopen.sms.core.common.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +32,7 @@ class StatisticsAggregationServiceTest {
                         + ";MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1", "sa", "");
         jdbc = new JdbcTemplate(dataSource);
         createSchema();
-        service = new StatisticsAggregationService(jdbc);
+        service = transactional(new StatisticsAggregationService(jdbc));
     }
 
     @Test
@@ -94,12 +101,102 @@ class StatisticsAggregationServiceTest {
         service.rebuild(start, end, "operator");
         service.rebuild(start, end, "operator");
 
-        assertThat(count("SELECT COUNT(*) FROM statistics_aggregates WHERE bucket_start=?", start)).isEqualTo(3);
+        assertThat(count("SELECT COUNT(*) FROM statistics_aggregates WHERE bucket_start=?",
+                StatisticsAggregationService.businessTime(start))).isEqualTo(3);
         var channel = only("CHANNEL_DELIVERY", row -> row.channelId().equals(12L));
         assertThat(channel.successCount()).isZero();
         assertThat(channel.failureCount()).isEqualTo(1);
         assertThat(channel.qualityState()).isEqualTo("CORRECTED");
         assertThat(channel.correctionIdentity()).isNotEqualTo(firstIdentity);
+    }
+
+    @Test
+    void automaticRefreshRecoversBacklogUsesShanghaiBoundaryAndReplacesLateOldDateState() {
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-01-01T17:00:00Z"), ZoneOffset.UTC)));
+        LocalDateTime beforeShanghaiMidnight = LocalDateTime.of(2026, 1, 1, 15, 59, 59);
+        LocalDateTime afterShanghaiMidnight = LocalDateTime.of(2026, 1, 1, 16, 0);
+        insertSubmit(300, "S-300", 9, "NOTIFY", 91L, 92L, "ACCEPTED", beforeShanghaiMidnight);
+        insertSubmit(301, "S-301", 9, "NOTIFY", 91L, 92L, "ACCEPTED", afterShanghaiMidnight);
+        insertTask(30, "M-30", 300L, 9, 13L, 91L, 92L, "SENT", "MOBILE", "上海", "上海",
+                new BigDecimal("0.0200"), beforeShanghaiMidnight, beforeShanghaiMidnight, 1);
+        insertTask(31, "M-31", 301L, 9, 13L, 91L, 92L, "SENT", "MOBILE", "上海", "上海",
+                new BigDecimal("0.0200"), afterShanghaiMidnight, afterShanghaiMidnight, 1);
+
+        var first = service.refreshAutomatically();
+
+        assertThat(first.previousWatermark()).isEqualTo(LocalDateTime.of(1970, 1, 1, 0, 0));
+        assertThat(first.businessDates()).contains(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2));
+        assertThat(service.aggregates(new StatisticsAggregationService.AggregateFilter(
+                "CHANNEL_DELIVERY", null, null, null, null, null, null)))
+                .extracting(StatisticsAggregationService.AggregateRow::bucketDate)
+                .containsExactlyInAnyOrder(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2));
+
+        insertReceipt(300, "M-30", 13L, "FAILED", LocalDateTime.of(2026, 1, 1, 17, 0));
+        service.refreshAutomatically();
+
+        assertThat(count("SELECT COUNT(*) FROM statistics_aggregates WHERE metric_code='CHANNEL_DELIVERY'"))
+                .isEqualTo(2);
+        assertThat(jdbc.queryForObject("""
+                SELECT failure_count FROM statistics_aggregates
+                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=?
+                """, Integer.class, LocalDate.of(2026, 1, 1))).isEqualTo(1);
+    }
+
+    @Test
+    void successfulEmptyRefreshPersistsCheckpointInsteadOfInventingAggregateZero() {
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-10-06T02:00:00Z"), ZoneOffset.UTC)));
+
+        service.refreshAutomatically();
+
+        assertThat(jdbc.queryForMap("""
+                SELECT source_record_count, aggregate_row_count, refresh_status
+                  FROM statistics_refresh_checkpoints WHERE business_date=?
+                """, LocalDate.of(2026, 10, 6)))
+                .containsEntry("source_record_count", 0)
+                .containsEntry("aggregate_row_count", 0)
+                .containsEntry("refresh_status", "SUCCESS");
+    }
+
+    @Test
+    void automaticRefreshNeverMovesWatermarkBackwardWhenClockIsBehindSerializedState() {
+        LocalDateTime durableWatermark = LocalDateTime.of(2026, 10, 6, 3, 0);
+        jdbc.update("UPDATE statistics_refresh_state SET scanned_through=? WHERE pipeline_code='STATISTICS_AGGREGATION'",
+                durableWatermark);
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-10-06T02:59:00Z"), ZoneOffset.UTC)));
+
+        var refresh = service.refreshAutomatically();
+
+        assertThat(refresh.previousWatermark()).isEqualTo(durableWatermark);
+        assertThat(refresh.scannedThrough()).isEqualTo(durableWatermark);
+        assertThat(jdbc.queryForObject(
+                "SELECT scanned_through FROM statistics_refresh_state WHERE pipeline_code='STATISTICS_AGGREGATION'",
+                LocalDateTime.class)).isEqualTo(durableWatermark);
+    }
+
+    @Test
+    void automaticRefreshDiscoversRejectionByStatusChangeTimeNotOriginalClaimTime() {
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-01-01T17:00:00Z"), ZoneOffset.UTC)));
+        service.refreshAutomatically();
+        jdbc.update("""
+                INSERT INTO message_submits(id, submit_id, tenant_id, source_protocol, product_type,
+                    signature_id, template_id, status, created_at, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?)
+                """, 401L, "S-401", 10L, "HTTP", "NOTIFY", 101L, 102L, "REJECTED",
+                LocalDateTime.of(2026, 1, 1, 15, 0), LocalDateTime.of(2026, 1, 1, 17, 0, 30));
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-01-01T17:01:00Z"), ZoneOffset.UTC)));
+
+        var refresh = service.refreshAutomatically();
+
+        assertThat(refresh.businessDates()).contains(LocalDate.of(2026, 1, 1));
+        assertThat(jdbc.queryForObject("""
+                SELECT SUM(rejected_count) FROM statistics_aggregates
+                 WHERE metric_code='TENANT_BEHAVIOR' AND bucket_date=?
+                """, Integer.class, LocalDate.of(2026, 1, 1))).isEqualTo(1);
     }
 
     @Test
@@ -115,6 +212,43 @@ class StatisticsAggregationServiceTest {
                 "delivery_reports", "32", "UNKNOWN", null, "FAILED")))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("统计指标不支持");
+    }
+
+    @Test
+    void failedReplacementRollsBackAggregateCheckpointAndWatermarkTogether() {
+        service = transactional(new StatisticsAggregationService(jdbc,
+                Clock.fixed(Instant.parse("2026-01-01T17:00:00Z"), ZoneOffset.UTC)));
+        insertSubmit(500, "S-500", 12, "NOTIFY", 111L, 112L, "ACCEPTED",
+                LocalDateTime.of(2026, 1, 1, 16, 30));
+        insertTask(50, "M-50", 500L, 12, 15L, 111L, 112L, "SENT", "MOBILE", "上海", "上海",
+                new BigDecimal("0.0200"), LocalDateTime.of(2026, 1, 1, 16, 30),
+                LocalDateTime.of(2026, 1, 1, 16, 30, 1), 1);
+        service.refreshAutomatically();
+        LocalDate businessDate = LocalDate.of(2026, 1, 2);
+        int aggregateCount = count("SELECT COUNT(*) FROM statistics_aggregates WHERE bucket_date=?", businessDate);
+        LocalDateTime watermark = jdbc.queryForObject(
+                "SELECT scanned_through FROM statistics_refresh_state WHERE pipeline_code='STATISTICS_AGGREGATION'",
+                LocalDateTime.class);
+        LocalDateTime refreshedAt = jdbc.queryForObject(
+                "SELECT refreshed_at FROM statistics_refresh_checkpoints WHERE business_date=?",
+                LocalDateTime.class, businessDate);
+
+        jdbc.execute("ALTER TABLE statistics_aggregates ADD failure_probe VARCHAR(8) DEFAULT 'existing' NOT NULL");
+        jdbc.execute("ALTER TABLE statistics_aggregates ALTER COLUMN failure_probe DROP DEFAULT");
+        jdbc.update("UPDATE message_tasks SET version=2, updated_at=? WHERE id=50",
+                LocalDateTime.of(2026, 1, 1, 16, 59, 30));
+
+        assertThatThrownBy(service::refreshAutomatically)
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+
+        assertThat(count("SELECT COUNT(*) FROM statistics_aggregates WHERE bucket_date=?", businessDate))
+                .isEqualTo(aggregateCount);
+        assertThat(jdbc.queryForObject(
+                "SELECT scanned_through FROM statistics_refresh_state WHERE pipeline_code='STATISTICS_AGGREGATION'",
+                LocalDateTime.class)).isEqualTo(watermark);
+        assertThat(jdbc.queryForObject(
+                "SELECT refreshed_at FROM statistics_refresh_checkpoints WHERE business_date=?",
+                LocalDateTime.class, businessDate)).isEqualTo(refreshedAt);
     }
 
     private StatisticsAggregationService.AggregateRow only(
@@ -168,6 +302,15 @@ class StatisticsAggregationServiceTest {
     private int count(String sql, Object... args) {
         Integer value = jdbc.queryForObject(sql, Integer.class, args);
         return value == null ? 0 : value;
+    }
+
+    private StatisticsAggregationService transactional(StatisticsAggregationService target) {
+        ProxyFactory proxyFactory = new ProxyFactory(target);
+        proxyFactory.setProxyTargetClass(true);
+        proxyFactory.addAdvice(new TransactionInterceptor(
+                new DataSourceTransactionManager(jdbc.getDataSource()),
+                new AnnotationTransactionAttributeSource()));
+        return (StatisticsAggregationService) proxyFactory.getProxy();
     }
 
     private void createSchema() {
@@ -247,7 +390,8 @@ class StatisticsAggregationServiceTest {
                   signature_id BIGINT,
                   template_id BIGINT,
                   status VARCHAR(16) NOT NULL,
-                  created_at TIMESTAMP NOT NULL
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
                 """);
         jdbc.execute("""
@@ -295,6 +439,28 @@ class StatisticsAggregationServiceTest {
                   billing_status VARCHAR(16) NOT NULL,
                   billing_date DATE NOT NULL,
                   created_at TIMESTAMP NOT NULL
+                )
+                """);
+        jdbc.execute("""
+                CREATE TABLE statistics_refresh_state(
+                  pipeline_code VARCHAR(64) PRIMARY KEY,
+                  scanned_through TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """);
+        jdbc.update("INSERT INTO statistics_refresh_state VALUES ('STATISTICS_AGGREGATION',?,CURRENT_TIMESTAMP)",
+                LocalDateTime.of(1970, 1, 1, 0, 0));
+        jdbc.execute("""
+                CREATE TABLE statistics_refresh_checkpoints(
+                  business_date DATE PRIMARY KEY,
+                  source_window_start TIMESTAMP NOT NULL,
+                  source_window_end TIMESTAMP NOT NULL,
+                  source_changed_at TIMESTAMP,
+                  refreshed_at TIMESTAMP NOT NULL,
+                  source_record_count INT NOT NULL,
+                  aggregate_row_count INT NOT NULL,
+                  refresh_status VARCHAR(16) NOT NULL,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """);
     }

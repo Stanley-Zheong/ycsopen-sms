@@ -240,6 +240,60 @@ a:focus-visible {
 
 /* ---- Dashboard charts ------------------------------------------------ */
 
+.dashboard-aggregation-status {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  color: var(--color-muted);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.dashboard-aggregation-status strong {
+  color: var(--color-text);
+}
+
+.dashboard-aggregation-status.stale {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+}
+
+.dashboard-aggregation-status.stale strong {
+  color: var(--color-warning);
+}
+
+.dashboard-aggregation-status.fresh {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+
+.dashboard-aggregation-status.fresh strong {
+  color: var(--color-success);
+}
+
+.dashboard-aggregation-status.error {
+  color: var(--color-danger);
+  background: var(--color-error-bg);
+  border-color: var(--color-danger);
+}
+
+.dashboard-unavailable {
+  align-self: center;
+  margin: 0;
+  padding: 24px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.dashboard-unavailable h3,
+.dashboard-unavailable p {
+  margin: 0;
+}
+
 .dashboard-section-heading {
   display: flex;
   flex-wrap: wrap;
