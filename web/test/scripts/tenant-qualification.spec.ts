@@ -193,6 +193,8 @@ async function openEditableQualification(page: Page) {
 async function openAdminRow(page: Page) {
   await login(page, accounts.admin);
   await page.goto('/admin/tenants');
+  await page.getByTestId('admin-tenant-qualification-tenants-keyword').fill(company.shortName);
+  await page.getByTestId('admin-tenant-qualification-tenants-query').click();
   await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(1);
 }
 
@@ -236,7 +238,6 @@ test('pw-p8-register C-P8-REGISTER OBL-FLOW-12-1-REGISTER', async ({ page, reque
 
 test('pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page')).toBeVisible();
   await page.getByTestId('admin-tenant-qualification-tenants-keyword').fill(company.shortName);
   await page.getByTestId('admin-tenant-qualification-tenants-verification-status').selectOption('PENDING');
@@ -273,7 +274,6 @@ test('pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A', async ({ page, 
 
 test('pw-p8-review-decision C-P8-REVIEW-DECISION OBL-F-2-2-B', async ({ page }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   await page.getByTestId('admin-tenant-qualification-tenants-review-open').click();
   await page.getByTestId('admin-tenant-qualification-tenants-review-human-confirmed').check();
   await page.getByTestId('admin-tenant-qualification-tenants-review-approve-open').click();
@@ -494,7 +494,6 @@ test('pw-p8-qualification-submit C-P8-QUALIFICATION-SUBMIT OBL-F-2-1-B', async (
 
 test('pw-p8-tenant-edit C-P8-TENANT-EDIT OBL-F-2-3-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   const competingContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const competing = await competingContext.newPage();
   try {
@@ -522,7 +521,6 @@ test('pw-p8-tenant-edit C-P8-TENANT-EDIT OBL-F-2-3-A', async ({ page, browser })
 
 test('pw-p8-status-action C-P8-STATUS-ACTION OBL-F-2-4-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   const competingContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const competing = await competingContext.newPage();
   try {
