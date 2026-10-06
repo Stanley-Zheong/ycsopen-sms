@@ -6,6 +6,8 @@ Dependencies used:
 
 - Phase 22 trial state and prepaid finance permissions.
 - Existing tenant overview route.
+- Existing tenant accounts, approval-time trial provisioning, message task,
+  complaint, price-book, and operation-audit owners.
 - Chrome-only Playwright validation.
 
 Scope control:
@@ -13,3 +15,5 @@ Scope control:
 - No reconciliation, settlement, invoice, export, or fee-warning implementation.
 - No payment gateway.
 - No broad finance rewrite.
+- No schema migration, CRM workflow, upload service, or inferred zero-value
+  trial billing rule for issue #122.

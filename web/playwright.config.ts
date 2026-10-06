@@ -21,7 +21,10 @@ export default defineConfig({
   use: { baseURL, trace: 'on-first-retry', viewport: { width: 1440, height: 900 } },
   projects: useBundledChromium ? [{
     name: 'bundled-chromium',
-    use: { ...devices['Desktop Chrome'] },
+    use: {
+      ...devices['Desktop Chrome'],
+      launchOptions: { args: localChromeArgs },
+    },
   }] : [{
     name: 'local-google-chrome',
     use: {

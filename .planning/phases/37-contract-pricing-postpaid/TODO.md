@@ -25,3 +25,11 @@ Owned obligations: OBL-F-2-5-A, OBL-F-2-5-B, OBL-F-2-9-A, OBL-F-2-9-B, OBL-F-2-9
 - [x] PRD obligation validator.
 - [x] Git diff whitespace check.
 - [x] Claude review closure boundary recorded.
+
+## Issue #122 Follow-up
+
+- [x] Source-backed candidate workbench and analysis.
+- [x] Active-price selection and tenant-bound dialogs.
+- [x] Account-aware locked eligibility and atomic transition.
+- [x] Trial provisioning and legacy compatibility fallback.
+- [x] Repository gates, review, and runtime boundaries recorded; provider CI and merge remain delivery steps.

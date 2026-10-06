@@ -6,6 +6,7 @@ import com.ycsopen.sms.core.domain.entity.User;
 import com.ycsopen.sms.core.repository.TenantAccountRepository;
 import com.ycsopen.sms.core.repository.TenantRepository;
 import com.ycsopen.sms.core.repository.UserRepository;
+import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,7 @@ class TenantReviewServiceTest {
     private final TenantRepository tenants = mock(TenantRepository.class);
     private final TenantAccountRepository accounts = mock(TenantAccountRepository.class);
     private final UserRepository users = mock(UserRepository.class);
+    private final TrialPrepaidLedgerService trials = mock(TrialPrepaidLedgerService.class);
     private final Clock clock = Clock.fixed(Instant.parse("2026-09-07T08:00:00Z"), ZoneOffset.UTC);
     private Tenant tenant;
     private User administrator;
@@ -57,7 +59,7 @@ class TenantReviewServiceTest {
         when(users.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(accounts.findByTenantId(42L)).thenReturn(Optional.empty());
         when(accounts.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        service = new TenantReviewService(tenants, accounts, users, clock, 500, 14);
+        service = new TenantReviewService(tenants, accounts, users, trials, clock, 500, 14);
     }
 
     @Test
@@ -79,6 +81,7 @@ class TenantReviewServiceTest {
                 account.getTenantId().equals(42L) && account.getStatus() == TenantAccount.Status.NORMAL));
         verify(tenants).appendReviewEvent(42L, "APPROVED", "PENDING", "VERIFIED",
                 "SUBMITTED", "TRIAL", "资料核验通过", "101");
+        verify(trials).activateTrial(42L, 500, tenant.getTrialStartAt(), tenant.getTrialEndAt(), "101");
 
         assertThatThrownBy(() -> service.decide(42L, 7, TenantReviewService.Decision.APPROVE,
                 "重复提交", true, "101"))
@@ -95,6 +98,7 @@ class TenantReviewServiceTest {
                 "资料核验通过", true, "101")).hasMessage("INSPECTION_REQUIRED");
         verify(accounts, never()).saveAndFlush(any());
         verify(users, never()).saveAndFlush(any());
+        verify(trials, never()).activateTrial(anyLong(), anyInt(), any(), any(), anyString());
     }
 
     @Test
