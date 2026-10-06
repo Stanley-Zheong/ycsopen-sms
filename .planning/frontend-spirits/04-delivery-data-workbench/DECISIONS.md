@@ -32,3 +32,27 @@ The uplink service left-joins the tenant master when reading uplink records and 
 - Uplink records remain readable after tenant metadata is unavailable.
 - The UI performs no row-by-row tenant lookup.
 - Ambiguous free text cannot be converted silently to a tenant ID; the user must choose a unique option or enter a numeric internal ID.
+
+## DR-FE04-003: Aggregation State Controls Numeric Meaning
+
+### Status
+Accepted
+
+### Context
+Issue `#119` shows that an empty aggregate table can mean either no business
+traffic or a pipeline that never ran. Rendering both as zero is misleading.
+
+### Decision
+The platform dashboard consumes a required, server-owned `todayAggregation`
+state; a missing object is an API contract failure and is never synthesized as
+`NOT_REFRESHED`. It
+renders em dashes and explicit guidance for `NOT_REFRESHED` and `EMPTY`.
+`STALE` retains last-known values only when `aggregateRowCount` is positive; a
+stale empty checkpoint also renders em dashes. `FRESH` renders normal numeric
+values. Asia/Shanghai date, zone, source and freshness remain visible.
+
+### Consequences
+
+- Today aggregate values are nullable at the API boundary.
+- Status text and values have stable independent selectors.
+- Manual refresh refetches only; it does not claim to run the backend scheduler.

@@ -4,6 +4,14 @@
 
 Workbench pages consume detail, aggregate, status-code, export, and callback APIs. Each view model preserves status domain, source, freshness, and completeness information.
 
+For Issue `#119`, `OperationalDashboardService` classifies today's Phase 34
+checkpoint as `NOT_REFRESHED`, `EMPTY`, `STALE`, or `FRESH`. `DashboardPage`
+does not infer state from a count. It renders business date/time zone and both
+refresh/source timestamps, suppresses absent values, and keeps stale values
+visible with a warning only when the checkpoint recorded aggregate rows. A
+stale empty checkpoint remains unavailable. React Query owns loading, retry,
+and response replacement.
+
 For the admin uplink workbench, `UplinkNormalizationService` owns the tenant identity projection. Uplink and push-monitor queries join `tenants` once and return the stable internal ID plus institution number, short name, and full name. The React page renders those response fields directly; it does not fetch tenant metadata for individual rows.
 
 The institution filter loads a bounded identity-only option model from the uplink API. The input searches institution number, short name, or full name. Submission resolves a unique option to `tenantId`; the uplink and push-monitor requests never send the display label.
@@ -27,3 +35,6 @@ Missing tenant metadata is a supported read state. List and monitor cells show t
 Tests cover request payload, disabled states, target count, excluded filters, and retry behavior for each selected command.
 
 Issue `#120` adds service tests for joined and missing tenant metadata, React tests for all display/fallback surfaces and stable-ID filter serialization, and Chrome Playwright coverage for list, detail, monitor, selection, and missing-name behavior.
+
+Issue `#119` adds React and Google Chrome cases for NOT_REFRESHED, EMPTY, STALE,
+FRESH, and refresh replacement across every aggregate-derived value and list.

@@ -46,10 +46,26 @@
 | GET | `/api/v1/console/complaint-analytics` | 查询按创建日期的投诉趋势、归因质量及机构/签名/内容类型分布 | F-9.4 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/channel` | **通道投诉占比排行（本次新增需求）** | F-11.9 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/tenant` | **机构投诉占比排行（本次新增需求）** | F-11.9 |
+| GET | `/api/v1/console/operational-dashboards/platform` | 平台仪表盘及当日聚合状态 | F-11.1/F-11.2 |
 | GET | `/api/v1/console/uplinks` | 按稳定 `tenantId`、号码、关键词、运营商、推送状态和时间查询上行记录 | F-7.5/F-10.1 |
 | GET | `/api/v1/console/uplinks/{id}` | 查询一条上行详情 | F-7.5 |
 | GET | `/api/v1/console/uplinks/push-monitor` | 按稳定 `tenantId`、状态和目的地查询上行推送证据 | F-10.4 |
 | GET | `/api/v1/console/uplinks/tenant-options` | ADMIN/OPERATOR 按机构编号、简称或全称查询最多 20 个安全机构选项 | F-10.1/F-10.4 |
+
+平台仪表盘以 `Asia/Shanghai` 作为业务日边界。`data.todayAggregation` 返回
+`state`、`businessDate`、`businessTimeZone`、`sourceRegistry`、`refreshedAt`、
+`sourceChangedAt`、`sourceRecordCount` 和 `aggregateRowCount`。`state` 的稳定语义如下：
+
+| `state` | 语义 | 今日派生值 |
+|---|---|---|
+| `NOT_REFRESHED` | 当前业务日尚无成功刷新记录 | 数值为 `null`，趋势与排行为空数组 |
+| `EMPTY` | 刷新成功且源记录数为零 | 数值为 `null`，趋势与排行为空数组 |
+| `STALE` | 源数据晚于刷新点，或刷新时间超过允许的新鲜度 | 仅当检查点含聚合行时返回最近一次值；空检查点仍返回 `null`/空数组，并明确标记过期 |
+| `FRESH` | 刷新记录覆盖当前源数据且未超过新鲜度限制 | 返回当前业务日聚合值 |
+
+系统按配置的 fixed delay 自动扫描任务、回执、计费及拒绝提交变化，并对受影响的业务日做幂等替换。
+默认刷新间隔为 5 秒，最大新鲜度为 5 分钟。API 消费方必须依据 `state` 区分“尚未刷新”“成功空数据”
+和真实数值，不得把缺失聚合解释为零。
 
 上行记录、详情和推送监控响应在原有 `tenantId` 外，附带 `tenantNo`、
 `tenantShortName` 和 `tenantFullName`。这些字段由服务端在列表查询中一次投影，不要求客户端逐行查询。

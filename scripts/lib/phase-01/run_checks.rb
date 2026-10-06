@@ -256,13 +256,22 @@ module Phase01RunChecks
   SERVICE_INPUTS = [
     { "path" => "scripts/lib/phase-01/service_checks.rb", "role" => "implementation" },
     { "path" => "scripts/lib/phase-01/test_service_checks.rb", "role" => "test" },
+    { "path" => "scripts/lib/phase-03/service_checks.rb", "role" => "implementation" },
     { "path" => "core/src/test/resources/application-phase01-integration.yml", "role" => "config" },
     { "path" => "core/src/test/resources/verification/timezone-contract.json", "role" => "contract" },
     { "path" => "core/src/test/java/com/ycsopen/sms/core/verification/Phase01MySqlIntegrationTest.java", "role" => "test" },
+    { "path" => "core/src/test/java/com/ycsopen/sms/core/verification/Phase03ServiceHarness.java", "role" => "test" },
+    { "path" => "core/src/test/java/com/ycsopen/sms/core/verification/Issue119StatisticsRefreshMySqlTest.java", "role" => "test" },
     { "path" => "core/src/test/java/com/ycsopen/sms/core/verification/Phase01RedisIntegrationTest.java", "role" => "test" },
     { "path" => "core/src/test/java/com/ycsopen/sms/core/verification/Phase01TimezoneContractTest.java", "role" => "test" },
     { "path" => "core/pom.xml", "role" => "config" },
-    { "path" => "core/src/main/resources/db/migration/V1__init_schema.sql", "role" => "implementation" }
+    { "path" => "core/src/main/resources/application.yml", "role" => "config" },
+    { "path" => "core/src/main/resources/db/migration/V1__init_schema.sql", "role" => "implementation" },
+    { "path" => "core/src/main/resources/db/migration/V6700__statistics_refresh_and_submit_claim_recovery.sql", "role" => "implementation" },
+    { "path" => "core/src/main/java/com/ycsopen/sms/core/service/statistics/StatisticsAggregationService.java", "role" => "implementation" },
+    { "path" => "core/src/main/java/com/ycsopen/sms/core/service/dashboard/OperationalDashboardService.java", "role" => "implementation" },
+    { "path" => "core/src/main/java/com/ycsopen/sms/core/service/message/MessageAcceptanceIdempotencyService.java", "role" => "implementation" },
+    { "path" => "core/src/main/java/com/ycsopen/sms/core/service/message/MessageRejectionRecorder.java", "role" => "implementation" }
   ].freeze
 
   LOCAL_CHROME_INPUTS = [
@@ -512,7 +521,7 @@ module Phase01RunChecks
     {
       "id" => "service-java-integration",
       "layer" => "integration",
-      "argv" => ["/usr/bin/env", "mvn", "-f", "core/pom.xml", "-Pphase01-integration", "-Dtest=Phase01MySqlIntegrationTest,Phase01RedisIntegrationTest,Phase01TimezoneContractTest", "test"],
+      "argv" => ["/usr/bin/env", "mvn", "-f", "core/pom.xml", "-Pphase01-integration", "-Dtest=Phase01MySqlIntegrationTest,Issue119StatisticsRefreshMySqlTest,Phase01RedisIntegrationTest,Phase01TimezoneContractTest", "test"],
       "cwd" => ".",
       "obligation_ids" => ["OBL-FOUND-TRACE-003"],
       "case_ids" => ["CASE-FOUND-TRACE-003"],

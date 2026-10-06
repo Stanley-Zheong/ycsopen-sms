@@ -44,7 +44,10 @@ class OperationalDashboardControllerTest {
                 List.of(new OperationalDashboardService.TenantRankRow(7L, 100, 90, new BigDecimal("0.9000"))),
                 new OperationalDashboardService.ChannelHealth(1, 1, 1),
                 new OperationalDashboardService.FinanceWarning(1, LocalDateTime.of(2026, 9, 10, 9, 6)),
-                source));
+                source,
+                new OperationalDashboardService.TodayAggregation("FRESH", java.time.LocalDate.of(2026, 9, 10),
+                        "Asia/Shanghai", "statistics_aggregates", LocalDateTime.of(2026, 9, 10, 1, 5),
+                        LocalDateTime.of(2026, 9, 10, 1, 4), 150, 4)));
         when(service.resourceStatistics(any(), eq(null))).thenReturn(new OperationalDashboardService.ResourceStatistics(
                 List.of(new OperationalDashboardService.ResourceRow(7L, 55L, 66L, 100, 90, 5, LocalDateTime.of(2026, 9, 10, 9, 4))),
                 List.of(new OperationalDashboardService.ChannelComparisonRow(7L, 11L, 100, 90, 10, new BigDecimal("0.9000"), LocalDateTime.of(2026, 9, 10, 9, 5))),
@@ -62,6 +65,8 @@ class OperationalDashboardControllerTest {
         mvc.perform(get("/api/v1/console/operational-dashboards/platform").principal(platformAuth()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.realtime.todayMessages", is(150)))
+                .andExpect(jsonPath("$.data.todayAggregation.state", is("FRESH")))
+                .andExpect(jsonPath("$.data.todayAggregation.businessTimeZone", is("Asia/Shanghai")))
                 .andExpect(jsonPath("$.data.source.registry", is("statistics_aggregates")));
         mvc.perform(get("/api/v1/console/operational-dashboards/resource-statistics").principal(platformAuth()))
                 .andExpect(status().isOk())

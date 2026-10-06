@@ -1,6 +1,9 @@
 package com.ycsopen.sms.core.service.dashboard;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.service.statistics.StatisticsAggregationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,8 +12,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -18,41 +24,61 @@ import java.util.Objects;
 @Service
 public class OperationalDashboardService {
     private final JdbcTemplate jdbc;
+    private final Clock clock;
+    private Duration aggregationMaxAge = Duration.ofMinutes(5);
 
+    @Autowired
     public OperationalDashboardService(JdbcTemplate jdbc) {
+        this(jdbc, Clock.systemUTC(), Duration.ofMinutes(5));
+    }
+
+    OperationalDashboardService(JdbcTemplate jdbc, Clock clock, Duration aggregationMaxAge) {
         this.jdbc = Objects.requireNonNull(jdbc);
+        this.clock = Objects.requireNonNull(clock);
+        this.aggregationMaxAge = requirePositive(aggregationMaxAge);
+    }
+
+    @Value("${ycsopen.statistics.refresh.max-age:PT5M}")
+    void configureAggregationMaxAge(Duration aggregationMaxAge) {
+        this.aggregationMaxAge = requirePositive(aggregationMaxAge);
     }
 
     @Transactional(readOnly = true)
     public PlatformDashboard platformDashboard() {
+        LocalDate businessDate = currentBusinessDate();
+        TodayAggregation todayAggregation = todayAggregation(businessDate);
+        boolean valuesAvailable = "FRESH".equals(todayAggregation.state())
+                || "STALE".equals(todayAggregation.state()) && todayAggregation.aggregateRowCount() > 0;
         MetricSource source = metricSource("CHANNEL_DELIVERY", "PLATFORM");
-        int send = intValue("""
+        Integer send = valuesAvailable ? intValue("""
                 SELECT COALESCE(SUM(send_count),0) FROM statistics_aggregates
-                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=CURRENT_DATE
-                """);
-        int success = intValue("""
+                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=?
+                """, businessDate) : null;
+        Integer success = valuesAvailable ? intValue("""
                 SELECT COALESCE(SUM(success_count),0) FROM statistics_aggregates
-                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=CURRENT_DATE
-                """);
-        BigDecimal revenue = decimalValue("""
+                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=?
+                """, businessDate) : null;
+        BigDecimal revenue = valuesAvailable ? decimalValue("""
                 SELECT COALESCE(SUM(fee_amount),0) FROM statistics_aggregates
-                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=CURRENT_DATE
-                """);
+                 WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=?
+                """, businessDate) : null;
         RealtimeCards realtime = new RealtimeCards(
                 intValue("SELECT COUNT(*) FROM users"),
                 send,
-                rate(success, send),
+                valuesAvailable ? rate(success, send) : null,
                 intValue("SELECT COUNT(*) FROM tenants WHERE lifecycle_status IN ('TRIAL','SIGNED')"),
-                comparison(send, "CHANNEL_DELIVERY"));
-        KpiCards kpi = new KpiCards(send, realtime.activeTenants(), rate(success, send), revenue, source.formula());
+                valuesAvailable ? comparison(send, "CHANNEL_DELIVERY") : null);
+        KpiCards kpi = new KpiCards(send, realtime.activeTenants(),
+                valuesAvailable ? rate(success, send) : null, revenue, source.formula());
         return new PlatformDashboard(
                 realtime,
                 kpi,
-                hourlyTrend(null),
-                tenantRank(),
+                valuesAvailable ? hourlyTrend(null, businessDate) : List.of(),
+                valuesAvailable ? tenantRank(businessDate) : List.of(),
                 channelHealth(),
                 financeWarning(),
-                source);
+                source,
+                todayAggregation);
     }
 
     @Transactional(readOnly = true)
@@ -65,8 +91,9 @@ public class OperationalDashboardService {
         if (checked.tenantId() != null && requestedTenantId != null && !Objects.equals(checked.tenantId(), requestedTenantId)) {
             throw new BusinessException("OPERATIONAL_DASHBOARD_TENANT_FORBIDDEN", "租户范围无权访问");
         }
-        int send = intValue("SELECT COALESCE(SUM(send_count),0) FROM statistics_aggregates WHERE metric_code='TENANT_BEHAVIOR' AND tenant_id=? AND bucket_date=CURRENT_DATE", tenantId);
-        int success = intValue("SELECT COALESCE(SUM(success_count),0) FROM statistics_aggregates WHERE metric_code='TENANT_BEHAVIOR' AND tenant_id=? AND bucket_date=CURRENT_DATE", tenantId);
+        LocalDate businessDate = currentBusinessDate();
+        int send = intValue("SELECT COALESCE(SUM(send_count),0) FROM statistics_aggregates WHERE metric_code='TENANT_BEHAVIOR' AND tenant_id=? AND bucket_date=?", tenantId, businessDate);
+        int success = intValue("SELECT COALESCE(SUM(success_count),0) FROM statistics_aggregates WHERE metric_code='TENANT_BEHAVIOR' AND tenant_id=? AND bucket_date=?", tenantId, businessDate);
         return new TenantOverview(
                 tenantId,
                 longValue("SELECT COALESCE(balance_mil,0) FROM prepaid_accounts WHERE tenant_id=?", tenantId),
@@ -151,34 +178,34 @@ public class OperationalDashboardService {
         return configuration(checked.role());
     }
 
-    private List<HourlyTrendRow> hourlyTrend(Long tenantId) {
+    private List<HourlyTrendRow> hourlyTrend(Long tenantId, LocalDate businessDate) {
         return tenantId == null
                 ? jdbc.query("""
                     SELECT bucket_start, SUM(send_count) send_count, SUM(success_count) success_count
                       FROM statistics_aggregates
-                     WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=CURRENT_DATE
+                     WHERE metric_code='CHANNEL_DELIVERY' AND bucket_date=?
                      GROUP BY bucket_start
                      ORDER BY bucket_start
-                    """, (rs, row) -> hourly(rs))
+                    """, (rs, row) -> hourly(rs), businessDate)
                 : jdbc.query("""
                     SELECT bucket_start, SUM(send_count) send_count, SUM(success_count) success_count
                       FROM statistics_aggregates
-                     WHERE metric_code='TENANT_BEHAVIOR' AND bucket_date=CURRENT_DATE AND tenant_id=?
+                     WHERE metric_code='TENANT_BEHAVIOR' AND bucket_date=? AND tenant_id=?
                      GROUP BY bucket_start
                      ORDER BY bucket_start
-                    """, (rs, row) -> hourly(rs), tenantId);
+                    """, (rs, row) -> hourly(rs), businessDate, tenantId);
     }
 
-    private List<TenantRankRow> tenantRank() {
+    private List<TenantRankRow> tenantRank(LocalDate businessDate) {
         return jdbc.query("""
                 SELECT tenant_id, SUM(send_count) send_count, SUM(success_count) success_count
                   FROM statistics_aggregates
-                 WHERE metric_code='TENANT_BEHAVIOR' AND bucket_date=CURRENT_DATE
+                 WHERE metric_code='TENANT_BEHAVIOR' AND bucket_date=?
                  GROUP BY tenant_id
                  ORDER BY send_count DESC, tenant_id ASC
                  LIMIT 5
                 """, (rs, row) -> new TenantRankRow(rs.getLong("tenant_id"), rs.getInt("send_count"),
-                rs.getInt("success_count"), rate(rs.getInt("success_count"), rs.getInt("send_count"))));
+                rs.getInt("success_count"), rate(rs.getInt("success_count"), rs.getInt("send_count"))), businessDate);
     }
 
     private ChannelHealth channelHealth() {
@@ -193,14 +220,66 @@ public class OperationalDashboardService {
                 timestampValue("SELECT MAX(updated_at) FROM fee_warning_episodes WHERE status='ACTIVE'"));
     }
 
+    private TodayAggregation todayAggregation(LocalDate businessDate) {
+        List<RefreshCheckpoint> checkpoints = jdbc.query("""
+                SELECT source_changed_at, refreshed_at, source_record_count, aggregate_row_count
+                  FROM statistics_refresh_checkpoints
+                 WHERE business_date=? AND refresh_status='SUCCESS'
+                """, (rs, row) -> new RefreshCheckpoint(
+                rs.getObject("source_changed_at", LocalDateTime.class),
+                rs.getObject("refreshed_at", LocalDateTime.class),
+                rs.getInt("source_record_count"), rs.getInt("aggregate_row_count")), businessDate);
+        LocalDateTime sourceChangedAt = latestSourceChange(businessDate);
+        if (checkpoints.isEmpty()) {
+            return new TodayAggregation("NOT_REFRESHED", businessDate,
+                    StatisticsAggregationService.BUSINESS_ZONE.getId(), "statistics_aggregates",
+                    null, sourceChangedAt, 0, 0);
+        }
+        RefreshCheckpoint checkpoint = checkpoints.getFirst();
+        LocalDateTime effectiveSourceChange = later(checkpoint.sourceChangedAt(), sourceChangedAt);
+        boolean sourceAdvanced = effectiveSourceChange != null
+                && effectiveSourceChange.isAfter(checkpoint.refreshedAt());
+        Duration age = Duration.between(checkpoint.refreshedAt().toInstant(ZoneOffset.UTC), clock.instant());
+        boolean expired = age.compareTo(aggregationMaxAge) > 0;
+        String state = sourceAdvanced || expired ? "STALE"
+                : checkpoint.sourceRecordCount() == 0 ? "EMPTY" : "FRESH";
+        return new TodayAggregation(state, businessDate,
+                StatisticsAggregationService.BUSINESS_ZONE.getId(), "statistics_aggregates",
+                checkpoint.refreshedAt(), effectiveSourceChange,
+                checkpoint.sourceRecordCount(), checkpoint.aggregateRowCount());
+    }
+
+    private LocalDateTime latestSourceChange(LocalDate businessDate) {
+        StatisticsAggregationService.SourceWindow window = StatisticsAggregationService.sourceWindow(businessDate);
+        LocalDateTime latest = null;
+        latest = later(latest, timestampValue("""
+                SELECT MAX(updated_at) FROM message_tasks
+                 WHERE created_at>=? AND created_at<?
+                """, window.start(), window.end()));
+        latest = later(latest, timestampValue("""
+                SELECT MAX(r.report_time)
+                  FROM delivery_reports r JOIN message_tasks t ON t.message_id=r.message_id
+                 WHERE t.created_at>=? AND t.created_at<?
+                """, window.start(), window.end()));
+        latest = later(latest, timestampValue("""
+                SELECT MAX(b.created_at)
+                  FROM billing_records b JOIN message_tasks t ON t.id=b.task_ref_id
+                 WHERE t.created_at>=? AND t.created_at<?
+                """, window.start(), window.end()));
+        return later(latest, timestampValue("""
+                SELECT MAX(updated_at) FROM message_submits
+                 WHERE status='REJECTED' AND created_at>=? AND created_at<?
+                """, window.start(), window.end()));
+    }
+
     private MetricSource metricSource(String metricCode, String permissionScope) {
         List<MetricSource> rows = jdbc.query("""
                 SELECT formula, formula_version, permission_scope,
-                       COALESCE((SELECT MAX(freshness_at) FROM statistics_aggregates WHERE metric_code=?), updated_at) AS freshness_at
+                       (SELECT MAX(freshness_at) FROM statistics_aggregates WHERE metric_code=?) AS freshness_at
                   FROM statistics_metric_registry
                  WHERE metric_code=? AND status='ACTIVE'
                 """, (rs, row) -> new MetricSource("statistics_aggregates", rs.getString("formula"),
-                timestamp(rs.getTimestamp("freshness_at")),
+                rs.getObject("freshness_at", LocalDateTime.class),
                 permissionScope == null ? rs.getString("permission_scope") : permissionScope,
                 rs.getString("formula_version")), metricCode, metricCode);
         return rows.isEmpty() ? new MetricSource("statistics_aggregates", metricCode, latestFreshness(),
@@ -242,24 +321,26 @@ public class OperationalDashboardService {
     private ResourceRow resource(ResultSet rs) throws SQLException {
         return new ResourceRow(rs.getLong("tenant_id"), nullableLong(rs, "signature_id"),
                 nullableLong(rs, "template_id"), rs.getInt("submit_count"), rs.getInt("success_count"),
-                rs.getInt("rejected_count"), timestamp(rs.getTimestamp("freshness_at")));
+                rs.getInt("rejected_count"), rs.getObject("freshness_at", LocalDateTime.class));
     }
 
     private ChannelComparisonRow channel(ResultSet rs) throws SQLException {
         return new ChannelComparisonRow(rs.getLong("tenant_id"), nullableLong(rs, "channel_id"),
                 rs.getInt("send_count"), rs.getInt("success_count"), rs.getInt("failure_count"),
-                rate(rs.getInt("success_count"), rs.getInt("send_count")), timestamp(rs.getTimestamp("freshness_at")));
+                rate(rs.getInt("success_count"), rs.getInt("send_count")),
+                rs.getObject("freshness_at", LocalDateTime.class));
     }
 
     private HourlyTrendRow hourly(ResultSet rs) throws SQLException {
-        return new HourlyTrendRow(timestamp(rs.getTimestamp("bucket_start")), rs.getInt("send_count"),
+        return new HourlyTrendRow(rs.getObject("bucket_start", LocalDateTime.class), rs.getInt("send_count"),
                 rs.getInt("success_count"), rate(rs.getInt("success_count"), rs.getInt("send_count")));
     }
 
     private DashboardConfiguration configuration(ResultSet rs) throws SQLException {
         return new DashboardConfiguration(rs.getString("role_code"), rs.getBoolean("global_cards"),
                 rs.getBoolean("tenant_cards"), rs.getString("refresh_mode"), rs.getInt("polling_seconds"),
-                rs.getString("complaint_threshold"), rs.getString("updated_by"), timestamp(rs.getTimestamp("updated_at")));
+                rs.getString("complaint_threshold"), rs.getString("updated_by"),
+                rs.getObject("updated_at", LocalDateTime.class));
     }
 
     private int intValue(String sql, Object... args) {
@@ -283,8 +364,7 @@ public class OperationalDashboardService {
     }
 
     private LocalDateTime timestampValue(String sql, Object... args) {
-        Timestamp value = jdbc.queryForObject(sql, Timestamp.class, args);
-        return timestamp(value);
+        return jdbc.queryForObject(sql, LocalDateTime.class, args);
     }
 
     private LocalDateTime latestFreshness() {
@@ -299,6 +379,21 @@ public class OperationalDashboardService {
     }
 
     private static int comparison(int value, String metricCode) {
+        return value;
+    }
+
+    private LocalDate currentBusinessDate() {
+        return LocalDate.ofInstant(clock.instant(), StatisticsAggregationService.BUSINESS_ZONE);
+    }
+
+    private static LocalDateTime later(LocalDateTime left, LocalDateTime right) {
+        return left == null || right != null && right.isAfter(left) ? right : left;
+    }
+
+    private static Duration requirePositive(Duration value) {
+        if (value == null || value.isZero() || value.isNegative()) {
+            throw new IllegalArgumentException("statistics refresh max age must be positive");
+        }
         return value;
     }
 
@@ -326,10 +421,6 @@ public class OperationalDashboardService {
         return rs.wasNull() ? null : value;
     }
 
-    private static LocalDateTime timestamp(Timestamp timestamp) {
-        return timestamp == null ? null : timestamp.toLocalDateTime();
-    }
-
     private static String text(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }
@@ -346,12 +437,13 @@ public class OperationalDashboardService {
 
     public record PlatformDashboard(RealtimeCards realtime, KpiCards kpi, List<HourlyTrendRow> hourlyTrend,
                                     List<TenantRankRow> tenantRank, ChannelHealth channelHealth,
-                                    FinanceWarning financeWarning, MetricSource source) { }
+                                    FinanceWarning financeWarning, MetricSource source,
+                                    TodayAggregation todayAggregation) { }
 
-    public record RealtimeCards(int totalUsers, int todayMessages, BigDecimal successRate,
-                                int activeTenants, int comparisonMessages) { }
+    public record RealtimeCards(int totalUsers, Integer todayMessages, BigDecimal successRate,
+                                int activeTenants, Integer comparisonMessages) { }
 
-    public record KpiCards(int todaySend, int activeTenants, BigDecimal successRate,
+    public record KpiCards(Integer todaySend, int activeTenants, BigDecimal successRate,
                            BigDecimal todayRevenue, String formula) { }
 
     public record HourlyTrendRow(LocalDateTime bucketStart, int sendCount, int successCount,
@@ -384,6 +476,14 @@ public class OperationalDashboardService {
 
     public record MetricSource(String registry, String formula, LocalDateTime freshnessAt,
                                String permissionScope, String formulaVersion) { }
+
+    public record TodayAggregation(String state, LocalDate businessDate, String businessTimeZone,
+                                   String sourceRegistry, LocalDateTime refreshedAt,
+                                   LocalDateTime sourceChangedAt, int sourceRecordCount,
+                                   int aggregateRowCount) { }
+
+    private record RefreshCheckpoint(LocalDateTime sourceChangedAt, LocalDateTime refreshedAt,
+                                     int sourceRecordCount, int aggregateRowCount) { }
 
     public record DashboardConfiguration(String role, boolean globalCards, boolean tenantCards,
                                          String refreshMode, int pollingSeconds, String complaintThreshold,
