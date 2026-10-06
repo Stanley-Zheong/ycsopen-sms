@@ -43,6 +43,7 @@ Issue `#124` amendment verification on 2026-10-06:
 - PR run `37403509270` `Web / Node 20`: PASS.
 - PR run `37403509270` `Docker release / Google Chrome`: PASS, including complaint Playwright 11/11 and fresh/repeated Docker release.
 - PR run `37403509270` `Phase 03 real integration`: PASS against MySQL, MinIO, and SoftHSM.
+- PR run `37404774251` `Core / Java 21`: PASS, 1,022 tests with no failures or errors.
 - `EVIDENCE/playwright-complaint-case-report.json` binds the Google Chrome execution to commit `b402642ce5dcf0c129988091fc6e6074f93f42f5` and raw report SHA-256 `152642297a40e7bac02d4b33ea2294527f24b5dc50f82ffc18fe9cba8ce8ce1b`.
 
 Prior Phase 41 verification evidence:

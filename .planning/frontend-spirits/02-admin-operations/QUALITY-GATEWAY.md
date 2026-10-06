@@ -19,7 +19,7 @@
 | Issue 124 authorization | Focused backend matrix recorded in the Issue 124 verification package | Pass | PASS within the 37-test matrix with Spring method security enabled. |
 | Issue 124 full frontend | `npm --prefix web test` | Pass | Local run reached 224/225 with one unchanged cross-file-only failure; clean Node 20 CI PASS in run `37402564417`. |
 | Issue 124 frontend build | `npm --prefix web run build` | Pass | PASS on the final local diff; the existing bundle-size warning remains. |
-| Issue 124 full backend | `mvn -f core/pom.xml test` | Pass | First Java 21 CI ran 1,022 tests; the only failure was the then-open Issue 124 delivery TODO. Final rerun follows the now-empty TODO. |
+| Issue 124 full backend | `mvn -f core/pom.xml test` | Pass | PASS, 1,022 tests with no failures or errors, Java 21 run `37404774251`. |
 | Issue 124 diff hygiene | `git diff --check` | Pass | PASS on the final local diff. |
 | Issue 124 scoped release boundary | Complaint-management Google Chrome lane; no Compose/runtime/release identity changed | Pass or verified boundary | PASS, fresh/repeated Docker release in run `37403509270`; final planning validator follows the checksum evidence commit. |
 

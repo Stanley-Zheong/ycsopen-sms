@@ -25,6 +25,7 @@ The default full Vitest run reached 224/225 passing tests and failed one pre-exi
 - First CI run `37402564417`: Node 20 PASS. Java 21 executed 1,022 tests with no changed-behavior failure; its only failure was the then-open Issue 124 delivery TODO. The Phase 41 design validator stopped on the intentionally stale UI inventory checksum.
 - First branded-Chrome execution used Google Chrome 154 and passed 9/11 tests. It exposed a 36.8px submit control against the 38px minimum and backdrop-close focus loss. The follow-up raises the complaint submit selector above the shared 36.8px rule, closes from the click event, captures the opener before dialog focus entry, and adds a focused regression test.
 - Post-fix run `37403509270` checked out commit `b402642ce5dcf0c129988091fc6e6074f93f42f5`: Node 20 PASS; Google Chrome 154 complaint suite PASS, 11/11 with no skipped, unexpected, or flaky tests; fresh/repeated Docker release PASS; Phase 03 real integration against MySQL, MinIO, and SoftHSM PASS. The raw Chrome report SHA-256 is `152642297a40e7bac02d4b33ea2294527f24b5dc50f82ffc18fe9cba8ce8ce1b` and its normalized Phase 41 record is checksum-bound in `EVIDENCE/ui-contract.json`.
+- Evidence-sealing run `37404774251` checked out commit `5b5da37be119fe4bcbc93a64cbaa7a652178a3fe`: Java 21 PASS, 1,022 tests with no failures or errors. Its planning gate identified missing direct-obligation metadata and a non-expanded Playwright command; both are corrected in the follow-up without changing product behavior.
 
 ## Local Environment Boundaries
 
@@ -36,4 +37,4 @@ The default full Vitest run reached 224/225 passing tests and failed one pre-exi
 
 ## Provider Evidence
 
-Final checksum/planning/Java CI and merge receipt are recorded in the provider response after they exist. The Issue 124 Chrome claim uses run `37403509270`, not historical Phase 41 evidence.
+Final checksum/planning CI and merge receipt are recorded in the provider response after they exist. The Issue 124 Chrome claim uses run `37403509270`, not historical Phase 41 evidence.

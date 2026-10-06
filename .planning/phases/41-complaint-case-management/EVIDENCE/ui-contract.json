@@ -138,18 +138,18 @@
     "sources": [
       {
         "path": "web/test/scripts/complaint-case.spec.ts",
-        "sha256": "2b8092e6d58f2c0d3c294d63fa17a6d39044a16c0c6b7ef71ef16a01dc55c958"
+        "sha256": "f117ba43fe7914629cadf79c253c74e457ada02a4f3f052f573a42b9a2c08fc1"
       }
     ]
   },
   "execution": {
-    "command": "npm --prefix web run test:e2e -- complaint-case.spec.ts --project=local-google-chrome --reporter=line,json",
+    "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
     "commit": "b402642ce5dcf0c129988091fc6e6074f93f42f5",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/41-complaint-case-management/EVIDENCE/playwright-complaint-case-report.json",
-      "sha256": "f92ae118c8022f812440fb04d4b919311409f112635868eda4f8b764baf674fc"
+      "sha256": "98d446732375eb9e2f936589d6417cc4f1c24182a3668a28370792d7a0cfbd20"
     }
   }
 }

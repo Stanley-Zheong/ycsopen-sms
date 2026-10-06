@@ -429,7 +429,7 @@ test.describe('Issue 124 complaint case context', () => {
     await expect(page.getByTestId('admin-complaint-case-complaints-case-id')).toHaveText('#1');
   });
 
-  test('pw-issue-124-remediation C-124-REMEDIATION OBL-F-9-3-A pw-p41-remediation C-P41-REMEDIATION pw-p41-resource C-P41-RESOURCE-DISABLE persists exact failed remediation evidence', async ({ page }) => {
+  test('pw-issue-124-remediation C-124-REMEDIATION OBL-F-9-3-A pw-p41-remediation C-P41-REMEDIATION OBL-STATE-RESOURCE-DISABLE pw-p41-resource C-P41-RESOURCE-DISABLE persists exact failed remediation evidence', async ({ page }) => {
     await mockComplaintApis(page, [{ ...baseCase, status: 'PROCESSED' }]);
     await loginAs(page, 'OPERATOR');
     await page.goto('/admin/complaints');
