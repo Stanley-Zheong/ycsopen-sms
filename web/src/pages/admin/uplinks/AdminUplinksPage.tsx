@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getAdminUplink,
   listAdminUplinks,
+  listUplinkTenantOptions,
   listUplinkPushMonitor,
   pauseUplinkPushEvent,
   replayAdminUplink,
@@ -10,6 +11,7 @@ import {
   resumeUplinkPushEvent,
   type UplinkPushMonitorRow,
   type UplinkRecord,
+  type UplinkTenantOption,
 } from '@/api/uplinkNormalizationApi';
 import { mutationErrorMessage } from '@/api/client';
 import ActionReasonDialog from '@/components/common/ActionReasonDialog';
@@ -30,12 +32,66 @@ const ACTION_LABELS: Record<PendingAction['kind'], string> = {
   'push-resume': '恢复推送',
 };
 
+type TenantIdentity = Pick<UplinkRecord, 'tenantId' | 'tenantNo' | 'tenantShortName' | 'tenantFullName'>;
+
+function tenantOptionLabel(option: UplinkTenantOption) {
+  const name = option.tenantShortName?.trim() || option.tenantFullName?.trim() || `机构 ID ${option.tenantId}`;
+  return `${name}（${option.tenantNo || `ID ${option.tenantId}`}）`;
+}
+
+function tenantPrimary(identity: TenantIdentity) {
+  return identity.tenantShortName?.trim()
+    || identity.tenantFullName?.trim()
+    || identity.tenantNo?.trim()
+    || `机构 ID ${identity.tenantId}`;
+}
+
+function tenantSecondary(identity: TenantIdentity) {
+  if (identity.tenantNo?.trim() && (identity.tenantShortName?.trim() || identity.tenantFullName?.trim())) {
+    return identity.tenantNo.trim();
+  }
+  return `内部 ID ${identity.tenantId}`;
+}
+
+function TenantIdentityCell({ identity, testId }: { identity: TenantIdentity; testId: string }) {
+  return <span className="uplink-tenant-identity" data-testid={testId}>
+    <strong>{tenantPrimary(identity)}</strong>
+    <small>{tenantSecondary(identity)}</small>
+  </span>;
+}
+
+function resolveTenantId(input: string, options: UplinkTenantOption[]) {
+  const value = input.trim();
+  if (!value) return { tenantId: '', error: '' };
+  if (/^[1-9]\d*$/.test(value)) return { tenantId: value, error: '' };
+  const normalized = value.toLocaleLowerCase('zh-CN');
+  const matches = options.filter((option) => [
+    option.tenantNo,
+    option.tenantShortName,
+    option.tenantFullName,
+    tenantOptionLabel(option),
+  ].some((candidate) => candidate?.toLocaleLowerCase('zh-CN').includes(normalized)));
+  if (matches.length === 1) return { tenantId: String(matches[0].tenantId), error: '' };
+  return {
+    tenantId: '',
+    error: matches.length > 1 ? '匹配到多个机构，请从候选项中选择机构编号。' : '未找到该机构，请选择候选项或输入数字内部 ID。',
+  };
+}
+
+function sameFilterValues<T extends Record<string, string>>(left: T, right: T) {
+  return (Object.keys(left) as Array<keyof T>).every((key) => left[key] === right[key]);
+}
+
 export default function AdminUplinksPage() {
   const queryClient = useQueryClient();
   const [draftFilters, setDraftFilters] = useState(EMPTY_UPLINK_FILTERS);
   const [filters, setFilters] = useState(draftFilters);
   const [draftMonitorFilters, setDraftMonitorFilters] = useState(DEFAULT_MONITOR_FILTERS);
   const [monitorFilters, setMonitorFilters] = useState(draftMonitorFilters);
+  const [draftTenant, setDraftTenant] = useState('');
+  const [draftMonitorTenant, setDraftMonitorTenant] = useState('');
+  const [activeTenantLookup, setActiveTenantLookup] = useState<'uplink' | 'monitor'>('uplink');
+  const [tenantFilterFeedback, setTenantFilterFeedback] = useState('');
   const [selected, setSelected] = useState<UplinkRecord | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [actionReason, setActionReason] = useState('');
@@ -44,6 +100,24 @@ export default function AdminUplinksPage() {
 
   const uplinkFilter = useMemo(() => filters, [filters]);
   const monitorFilter = useMemo(() => monitorFilters, [monitorFilters]);
+  const deferredTenantLookup = useDeferredValue(draftTenant.trim());
+  const deferredMonitorTenantLookup = useDeferredValue(draftMonitorTenant.trim());
+  const tenantOptions = useQuery({
+    queryKey: ['uplink-tenant-options', deferredTenantLookup],
+    queryFn: () => listUplinkTenantOptions(deferredTenantLookup),
+    retry: false,
+  });
+  const monitorTenantOptions = useQuery({
+    queryKey: ['uplink-tenant-options', deferredMonitorTenantLookup],
+    queryFn: () => listUplinkTenantOptions(deferredMonitorTenantLookup),
+    retry: false,
+  });
+  const activeTenantOptions = activeTenantLookup === 'uplink' ? tenantOptions : monitorTenantOptions;
+  useEffect(() => {
+    if (!activeTenantOptions.isFetching && tenantFilterFeedback === '正在查找机构，请等待候选项加载后再查询。') {
+      setTenantFilterFeedback('');
+    }
+  }, [activeTenantOptions.isFetching, tenantFilterFeedback]);
   const uplinks = useQuery({ queryKey: ['admin-uplinks', uplinkFilter], queryFn: () => listAdminUplinks(uplinkFilter), retry: false });
   const monitor = useQuery({ queryKey: ['uplink-push-monitor', monitorFilter], queryFn: () => listUplinkPushMonitor(monitorFilter), retry: false });
 
@@ -94,8 +168,75 @@ export default function AdminUplinksPage() {
 
   const setFilter = (key: keyof typeof draftFilters, value: string) => setDraftFilters((current) => ({ ...current, [key]: value }));
   const setMonitorFilter = (key: keyof typeof draftMonitorFilters, value: string) => setDraftMonitorFilters((current) => ({ ...current, [key]: value }));
-  const applyFilters = () => setFilters(draftFilters);
-  const applyMonitorFilters = () => setMonitorFilters(draftMonitorFilters);
+  const validatedTenantId = (input: string, options: UplinkTenantOption[], isFetching: boolean) => {
+    if (isFetching && input.trim() && !/^\d+$/.test(input.trim())) {
+      setTenantFilterFeedback('正在查找机构，请等待候选项加载后再查询。');
+      return null;
+    }
+    const resolved = resolveTenantId(input, options);
+    if (resolved.error) {
+      setTenantFilterFeedback(resolved.error);
+      return null;
+    }
+    setTenantFilterFeedback('');
+    return resolved.tenantId;
+  };
+  const applyFilters = () => {
+    setActiveTenantLookup('uplink');
+    const tenantId = validatedTenantId(draftTenant, tenantOptions.data ?? [], tenantOptions.isFetching);
+    if (tenantId === null) return;
+    const next = { ...draftFilters, tenantId };
+    setDraftFilters(next);
+    setFilters(next);
+    return true;
+  };
+  const applyMonitorFilters = () => {
+    setActiveTenantLookup('monitor');
+    const tenantId = validatedTenantId(
+      draftMonitorTenant,
+      monitorTenantOptions.data ?? [],
+      monitorTenantOptions.isFetching,
+    );
+    if (tenantId === null) return;
+    const next = { ...draftMonitorFilters, tenantId };
+    setDraftMonitorFilters(next);
+    setMonitorFilters(next);
+    return true;
+  };
+  const refreshUplinks = () => {
+    setActiveTenantLookup('uplink');
+    const tenantId = validatedTenantId(draftTenant, tenantOptions.data ?? [], tenantOptions.isFetching);
+    if (tenantId === null) return;
+    const next = { ...draftFilters, tenantId };
+    if (!sameFilterValues(next, filters)) {
+      setDraftFilters(next);
+      setFilters(next);
+      return;
+    }
+    void uplinks.refetch();
+  };
+  const refreshMonitor = () => {
+    setActiveTenantLookup('monitor');
+    const tenantId = validatedTenantId(
+      draftMonitorTenant,
+      monitorTenantOptions.data ?? [],
+      monitorTenantOptions.isFetching,
+    );
+    if (tenantId === null) return;
+    const next = { ...draftMonitorFilters, tenantId };
+    if (!sameFilterValues(next, monitorFilters)) {
+      setDraftMonitorFilters(next);
+      setMonitorFilters(next);
+      return;
+    }
+    void monitor.refetch();
+  };
+  const changeTenantLookup = (value: string, owner: 'uplink' | 'monitor') => {
+    if (owner === 'uplink') setDraftTenant(value);
+    else setDraftMonitorTenant(value);
+    setActiveTenantLookup(owner);
+    setTenantFilterFeedback('');
+  };
   const openAction = (action: PendingAction) => {
     setPendingAction(action);
     setActionReason('');
@@ -127,6 +268,24 @@ export default function AdminUplinksPage() {
 
       {message && <p role="status" className="uplink-alert success" data-testid="admin-uplink-normalization-operation-message">{message}</p>}
       {error && <p role="alert" className="uplink-alert error" data-testid="admin-uplink-normalization-operation-error">{error}</p>}
+      <datalist id="admin-uplink-tenant-options" data-testid="admin-uplink-normalization-tenant-options">
+        {(tenantOptions.data ?? []).map((option) => <option key={option.tenantId} value={option.tenantNo} label={tenantOptionLabel(option)} />)}
+      </datalist>
+      <datalist id="admin-uplink-push-tenant-options">
+        {(monitorTenantOptions.data ?? []).map((option) => <option key={option.tenantId} value={option.tenantNo} label={tenantOptionLabel(option)} />)}
+      </datalist>
+      <p
+        className={activeTenantOptions.isError || tenantFilterFeedback ? 'uplink-alert error' : 'uplink-filter-feedback'}
+        data-testid="admin-uplink-normalization-tenant-filter-feedback"
+        role={activeTenantOptions.isError || tenantFilterFeedback ? 'alert' : 'status'}
+      >
+        {tenantFilterFeedback
+          || (activeTenantOptions.isError
+            ? '机构名称搜索暂不可用，仍可输入数字内部 ID 查询。'
+            : activeTenantOptions.isFetching
+              ? '正在加载机构候选项…'
+              : '可按机构简称、全称或机构编号搜索。')}
+      </p>
 
       <section className="uplink-summary-grid">
         <article className="card" data-testid="admin-uplink-normalization-uplinks-card-total">
@@ -148,8 +307,8 @@ export default function AdminUplinksPage() {
         resetLegacyTestId="admin-uplink-normalization-uplinks-reset"
         refreshLegacyTestId="admin-uplink-normalization-refresh"
         onSubmit={applyFilters}
-        onReset={() => { setDraftFilters(EMPTY_UPLINK_FILTERS); setFilters(EMPTY_UPLINK_FILTERS); }}
-        onRefresh={() => void uplinks.refetch()}
+        onReset={() => { setActiveTenantLookup('uplink'); setDraftTenant(''); setDraftFilters(EMPTY_UPLINK_FILTERS); setFilters(EMPTY_UPLINK_FILTERS); setTenantFilterFeedback(''); }}
+        onRefresh={refreshUplinks}
         queryStatus={{
           testId: 'admin-uplink-normalization-uplinks-query-status',
           label: '上行明细',
@@ -169,7 +328,7 @@ export default function AdminUplinksPage() {
           <tbody>
             {(uplinks.data ?? []).map((row) => (
               <tr key={row.id} data-testid="admin-uplink-normalization-uplinks-row">
-                <td>{row.tenantId}</td>
+                <td><TenantIdentityCell identity={row} testId="admin-uplink-normalization-uplinks-tenant-cell" /></td>
                 <td>{row.sourceProtocol}/{row.sourceConnector}</td>
                 <td>{row.phoneMasked}</td>
                 <td>{row.contentKeyword ?? '-'}</td>
@@ -189,7 +348,7 @@ export default function AdminUplinksPage() {
         </table>
         </>}
       >
-        <QueryField name="tenant-id" label="租户ID"><input data-testid="admin-uplink-normalization-uplinks-filter-tenant" value={draftFilters.tenantId} onChange={(event) => setFilter('tenantId', event.target.value)} /></QueryField>
+        <QueryField name="tenant-id" label="机构"><input list="admin-uplink-tenant-options" placeholder="机构简称、全称或编号" aria-describedby="admin-uplink-tenant-filter-feedback" data-testid="admin-uplink-normalization-uplinks-filter-tenant" value={draftTenant} onChange={(event) => changeTenantLookup(event.target.value, 'uplink')} /></QueryField>
         <QueryField name="phone-number" label="手机号"><input data-testid="admin-uplink-normalization-uplinks-filter-number" value={draftFilters.phoneNumber} onChange={(event) => setFilter('phoneNumber', event.target.value)} /></QueryField>
         <QueryField name="keyword" label="关键词"><input data-testid="admin-uplink-normalization-uplinks-filter-keyword" value={draftFilters.keyword} onChange={(event) => setFilter('keyword', event.target.value)} /></QueryField>
         <QueryField name="carrier" label="运营商"><input data-testid="admin-uplink-normalization-uplinks-filter-carrier" value={draftFilters.carrier} onChange={(event) => setFilter('carrier', event.target.value)} /></QueryField>
@@ -203,7 +362,11 @@ export default function AdminUplinksPage() {
           <button type="button" aria-label="关闭详情" onClick={() => setSelected(null)}>×</button>
           <h2>上行详情 #{selected.id}</h2>
           <dl>
-            <dt>租户</dt><dd>{selected.tenantId}</dd>
+            <div data-testid="admin-uplink-normalization-detail-tenant-identity">
+              <dt>机构简称/编号</dt><dd>{tenantPrimary(selected)} / {selected.tenantNo ?? `ID ${selected.tenantId}`}</dd>
+              <dt>机构全称</dt><dd>{selected.tenantFullName?.trim() || '名称不可用'}</dd>
+              <dt>内部 ID</dt><dd>{selected.tenantId}</dd>
+            </div>
             <dt>消息</dt><dd>{selected.messageId ?? '-'}</dd>
             <dt>内容</dt><dd>{selected.content}</dd>
             <dt>签名/产品</dt><dd>{selected.signatureId ?? '-'}/{selected.productCode ?? '-'}</dd>
@@ -222,8 +385,8 @@ export default function AdminUplinksPage() {
         <QueryPanel
           submitLegacyTestId="admin-uplink-normalization-push-search"
           onSubmit={applyMonitorFilters}
-          onReset={() => { setDraftMonitorFilters(DEFAULT_MONITOR_FILTERS); setMonitorFilters(DEFAULT_MONITOR_FILTERS); }}
-          onRefresh={() => void monitor.refetch()}
+          onReset={() => { setActiveTenantLookup('monitor'); setDraftMonitorTenant(''); setDraftMonitorFilters(DEFAULT_MONITOR_FILTERS); setMonitorFilters(DEFAULT_MONITOR_FILTERS); setTenantFilterFeedback(''); }}
+          onRefresh={refreshMonitor}
           queryStatus={{
             testId: 'admin-uplink-normalization-push-monitor-query-status',
             label: '上行推送监控',
@@ -240,7 +403,7 @@ export default function AdminUplinksPage() {
             {(monitor.data ?? []).map((row) => (
               <tr key={row.eventId} data-testid="admin-uplink-normalization-push-monitor-row">
                 <td>{row.logicalId}</td>
-                <td>{row.tenantId}</td>
+                <td><TenantIdentityCell identity={row} testId="admin-uplink-normalization-push-monitor-tenant-cell" /></td>
                 <td>{row.destinationUrl}</td>
                 <td>{row.state}</td>
                 <td>{row.attemptCount}/{row.maxAttempts}（{row.attemptRows}）</td>
@@ -256,7 +419,7 @@ export default function AdminUplinksPage() {
           </tbody>
         </table>}
         >
-          <QueryField name="tenant-id" label="租户ID"><input data-testid="admin-uplink-normalization-push-filter-tenant" value={draftMonitorFilters.tenantId} onChange={(event) => setMonitorFilter('tenantId', event.target.value)} /></QueryField>
+          <QueryField name="tenant-id" label="机构"><input list="admin-uplink-push-tenant-options" placeholder="机构简称、全称或编号" aria-describedby="admin-uplink-tenant-filter-feedback" data-testid="admin-uplink-normalization-push-filter-tenant" value={draftMonitorTenant} onChange={(event) => changeTenantLookup(event.target.value, 'monitor')} /></QueryField>
           <QueryField name="state" label="状态"><select data-testid="admin-uplink-normalization-push-filter-state" value={draftMonitorFilters.state} onChange={(event) => setMonitorFilter('state', event.target.value)}><option value="">全部</option><option value="PUSH_FAILED">PUSH_FAILED</option><option value="PAUSED">PAUSED</option><option value="RETRY">RETRY</option><option value="DELIVERED">DELIVERED</option></select></QueryField>
           <QueryField name="destination" label="目的地"><input data-testid="admin-uplink-normalization-push-filter-destination" value={draftMonitorFilters.destination} onChange={(event) => setMonitorFilter('destination', event.target.value)} /></QueryField>
         </QueryPanel>
@@ -267,8 +430,8 @@ export default function AdminUplinksPage() {
           idPrefix="admin-uplink-normalization-action"
           title={`确认${ACTION_LABELS[pendingAction.kind]}`}
           target={pendingAction.kind === 'uplink-replay'
-            ? `上行记录 #${pendingAction.row.id} · 机构 ${pendingAction.row.tenantId}`
-            : `推送事件 ${pendingAction.row.logicalId} · 机构 ${pendingAction.row.tenantId}`}
+            ? `上行记录 #${pendingAction.row.id} · ${tenantPrimary(pendingAction.row)}（${tenantSecondary(pendingAction.row)}）`
+            : `推送事件 ${pendingAction.row.logicalId} · ${tenantPrimary(pendingAction.row)}（${tenantSecondary(pendingAction.row)}）`}
           consequence={pendingAction.kind === 'uplink-replay'
             ? '确认后将按原上行记录重新执行推送，不会更改保存的目的地。'
             : pendingAction.kind === 'push-pause'

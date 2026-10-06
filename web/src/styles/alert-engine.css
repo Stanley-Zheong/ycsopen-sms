@@ -105,9 +105,16 @@
 }
 
 .complaint-field-grid input,
-.complaint-field-grid select {
+.complaint-field-grid select,
+.complaint-action-fields input,
+.complaint-action-fields select {
+  width: 100%;
   height: 40px;
   min-height: 40px;
+}
+
+.complaint-field-grid > p {
+  margin: 0;
 }
 
 .complaint-form-actions {
@@ -116,6 +123,11 @@
   align-self: end;
   align-items: flex-end;
   justify-content: flex-start;
+}
+
+.complaint-field-grid .complaint-form-actions > button {
+  height: 40px;
+  min-height: 40px;
 }
 
 .complaint-table-wrap {
@@ -127,13 +139,14 @@
   table-layout: fixed;
 }
 
+.complaint-table-id { width: 7%; }
 .complaint-table-source { width: 8%; }
-.complaint-table-summary { width: 14%; }
+.complaint-table-summary { width: 13%; }
 .complaint-table-quality { width: 9%; }
 .complaint-table-status { width: 8%; }
-.complaint-table-resource { width: 22%; }
-.complaint-table-requirement { width: 13%; }
-.complaint-table-actions-column { width: 26%; }
+.complaint-table-resource { width: 21%; }
+.complaint-table-requirement { width: 12%; }
+.complaint-table-actions-column { width: 22%; }
 
 .complaint-table th {
   background: var(--color-table-header);
@@ -174,6 +187,148 @@
   white-space: nowrap;
 }
 
+.complaint-row-selected td {
+  background: var(--color-surface-alt);
+}
+
+.complaint-workspace-state {
+  margin: 0;
+  padding: 24px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.complaint-case-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.complaint-case-summary > div {
+  min-width: 0;
+  padding: 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.complaint-case-summary span,
+.complaint-case-summary strong {
+  display: block;
+}
+
+.complaint-case-summary span {
+  margin-bottom: 4px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.complaint-case-summary strong {
+  overflow-wrap: anywhere;
+}
+
+.complaint-case-summary-wide {
+  grid-column: 1 / -1;
+}
+
+.complaint-case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.complaint-timeline {
+  margin-top: 20px;
+}
+
+.complaint-timeline h3 {
+  margin-bottom: 12px;
+}
+
+.complaint-timeline ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.complaint-timeline li {
+  position: relative;
+  padding: 12px 16px 12px 28px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-card);
+}
+
+.complaint-timeline li::before {
+  position: absolute;
+  top: 17px;
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  content: '';
+}
+
+.complaint-timeline p {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.complaint-timeline-heading,
+.complaint-action-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complaint-timeline-heading span {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.complaint-action-backdrop {
+  display: grid;
+  place-items: center;
+}
+
+.complaint-action-dialog {
+  min-width: 0;
+}
+
+.complaint-action-heading h2 {
+  margin: 0;
+}
+
+.complaint-action-close {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.complaint-action-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.complaint-action-readonly {
+  padding: 10px 12px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-control);
+  overflow-wrap: anywhere;
+}
+
 .complaint-table-state {
   padding: 32px 16px !important;
   color: var(--color-muted);
@@ -189,5 +344,13 @@
 @media (max-width: 720px) {
   .complaint-field-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .complaint-case-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .complaint-case-summary-wide {
+    grid-column: auto;
   }
 }

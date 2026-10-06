@@ -14,10 +14,26 @@
       "admin-contract-pricing-tenant-contract-attachment",
       "admin-contract-pricing-tenant-contract-credit-limit",
       "admin-contract-pricing-tenant-contract-billing-period",
-      "admin-contract-pricing-tenant-contract-approve"
+      "admin-contract-pricing-tenant-contract-approve",
+      "admin-trial-conversion-workbench-filters",
+      "admin-trial-conversion-workbench-query-status",
+      "admin-trial-conversion-workbench-row",
+      "admin-trial-conversion-workbench-row-analysis",
+      "admin-trial-conversion-workbench-analysis-dialog",
+      "admin-trial-conversion-workbench-row-convert",
+      "admin-trial-conversion-workbench-selected-tenant",
+      "admin-trial-conversion-workbench-price-retry",
+      "data-table",
+      "table-empty",
+      "admin-trial-conversion-workbench-row-adjust",
+      "admin-trial-conversion-workbench-adjust-dialog",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
+      "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/UI-ELEMENTS.md", "sha256": "0b3ca915f7a5653ec8909277e256371524d6fac83ed15f4d28280944273dd359"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/UI-ELEMENTS.md", "sha256": "597e541deffbdc693c051eafc1d1565873e7134affd7129d4013aefed885d9ac"}
     ]
   },
   "pencil": {
@@ -39,10 +55,26 @@
       "admin-contract-pricing-tenant-contract-attachment",
       "admin-contract-pricing-tenant-contract-credit-limit",
       "admin-contract-pricing-tenant-contract-billing-period",
-      "admin-contract-pricing-tenant-contract-approve"
+      "admin-contract-pricing-tenant-contract-approve",
+      "admin-trial-conversion-workbench-filters",
+      "admin-trial-conversion-workbench-query-status",
+      "admin-trial-conversion-workbench-row",
+      "admin-trial-conversion-workbench-row-analysis",
+      "admin-trial-conversion-workbench-analysis-dialog",
+      "admin-trial-conversion-workbench-row-convert",
+      "admin-trial-conversion-workbench-selected-tenant",
+      "admin-trial-conversion-workbench-price-retry",
+      "data-table",
+      "table-empty",
+      "admin-trial-conversion-workbench-row-adjust",
+      "admin-trial-conversion-workbench-adjust-dialog",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
+      "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.html", "sha256": "6b7ca72531674ad53b02fb1d1d87a19c7427cec34dea44444c5b0ae1c87d6459"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.html", "sha256": "20b46680f041cc483603f5d5741feef754e4394c886901231f8e7317fe973f42"}
     ]
   },
   "prototype_playwright": {
@@ -59,10 +91,26 @@
       "admin-contract-pricing-tenant-contract-attachment",
       "admin-contract-pricing-tenant-contract-credit-limit",
       "admin-contract-pricing-tenant-contract-billing-period",
-      "admin-contract-pricing-tenant-contract-approve"
+      "admin-contract-pricing-tenant-contract-approve",
+      "admin-trial-conversion-workbench-filters",
+      "admin-trial-conversion-workbench-query-status",
+      "admin-trial-conversion-workbench-row",
+      "admin-trial-conversion-workbench-row-analysis",
+      "admin-trial-conversion-workbench-analysis-dialog",
+      "admin-trial-conversion-workbench-row-convert",
+      "admin-trial-conversion-workbench-selected-tenant",
+      "admin-trial-conversion-workbench-price-retry",
+      "data-table",
+      "table-empty",
+      "admin-trial-conversion-workbench-row-adjust",
+      "admin-trial-conversion-workbench-adjust-dialog",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
+      "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.spec.ts", "sha256": "abc68872bff22f37ef45adbfcee89b09a8b729b4351aa9b48113c3bad4104a5e"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.spec.ts", "sha256": "33169b3ac4e400b7cd0b56c90f01d93cec8bfa693f5325d615a338648676b2e2"}
     ]
   },
   "implementation": {
@@ -79,12 +127,28 @@
       "admin-contract-pricing-tenant-contract-attachment",
       "admin-contract-pricing-tenant-contract-credit-limit",
       "admin-contract-pricing-tenant-contract-billing-period",
-      "admin-contract-pricing-tenant-contract-approve"
+      "admin-contract-pricing-tenant-contract-approve",
+      "admin-trial-conversion-workbench-filters",
+      "admin-trial-conversion-workbench-query-status",
+      "admin-trial-conversion-workbench-row",
+      "admin-trial-conversion-workbench-row-analysis",
+      "admin-trial-conversion-workbench-analysis-dialog",
+      "admin-trial-conversion-workbench-row-convert",
+      "admin-trial-conversion-workbench-selected-tenant",
+      "admin-trial-conversion-workbench-price-retry",
+      "data-table",
+      "table-empty",
+      "admin-trial-conversion-workbench-row-adjust",
+      "admin-trial-conversion-workbench-adjust-dialog",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
+      "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": "web/src/router/routes.tsx", "sha256": "d12c725432b4c317765f898cbd4315044d6346daad6be3bfa9c73536161780b2"},
-      {"path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "6927d4ca8b0842e6e9e79e3c98d654bac3624a6398aefe83b8add52add8ab079"},
-      {"path": "web/src/pages/tenant/overview/OverviewPage.tsx", "sha256": "2f0eac14d89739985553eea9426a1578c770ecbc9a3b2567683b34915f5701b9"}
+      {"path": "web/src/router/routes.tsx", "sha256": "f4fb16ee9f94406e650b6f605469b41795d99d4ea0c0062c530809f2e3186a12"},
+      {"path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "b7b67cbfc39912daeb58395123d5d9f28095248bfba81268352d071980bdedce"},
+      {"path": "web/src/pages/tenant/overview/OverviewPage.tsx", "sha256": "b5e110b4f59c0f9e162e3f968ce49363f1b7743da654864079b8446aa678d09e"}
     ]
   },
   "playwright": {
@@ -101,20 +165,36 @@
       "admin-contract-pricing-tenant-contract-attachment",
       "admin-contract-pricing-tenant-contract-credit-limit",
       "admin-contract-pricing-tenant-contract-billing-period",
-      "admin-contract-pricing-tenant-contract-approve"
+      "admin-contract-pricing-tenant-contract-approve",
+      "admin-trial-conversion-workbench-filters",
+      "admin-trial-conversion-workbench-query-status",
+      "admin-trial-conversion-workbench-row",
+      "admin-trial-conversion-workbench-row-analysis",
+      "admin-trial-conversion-workbench-analysis-dialog",
+      "admin-trial-conversion-workbench-row-convert",
+      "admin-trial-conversion-workbench-selected-tenant",
+      "admin-trial-conversion-workbench-price-retry",
+      "data-table",
+      "table-empty",
+      "admin-trial-conversion-workbench-row-adjust",
+      "admin-trial-conversion-workbench-adjust-dialog",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
+      "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": "web/test/scripts/contract-pricing.spec.ts", "sha256": "f19e6e8d2cdde915d12a0bbb0307246d152c01c21cb50a2499fd217c8b1d261d"}
+      {"path": "web/test/scripts/contract-pricing.spec.ts", "sha256": "0b4fac8e638b14db068e4b3fcad432553345f0d0a859ca629b74ae39d7ffe0cd"}
     ]
   },
   "execution": {
-    "command": "npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
-    "commit": "0000000000000000000000000000000000000000",
-    "config": "web/playwright.config.ts project=local-google-chrome",
+    "command": "YCSOPEN_USE_BUNDLED_CHROMIUM=true npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=bundled-chromium --workers=1 --reporter=json",
+    "commit": "29dbc61246e3bff4efec8ddea3c2e172544092eb",
+    "config": "web/playwright.config.ts project=bundled-chromium workers=1",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/37-contract-pricing-postpaid/EVIDENCE/playwright-contract-pricing-report.json",
-      "sha256": "16fb2e9b331e3c95bce03e32a7731c2ee9289fd5c922a98c23b2ed8b8bb61219"
+      "sha256": "1422ec7f915c55dac81210ce1a6aa7c41cdfea82d72cdddc7b3c9392399b4ac8"
     }
   }
 }

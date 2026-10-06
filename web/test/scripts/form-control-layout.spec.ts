@@ -376,7 +376,21 @@ test('pw-issue-87-admin-form-contract C-ISSUE-87-ADMIN-FORM-WIDTH C-ISSUE-87-HOR
       'the 720px channel configuration dialog preserves three usable columns',
     ).toBe(3);
 
+    await page.route(/\/api\/v1\/console\/contracts\/workbench(?:\?.*)?$/, (apiRoute) => apiRoute.fulfill({
+      json: apiResponse([{ tenantId: 42, tenantNo: 'TENANT-42', shortName: '测试机构', fullName: '测试机构有限公司',
+        salesOwner: 'Alice', industry: 'SaaS', configurationSnapshotVersion: 'TRIAL-SNAPSHOT-V1-1234567890ABCDEF',
+        lifecycleStatus: 'TRIAL_FROZEN', trialStatus: 'TRIAL_FROZEN', trialStartAt: '2026-09-01T00:00:00',
+        trialEndAt: '2026-09-30T00:00:00', remainingDays: 0, quotaUsed: 400, quotaTotal: 500,
+        messageCount: 2, successCount: 1, successRate: 0.5, complaintCount: 1, complaintRate: 0.5,
+        statisticsAt: '2026-09-07T12:00:00', dataQuality: 'COMPLETE',
+        sourceRegistry: 'tenants:trial_accounts:message_tasks:complaints', conversionEligible: true,
+        ineligibilityReasons: [] }]),
+    }));
+    await page.route('**/api/v1/console/contracts/price-books', (apiRoute) => apiRoute.fulfill({
+      json: apiResponse([{ priceBookVersion: 'SMS_STANDARD_V1', productCode: 'SMS', unitPriceMil: 50 }]),
+    }));
     await visitAdminRoute(page, '/admin/tenant-trial-contracts');
+    await page.getByTestId('admin-trial-conversion-workbench-row-convert').click();
     const postpaidFields = page.getByTestId('admin-contract-pricing-tenant-contract-postpaid-fields');
     await expect(postpaidFields).toBeVisible();
     const postpaidBounds = await postpaidFields.boundingBox();
