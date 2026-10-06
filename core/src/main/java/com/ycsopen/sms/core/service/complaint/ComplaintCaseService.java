@@ -1,12 +1,21 @@
 package com.ycsopen.sms.core.service.complaint;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.common.security.logging.SafeLogValue;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger.Category;
+import com.ycsopen.sms.core.common.security.logging.SecurityEventLogger.Event;
 import com.ycsopen.sms.core.service.risk.BlacklistRiskControlService;
+import org.slf4j.MDC;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
@@ -19,23 +28,44 @@ import java.util.Objects;
 @Service
 public class ComplaintCaseService {
     private static final List<String> SOURCES = List.of("REGULATOR", "CARRIER", "OPERATOR", "USER_REPORT");
-    private static final List<String> QUALITIES = List.of("COMPLETE", "PARTIAL", "UNKNOWN");
+    private static final List<String> CONTENT_TYPES = List.of("VERIFY", "NOTIFY", "MARKETING");
     private static final List<String> DISPOSALS = List.of(
             "BLACKLIST_MOBILE", "SUSPEND_TENANT", "SUSPEND_SIGNATURE_OR_TEMPLATE", "SUSPEND_CHANNEL");
+    private static final String REMEDIATION_FAILURE_REASON = "处置执行失败，请根据安全审计日志排查";
 
     private final JdbcTemplate jdbc;
     private final BlacklistPort blacklistPort;
+    private final SecurityEventLogger security;
+    private final TransactionTemplate commandTransaction;
+    private final TransactionTemplate resourceTransaction;
 
     @Autowired
-    public ComplaintCaseService(JdbcTemplate jdbc, BlacklistRiskControlService blacklistService) {
+    public ComplaintCaseService(JdbcTemplate jdbc, BlacklistRiskControlService blacklistService,
+                                PlatformTransactionManager transactionManager, SecurityEventLogger security) {
         this(jdbc, (tenantId, mobile, actor, reason) -> blacklistService.createEntry(
                 new BlacklistRiskControlService.BlacklistEntryCreateRequest(
-                        tenantId, mobile, "BLACK", "COMPLAINT_LINKED", reason, null), actor).id());
+                        tenantId, mobile, "BLACK", "COMPLAINT_LINKED", reason, null), actor).id(),
+                transactionManager, security);
     }
 
     ComplaintCaseService(JdbcTemplate jdbc, BlacklistPort blacklistPort) {
+        this(jdbc, blacklistPort, new DataSourceTransactionManager(
+                Objects.requireNonNull(jdbc.getDataSource())), new SecurityEventLogger());
+    }
+
+    ComplaintCaseService(JdbcTemplate jdbc, BlacklistPort blacklistPort,
+                         PlatformTransactionManager transactionManager) {
+        this(jdbc, blacklistPort, transactionManager, new SecurityEventLogger());
+    }
+
+    ComplaintCaseService(JdbcTemplate jdbc, BlacklistPort blacklistPort,
+                         PlatformTransactionManager transactionManager, SecurityEventLogger security) {
         this.jdbc = Objects.requireNonNull(jdbc);
         this.blacklistPort = Objects.requireNonNull(blacklistPort);
+        this.security = Objects.requireNonNull(security);
+        this.commandTransaction = new TransactionTemplate(Objects.requireNonNull(transactionManager));
+        this.resourceTransaction = new TransactionTemplate(transactionManager);
+        this.resourceTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     @Transactional
@@ -45,11 +75,14 @@ public class ComplaintCaseService {
         }
         String source = enumValue(command.source(), SOURCES, "COMPLAINT_SOURCE_INVALID");
         String summary = text(command.summary(), "COMPLAINT_SUMMARY_REQUIRED", 500);
-        String quality = command.attributionQuality() == null || command.attributionQuality().isBlank()
-                ? inferredQuality(command) : enumValue(command.attributionQuality(), QUALITIES, "COMPLAINT_ATTRIBUTION_INVALID");
+        validateReferences(command);
+        String quality = inferredQuality(command);
         String requirement = optionalText(command.requirement(), 500);
-        String contentType = optionalText(command.contentType(), 64);
+        String contentType = command.contentType() == null || command.contentType().isBlank()
+                ? null : enumValue(command.contentType(), CONTENT_TYPES, "COMPLAINT_CONTENT_TYPE_INVALID");
         String mobile = optionalText(command.complainedMobile(), 32);
+        String createdBy = actor(actor);
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         var key = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement ps = connection.prepareStatement("""
@@ -69,13 +102,16 @@ public class ComplaintCaseService {
             ps.setString(9, summary);
             ps.setString(10, quality);
             ps.setString(11, requirement);
-            ps.setString(12, actor(actor));
-            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            ps.setString(12, createdBy);
             ps.setTimestamp(13, now);
             ps.setTimestamp(14, now);
             return ps;
         }, key);
-        return caseById(Objects.requireNonNull(key.getKey()).longValue());
+        long id = Objects.requireNonNull(key.getKey()).longValue();
+        appendEvent(id, "REGISTERED", createdBy, now, null, "PENDING",
+                "来源：" + source + "；摘要：" + summary, null, "SUCCESS", null, null,
+                null, "COMPLAINT", id);
+        return caseById(id);
     }
 
     @Transactional(readOnly = true)
@@ -114,87 +150,197 @@ public class ComplaintCaseService {
                 """, (rs, i) -> remediationRow(rs));
     }
 
+    @Transactional(readOnly = true)
+    public CaseDetail caseDetail(long id) {
+        CaseRow complaint = caseById(id);
+        List<CaseEventRow> timeline = jdbc.query("""
+                SELECT id, complaint_id, event_type, actor, occurred_at, from_status, to_status,
+                       evidence_text, target_ref, result, review_id, failure_reason, related_disposal_id
+                  FROM complaint_case_events
+                 WHERE complaint_id=?
+                 ORDER BY occurred_at ASC, id ASC
+                """, (rs, row) -> eventRow(rs), id);
+        List<RemediationRow> caseRemediations = jdbc.query("""
+                SELECT id, complaint_id, disposal_type, target_ref, status, authorized_review_id,
+                       failure_reason, original_complaint_id
+                  FROM disposal_records
+                 WHERE complaint_id=?
+                 ORDER BY disposed_at DESC, id DESC
+                """, (rs, row) -> remediationRow(rs), id);
+        return new CaseDetail(complaint, timeline, caseRemediations);
+    }
+
+    @Transactional(readOnly = true)
+    public ReferenceOptions referenceOptions() {
+        return new ReferenceOptions(
+                jdbc.query("""
+                        SELECT id, COALESCE(NULLIF(short_name, ''), NULLIF(full_name, ''), CONCAT('tenant:', id)) AS label
+                          FROM tenants ORDER BY id LIMIT 500
+                        """, (rs, row) -> new ReferenceOption(rs.getLong("id"), rs.getString("label"), null)),
+                jdbc.query("""
+                        SELECT id, COALESCE(NULLIF(channel_name, ''), CONCAT('channel:', id)) AS label
+                          FROM channels ORDER BY id LIMIT 500
+                        """, (rs, row) -> new ReferenceOption(rs.getLong("id"), rs.getString("label"), null)),
+                jdbc.query("""
+                        SELECT id, COALESCE(NULLIF(sign_content, ''), CONCAT('signature:', id)) AS label, tenant_id
+                          FROM signatures ORDER BY id LIMIT 500
+                        """, (rs, row) -> new ReferenceOption(
+                        rs.getLong("id"), rs.getString("label"), nullableLong(rs, "tenant_id"))),
+                jdbc.query("""
+                        SELECT id, COALESCE(NULLIF(template_name, ''), CONCAT('template:', id)) AS label, tenant_id
+                          FROM templates ORDER BY id LIMIT 500
+                        """, (rs, row) -> new ReferenceOption(
+                        rs.getLong("id"), rs.getString("label"), nullableLong(rs, "tenant_id"))));
+    }
+
     @Transactional
     public CaseRow accept(long id, StateCommand command) {
-        ensureStatus(id, "PENDING");
-        jdbc.update("""
+        if (command == null) {
+            throw failure("COMPLAINT_REQUEST_REQUIRED", "投诉请求不能为空");
+        }
+        String opinion = text(command.opinion(), "COMPLAINT_ACCEPT_OPINION_REQUIRED", 500);
+        String acceptedBy = actor(command.actor());
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        int rows = jdbc.update("""
                 UPDATE complaints SET status='PROCESSING', accepted_by=?, accepted_at=?, opinion=?, updated_at=?
-                 WHERE id=?
-                """, actor(command.actor()), Timestamp.valueOf(LocalDateTime.now()),
-                optionalText(command.opinion(), 500), Timestamp.valueOf(LocalDateTime.now()), id);
+                 WHERE id=? AND status='PENDING'
+                """, acceptedBy, now, opinion, now, id);
+        requireTransition(rows, id);
+        appendEvent(id, "ACCEPTED", acceptedBy, now, "PENDING", "PROCESSING", opinion,
+                null, "SUCCESS", null, null, null, "COMPLAINT", id);
         return caseById(id);
     }
 
     @Transactional
     public CaseRow handle(long id, StateCommand command) {
-        ensureStatus(id, "PROCESSING");
+        if (command == null) {
+            throw failure("COMPLAINT_REQUEST_REQUIRED", "投诉请求不能为空");
+        }
         String opinion = text(command.opinion(), "COMPLAINT_OPINION_REQUIRED", 500);
         String remediation = text(command.remediation(), "COMPLAINT_REMEDIATION_REQUIRED", 500);
         String requirement = text(command.requirement(), "COMPLAINT_REQUIREMENT_REQUIRED", 500);
-        jdbc.update("""
+        String handledBy = actor(command.actor());
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        int rows = jdbc.update("""
                 UPDATE complaints SET status='PROCESSED', opinion=?, remediation=?, requirement=?,
                        handling_note=?, corrective_action=?, handled_by=?, handled_at=?, updated_at=?
-                 WHERE id=?
-                """, opinion, remediation, requirement, opinion, remediation, actor(command.actor()),
-                Timestamp.valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()), id);
+                 WHERE id=? AND status='PROCESSING'
+                """, opinion, remediation, requirement, opinion, remediation, handledBy, now, now, id);
+        requireTransition(rows, id);
+        appendEvent(id, "HANDLED", handledBy, now, "PROCESSING", "PROCESSED",
+                "处理意见：" + opinion + "；处置动作：" + remediation + "；整改要求：" + requirement,
+                null, "SUCCESS", null, null, null, "COMPLAINT", id);
         return caseById(id);
     }
 
-    @Transactional
     public CaseRow close(long id, StateCommand command) {
-        ensureStatus(id, "PROCESSED");
+        if (command == null) {
+            throw failure("COMPLAINT_REQUEST_REQUIRED", "投诉请求不能为空");
+        }
         String opinion = text(command.opinion(), "COMPLAINT_CLOSE_NOTE_REQUIRED", 500);
-        jdbc.update("""
-                UPDATE complaints SET status='CLOSED', closed_by=?, closed_at=?, closed_note=?, updated_at=?
-                 WHERE id=?
-                """, actor(command.actor()), Timestamp.valueOf(LocalDateTime.now()), opinion,
-                Timestamp.valueOf(LocalDateTime.now()), id);
-        return caseById(id);
+        String closedBy = actor(command.actor());
+        return Objects.requireNonNull(commandTransaction.execute(status -> {
+            requireStatus(lockedCase(id), "PROCESSED");
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            int rows = jdbc.update("""
+                    UPDATE complaints SET status='CLOSED', closed_by=?, closed_at=?, closed_note=?, updated_at=?
+                     WHERE id=? AND status='PROCESSED'
+                    """, closedBy, now, opinion, now, id);
+            requireTransition(rows, id);
+            appendEvent(id, "CLOSED", closedBy, now, "PROCESSED", "CLOSED", opinion,
+                    null, "SUCCESS", null, null, null, "COMPLAINT", id);
+            return caseById(id);
+        }));
     }
 
-    @Transactional
     public RemediationRow remediate(long complaintId, RemediationCommand command) {
-        ensureStatus(complaintId, "PROCESSED");
+        if (command == null) {
+            throw failure("COMPLAINT_REQUEST_REQUIRED", "投诉请求不能为空");
+        }
         String type = enumValue(command.disposalType(), DISPOSALS, "COMPLAINT_REMEDIATION_TYPE_INVALID");
         String target = text(command.targetRef(), "COMPLAINT_REMEDIATION_TARGET_REQUIRED", 64);
         String actor = actor(command.actor());
         String reviewId = text(command.authorizedReviewId(), "COMPLAINT_REVIEW_REQUIRED", 128);
+        String reason = text(command.reason(), "COMPLAINT_REMEDIATION_REASON_REQUIRED", 255);
         String key = complaintId + ":" + type + ":" + target + ":" + reviewId;
-        List<RemediationRow> existing = findRemediationByKey(key);
-        if (!existing.isEmpty()) {
-            return existing.get(0);
-        }
-        try {
-            applyTargetAction(complaintId, type, target, actor, optionalText(command.reason(), 500));
-            return insertRemediation(complaintId, type, target, actor, reviewId, "APPLIED", null, key, complaintId);
-        } catch (RuntimeException ex) {
-            if (ex instanceof BusinessException) {
-                throw ex;
+        return Objects.requireNonNull(commandTransaction.execute(commandStatus -> {
+            CaseRow complaint = lockedCase(complaintId);
+            requireStatus(complaint, "PROCESSED");
+            List<RemediationRow> existing = findRemediationByKey(key);
+            if (!existing.isEmpty()) {
+                return existing.get(0);
             }
-            String failure = optionalText(command.reason(), 500);
-            return insertRemediation(complaintId, type, target, actor, reviewId, "FAILED",
-                    failure == null ? blankToDefault(ex.getMessage(), "处置执行失败") : failure, key, complaintId);
-        }
+            try {
+                return Objects.requireNonNull(resourceTransaction.execute(resourceStatus -> {
+                    applyTargetAction(complaint, type, target, actor, reason);
+                    Timestamp occurredAt = Timestamp.valueOf(LocalDateTime.now());
+                    RemediationRow applied = insertRemediation(
+                            complaintId, type, target, actor, reviewId, "APPLIED", null, key,
+                            complaintId, occurredAt);
+                    appendEvent(complaintId, "REMEDIATION_APPLIED", actor, occurredAt,
+                            "PROCESSED", "PROCESSED", reason, target, "APPLIED", reviewId, null,
+                            applied.id(), "DISPOSAL_RECORD", applied.id());
+                    return applied;
+                }));
+            } catch (RuntimeException ex) {
+                if (ex instanceof BusinessException) {
+                    throw ex;
+                }
+                logRemediationFailure(complaintId, type, ex);
+                String failure = REMEDIATION_FAILURE_REASON;
+                Timestamp occurredAt = Timestamp.valueOf(LocalDateTime.now());
+                RemediationRow failed = insertRemediation(
+                        complaintId, type, target, actor, reviewId, "FAILED", failure, key, complaintId, occurredAt);
+                appendEvent(complaintId, "REMEDIATION_FAILED", actor, occurredAt,
+                        "PROCESSED", "PROCESSED", reason, target, "FAILED", reviewId, failure,
+                        failed.id(), "DISPOSAL_RECORD", failed.id());
+                return failed;
+            }
+        }));
     }
 
-    @Transactional
     public RemediationRow recover(long complaintId, RecoveryCommand command) {
-        RemediationRow original = remediationById(command.disposalRecordId());
-        if (original.complaintId() != complaintId) {
-            throw failure("COMPLAINT_RECOVERY_CASE_MISMATCH", "恢复记录必须引用原投诉案件");
-        }
-        if (!"FAILED".equals(original.status())) {
-            throw failure("COMPLAINT_RECOVERY_STATE_INVALID", "只有失败处置可以记录恢复");
+        if (command == null) {
+            throw failure("COMPLAINT_REQUEST_REQUIRED", "投诉请求不能为空");
         }
         String reviewId = text(command.authorizedReviewId(), "COMPLAINT_RECOVERY_REVIEW_REQUIRED", 128);
-        jdbc.update("""
-                UPDATE disposal_records SET status='RECOVERED', recovered_by=?, recovered_at=?,
-                       resume_condition=?, authorized_review_id=?, original_complaint_id=?
-                 WHERE id=?
-                """, actor(command.actor()), Timestamp.valueOf(LocalDateTime.now()),
-                text(command.resumeCondition(), "COMPLAINT_RECOVERY_CONDITION_REQUIRED", 255),
-                reviewId, complaintId, command.disposalRecordId());
-        return remediationById(command.disposalRecordId());
+        String resumeCondition = text(command.resumeCondition(), "COMPLAINT_RECOVERY_CONDITION_REQUIRED", 255);
+        String recoveredBy = actor(command.actor());
+        return Objects.requireNonNull(commandTransaction.execute(status -> {
+            CaseRow complaint = lockedCase(complaintId);
+            if (!List.of("PROCESSED", "CLOSED").contains(complaint.status())) {
+                throw failure("COMPLAINT_STATE_STALE", "投诉状态已变化，请刷新后重试");
+            }
+            List<RemediationRow> failedRows = jdbc.query("""
+                    SELECT id, complaint_id, disposal_type, target_ref, status, authorized_review_id,
+                           failure_reason, original_complaint_id
+                      FROM disposal_records
+                     WHERE complaint_id=? AND status='FAILED'
+                     ORDER BY disposed_at DESC, id DESC
+                     LIMIT 1
+                    """, (rs, row) -> remediationRow(rs), complaintId);
+            if (failedRows.isEmpty()) {
+                throw failure("COMPLAINT_RECOVERY_STATE_INVALID", "没有可恢复的失败处置");
+            }
+            RemediationRow original = failedRows.get(0);
+            if (original.id() != command.disposalRecordId()) {
+                throw failure("COMPLAINT_STATE_STALE", "失败处置已变化，请刷新后重试");
+            }
+            Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+            int rows = jdbc.update("""
+                    UPDATE disposal_records SET status='RECOVERED', recovered_by=?, recovered_at=?,
+                           resume_condition=?, authorized_review_id=?, original_complaint_id=?
+                     WHERE id=? AND complaint_id=? AND status='FAILED'
+                    """, recoveredBy, now, resumeCondition, reviewId, complaintId,
+                    command.disposalRecordId(), complaintId);
+            if (rows != 1) {
+                throw failure("COMPLAINT_STATE_STALE", "失败处置已变化，请刷新后重试");
+            }
+            appendEvent(complaintId, "RECOVERED", recoveredBy, now, complaint.status(), complaint.status(),
+                    resumeCondition, original.targetRef(), "RECOVERED", reviewId, null, original.id(),
+                    "DISPOSAL_RECORD", original.id());
+            return remediationById(command.disposalRecordId());
+        }));
     }
 
     @Transactional(readOnly = true)
@@ -218,8 +364,7 @@ public class ComplaintCaseService {
                         """, (rs, i) -> new DimensionRow(rs.getString("dimension"), rs.getInt("total"))));
     }
 
-    private void applyTargetAction(long complaintId, String type, String target, String actor, String reason) {
-        CaseRow row = caseById(complaintId);
+    private void applyTargetAction(CaseRow row, String type, String target, String actor, String reason) {
         switch (type) {
             case "BLACKLIST_MOBILE" -> {
                 if (row.tenantId() == null) {
@@ -229,7 +374,7 @@ public class ComplaintCaseService {
                         ? text(target.substring("mobile:".length()), "COMPLAINT_REMEDIATION_TARGET_REQUIRED", 32)
                         : target;
                 requireLinkedTarget(Objects.equals(row.complainedMobile(), mobile));
-                blacklistPort.create(row.tenantId(), mobile, actor, "投诉案件:" + complaintId);
+                blacklistPort.create(row.tenantId(), mobile, actor, "投诉案件:" + row.id());
             }
             case "SUSPEND_TENANT" -> {
                 long tenantId = targetId(target, "tenant");
@@ -273,7 +418,7 @@ public class ComplaintCaseService {
 
     private RemediationRow insertRemediation(long complaintId, String type, String target, String actor,
                                              String reviewId, String status, String failure, String key,
-                                             long originalComplaintId) {
+                                             long originalComplaintId, Timestamp occurredAt) {
         var holder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement ps = connection.prepareStatement("""
@@ -286,7 +431,7 @@ public class ComplaintCaseService {
             ps.setString(2, type);
             ps.setString(3, target);
             ps.setString(4, actor);
-            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(5, occurredAt);
             ps.setString(6, status);
             ps.setString(7, reviewId);
             ps.setString(8, failure);
@@ -316,9 +461,34 @@ public class ComplaintCaseService {
 
     private RemediationRow remediationRow(java.sql.ResultSet rs) throws java.sql.SQLException {
         Long original = nullableLong(rs, "original_complaint_id");
+        String failureReason = rs.getString("failure_reason") == null ? null : REMEDIATION_FAILURE_REASON;
         return new RemediationRow(rs.getLong("id"), rs.getLong("complaint_id"), rs.getString("disposal_type"),
                 rs.getString("target_ref"), rs.getString("status"), rs.getString("authorized_review_id"),
-                rs.getString("failure_reason"), original == null ? null : original);
+                failureReason, original == null ? null : original);
+    }
+
+    private CaseEventRow eventRow(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return new CaseEventRow(
+                rs.getLong("id"), rs.getLong("complaint_id"), rs.getString("event_type"),
+                rs.getString("actor"), rs.getTimestamp("occurred_at").toLocalDateTime(),
+                rs.getString("from_status"), rs.getString("to_status"), rs.getString("evidence_text"),
+                rs.getString("target_ref"), rs.getString("result"), rs.getString("review_id"),
+                rs.getString("failure_reason"), nullableLong(rs, "related_disposal_id"));
+    }
+
+    private void appendEvent(long complaintId, String eventType, String actor, Timestamp occurredAt,
+                             String fromStatus, String toStatus, String evidenceText, String targetRef,
+                             String result, String reviewId, String failureReason, Long relatedDisposalId,
+                             String sourceRecordType, long sourceRecordId) {
+        jdbc.update("""
+                INSERT INTO complaint_case_events(
+                    complaint_id, event_type, actor, occurred_at, from_status, to_status,
+                    evidence_text, target_ref, result, review_id, failure_reason, related_disposal_id,
+                    source_record_type, source_record_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, complaintId, eventType, actor, occurredAt, fromStatus, toStatus,
+                evidenceText, targetRef, result, reviewId, failureReason, relatedDisposalId,
+                sourceRecordType, sourceRecordId);
     }
 
     private List<DimensionRow> dimensionRows(String prefix, String column) {
@@ -332,16 +502,87 @@ public class ComplaintCaseService {
         return jdbc.query(sql, (rs, i) -> new DimensionRow(prefix + ":" + rs.getLong("dimension_id"), rs.getInt("total")));
     }
 
+    private void validateReferences(CreateCommand command) {
+        if (command.tenantId() != null) {
+            requireReferenceExists("SELECT COUNT(*) FROM tenants WHERE id=?", command.tenantId());
+        }
+        if (command.channelId() != null) {
+            requireReferenceExists("SELECT COUNT(*) FROM channels WHERE id=?", command.channelId());
+        }
+        Long signatureTenant = command.signatureId() == null
+                ? null : referenceTenant("SELECT tenant_id FROM signatures WHERE id=?", command.signatureId());
+        Long templateTenant = command.templateId() == null
+                ? null : referenceTenant("SELECT tenant_id FROM templates WHERE id=?", command.templateId());
+        if (command.tenantId() != null) {
+            if ((command.signatureId() != null && !Objects.equals(command.tenantId(), signatureTenant))
+                    || (command.templateId() != null && !Objects.equals(command.tenantId(), templateTenant))) {
+                throw failure("COMPLAINT_REFERENCE_TENANT_MISMATCH", "签名或模板与投诉机构不匹配");
+            }
+            return;
+        }
+        if (command.signatureId() != null && command.templateId() != null
+                && signatureTenant != null && templateTenant != null
+                && !Objects.equals(signatureTenant, templateTenant)) {
+            throw failure("COMPLAINT_REFERENCE_TENANT_MISMATCH", "签名与模板不属于同一机构");
+        }
+    }
+
+    private void requireReferenceExists(String sql, long id) {
+        if (jdbc.queryForObject(sql, Integer.class, id) == 0) {
+            throw failure("COMPLAINT_REFERENCE_NOT_FOUND", "投诉关联资源不存在");
+        }
+    }
+
+    private Long referenceTenant(String sql, long id) {
+        List<Long> owners = jdbc.query(sql, (rs, row) -> nullableLong(rs, "tenant_id"), id);
+        if (owners.isEmpty()) {
+            throw failure("COMPLAINT_REFERENCE_NOT_FOUND", "投诉关联资源不存在");
+        }
+        return owners.get(0);
+    }
+
+    private void logRemediationFailure(long complaintId, String type, RuntimeException exception) {
+        security.warn(Event.PROVIDER_REJECTION, Category.PROVIDER,
+                SafeLogValue.purpose("complaint:" + complaintId),
+                SafeLogValue.purpose("type:" + type),
+                SafeLogValue.purpose("exception:" + safeExceptionType(exception)),
+                SafeLogValue.correlation(MDC.get("traceId")));
+    }
+
+    private static String safeExceptionType(RuntimeException exception) {
+        String simpleName = exception.getClass().getSimpleName()
+                .replaceAll("[^A-Za-z0-9._:-]", "_");
+        if (simpleName.isBlank()) {
+            return "RuntimeException";
+        }
+        return simpleName.substring(0, Math.min(simpleName.length(), 50));
+    }
+
     private CaseRow caseById(long id) {
         return jdbc.query("SELECT * FROM complaints WHERE id=?", (rs, i) -> caseRow(rs), id).stream().findFirst()
                 .orElseThrow(() -> failure("COMPLAINT_NOT_FOUND", "投诉案件不存在"));
     }
 
-    private void ensureStatus(long id, String expected) {
-        String actual = caseById(id).status();
-        if (!expected.equals(actual)) {
-            throw failure("COMPLAINT_STATE_INVALID", "投诉状态不允许当前操作");
+    private CaseRow lockedCase(long id) {
+        return jdbc.query("SELECT * FROM complaints WHERE id=? FOR UPDATE", (rs, row) -> caseRow(rs), id)
+                .stream().findFirst()
+                .orElseThrow(() -> failure("COMPLAINT_NOT_FOUND", "投诉案件不存在"));
+    }
+
+    private void requireStatus(CaseRow row, String expected) {
+        if (!expected.equals(row.status())) {
+            throw failure("COMPLAINT_STATE_STALE", "投诉状态已变化，请刷新后重试");
         }
+    }
+
+    private void requireTransition(int rows, long id) {
+        if (rows == 1) {
+            return;
+        }
+        if (jdbc.queryForObject("SELECT COUNT(*) FROM complaints WHERE id=?", Integer.class, id) == 0) {
+            throw failure("COMPLAINT_NOT_FOUND", "投诉案件不存在");
+        }
+        throw failure("COMPLAINT_STATE_STALE", "投诉状态已变化，请刷新后重试");
     }
 
     private static String inferredQuality(CreateCommand command) {
@@ -375,7 +616,9 @@ public class ComplaintCaseService {
         if (value == null || value.isBlank()) {
             throw failure(code, switch (code) {
                 case "COMPLAINT_OPINION_REQUIRED" -> "处理意见不能为空";
+                case "COMPLAINT_ACCEPT_OPINION_REQUIRED" -> "受理意见不能为空";
                 case "COMPLAINT_REMEDIATION_REQUIRED" -> "处置动作不能为空";
+                case "COMPLAINT_REMEDIATION_REASON_REQUIRED" -> "处置原因不能为空";
                 case "COMPLAINT_REQUIREMENT_REQUIRED" -> "整改要求不能为空";
                 case "COMPLAINT_CLOSE_NOTE_REQUIRED" -> "关闭说明不能为空";
                 default -> "必填字段不能为空";
@@ -484,6 +727,19 @@ public class ComplaintCaseService {
 
     public record RemediationRow(long id, long complaintId, String disposalType, String targetRef, String status,
                                  String authorizedReviewId, String failureReason, Long originalComplaintId) { }
+
+    public record CaseEventRow(long id, long complaintId, String eventType, String actor,
+                               LocalDateTime occurredAt, String fromStatus, String toStatus,
+                               String evidenceText, String targetRef, String result, String reviewId,
+                               String failureReason, Long relatedDisposalId) { }
+
+    public record CaseDetail(CaseRow complaint, List<CaseEventRow> timeline,
+                             List<RemediationRow> remediations) { }
+
+    public record ReferenceOption(long id, String label, Long tenantId) { }
+
+    public record ReferenceOptions(List<ReferenceOption> tenants, List<ReferenceOption> channels,
+                                   List<ReferenceOption> signatures, List<ReferenceOption> templates) { }
 
     public record DimensionRow(String dimension, int count) { }
 
