@@ -23,17 +23,17 @@
       "admin-trial-conversion-workbench-row-convert",
       "admin-trial-conversion-workbench-selected-tenant",
       "admin-trial-conversion-workbench-price-retry",
-      "shared-trial-conversion-workbench-data-table",
-      "shared-trial-conversion-workbench-table-empty",
+      "data-table",
+      "table-empty",
       "admin-trial-conversion-workbench-row-adjust",
       "admin-trial-conversion-workbench-adjust-dialog",
-      "shared-trial-conversion-workbench-entity-form",
-      "shared-trial-conversion-workbench-form-submit",
-      "shared-trial-conversion-workbench-form-cancel",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
       "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/UI-ELEMENTS.md", "sha256": "99d1003965adca518cb1870abb54f0021cd778b921e047e0b4ba3069386b5674"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/UI-ELEMENTS.md", "sha256": "597e541deffbdc693c051eafc1d1565873e7134affd7129d4013aefed885d9ac"}
     ]
   },
   "pencil": {
@@ -64,17 +64,17 @@
       "admin-trial-conversion-workbench-row-convert",
       "admin-trial-conversion-workbench-selected-tenant",
       "admin-trial-conversion-workbench-price-retry",
-      "shared-trial-conversion-workbench-data-table",
-      "shared-trial-conversion-workbench-table-empty",
+      "data-table",
+      "table-empty",
       "admin-trial-conversion-workbench-row-adjust",
       "admin-trial-conversion-workbench-adjust-dialog",
-      "shared-trial-conversion-workbench-entity-form",
-      "shared-trial-conversion-workbench-form-submit",
-      "shared-trial-conversion-workbench-form-cancel",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
       "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.html", "sha256": "83cf4ac46f369fa6e4c4f7e52c0a437b19012fc5d037f45ae5d3924f87046aa2"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.html", "sha256": "20b46680f041cc483603f5d5741feef754e4394c886901231f8e7317fe973f42"}
     ]
   },
   "prototype_playwright": {
@@ -100,17 +100,17 @@
       "admin-trial-conversion-workbench-row-convert",
       "admin-trial-conversion-workbench-selected-tenant",
       "admin-trial-conversion-workbench-price-retry",
-      "shared-trial-conversion-workbench-data-table",
-      "shared-trial-conversion-workbench-table-empty",
+      "data-table",
+      "table-empty",
       "admin-trial-conversion-workbench-row-adjust",
       "admin-trial-conversion-workbench-adjust-dialog",
-      "shared-trial-conversion-workbench-entity-form",
-      "shared-trial-conversion-workbench-form-submit",
-      "shared-trial-conversion-workbench-form-cancel",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
       "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.spec.ts", "sha256": "0398aec234dd6cd80a14155bd3161147d2f310339bea2dec7f56ceb5635b6bf1"}
+      {"path": ".planning/phases/37-contract-pricing-postpaid/design-output/prototype.spec.ts", "sha256": "33169b3ac4e400b7cd0b56c90f01d93cec8bfa693f5325d615a338648676b2e2"}
     ]
   },
   "implementation": {
@@ -136,18 +136,18 @@
       "admin-trial-conversion-workbench-row-convert",
       "admin-trial-conversion-workbench-selected-tenant",
       "admin-trial-conversion-workbench-price-retry",
-      "shared-trial-conversion-workbench-data-table",
-      "shared-trial-conversion-workbench-table-empty",
+      "data-table",
+      "table-empty",
       "admin-trial-conversion-workbench-row-adjust",
       "admin-trial-conversion-workbench-adjust-dialog",
-      "shared-trial-conversion-workbench-entity-form",
-      "shared-trial-conversion-workbench-form-submit",
-      "shared-trial-conversion-workbench-form-cancel",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
       "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
       {"path": "web/src/router/routes.tsx", "sha256": "f4fb16ee9f94406e650b6f605469b41795d99d4ea0c0062c530809f2e3186a12"},
-      {"path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "09bae5cabf21de93f62b0cadd97e508cc41c9e75db7e1188940b5d2ebc2145f4"},
+      {"path": "web/src/pages/admin/billing/TrialPrepaidAdminPage.tsx", "sha256": "b7b67cbfc39912daeb58395123d5d9f28095248bfba81268352d071980bdedce"},
       {"path": "web/src/pages/tenant/overview/OverviewPage.tsx", "sha256": "b5e110b4f59c0f9e162e3f968ce49363f1b7743da654864079b8446aa678d09e"}
     ]
   },
@@ -174,27 +174,27 @@
       "admin-trial-conversion-workbench-row-convert",
       "admin-trial-conversion-workbench-selected-tenant",
       "admin-trial-conversion-workbench-price-retry",
-      "shared-trial-conversion-workbench-data-table",
-      "shared-trial-conversion-workbench-table-empty",
+      "data-table",
+      "table-empty",
       "admin-trial-conversion-workbench-row-adjust",
       "admin-trial-conversion-workbench-adjust-dialog",
-      "shared-trial-conversion-workbench-entity-form",
-      "shared-trial-conversion-workbench-form-submit",
-      "shared-trial-conversion-workbench-form-cancel",
+      "entity-form",
+      "form-submit",
+      "form-cancel",
       "admin-trial-conversion-workbench-adjust-cancel"
     ],
     "sources": [
-      {"path": "web/test/scripts/contract-pricing.spec.ts", "sha256": "c0d84c2f18bc9247182db0b0aef327cc9617f3be45f2ddd2592bbfa198d2bddc"}
+      {"path": "web/test/scripts/contract-pricing.spec.ts", "sha256": "0b4fac8e638b14db068e4b3fcad432553345f0d0a859ca629b74ae39d7ffe0cd"}
     ]
   },
   "execution": {
     "command": "YCSOPEN_USE_BUNDLED_CHROMIUM=true npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=bundled-chromium --workers=1 --reporter=json",
-    "commit": "0000000000000000000000000000000000000000",
+    "commit": "29dbc61246e3bff4efec8ddea3c2e172544092eb",
     "config": "web/playwright.config.ts project=bundled-chromium workers=1",
-    "result": "PENDING",
+    "result": "PASS",
     "report": {
       "path": ".planning/phases/37-contract-pricing-postpaid/EVIDENCE/playwright-contract-pricing-report.json",
-      "sha256": "16fb2e9b331e3c95bce03e32a7731c2ee9289fd5c922a98c23b2ed8b8bb61219"
+      "sha256": "1422ec7f915c55dac81210ce1a6aa7c41cdfea82d72cdddc7b3c9392399b4ac8"
     }
   }
 }

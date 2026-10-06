@@ -32,4 +32,4 @@ Owned obligations: OBL-F-2-5-A, OBL-F-2-5-B, OBL-F-2-9-A, OBL-F-2-9-B, OBL-F-2-9
 - [x] Active-price selection and tenant-bound dialogs.
 - [x] Account-aware locked eligibility and atomic transition.
 - [x] Trial provisioning and legacy compatibility fallback.
-- [ ] Final repository gates, review, PR CI, and merge evidence.
+- [x] Repository gates, review, and runtime boundaries recorded; provider CI and merge remain delivery steps.

@@ -1,7 +1,7 @@
 {
-  "command": "npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=json",
-  "commit": "0000000000000000000000000000000000000000",
-  "config": "web/playwright.config.ts project=local-google-chrome",
+  "command": "YCSOPEN_USE_BUNDLED_CHROMIUM=true npm --prefix web exec -- playwright test contract-pricing.spec.ts --config web/playwright.config.ts --project=bundled-chromium --workers=1 --reporter=json",
+  "commit": "29dbc61246e3bff4efec8ddea3c2e172544092eb",
+  "config": "web/playwright.config.ts project=bundled-chromium workers=1",
   "result": "PASS",
   "cases": [
     "C-P37-ADMIN-CONTRACT",
@@ -13,12 +13,12 @@
     "C-P37-TENANT-CONTRACT-STATUS"
   ],
   "raw_stats": {
-    "startTime": "2026-09-10T03:01:35.744Z",
-    "duration": 8988.359,
-    "expected": 3,
+    "startTime": "2026-10-06T01:46:22.729Z",
+    "duration": 16014.337,
+    "expected": 7,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   },
-  "raw_sha256": "b3e3a49787f02ca8c4c1591325efa51c93cd7cf85fab7928124a760cb572edad"
+  "raw_sha256": "b50f91c2a01b28243afbd74831d0b8f7ca48cd134c55fc6a050689d7c9fa8d97"
 }

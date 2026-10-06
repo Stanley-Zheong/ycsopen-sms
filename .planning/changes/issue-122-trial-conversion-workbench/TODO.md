@@ -5,4 +5,4 @@
 - [x] Atomic contract, trial, and tenant lifecycle transition under lock.
 - [x] Tenant-bound adjustment and conversion dialogs with explicit states.
 - [x] Focused backend, frontend, and Chrome scenarios.
-- [ ] Record final full-suite, validator, browser, CI, and merge evidence.
+- [x] Record final suite, validator, browser, review, and runtime-boundary evidence; provider CI and merge remain delivery steps.
