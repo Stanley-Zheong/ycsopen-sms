@@ -27,6 +27,7 @@ export default function TenantApiKeysPage() {
   const roleDenied = userType === 'TENANT_USER';
   const [serverDenied, setServerDenied] = useState(false);
   const denied = roleDenied || serverDenied;
+  const deniedRef = useRef(roleDenied);
 
   const [rows, setRows] = useState<TenantApiKey[]>([]);
   const [loading, setLoading] = useState(!roleDenied);
@@ -53,42 +54,88 @@ export default function TenantApiKeysPage() {
   const [revokePending, setRevokePending] = useState(false);
   const [revokeError, setRevokeError] = useState('');
   const revokeLatch = useRef(false);
+  const authorizationReadsRef = useRef(0);
+  const [authorizationReadCount, setAuthorizationReadCount] = useState(0);
+  const authorizationPending = loading || auditLoading || authorizationReadCount > 0;
+
+  function beginAuthorizationRead() {
+    authorizationReadsRef.current += 1;
+    setAuthorizationReadCount(authorizationReadsRef.current);
+  }
+
+  function endAuthorizationRead() {
+    authorizationReadsRef.current = Math.max(0, authorizationReadsRef.current - 1);
+    setAuthorizationReadCount(authorizationReadsRef.current);
+  }
+
+  function enterDeniedState() {
+    deniedRef.current = true;
+    createLatch.current = false;
+    revokeLatch.current = false;
+    setServerDenied(true);
+    setRows([]);
+    setAudits([]);
+    setOpen(false);
+    setHandoff(null);
+    setRevokeTarget(null);
+    setListError(false);
+    setAuditError(false);
+    setValidationError('');
+    setRevokeError('');
+    setUnresolvedCreateNames([]);
+    setSuccess('');
+    setLoading(false);
+    setAuditLoading(false);
+    setSubmitting(false);
+    setRevokePending(false);
+  }
 
   const loadKeys = async (showLoading = true) => {
-    if (roleDenied) return;
+    if (deniedRef.current) return;
+    beginAuthorizationRead();
     if (showLoading) setLoading(true);
     try {
-      setRows((await listTenantApiKeys()) ?? []);
-      setListError(false);
+      const loaded = (await listTenantApiKeys()) ?? [];
+      if (!deniedRef.current) {
+        setRows(loaded);
+        setListError(false);
+      }
     } catch (failure) {
-      if (responseStatus(failure) === 403) setServerDenied(true);
-      else setListError(true);
+      if (responseStatus(failure) === 403) enterDeniedState();
+      else if (!deniedRef.current) setListError(true);
     } finally {
       setLoading(false);
+      endAuthorizationRead();
     }
   };
 
   const loadAudits = async (showLoading = true) => {
-    if (roleDenied) return;
+    if (deniedRef.current) return;
+    beginAuthorizationRead();
     if (showLoading) setAuditLoading(true);
     try {
-      setAudits((await listTenantApiKeyAudits()) ?? []);
-      setAuditError(false);
+      const loaded = (await listTenantApiKeyAudits()) ?? [];
+      if (!deniedRef.current) {
+        setAudits(loaded);
+        setAuditError(false);
+      }
     } catch (failure) {
-      if (responseStatus(failure) === 403) setServerDenied(true);
-      else setAuditError(true);
+      if (responseStatus(failure) === 403) enterDeniedState();
+      else if (!deniedRef.current) setAuditError(true);
     } finally {
       setAuditLoading(false);
+      endAuthorizationRead();
     }
   };
 
   const refresh = () => {
-    if (denied) return;
+    if (denied || authorizationPending || authorizationReadsRef.current > 0) return;
     void Promise.all([loadKeys(), loadAudits()]);
   };
 
   useEffect(() => {
     if (roleDenied) {
+      deniedRef.current = true;
       setLoading(false);
       setAuditLoading(false);
       return;
@@ -116,7 +163,8 @@ export default function TenantApiKeysPage() {
   }
 
   const create = async () => {
-    if (createLatch.current || createOutcomeUnknown) return;
+    if (deniedRef.current || authorizationPending || authorizationReadsRef.current > 0
+      || createLatch.current || createOutcomeUnknown) return;
     const requestedName = name.trim();
     const parsedRates = {
       perSecond: Number(rates.perSecond),
@@ -159,6 +207,7 @@ export default function TenantApiKeysPage() {
         ipWhitelist: ip.trim() || null,
         ...parsedRates,
       });
+      if (deniedRef.current) return;
       if (!created?.appSecret) throw new Error('missing create-only secret');
       setHandoff(created.appSecret);
       setOpen(false);
@@ -167,7 +216,12 @@ export default function TenantApiKeysPage() {
       createLatch.current = false;
       void Promise.all([loadKeys(false), loadAudits(false)]);
     } catch (failure) {
+      if (deniedRef.current) return;
       const status = responseStatus(failure);
+      if (status === 403) {
+        enterDeniedState();
+        return;
+      }
       const definiteRejection = status !== null && status >= 400 && status < 500 && status !== 408;
       if (definiteRejection) {
         createLatch.current = false;
@@ -192,17 +246,21 @@ export default function TenantApiKeysPage() {
   }
 
   const revoke = async () => {
-    if (!revokeTarget || revokeLatch.current) return;
+    if (deniedRef.current || authorizationPending || authorizationReadsRef.current > 0
+      || !revokeTarget || revokeLatch.current) return;
     revokeLatch.current = true;
     setRevokePending(true);
     setRevokeError('');
     try {
       await revokeTenantApiKey(revokeTarget.id);
+      if (deniedRef.current) return;
       setSuccess(`API Key ${revokeTarget.name} 已撤销。`);
       setRevokeTarget(null);
       await Promise.all([loadKeys(false), loadAudits(false)]);
-    } catch {
-      setRevokeError('撤销失败，凭证状态未确认，请重试。');
+    } catch (failure) {
+      if (deniedRef.current) return;
+      if (responseStatus(failure) === 403) enterDeniedState();
+      else setRevokeError('撤销失败，凭证状态未确认，请重试。');
     } finally {
       revokeLatch.current = false;
       setRevokePending(false);
@@ -217,20 +275,20 @@ export default function TenantApiKeysPage() {
           <p className="page-description">App Secret 只在创建成功后展示一次，列表仅显示掩码。</p>
         </div>
         {!denied && <div className="tenant-access-actions">
-          <button type="button" className="button-secondary" data-testid="tenant-tenant-access-api-keys-refresh" onClick={refresh}>刷新</button>
-          <button type="button" data-testid="tenant-tenant-access-api-keys-create-dialog" onClick={() => { resetCreateForm(); setOpen(true); }}>创建 API Key</button>
+          <button type="button" className="button-secondary" data-testid="tenant-tenant-access-api-keys-refresh" disabled={authorizationPending} onClick={refresh}>刷新</button>
+          <button type="button" data-testid="tenant-tenant-access-api-keys-create-dialog" disabled={authorizationPending} onClick={() => { if (!authorizationPending && authorizationReadsRef.current === 0) { resetCreateForm(); setOpen(true); } }}>创建 API Key</button>
         </div>}
       </div>
 
       {denied && <p className="tenant-access-alert" data-testid="tenant-tenant-access-api-keys-access-denied">当前账号无权管理 API Key。</p>}
       <div className="tenant-access-table-wrap" data-testid="data-table">
         <table className="ratio-table" data-testid="tenant-tenant-access-api-keys-table">
-          <thead><tr><th>App Key</th><th>名称</th><th>状态</th><th>App Secret</th><th>有效期</th><th>IP 白名单</th><th>限流（秒/分/时/日）</th><th>操作</th></tr></thead>
+          <thead><tr><th>App Key</th><th>名称</th><th>状态</th><th>App Secret</th><th>有效期</th><th>最近使用</th><th>IP 白名单</th><th>限流（秒/分/时/日）</th><th>操作</th></tr></thead>
           <tbody>
-            {denied && <tr data-testid="table-empty"><td colSpan={8}>无权查看凭证。</td></tr>}
-            {!denied && loading && <tr data-testid="tenant-tenant-access-api-keys-loading"><td colSpan={8}>正在加载 API Key…</td></tr>}
-            {!denied && !loading && listError && <tr><td colSpan={8}><span className="tenant-access-alert" data-testid="tenant-tenant-access-api-keys-error">API Key 加载失败。</span><button type="button" data-testid="tenant-tenant-access-api-keys-retry" onClick={() => void loadKeys()}>重试</button></td></tr>}
-            {!denied && !loading && !listError && rows.length === 0 && <tr data-testid="table-empty"><td colSpan={8} data-testid="tenant-tenant-access-api-keys-empty">暂无 API Key</td></tr>}
+            {denied && <tr data-testid="table-empty"><td colSpan={9}>无权查看凭证。</td></tr>}
+            {!denied && loading && <tr data-testid="tenant-tenant-access-api-keys-loading"><td colSpan={9}>正在加载 API Key…</td></tr>}
+            {!denied && !loading && listError && <tr><td colSpan={9}><span className="tenant-access-alert" data-testid="tenant-tenant-access-api-keys-error">API Key 加载失败。</span><button type="button" data-testid="tenant-tenant-access-api-keys-retry" onClick={() => void loadKeys()}>重试</button></td></tr>}
+            {!denied && !loading && !listError && rows.length === 0 && <tr data-testid="table-empty"><td colSpan={9} data-testid="tenant-tenant-access-api-keys-empty">暂无 API Key</td></tr>}
             {!denied && !loading && !listError && rows.map((row) => (
               <tr key={row.id} data-testid="tenant-tenant-access-api-keys-row">
                 <td title={row.appKey}>{row.appKey}</td>
@@ -238,12 +296,14 @@ export default function TenantApiKeysPage() {
                 <td>{row.status}</td>
                 <td data-testid="tenant-tenant-access-api-keys-secret-mask">{row.appSecretMask}</td>
                 <td>{displayTime(row.expireTime)}</td>
+                <td data-testid="tenant-tenant-access-api-keys-last-used-time">{displayTime(row.lastUsedTime)}</td>
                 <td title={row.ipWhitelist ?? undefined}>{row.ipWhitelist ?? '—'}</td>
                 <td>{row.perSecond}/{row.perMinute}/{row.perHour}/{row.perDay}</td>
                 <td>{row.status === 'ACTIVE' ? <button
                   type="button"
                   data-testid="tenant-tenant-access-api-keys-revoke"
-                  onClick={() => { setRevokeError(''); setRevokeTarget(row); }}
+                  disabled={authorizationPending}
+                  onClick={() => { if (!authorizationPending && authorizationReadsRef.current === 0) { setRevokeError(''); setRevokeTarget(row); } }}
                 >撤销</button> : '—'}</td>
               </tr>
             ))}

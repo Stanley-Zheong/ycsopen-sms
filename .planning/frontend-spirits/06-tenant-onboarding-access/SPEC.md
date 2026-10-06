@@ -19,9 +19,9 @@ tenant-scoped HTTP API credentials from one production page.
 
 | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- |
-| FE-SPIRIT-06-APPROVAL | A successful approval displays `tenantId`, `tenantNo`, trial quota, and trial start/end time from the decision response. | The result appears in the open review dialog immediately after approval and contains no password or App Secret field. |
+| FE-SPIRIT-06-APPROVAL | A successful approval displays `tenantId`, `tenantNo`, trial quota, and UTC-offset trial start/end time from the decision response. | The result appears in the open review dialog immediately after approval, formats the instant for Asia/Shanghai, and contains no password or App Secret field. |
 | FE-SPIRIT-06-ROUTE | The configuration placeholder is retired in favor of the existing API Key owner. | `/tenant/config` redirects to `/tenant/api/keys`; the sidebar has one API Key entry under configuration. |
-| FE-SPIRIT-06-CREDENTIAL | The API Key page keeps its table header in loading, empty, error, and populated states; list rows show only `appSecretMask`. | Chrome observes loading, empty, retryable error, denied, masked list, create, and revoke states without horizontal overflow. |
+| FE-SPIRIT-06-CREDENTIAL | The API Key page keeps its table header in loading, empty, error, and populated states; list rows show only `appSecretMask` plus safe metadata including last-use time. | Chrome observes loading, empty, retryable error, denied, masked list, last-use, create, and revoke states without horizontal overflow. |
 | FE-SPIRIT-06-SECRET | `appSecret` exists only in the successful create response and the in-memory handoff dialog. | While the page remains mounted, the dialog cannot be dismissed before explicit acknowledgement and survives refresh failures. Navigation, reload, tab close, or unmount discards the value without persistence or recovery. Later list/audit responses and UI do not contain the plaintext. |
 | FE-SPIRIT-06-AUDIT | Credential create and revoke records are visible to the current tenant without exposing another tenant's records. | `GET /api/v1/console/tenant/api-keys/audits` returns the newest 100 redacted current-tenant records in descending audit-ID order; the page refreshes the table after successful mutations. |
 
@@ -53,7 +53,9 @@ tenant-scoped HTTP API credentials from one production page.
   uses its non-dismissible mode. Create and revoke dialogs guard Escape, cancel,
   close, and repeated confirmation with the same synchronous pending latch.
 - Existing HTTP HMAC authentication, rate enforcement, and CMPP credentials are
-  outside this spirit.
+  outside this spirit, except that API Key allow-list creation and HMAC
+  authentication must share the same IPv4/IPv6 parser so an accepted rule is
+  usable.
 
 ## Scoped TODO
 
@@ -64,3 +66,4 @@ tenant-scoped HTTP API credentials from one production page.
 - [x] Implement explicit page, table, form, handoff, revoke, and audit states.
 - [x] Add focused backend, frontend, and Chrome coverage.
 - [x] Complete the quality gateway and independent review.
+- [ ] Re-close the quality gateway after the post-review implementation repairs and fresh evidence run.

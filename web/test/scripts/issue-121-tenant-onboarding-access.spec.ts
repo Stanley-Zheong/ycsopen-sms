@@ -19,7 +19,7 @@ const reviewTenant = {
 const safeKey = {
   id: 41, appKey: 'public-app-key', name: 'issue-121-key', description: 'synthetic', status: 'ACTIVE',
   ipWhitelist: '127.0.0.1/32', perSecond: 10, perMinute: 100, perHour: 1_000, perDay: 10_000,
-  expireTime: '2099-01-01T00:00:00Z', lastUsedTime: null, appSecretMask: '******',
+  expireTime: '2099-01-01T00:00:00Z', lastUsedTime: '2026-10-05T10:30:00Z', appSecretMask: '******',
 };
 
 type AuditRow = { id:number; actor:string; operation:string; resourceId:string; result:string; occurredAt:string };
@@ -74,7 +74,7 @@ async function installTenantApi(page: Page, state: TenantApiState) {
   });
 }
 
-test('pw-issue-121-approval-result C-ISSUE-121-APPROVAL-RESULT', async ({ page }) => {
+test('pw-issue-121-approval-result C-ISSUE-121-APPROVAL-RESULT OBL-ISSUE-121-APPROVAL-RESULT', async ({ page }) => {
   await seedAuthenticatedSession(page, 'ADMIN');
   await page.route('**/api/v1/console/account-overview', (route) => json(route, {
     id: 7, username: 'admin', userType: 'ADMIN', roleNames: ['系统管理员'], permissions: [],
@@ -106,6 +106,7 @@ test('pw-issue-121-approval-result C-ISSUE-121-APPROVAL-RESULT', async ({ page }
   await decision.getByTestId('admin-tenant-qualification-tenants-review-decision-confirm').click();
 
   const result = page.getByTestId('admin-tenant-qualification-tenants-approval-result');
+  await expect(page.getByTestId('admin-tenant-qualification-tenants-approval-result')).toBeVisible();
   await expect(result.getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-id')).toHaveText('42');
   await expect(result.getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-no')).toHaveText('TENANT-0042');
   await expect(result.getByTestId('admin-tenant-qualification-tenants-approval-result-trial-quota')).toHaveText('500');
@@ -114,12 +115,13 @@ test('pw-issue-121-approval-result C-ISSUE-121-APPROVAL-RESULT', async ({ page }
   await expect(result).not.toContainText(/password|App Secret|密码|密钥/i);
 });
 
-test('pw-issue-121-api-key-lifecycle C-ISSUE-121-API-KEY-LIFECYCLE', async ({ page }) => {
+test('pw-issue-121-api-key-lifecycle C-ISSUE-121-API-KEY-LIFECYCLE OBL-ISSUE-121-API-KEY-LIFECYCLE', async ({ page }) => {
   const state: TenantApiState = { keys: [], audits: [] };
   await seedAuthenticatedSession(page, 'TENANT_ADMIN');
   await installTenantApi(page, state);
   await page.goto('/tenant/config');
   await expect(page).toHaveURL(/\/tenant\/api\/keys$/);
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-page')).toBeVisible();
   await page.getByTestId('tenant-tenant-access-api-keys-create-dialog').click();
   await page.getByTestId('tenant-tenant-access-api-keys-name').fill('issue-121-key');
   await page.getByTestId('form-submit').click();
@@ -133,7 +135,7 @@ test('pw-issue-121-api-key-lifecycle C-ISSUE-121-API-KEY-LIFECYCLE', async ({ pa
   await expect(row).toContainText('DISABLED');
 });
 
-test('pw-issue-121-secret-safety C-ISSUE-121-SECRET-SAFETY', async ({ page }) => {
+test('pw-issue-121-secret-safety C-ISSUE-121-SECRET-SAFETY OBL-ISSUE-121-SECRET-SAFETY', async ({ page }) => {
   const state: TenantApiState = { keys: [], audits: [] };
   await seedAuthenticatedSession(page, 'TENANT_ADMIN');
   await installTenantApi(page, state);
@@ -142,17 +144,16 @@ test('pw-issue-121-secret-safety C-ISSUE-121-SECRET-SAFETY', async ({ page }) =>
   await page.getByTestId('tenant-tenant-access-api-keys-name').fill('issue-121-key');
   state.keyMode = 'error';
   await page.getByTestId('form-submit').click();
-  const secret = page.getByTestId('tenant-tenant-access-api-keys-secret-once');
-  await expect(secret).toHaveText('issue-121-secret-once');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-secret-once')).toHaveText('issue-121-secret-once');
   await page.keyboard.press('Escape');
-  await expect(secret).toBeVisible();
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-secret-once')).toBeVisible();
   await expect(page.getByTestId('tenant-tenant-access-api-keys-error')).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify(window.sessionStorage))).not.toContain('issue-121-secret-once');
   await page.goto('/tenant/overview');
   await expect(page.getByText('issue-121-secret-once')).toHaveCount(0);
 });
 
-test('pw-issue-121-tenant-audit C-ISSUE-121-TENANT-AUDIT', async ({ page }) => {
+test('pw-issue-121-tenant-audit C-ISSUE-121-TENANT-AUDIT OBL-ISSUE-121-TENANT-AUDIT', async ({ page }) => {
   const state: TenantApiState = {
     keys: [{ ...safeKey }],
     audits: [
@@ -163,6 +164,7 @@ test('pw-issue-121-tenant-audit C-ISSUE-121-TENANT-AUDIT', async ({ page }) => {
   await seedAuthenticatedSession(page, 'TENANT_ADMIN');
   await installTenantApi(page, state);
   await page.goto('/tenant/api/keys');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-audits-section')).toBeVisible();
   const auditRows = page.getByTestId('tenant-tenant-access-api-keys-audits-row');
   await expect(auditRows).toHaveCount(2);
   await expect(auditRows.nth(0)).toContainText('TENANT_API_KEY_REVOKE');
@@ -170,7 +172,7 @@ test('pw-issue-121-tenant-audit C-ISSUE-121-TENANT-AUDIT', async ({ page }) => {
   await expect(page.getByTestId('tenant-tenant-access-api-keys-audits-section')).not.toContainText('issue-121-secret-once');
 });
 
-test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES', async ({ page }) => {
+test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES OBL-ISSUE-121-PAGE-STATES', async ({ page }) => {
   let releaseKeys: () => void = () => {};
   let releaseAudits: () => void = () => {};
   const state: TenantApiState = {
@@ -187,6 +189,7 @@ test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES', async ({ page }) => {
   const keyDataRegion = dataRegions.nth(0);
   const auditDataRegion = dataRegions.nth(1);
   const keyTable = page.getByTestId('tenant-tenant-access-api-keys-table');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-table')).toBeVisible();
   await expect(keyDataRegion).toContainText('App Key');
   await expect(auditDataRegion).toContainText('操作人');
   await expect(keyTable.locator('thead')).toBeVisible();
@@ -213,7 +216,17 @@ test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES', async ({ page }) => {
   state.keys = [{ ...safeKey }];
   await page.getByTestId('tenant-tenant-access-api-keys-retry').click();
   await expect(page.getByTestId('tenant-tenant-access-api-keys-row')).toBeVisible();
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-last-used-time')).not.toHaveText('—');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => {
+    const legacy = document.createElement('section');
+    legacy.className = 'card';
+    legacy.setAttribute('role', 'dialog');
+    document.body.append(legacy);
+    const position = getComputedStyle(legacy).position;
+    legacy.remove();
+    return position;
+  })).toBe('fixed');
 
   await page.getByTestId('tenant-tenant-access-api-keys-revoke').click();
   state.revokeMode = 'error';
@@ -227,6 +240,7 @@ test('pw-issue-121-page-states C-ISSUE-121-PAGE-STATES', async ({ page }) => {
   await page.getByTestId('tenant-tenant-access-api-keys-revoke-cancel').click();
 
   await page.getByTestId('tenant-tenant-access-api-keys-create-dialog').click();
+  await expect(page.getByTestId('modal')).toHaveCSS('position', 'relative');
   await page.getByTestId('form-submit').click();
   await expect(page.getByTestId('entity-form').getByRole('alert')).toContainText('名称不能为空');
   await page.getByTestId('tenant-tenant-access-api-keys-name').fill('definite-rejection');

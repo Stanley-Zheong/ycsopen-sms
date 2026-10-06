@@ -4,16 +4,19 @@
 
 | Gate | Command | Required result | Evidence |
 | --- | --- | --- | --- |
-| Dependency install | `npm --prefix web ci` | Pass | PASS; 357 packages installed from the lockfile. |
-| Targeted backend | `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest test` | Pass | PASS on the final source at 2026-10-05 14:49 UTC; 19 tests, 0 failures, 0 errors. |
-| Backend suite | `mvn -f core/pom.xml test` | Pass | PASS in PR 126 run `37334010539`, attempt 2: 993 tests, 0 failures, 0 errors, 33 skipped. The first attempt's sole `KeyLifecycleServiceTest` concurrency failure did not reproduce in its 10/10 rerun. Local full-suite output remains non-authoritative because the constrained worker lacks Ruby and Surefire was terminated under host memory pressure. |
-| Targeted frontend | `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` | Pass | PASS on the final source at 2026-10-05 15:03 UTC; 3 files, 25 tests. Existing warning output remains non-failing. |
-| Frontend suite | `npm --prefix web test` | Pass | PASS on the final source at 2026-10-05 15:05 UTC; 50 files, 224 tests. Existing React Router, `act(...)`, and intentionally unserved-network stderr warnings remain non-failing. |
-| Build | `npm --prefix web run build` | Pass | PASS on the final source at 2026-10-05 15:04 UTC; TypeScript and Vite, 306 modules. Existing chunk-size warning remains non-failing. |
-| Chrome Playwright | `npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json` | Pass | PASS, 5/5, in PR 126 run `37334010539` on Ubuntu 24.04 with Google Chrome 154.0.8037.57. The downloaded JSON artifact and exact source hashes are recorded in the Issue 121 `EVIDENCE` directory. The local bundled-Chromium result remains supporting evidence only. |
-| Planning validator fixtures | `/usr/bin/env ruby .planning/tools/test-planning-validators.rb` | Pass | PASS in the `Phase 03 portable contracts` job of PR 126 run `37334010539`. This validates the fixture implementation; it is not represented as a replay of historical Phase 08/09 production manifests. |
-| Real integration | Phase 03 MySQL, MinIO, and SoftHSM suites | Pass | PASS in PR 126 run `37334010539`; the job also proved every named suite executed and cleaned its owned services. |
-| Diff hygiene | `git diff --check` | Pass | PASS after the provider evidence and independent review updates. |
+| Dependency install | `npm --prefix web ci` | Pass | PASS on 2026-10-06; 357 packages installed from the lockfile. |
+| Targeted backend | `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` | Pass | PASS on repaired source at 2026-10-06: 24 tests, 0 failures/errors/skips. |
+| Backend suite | `mvn -f core/pom.xml test` | Pass | The local ARM64 run executed 1,031 tests but is not a passing verdict: 8 failures and 4 errors were confined to Ruby-dependent process harnesses, host process-tree reaping, unavailable migration configuration, and the intentionally open final checklist; fresh Ubuntu provider result pending. |
+| Targeted frontend | `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` | Pass | PASS on repaired source at 2026-10-06: 3 files and 30 tests. Existing non-failing React `act` and mocked-network diagnostics remain. |
+| Frontend suite | `npm --prefix web test` | Pass | The pre-rereview source passed 50 files/234 tests. A post-rereview local run was stopped after eight minutes of worker saturation produced shared five-second timeouts across changed and unrelated files; focused changed coverage passed 30/30. Clean provider result for the final 237-test suite is authoritative and pending. |
+| Build | `npm --prefix web run build` | Pass | PASS on repaired source at 2026-10-06; TypeScript and Vite transformed 306 modules. Existing chunk-size warning remains non-failing. |
+| Deterministic Chrome states | `npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json` | Pass | Pending fresh Google Chrome result; local bundled Chromium could not start because the worker lacks required GTK/X11 shared libraries. The prior run is superseded by changed source. |
+| Real-service Chrome | `mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase08RealServicePlaywrightTest test` | Pass with Google Chrome and real Spring/MySQL/SoftHSM/Vite | Pending new CI lane. |
+| Phase09 MySQL | `mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true -Dtest=Phase09TenantCredentialMySqlTest test` | Tests > 0; 0 skipped/failures/errors; indexed EXPLAIN | Pending new CI lane. |
+| Change UI production validator | `/usr/bin/env ruby .planning/tools/validate-change-ui-contract.rb --change issue-121-tenant-onboarding-access` | Pass | Pending fresh checksum-bound evidence. |
+| Planning validator fixtures | `/usr/bin/env ruby .planning/tools/test-planning-validators.rb` | Pass | Pending fresh repaired-source result. |
+| Docker release | `./scripts/verify-docker-release` | Pass fresh and repeated | Pending fresh repaired-source result. |
+| Diff hygiene | `git diff --check` | Pass | PASS during implementation; rerun required after final evidence and review updates. |
 
 ## Merge Gate
 
@@ -29,15 +32,15 @@
 
 ## Environment Boundary
 
-The delivery worker is Debian 12 on ARM64. Google publishes the CI browser
-package used by this repository for amd64, and Ruby is not installed in the
-worker. No browser identity or planning-validator success is inferred from the
-local substitutes. PR 126 run `37334010539` supplies the authoritative Ubuntu
-Google Chrome, Ruby, full-Maven, and real-integration results.
+The delivery worker is Debian 12 on ARM64 and has neither Ruby, a reachable
+Docker daemon, nor the shared libraries required by bundled Chromium. No
+browser, MySQL, or planning-validator success is inferred locally. A fresh PR
+126 run must supply the authoritative Ubuntu Google Chrome, Ruby, MySQL,
+full-Maven, and Docker results.
 
 The closed Phase 08/09 summaries and production manifests describe their
 historical atomic deliveries and are not relabeled as current-HEAD executions.
-Issue 121 uses a separate change-package addendum. Its normalized Google Chrome
-report and UI contract are stored under
-`.planning/changes/issue-121-tenant-onboarding-access/EVIDENCE/`; the raw report
-remains in artifact `docker-release-37334010539` until 2026-10-19.
+Issue 121 uses a separate change-package addendum enforced by
+`validate-change-ui-contract.rb`. The checked-in report and source hashes are
+currently stale and must be replaced from the fresh repaired-source Google
+Chrome run before this gateway closes.

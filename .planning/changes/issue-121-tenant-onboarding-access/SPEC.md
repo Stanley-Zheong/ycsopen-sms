@@ -3,14 +3,15 @@
 GitHub issue #121 joins two existing owners: Phase 08 qualification approval and
 Phase 09 tenant API credentials. It corrects the safe approval projection,
 retires the configuration placeholder, completes the API Key page states, and
-adds tenant-scoped credential audit readback. HTTP authentication and CMPP are
-unchanged.
+adds tenant-scoped credential audit readback. HTTP endpoint and signature
+contracts and all CMPP behavior are unchanged; API Key creation and HTTP HMAC
+authentication now share one literal-IP/CIDR policy implementation.
 
 ## Behavior
 
 | Change obligation | Existing owner obligations | Behavior ID | Required behavior | Observable acceptance |
 | --- | --- | --- | --- | --- |
-| OBL-ISSUE-121-APPROVAL-RESULT | OBL-F-2-2-B, OBL-F-2-8-A | issue-121-approval-result | Approval returns and displays tenant ID, tenant number, trial quota, and trial validity without password or App Secret fields. | Focused Java and Chrome tests assert the allowlisted result. |
+| OBL-ISSUE-121-APPROVAL-RESULT | OBL-F-2-2-B, OBL-F-2-8-A | issue-121-approval-result | Approval returns and displays tenant ID, tenant number, trial quota, and UTC-offset trial validity without password or App Secret fields. | Focused Java and Chrome tests assert the allowlisted result and stable Asia/Shanghai rendering. |
 | OBL-ISSUE-121-API-KEY-LIFECYCLE | OBL-F-2-6-A, OBL-F-2-6-B | issue-121-api-key-lifecycle | The configuration entry reaches one API Key page where `TENANT_ADMIN` and `TENANT_DEV` create, list, and revoke own-tenant credentials. | Chrome follows `/tenant/config`, creates one key, acknowledges the secret, observes a masked row, and revokes it. |
 | OBL-ISSUE-121-SECRET-SAFETY | OBL-F-2-6-B | issue-121-secret-safety | Create-only `appSecret` is structurally separate from list-only `appSecretMask`, is absent from logs/audit/later responses, and remains visible while the mounted page handles unrelated refresh failures. Explicit acknowledgement clears it during that page lifetime; navigation, reload, tab close, or unmount discards the in-memory value without persistence or recovery. | Java response/string tests and browser assertions find plaintext only in the one-time dialog and prove both acknowledgement and page-lifecycle disposal. |
 | OBL-ISSUE-121-TENANT-AUDIT | OBL-F-2-6-A, OBL-F-2-6-B, OBL-F-14-1-B | issue-121-tenant-audit | Create and revoke append queryable, redacted, tenant-scoped audit records. | A two-tenant backend test and Chrome audit table prove isolation and readback. |
@@ -30,10 +31,15 @@ unchanged.
   and `occurredAt`; it has no secret, request body, IP address, trace, or tenant
   selector. A 403 produces the page denied state. Other failures remain local
   to the audit region and can be retried without hiding credential data.
+- Creation accepts only literal IPv4/IPv6 addresses and valid CIDR prefixes
+  understood by the shared authentication matcher. The tenant/resource audit
+  lookup uses the V6700 composite index and retains the same response shape.
 
 ## Verification Boundary
 
-Chrome coverage runs the real React routes in Google Chrome and uses controlled
-API responses for deterministic UI state coverage. Java tests prove database
-tenant predicates, audit selection, response shape, and secret redaction. The
-full Maven and frontend suites remain non-regression gates.
+Google Chrome keeps controlled API responses only for deterministic UI failure
+states. A separate lane runs the approval-to-API-Key create/list/revoke/audit
+flow against real Spring, MySQL, SoftHSM, and Vite services. Java tests prove
+tenant predicates, repository-to-authentication CIDR behavior, indexed audit
+selection, response shape, and secret redaction. The full Maven and frontend
+suites remain non-regression gates.

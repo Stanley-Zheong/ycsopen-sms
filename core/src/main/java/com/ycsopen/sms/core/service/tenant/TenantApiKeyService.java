@@ -1,6 +1,7 @@
 package com.ycsopen.sms.core.service.tenant;
 
 import com.ycsopen.sms.core.common.exception.BusinessException;
+import com.ycsopen.sms.core.common.security.IpAllowList;
 import com.ycsopen.sms.core.service.audit.OperationAuditService;
 import com.ycsopen.sms.core.web.dto.TenantApiKeyCreateRequest;
 import com.ycsopen.sms.core.web.dto.TenantApiKeyAuditResponse;
@@ -15,13 +16,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /** Tenant-owned HTTP API key lifecycle. Secret plaintext exists only in create memory. */
 @Service
 public class TenantApiKeyService {
-    private static final Pattern IP_LIST = Pattern.compile(
-            "^[A-Za-z0-9:.\\-/]+(?:\\s*,\\s*[A-Za-z0-9:.\\-/]+)*$");
     private final JdbcTemplate jdbc;
     private final TenantCredentialSecretProtectionService protection;
     private final OperationAuditService audits;
@@ -103,15 +101,14 @@ public class TenantApiKeyService {
     private static void validate(TenantApiKeyCreateRequest r) {
         if (r == null || r.name() == null || r.name().isBlank() || r.name().length() > 64
                 || r.perSecond() < 1 || r.perMinute() < r.perSecond() || r.perHour() < r.perMinute()
-                || r.perDay() < r.perHour() || (r.ipWhitelist() != null && !r.ipWhitelist().isBlank()
-                && !IP_LIST.matcher(r.ipWhitelist()).matches())) throw new BusinessException("INVALID_POLICY", "凭证策略不合法");
+                || r.perDay() < r.perHour() || !IpAllowList.isValid(r.ipWhitelist())) {
+            throw new BusinessException("INVALID_POLICY", "凭证策略不合法");
+        }
     }
     /** Stores MySQL JSON as a canonical array while accepting the documented comma-separated UI form. */
     static String normalizeWhitelist(String value) {
         if (value == null || value.isBlank()) return null;
-        String[] entries = value.split(",");
-        return "[\"" + java.util.Arrays.stream(entries).map(String::trim)
-                .collect(java.util.stream.Collectors.joining("\",\"")) + "\"]";
+        return IpAllowList.canonicalJson(value);
     }
     private String uniqueKey() { byte[] value = new byte[24]; random.nextBytes(value); return Base64.getUrlEncoder().withoutPadding().encodeToString(value); }
     private char[] randomSecret() { byte[] value = new byte[32]; random.nextBytes(value); return Base64.getUrlEncoder().withoutPadding().encodeToString(value).toCharArray(); }

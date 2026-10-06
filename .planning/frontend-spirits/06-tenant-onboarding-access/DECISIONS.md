@@ -86,3 +86,49 @@ name after the dialog closes. Reopening the form cannot POST any such name;
 the user must inspect and revoke any matching credential or use a new name.
 The client never retries the secret-producing POST automatically and cannot
 recover a lost plaintext.
+
+## DR-FE06-007: Fail Closed On Any Credential 403
+
+### Status
+
+Accepted
+
+### Decision
+
+A 403 from a key list, audit list, create, or revoke request atomically enters
+the page denied state. The page clears credential and audit rows, discards any
+one-time secret, closes create/revoke dialogs, ignores later results from
+already in-flight reads, and exposes no further mutation action for the
+mounted session.
+
+## DR-FE06-008: Preserve Legacy Dialog Positioning
+
+### Status
+
+Accepted
+
+### Decision
+
+The legacy `[role="dialog"].card` rule remains fixed and centered for existing
+owners that do not yet use `ModalDialog`; `:not(.modal-dialog)` makes that
+exclusion explicit instead of depending on source order or lower-specificity
+overrides. Relative positioning, transform reset, and the smaller shadow apply
+only to `.modal-dialog` inside the shared viewport backdrop. Google Chrome
+verifies both computed-style paths.
+
+## DR-FE06-009: Authorization Reads Gate Credential Mutations
+
+### Status
+
+Accepted
+
+### Decision
+
+Create and revoke controls remain disabled while any authorization read is
+unresolved, including non-visual list and audit refreshes after a mutation. An
+independent in-flight counter covers reads that deliberately do not show a
+loading row, while a synchronous ref also guards event handlers before React
+can render the disabled state. A 403 sets a synchronous denied latch before
+clearing page state. Every create or revoke completion checks that latch before
+publishing a secret, success message, row, or follow-up request, so a result
+arriving after a concurrent denial cannot restore privileged state.

@@ -32,6 +32,7 @@
 | POST | `/api/v1/console/tenants/register` | 旧机构注册路径，仅返回迁移提示；请使用 public tenant registration | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 旧审核路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/reject` | 旧驳回路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
+| POST | `/api/v1/console/admin/tenants/{tenantId}/decision` | 审核机构；通过时返回机构编号、试用额度与带 UTC 偏移的试用有效期，不返回密码或 App Secret | F-2.2/F-2.8 |
 | GET/POST | `/api/v1/console/tenant/api-keys` | 当前机构 API Key 列表（仅掩码）与创建（`appSecret` 仅本次响应） | F-2.6 |
 | POST | `/api/v1/console/tenant/api-keys/{keyId}/revoke` | 撤销当前机构的活动 API Key | F-2.6 |
 | GET | `/api/v1/console/tenant/api-keys/audits` | 当前机构 API Key 创建/撤销审计，最多返回最新 100 条 | F-2.6/F-14.1 |
@@ -89,7 +90,10 @@ V6600 回填和所有处置读模型也会将旧的非空失败字符串投影�
 
 机构 API Key 接口只允许 `TENANT_ADMIN` 与 `TENANT_DEV`。服务端从已认证用户解析机构，任何请求都
 不接收机构 ID。列表使用 `appSecretMask`，且不包含 `appSecret`；创建响应额外返回一次
-`appSecret`。机构审计按当前机构和 `TENANT_API_KEY` 资源过滤，以审计 ID 倒序返回 `id`、
+`appSecret`。列表的 `lastUsedTime` 显示最近使用时间或 `null`；完整 HTTP HMAC 校验成功后按一分钟
+写入窗口更新该时间，遥测写入失败不会把已消费 nonce 的合法请求改判为鉴权失败。创建只接受字面
+IPv4/IPv6 地址和合法 CIDR 前缀，并与 HTTP HMAC 鉴权共享同一解析/匹配规则。机构审计按当前机构和
+`TENANT_API_KEY` 资源过滤，以审计 ID 倒序返回 `id`、
 `actor`、`operation`、`resourceId`、`result` 与 `occurredAt`，不返回请求正文、IP、追踪号或密钥。
 
 系统配置权限分为 `system:configuration:menu`、`system:configuration:read`、

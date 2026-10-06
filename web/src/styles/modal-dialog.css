@@ -10,7 +10,12 @@
 }
 
 .modal-dialog {
+  position: relative;
+  inset: auto;
+  z-index: 1;
   width: min(680px, 100%);
   max-height: calc(100vh - 64px);
   overflow: auto;
+  transform: none;
+  box-shadow: var(--shadow-3);
 }

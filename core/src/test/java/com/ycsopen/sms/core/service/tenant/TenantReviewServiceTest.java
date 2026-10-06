@@ -63,7 +63,7 @@ class TenantReviewServiceTest {
     }
 
     @Test
-    void approveRequiresInspectionAndHumanConfirmationThenCreatesInitialAccessExactlyOnce() {
+    void approveRequiresInspectionAndHumanConfirmationThenCreatesInitialAccessExactlyOnce() throws Exception {
         assertThatThrownBy(() -> service.decide(42L, 7, TenantReviewService.Decision.APPROVE,
                 "资料核验通过", false, "101"))
                 .isInstanceOf(TenantReviewService.ReviewFailure.class)
@@ -80,8 +80,13 @@ class TenantReviewServiceTest {
         assertThat(result.tenantId()).isEqualTo(42L);
         assertThat(result.tenantNo()).isEqualTo("T42");
         assertThat(result.trialQuota()).isEqualTo(500);
-        assertThat(result.trialStartAt()).isEqualTo(Instant.now(clock).atZone(ZoneOffset.UTC).toLocalDateTime());
-        assertThat(result.trialEndAt()).isEqualTo(Instant.now(clock).atZone(ZoneOffset.UTC).toLocalDateTime().plusDays(14));
+        assertThat(result.trialStartAt()).isEqualTo(Instant.now(clock));
+        assertThat(result.trialEndAt()).isEqualTo(Instant.now(clock).plusSeconds(14L * 24 * 60 * 60));
+        assertThat(new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules()
+                .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .writeValueAsString(result))
+                .contains("\"trialStartAt\":\"2026-09-07T08:00:00Z\"")
+                .contains("\"trialEndAt\":\"2026-09-21T08:00:00Z\"");
         verify(accounts, times(1)).saveAndFlush(argThat(account ->
                 account.getTenantId().equals(42L) && account.getStatus() == TenantAccount.Status.NORMAL));
         verify(tenants).appendReviewEvent(42L, "APPROVED", "PENDING", "VERIFIED",

@@ -2,9 +2,12 @@ package com.ycsopen.sms.core.repository;
 
 import com.ycsopen.sms.core.domain.entity.TenantApiKey;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long> {
@@ -44,6 +47,20 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
                and (apiKey.expireTime is null or apiKey.expireTime > CURRENT_TIMESTAMP)
             """)
     Optional<SignatureAuthenticationProjection> findSignatureAuthenticationByAppKey(@Param("appKey") String appKey);
+
+    /**
+     * Records recent successful use without writing on every authenticated request. The caller
+     * supplies a UTC cutoff so the update remains a single atomic statement under concurrency.
+     */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE tenant_api_keys
+               SET last_used_time = CURRENT_TIMESTAMP
+             WHERE id = :id
+               AND (last_used_time IS NULL OR last_used_time < :cutoff)
+            """, nativeQuery = true)
+    int touchLastUsedTime(@Param("id") Long id, @Param("cutoff") LocalDateTime cutoff);
 
     interface AuthenticationProjection {
         Long getId();

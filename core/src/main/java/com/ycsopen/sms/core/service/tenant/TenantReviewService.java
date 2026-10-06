@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -157,7 +159,11 @@ public class TenantReviewService {
                 tenant.getInspectionStatus(), tenant.getInspectionCompanyName(),
                 tenant.getInspectionCreditCode(), tenant.getInspectionConfidence() == null ? null : tenant.getInspectionConfidence().doubleValue(),
                 tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt(),
-                tenant.getTrialQuota(), tenant.getTrialStartAt(), tenant.getTrialEndAt());
+                tenant.getTrialQuota(), asUtcInstant(tenant.getTrialStartAt()), asUtcInstant(tenant.getTrialEndAt()));
+    }
+
+    private static Instant asUtcInstant(LocalDateTime value) {
+        return value == null ? null : value.toInstant(ZoneOffset.UTC);
     }
 
     private static void requireReason(String reason) {
@@ -200,8 +206,8 @@ public class TenantReviewService {
                              Tenant.InspectionStatus inspectionStatus, String inspectedCompanyName,
                              String inspectedCreditCode, Double inspectionConfidence,
                              String inspectionRequestId, LocalDateTime inspectionCompletedAt,
-                             Integer trialQuota, LocalDateTime trialStartAt,
-                             LocalDateTime trialEndAt) { }
+                             Integer trialQuota, Instant trialStartAt,
+                             Instant trialEndAt) { }
 
     public static final class ReviewFailure extends RuntimeException {
         ReviewFailure(String code) { super(code, null, false, false); }

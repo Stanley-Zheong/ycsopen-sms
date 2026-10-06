@@ -208,16 +208,59 @@ describe('tenant access creation forms', () => {
     expect(screen.queryByText('secret-once')).not.toBeInTheDocument();
   });
 
+  it('gates every mutation entry while post-create authorization reads are unresolved', async () => {
+    let resolveKeys: (value: Awaited<ReturnType<typeof tenantAccessApi.listTenantApiKeys>>) => void = () => undefined;
+    let resolveAudits: (value: Awaited<ReturnType<typeof tenantAccessApi.listTenantApiKeyAudits>>) => void = () => undefined;
+    const existing = {
+      id: 41, appKey: 'public-app-key', name: 'integration', description: null,
+      status: 'ACTIVE', ipWhitelist: null, perSecond: 10, perMinute: 100,
+      perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: null,
+      appSecretMask: '******',
+    };
+    vi.mocked(tenantAccessApi.listTenantApiKeys)
+      .mockResolvedValueOnce([existing])
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveKeys = resolve; }));
+    vi.mocked(tenantAccessApi.listTenantApiKeyAudits)
+      .mockResolvedValueOnce([])
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveAudits = resolve; }));
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-row');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'background-read' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    await screen.findByTestId('tenant-tenant-access-api-keys-secret-once');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-secret-acknowledge'));
+
+    const createButton = screen.getByTestId('tenant-tenant-access-api-keys-create-dialog');
+    const revokeButton = screen.getByTestId('tenant-tenant-access-api-keys-revoke');
+    expect(createButton).toBeDisabled();
+    expect(revokeButton).toBeDisabled();
+    fireEvent.click(createButton);
+    fireEvent.click(revokeButton);
+    expect(screen.queryByTestId('entity-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-revoke-dialog')).not.toBeInTheDocument();
+    expect(tenantAccessApi.createTenantApiKey).toHaveBeenCalledTimes(1);
+    expect(tenantAccessApi.revokeTenantApiKey).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveKeys([existing]);
+      resolveAudits([]);
+    });
+    await waitFor(() => expect(createButton).toBeEnabled());
+    expect(revokeButton).toBeEnabled();
+  });
+
   it('renders masks and uses a controlled revoke confirmation', async () => {
     vi.mocked(tenantAccessApi.listTenantApiKeys).mockResolvedValue([{
       id: 41, appKey: 'public-app-key', name: 'integration', description: null,
       status: 'ACTIVE', ipWhitelist: null, perSecond: 10, perMinute: 100,
-      perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: null,
+      perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: '2026-10-05T10:30:00Z',
       appSecretMask: '******',
     }]);
     render(<TenantApiKeysPage />);
 
     expect(await screen.findByTestId('tenant-tenant-access-api-keys-secret-mask')).toHaveTextContent('******');
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-last-used-time')).not.toHaveTextContent('—');
     fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
     const dialog = screen.getByTestId('tenant-tenant-access-api-keys-revoke-dialog');
     expect(dialog).toHaveTextContent('integration');
@@ -226,6 +269,108 @@ describe('tenant access creation forms', () => {
     fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
     fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke-confirm'));
     await waitFor(() => expect(tenantAccessApi.revokeTenantApiKey).toHaveBeenCalledWith(41));
+  });
+
+  it('clears tenant data and closes create UI when an in-flight read is denied', async () => {
+    let rejectKeys: (reason?: unknown) => void = () => undefined;
+    vi.mocked(tenantAccessApi.listTenantApiKeys).mockImplementationOnce(() => new Promise((_, reject) => {
+      rejectKeys = reject;
+    }));
+    render(<TenantApiKeysPage />);
+    const createButton = screen.getByTestId('tenant-tenant-access-api-keys-create-dialog');
+    expect(createButton).toBeDisabled();
+    fireEvent.click(createButton);
+    expect(screen.queryByTestId('entity-form')).not.toBeInTheDocument();
+
+    await act(async () => rejectKeys(Object.assign(new Error('forbidden'), { response: { status: 403 } })));
+
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    expect(screen.queryByTestId('entity-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-create-dialog')).not.toBeInTheDocument();
+    expect(tenantAccessApi.createTenantApiKey).not.toHaveBeenCalled();
+  });
+
+  it('does not reveal a late create success after a concurrent authorization read is denied', async () => {
+    let resolveCreate: (value: Awaited<ReturnType<typeof tenantAccessApi.createTenantApiKey>>) => void = () => undefined;
+    vi.mocked(tenantAccessApi.createTenantApiKey).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveCreate = resolve;
+    }));
+    vi.mocked(tenantAccessApi.listTenantApiKeys)
+      .mockResolvedValueOnce([])
+      .mockRejectedValueOnce(Object.assign(new Error('forbidden'), { response: { status: 403 } }));
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-empty');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'late-success' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-refresh'));
+
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    await act(async () => resolveCreate({
+      id: 91, appKey: 'late-key', name: 'late-success', description: null, status: 'ACTIVE',
+      ipWhitelist: null, perSecond: 10, perMinute: 100, perHour: 1_000, perDay: 10_000,
+      expireTime: null, lastUsedTime: null, appSecretMask: '******', appSecret: 'must-not-render',
+    }));
+
+    expect(screen.queryByText('must-not-render')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-status')).toBeEmptyDOMElement();
+    expect(screen.queryByTestId('entity-form')).not.toBeInTheDocument();
+  });
+
+  it('does not publish a late revoke success after a concurrent authorization read is denied', async () => {
+    let resolveRevoke: (value: null) => void = () => undefined;
+    vi.mocked(tenantAccessApi.listTenantApiKeys)
+      .mockResolvedValueOnce([{
+        id: 41, appKey: 'public-app-key', name: 'integration', description: null,
+        status: 'ACTIVE', ipWhitelist: null, perSecond: 10, perMinute: 100,
+        perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: null,
+        appSecretMask: '******',
+      }])
+      .mockRejectedValueOnce(Object.assign(new Error('forbidden'), { response: { status: 403 } }));
+    vi.mocked(tenantAccessApi.revokeTenantApiKey).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveRevoke = resolve;
+    }));
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-row');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke-confirm'));
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-refresh'));
+
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    await act(async () => resolveRevoke(null));
+
+    expect(screen.getByTestId('tenant-tenant-access-api-keys-status')).toBeEmptyDOMElement();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-row')).not.toBeInTheDocument();
+  });
+
+  it('enters the denied state when create or revoke mutations return 403', async () => {
+    vi.mocked(tenantAccessApi.createTenantApiKey)
+      .mockRejectedValueOnce(Object.assign(new Error('forbidden'), { response: { status: 403 } }));
+    const createView = render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-empty');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-create-dialog'));
+    fireEvent.change(screen.getByTestId('tenant-tenant-access-api-keys-name'), { target: { value: 'denied-create' } });
+    fireEvent.click(screen.getByTestId('form-submit'));
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    expect(screen.queryByTestId('entity-form')).not.toBeInTheDocument();
+    createView.unmount();
+
+    vi.mocked(tenantAccessApi.listTenantApiKeys).mockResolvedValue([{
+      id: 41, appKey: 'public-app-key', name: 'integration', description: null,
+      status: 'ACTIVE', ipWhitelist: null, perSecond: 10, perMinute: 100,
+      perHour: 1_000, perDay: 10_000, expireTime: null, lastUsedTime: null,
+      appSecretMask: '******',
+    }]);
+    vi.mocked(tenantAccessApi.revokeTenantApiKey)
+      .mockRejectedValueOnce(Object.assign(new Error('forbidden'), { response: { status: 403 } }));
+    render(<TenantApiKeysPage />);
+    await screen.findByTestId('tenant-tenant-access-api-keys-row');
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke'));
+    fireEvent.click(screen.getByTestId('tenant-tenant-access-api-keys-revoke-confirm'));
+
+    expect(await screen.findByTestId('tenant-tenant-access-api-keys-access-denied')).toBeVisible();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-row')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-tenant-access-api-keys-revoke-dialog')).not.toBeInTheDocument();
   });
 
   it('denies tenant users locally without sending credential requests', async () => {

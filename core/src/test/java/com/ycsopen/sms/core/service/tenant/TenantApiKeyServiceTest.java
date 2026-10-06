@@ -123,4 +123,17 @@ class TenantApiKeyServiceTest {
                 .isInstanceOf(BusinessException.class).hasMessage("无权执行此操作");
         assertThat(request.perDay()).isEqualTo(10_000);
     }
+
+    @Test
+    void rejectsWhitelistRulesThatAuthenticationCannotEvaluate() {
+        var invalidIpv4 = new TenantApiKeyCreateRequest("invalid-ipv4", "synthetic",
+                LocalDateTime.now().plusDays(1), "999.0.0.1/24", 10, 100, 1_000, 10_000);
+        var invalidIpv6Prefix = new TenantApiKeyCreateRequest("invalid-ipv6", "synthetic",
+                LocalDateTime.now().plusDays(1), "2001:db8::/129", 10, 100, 1_000, 10_000);
+
+        assertThatThrownBy(() -> service.create(11L, invalidIpv4))
+                .isInstanceOf(BusinessException.class).hasMessage("凭证策略不合法");
+        assertThatThrownBy(() -> service.create(11L, invalidIpv6Prefix))
+                .isInstanceOf(BusinessException.class).hasMessage("凭证策略不合法");
+    }
 }

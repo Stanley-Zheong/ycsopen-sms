@@ -723,14 +723,16 @@ tr.over-threshold td:first-child {
 
 /* ---- Dialogs -------------------------------------------------------- */
 
-[role="dialog"].card {
-  position: relative;
-  z-index: 1;
+[role="dialog"].card:not(.modal-dialog) {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 900;
   width: min(720px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
   margin: 0;
   overflow: auto;
-  box-shadow: var(--shadow-3);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 100vmax rgb(15 17 21 / 35%), var(--shadow-3);
 }
 
 .action-reason-dialog {

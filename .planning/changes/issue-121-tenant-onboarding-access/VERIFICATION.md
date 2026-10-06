@@ -1,41 +1,58 @@
 # Issue 121 Tenant Onboarding And API Access Verification
 
-## Executed checks
+## Repaired-source local checks
 
-- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest test` — PASS on final source, 19 tests.
-- `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` — PASS on final source, 25 tests.
-- `npm --prefix web test` — PASS, 50 files and 224 tests.
-- `npm --prefix web run build` — PASS, 306 modules.
-- `YCSOPEN_USE_BUNDLED_CHROMIUM=true YCSOPEN_E2E_ISOLATED=true npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=bundled-chromium --workers=1 --timeout=60000 --reporter=line` — PASS on final source, 5 tests at 1440x900.
-- PR 126 `Core / Java 21`, run `37334010539`, attempt 2 — PASS, 993 tests, 0 failures, 0 errors, 33 skipped. The first attempt's sole existing concurrency-test failure did not reproduce; `KeyLifecycleServiceTest` passed 10/10.
-- PR 126 `Phase 03 portable contracts`, run `37334010539` — PASS, including the Ruby validator fixtures and Phase 41 source-reachability check.
-- PR 126 `Phase 03 real integration`, run `37334010539` — PASS against MySQL, MinIO, and SoftHSM, with named-suite execution and cleanup checks.
-- PR 126 `Web / Node 20`, run `37334010539` — PASS.
-- PR 126 `Docker release / Google Chrome`, run `37334010539` — PASS, including Issue 121 Google Chrome 154.0.8037.57 coverage 5/5 and fresh/repeated Docker release verification.
-- `git diff --check` — PASS after final evidence and independent review updates.
+- `npm --prefix web ci` — PASS on 2026-10-06; 357 packages installed from the lockfile.
+- `mvn -f core/pom.xml -Dtest=TenantReviewServiceTest,AdminTenantStatusWorkflowTest,TenantApiKeyServiceTest,TenantApiKeyControllerSecurityTest,OperationAuditServiceTest,HmacRequestAuthenticatorTest test` — PASS, 24 tests with 0 failures, errors, or skips.
+- `npm --prefix web test -- --run test/unit/tenant-qualification.test.tsx test/unit/tenant-access-forms.test.tsx test/unit/action-reason-dialog.test.tsx` — PASS, 3 files and 30 tests.
+- `npm --prefix web test` — the pre-rereview pass covered 50 files and 234
+  tests. A later full rerun on the saturated local worker exceeded the shared
+  five-second timeout in both changed and unrelated files and was stopped
+  after eight minutes; the focused changed suite subsequently passed all 30
+  tests. This later attempt is not a product verdict; the clean provider Web
+  job remains authoritative for the final 237-test suite.
+- `npm --prefix web run build` — PASS, 306 modules; the existing chunk-size warning is non-failing.
+- `git diff --check` — PASS during implementation; it must be repeated after the final evidence update.
 
-The local full Maven suite reached 363 tests but did not form a valid product
-verdict: Ruby-dependent pre-existing harness tests failed with Ruby absent,
-pre-existing process-tree cleanup tests could not reap children in this worker,
-and Surefire then exited 137 under host memory pressure. The targeted changed
-surface is green, and the clean GitHub Ubuntu full-Maven job now supplies the
-authoritative suite result above.
+`mvn -f core/pom.xml test` executed 1,031 tests locally but is not a passing
+product verdict: 8 failures and 4 errors were confined to four infrastructure
+test classes. `Phase01ServiceHarnessProcessTest` requires Ruby, the
+`Phase08OwnedProcessTest` process-tree oracle cannot reap descendants in this
+worker, `ProductionMigrationCommandServicesFactoryTest` cannot obtain this
+worker's production migration configuration, and `FinalReleaseAcceptanceTest`
+correctly detected the still-open delivery checkboxes. The changed backend
+surface is green; the clean GitHub Ubuntu Core job remains the authoritative
+full-suite gate.
 
-The ARM64 worker has no compatible installed Google Chrome package and no Ruby
-runtime. The pull request therefore ran the five Issue 121 cases with
-`/usr/bin/google-chrome` and ran the repository Ruby validators. Both provider
-checks passed; no success is inferred from unavailable local tools.
+## Provider gates pending
 
-The Ruby command is the repository validator fixture suite, not a claim that
-the historical Phase 08/09 production manifests were replayed at the Issue 121
-commit. This change package stores its normalized Chrome report, exact source
-hashes, command, browser identity, pull-request commit, artifact digest, and
-acceptance boundary under `EVIDENCE/`. The raw provider JSON has SHA-256
-`fdb59e77daf3824c97c1347d5485378c6330fb7647a1e5d18cce489230f9e3be`.
+The prior PR 126 run `37334010539` and its Chrome report predate the owner-review
+repairs and are superseded. A fresh pull-request head must still prove:
+
+- the full Java 21 suite;
+- Phase09 MySQL execution with more than zero tests, zero skips/failures/errors,
+  create-to-repository-to-HMAC IPv6 CIDR behavior, and EXPLAIN selection of
+  `idx_audit_tenant_resource_id`;
+- Phase08 real-service Google Chrome approval through API Key create, masked
+  readback, audit readback, and revoke against Spring, MySQL, SoftHSM, and Vite;
+- all five deterministic Issue 121 Google Chrome cases;
+- the change-package production evidence validator with fresh report and source
+  checksums;
+- fresh and repeated Docker release verification.
+
+## Local environment boundary
+
+The delivery worker is Debian 12 on ARM64. Ruby is absent, the Docker client
+cannot reach a daemon, and bundled Chromium cannot start because GTK/X11 shared
+libraries are absent. Consequently local Phase09, real-service Chrome,
+deterministic Chrome, Ruby validator, and Docker-release attempts do not provide
+success evidence. The provider Ubuntu jobs own those executable gates; no
+success is inferred from unavailable local capabilities.
 
 ## Acceptance boundary
 
-The Issue 121 browser suite uses controlled API responses to exercise the real
-React routes and deterministic UI states in Google Chrome. Backend tests remain
-authoritative for authorization, tenant isolation, persistence, audit
-selection, and secret-response shape.
+The deterministic browser suite uses controlled API responses to exercise the
+real React routes, state transitions, selectors, and layout. Backend tests own
+authorization, tenant isolation, persistence, audit selection, shared IP/CIDR
+semantics, and secret-response shape. The separate real-service browser lane
+joins those boundaries for the approval-to-credential happy path.

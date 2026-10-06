@@ -16,6 +16,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HmacRequestAuthenticatorTest {
@@ -46,6 +48,8 @@ class HmacRequestAuthenticatorTest {
                 "{\"submitId\":\"SUBMIT-1\",\"phoneNumber\":\"13900000002\"}".getBytes(StandardCharsets.UTF_8)))
                 .isInstanceOf(HmacRequestAuthenticator.HmacAuthenticationException.class)
                 .hasMessage("签名校验失败");
+        verify(apiKeys, times(1)).touchLastUsedTime(org.mockito.ArgumentMatchers.eq(19L),
+                org.mockito.ArgumentMatchers.any(java.time.LocalDateTime.class));
     }
 
     @Test
@@ -61,6 +65,21 @@ class HmacRequestAuthenticatorTest {
                 .hasMessage("来源 IP 不在白名单内");
 
         assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID)).isNull();
+    }
+
+    @Test
+    void acceptsAnIpv6AddressInsideAStoredIpv6Cidr() {
+        byte[] encrypted = "opaque".getBytes(StandardCharsets.UTF_8);
+        SignatureAuthenticationProjection projection = activeProjection(encrypted, "[\"2001:db8::/32\"]");
+        when(apiKeys.findSignatureAuthenticationByAppKey("app-key")).thenReturn(Optional.of(projection));
+        when(secrets.reveal(17L, 19L, "app_secret_encrypted", encrypted))
+                .thenReturn("app-secret".toCharArray());
+        String body = "{\"submitId\":\"SUBMIT-IPV6\"}";
+        MockHttpServletRequest request = signedRequest(body, "nonce-ipv6", "2001:db8:1::7", "app-secret");
+
+        authenticator.authenticate(request, body.getBytes(StandardCharsets.UTF_8));
+
+        assertThat(request.getAttribute(HmacAuthInterceptor.ATTR_TENANT_ID)).isEqualTo(17L);
     }
 
     @Test

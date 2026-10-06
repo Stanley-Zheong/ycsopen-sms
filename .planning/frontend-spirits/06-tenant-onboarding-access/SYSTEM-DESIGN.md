@@ -14,8 +14,10 @@
 
 ## Data Flow
 
-Qualification approval writes trial fields and returns an allowlisted review
-projection. The review dialog renders the returned tenant and trial fields.
+Qualification approval writes UTC trial fields and returns an allowlisted
+review projection whose trial instants carry `Z`. The review dialog renders
+the returned tenant and trial fields in Asia/Shanghai without depending on the
+browser host timezone.
 
 The API Key page performs independent list and audit reads. List rows contain
 safe credential metadata plus `appSecretMask`. A successful create response
@@ -33,7 +35,12 @@ resolved from the authenticated actor.
    or recovery.
 4. Revoke opens a target-aware dialog, takes its own submit lock, and sends one
    request only after confirmation.
-5. Successful mutations refresh list and audit state independently.
+5. Successful mutations refresh list and audit state independently; every
+   authorization read, including these non-visual refreshes, contributes to an
+   in-flight counter that gates new mutations until both reads settle.
+6. The credential table renders the safe `lastUsedTime` value, which the server
+   updates after successful full HMAC verification through a one-minute
+   best-effort write window.
 
 `ModalDialog` is extended with a viewport backdrop and an explicit
 non-dismissible mode. The backdrop intercepts page interaction and the existing
@@ -45,8 +52,11 @@ request is pending.
 
 - List failure retains the page shell, table header, create action, and retry.
 - Audit failure does not hide credential rows or a pending secret handoff.
-- A 403 response or a locally known unsupported tenant role renders the access
-  denied state without tenant data.
+- A 403 response from any read or mutation, or a locally known unsupported
+  tenant role, renders the access denied state without tenant data, closes
+  operation dialogs, clears a secret handoff, and prevents stale in-flight
+  reads or mutation completions from repopulating state. Mutations cannot start
+  while any initial or background authorization read is unresolved.
 - Create failure keeps all editable values. Revoke failure keeps the target and
   consequence visible for retry.
 - A definite create rejection releases the create latch. A transport
@@ -65,11 +75,18 @@ only ID, actor, operation, resource ID, result, and occurrence time. UI tests
 use synthetic values and assert that the created plaintext never appears after
 acknowledgement or page-lifecycle disposal.
 
+Credential creation and HMAC authentication use the same literal IP/CIDR
+parser for IPv4 and IPv6. The tenant audit query is backed by the additive
+`(tenant_id, resource_type, id)` index owned by Issue 121 under the recorded
+Phase 06 cross-owner approval.
+
 ## Verification Model
 
 - Java unit/H2 tests cover approval projection, response redaction, role and
   cross-tenant isolation, mask/create separation, revoke, and audit readback.
 - Vitest covers route/page state, form locks, handoff acknowledgement, mask,
   revoke failure, and audit state.
-- Google Chrome Playwright covers the approval result and the configuration
-  redirect through create, acknowledgement, masked list, revoke, and audit.
+- Deterministic Google Chrome Playwright covers UI-only failure states. A
+  separate Google Chrome lane runs the approval result and configuration
+  redirect through create, acknowledgement, masked list, revoke, and audit
+  against real Spring, MySQL, SoftHSM, and Vite services.
