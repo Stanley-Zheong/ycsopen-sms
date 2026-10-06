@@ -201,6 +201,21 @@ describe('Issue 124 complaint case context UI', () => {
     await waitFor(() => expect(screen.queryByTestId('admin-complaint-case-complaints-action-dialog')).not.toBeInTheDocument());
   });
 
+  it('dismisses an idle action from the backdrop and restores focus to its opener', async () => {
+    renderWithQuery(<AdminComplaintsPage />);
+    await openCase();
+    const opener = screen.getByTestId('admin-complaint-case-complaints-accept');
+
+    opener.focus();
+    fireEvent.click(opener);
+    expect(screen.getByTestId('admin-complaint-case-complaints-action-dialog')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-action-backdrop'));
+
+    await waitFor(() => expect(screen.queryByTestId('admin-complaint-case-complaints-action-dialog')).not.toBeInTheDocument());
+    expect(opener).toHaveFocus();
+    expect(api.acceptComplaintCase).not.toHaveBeenCalled();
+  });
+
   it('discards a cancelled action draft and recovers only the latest failed record', async () => {
     const processed = { ...caseRow, status: 'PROCESSED' as const };
     vi.mocked(api.getComplaintCaseDetail).mockResolvedValue({

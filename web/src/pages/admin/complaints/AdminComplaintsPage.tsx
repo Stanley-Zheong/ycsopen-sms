@@ -163,7 +163,7 @@ function ActionDialog({
     <div
       className="action-reason-dialog-backdrop complaint-action-backdrop"
       data-testid="admin-complaint-case-complaints-action-backdrop"
-      onMouseDown={(event) => {
+      onClick={(event) => {
         if (event.target === event.currentTarget) requestClose();
       }}
     >

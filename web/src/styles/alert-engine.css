@@ -125,7 +125,7 @@
   justify-content: flex-start;
 }
 
-.complaint-form-actions button {
+.complaint-field-grid .complaint-form-actions > button {
   height: 40px;
   min-height: 40px;
 }

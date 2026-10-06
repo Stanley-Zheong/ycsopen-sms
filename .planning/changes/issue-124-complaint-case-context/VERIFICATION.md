@@ -9,13 +9,21 @@ Verification date: 2026-10-06
 | Live scope | authenticated `$GH_CMD` issue view with complete comments | PASS; issue `#124` and all live comments were read; no attachment was present. |
 | Dependencies | `npm --prefix web ci` | PASS; 357 packages installed. The existing audit report contains 8 dependency advisories and is not changed by this issue. |
 | Backend focused matrix | `mvn -f core/pom.xml -Dtest=ComplaintCaseEventMigrationTest,ComplaintCaseServiceTest,ComplaintCaseTransactionIntegrationTest,ComplaintCaseControllerTest,ComplaintCaseAuthorizationTest,GlobalExceptionHandlerTest,GlobalExceptionHandlerLoggingTest test` | PASS; 37 tests, 0 failures/errors/skips. |
-| React focused matrix | `npm --prefix web test -- test/unit/complaint-case.test.tsx` | PASS; 11 tests. |
+| React focused matrix | `npm --prefix web test -- --run test/unit/complaint-case.test.tsx` | PASS; 12 tests, including backdrop dismissal and opener-focus restoration. |
 | Playwright discovery | `npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --list` | PASS; 11 tests discovered with unique Issue 124 IDs and legacy Phase 41 closure. |
 | Frontend build | `npm --prefix web run build` | PASS on the final local diff; the existing 500 kB chunk warning remains. |
 | Diff hygiene | `git diff --check` | PASS on the final local diff. |
 | Independent pre-push review | backend and frontend bounded review agents | PASS; no remaining BLOCKER, HIGH, or MEDIUM finding. |
 
-The default full Vitest run reached 224/225 passing tests and failed one pre-existing Phase 5 identity test after its save button remained disabled. That unchanged file passed 8/8 immediately in isolation. A serial full-suite rerun reproduced the same cross-file isolation failure before it was stopped after the reproduction was captured; the GitHub Node 20 job remains the authoritative clean-run gate.
+The default full Vitest run reached 224/225 passing tests and failed one pre-existing Phase 5 identity test after its save button remained disabled. That unchanged file passed 8/8 immediately in isolation. A serial full-suite rerun reproduced the same cross-file isolation failure before it was stopped after the reproduction was captured. The first clean GitHub Node 20 run passed the full suite.
+
+## Pull Request Feedback
+
+- Branch: `feature/124-complaint-case-context`.
+- Initial implementation commit: `722d13aca033506173e494327ea548a602bb61e3`.
+- Pull request: `#128`.
+- First CI run `37402564417`: Node 20 PASS. Java 21 executed 1,022 tests with no changed-behavior failure; its only failure was the then-open Issue 124 delivery TODO. The Phase 41 design validator stopped on the intentionally stale UI inventory checksum.
+- First branded-Chrome execution used Google Chrome 154 and passed 9/11 tests. It exposed a 36.8px submit control against the 38px minimum and backdrop-close focus loss. The follow-up raises the complaint submit selector above the shared 36.8px rule, closes from the click event, captures the opener before dialog focus entry, and adds a focused regression test. Final CI execution is required before the evidence is sealed.
 
 ## Local Environment Boundaries
 
@@ -27,4 +35,4 @@ The default full Vitest run reached 224/225 passing tests and failed one pre-exi
 
 ## Provider Evidence
 
-Branch, commit, pull request, CI run, branded-Chrome artifact, and merge receipt are recorded here after they exist. Historical Phase 41 evidence is not used to claim Issue 124 passed.
+Final CI run, passing branded-Chrome artifact, and merge receipt are recorded in the provider response after they exist. Historical Phase 41 evidence is not used to claim Issue 124 passed.

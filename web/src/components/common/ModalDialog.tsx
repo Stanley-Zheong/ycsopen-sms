@@ -9,12 +9,18 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLElement | null>(
+    typeof document !== 'undefined' && document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null,
+  );
 
   useEffect(() => {
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const dialog = ref.current;
     (dialog?.querySelector<HTMLElement>(FOCUSABLE) ?? dialog)?.focus();
-    return () => opener?.focus();
+    return () => {
+      if (openerRef.current?.isConnected) openerRef.current.focus();
+    };
   }, []);
 
   useEffect(() => {

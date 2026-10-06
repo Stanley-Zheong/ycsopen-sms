@@ -25,4 +25,10 @@ The first review found forged/cross-tenant complaint references, raw exception d
 
 Verdict: `PASS` on 2026-10-06 with no remaining `BLOCKER`, `HIGH`, or `MEDIUM` finding.
 
-The final re-review additionally caught and closed over-eager migration nulling of still-provable acceptance/review evidence, legacy failure-text disclosure, non-deterministic contender scheduling in two transaction races, and broken Playwright selector closure. The final focused backend matrix passed 37 tests; focused Vitest passed 11 tests; Playwright discovery listed 11 tests; `git diff --check` passed. Full-suite, branded-Chrome, planning-validator, pull-request, CI, and merge evidence is recorded in `VERIFICATION.md` or remains an explicit provider boundary until it exists.
+The final re-review additionally caught and closed over-eager migration nulling of still-provable acceptance/review evidence, legacy failure-text disclosure, non-deterministic contender scheduling in two transaction races, and broken Playwright selector closure. The focused backend matrix passed 37 tests; focused Vitest passed 12 tests after the first Chrome feedback fix; Playwright discovery listed 11 tests; `git diff --check` passed. Full-suite, branded-Chrome, planning-validator, pull-request, CI, and merge evidence is recorded in `VERIFICATION.md` or remains an explicit provider boundary until it exists.
+
+## Post-CI Review
+
+Verdict: `HIGH` delivery-gate finding remains open until the post-fix branded-Chrome run exists.
+
+The bounded follow-up review found no implementation `BLOCKER`, `HIGH`, or `MEDIUM` in the shared modal, complaint backdrop, 40px selector, or regression tests. It did find that final Chrome/planning TODOs had been checked before executable evidence existed. Those items remain open for the next CI run; they may be checked only after the 11-test Chrome artifact and planning validation pass.
