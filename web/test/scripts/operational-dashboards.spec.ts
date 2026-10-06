@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { PlatformDashboard } from '../../src/api/operationalDashboardApi';
 
 function token(subject: string) {
   const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -23,7 +24,7 @@ const source = {
   formulaVersion: 'v1',
 };
 
-const platformDashboard = {
+const platformDashboard: PlatformDashboard = {
   realtime: { totalUsers: 3, todayMessages: 150, successRate: 0.9, activeTenants: 1, comparisonMessages: 150 },
   kpi: { todaySend: 150, activeTenants: 1, successRate: 0.9, todayRevenue: 1.23, formula: 'success_count/send_count' },
   hourlyTrend: [{ bucketStart: '2026-09-10T09:00:00', sendCount: 100, successCount: 90, successRate: 0.9 }],
@@ -31,6 +32,64 @@ const platformDashboard = {
   channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
   financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
   source,
+  todayAggregation: {
+    state: 'FRESH',
+    businessDate: '2026-09-10',
+    businessTimeZone: 'Asia/Shanghai',
+    sourceRegistry: 'statistics_aggregates',
+    refreshedAt: '2026-09-10T09:05:00',
+    sourceChangedAt: '2026-09-10T09:04:30',
+    sourceRecordCount: 150,
+    aggregateRowCount: 2,
+  },
+};
+
+function absentPlatformDashboard(state: 'NOT_REFRESHED' | 'EMPTY' | 'STALE'): PlatformDashboard {
+  return {
+    ...platformDashboard,
+    realtime: { totalUsers: 3, todayMessages: null, successRate: null, activeTenants: 1, comparisonMessages: null },
+    kpi: { todaySend: null, activeTenants: 1, successRate: null, todayRevenue: null, formula: 'success_count/send_count' },
+    hourlyTrend: [],
+    tenantRank: [],
+    source: { ...source, freshnessAt: null },
+    todayAggregation: {
+      state,
+      businessDate: '2026-09-10',
+      businessTimeZone: 'Asia/Shanghai',
+      sourceRegistry: 'statistics_aggregates',
+      refreshedAt: state === 'NOT_REFRESHED' ? null : '2026-09-10T09:05:00',
+      sourceChangedAt: state === 'STALE' ? '2026-09-10T09:05:30' : null,
+      sourceRecordCount: 0,
+      aggregateRowCount: 0,
+    },
+  };
+}
+
+const stalePlatformDashboard: PlatformDashboard = {
+  ...platformDashboard,
+  realtime: { totalUsers: 3, todayMessages: 216, successRate: 0.875, activeTenants: 1, comparisonMessages: 200 },
+  kpi: { todaySend: 216, activeTenants: 1, successRate: 0.875, todayRevenue: 9.5, formula: 'success_count/send_count' },
+  hourlyTrend: [{ bucketStart: '2026-09-10T09:00:00', sendCount: 216, successCount: 189, successRate: 0.875 }],
+  tenantRank: [{ tenantId: 7, sendCount: 216, successCount: 189, successRate: 0.875 }],
+  todayAggregation: {
+    state: 'STALE',
+    businessDate: '2026-09-10',
+    businessTimeZone: 'Asia/Shanghai',
+    sourceRegistry: 'statistics_aggregates',
+    refreshedAt: '2026-09-10T09:05:00',
+    sourceChangedAt: '2026-09-10T09:09:00',
+    sourceRecordCount: 216,
+    aggregateRowCount: 2,
+  },
+};
+
+const freshZeroPlatformDashboard: PlatformDashboard = {
+  ...platformDashboard,
+  realtime: { totalUsers: 3, todayMessages: 0, successRate: 0, activeTenants: 1, comparisonMessages: 0 },
+  kpi: { todaySend: 0, activeTenants: 1, successRate: 0, todayRevenue: 0, formula: 'success_count/send_count' },
+  hourlyTrend: [],
+  tenantRank: [],
+  todayAggregation: { ...platformDashboard.todayAggregation!, sourceRecordCount: 1, aggregateRowCount: 1 },
 };
 
 const resourceStatistics = {
@@ -145,4 +204,126 @@ test('pw-p44-tenant-overview-balance C-P44-TENANT-OVERVIEW-BALANCE OBL-F-1-5-B p
   await expect(page.getByTestId('tenant-operational-dashboards-tenant-overview-scope')).toContainText('当前机构');
   await page.goto('/tenant/templates/statistics');
   await expect(page.getByTestId('tenant-operational-dashboards-templates-statistics-page')).toContainText('55');
+});
+
+test('pw-issue-119-aggregation-states C-119-AGGREGATION-STATES OBL-ISSUE-119-STATE', async ({ page }) => {
+  let current: PlatformDashboard = absentPlatformDashboard('NOT_REFRESHED');
+  const scalarTestIds = [
+    'admin-operational-dashboards-dashboard-realtime-today-messages-value',
+    'admin-operational-dashboards-dashboard-realtime-success-rate-value',
+    'admin-operational-dashboards-dashboard-realtime-comparison-value',
+    'admin-operational-dashboards-dashboard-kpi-today-send-value',
+    'admin-operational-dashboards-dashboard-kpi-success-rate-value',
+    'admin-operational-dashboards-dashboard-kpi-revenue-value',
+  ];
+  await page.unroute('**/api/v1/console/operational-dashboards/platform');
+  await page.route('**/api/v1/console/operational-dashboards/platform', async (route) => route.fulfill({ json: response(current) }));
+  await page.addInitScript((value) => {
+    window.sessionStorage.setItem('ycsopen.console.auth-session', JSON.stringify(value));
+  }, { accessToken: token('119-states'), userType: 'ADMIN', tenantId: null });
+
+  await page.goto('/admin/dashboard');
+  const status = page.getByTestId('admin-operational-dashboards-dashboard-data-status');
+  await expect(status).toHaveAttribute('data-state', 'NOT_REFRESHED');
+  await expect(status).toContainText('统计尚未刷新');
+  for (const testId of scalarTestIds) await expect(page.getByTestId(testId)).toHaveText('—');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toContainText('今日趋势暂不可用');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toContainText('机构排行暂不可用');
+
+  current = absentPlatformDashboard('EMPTY');
+  await page.reload();
+  await expect(status).toHaveAttribute('data-state', 'EMPTY');
+  await expect(status).toContainText('今日无消息数据');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toContainText('2026-09-10T09:05:00');
+  for (const testId of scalarTestIds) await expect(page.getByTestId(testId)).toHaveText('—');
+
+  current = absentPlatformDashboard('STALE');
+  await page.reload();
+  await expect(status).toHaveAttribute('data-state', 'STALE');
+  await expect(status).toContainText('数据已过期');
+  await expect(status).toContainText('当前不展示消息统计值');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toContainText('2026-09-10T09:05:30');
+  for (const testId of scalarTestIds) await expect(page.getByTestId(testId)).toHaveText('—');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toContainText('今日趋势暂不可用');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toContainText('机构排行暂不可用');
+
+  current = stalePlatformDashboard;
+  await page.reload();
+  await expect(status).toHaveAttribute('data-state', 'STALE');
+  await expect(status).toContainText('数据已过期');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveText('216');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-success-rate-value')).toHaveText('87.50%');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-comparison-value')).toHaveText('200');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-today-send-value')).toHaveText('216');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-success-rate-value')).toHaveText('88%');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-revenue-value')).toHaveText('9.5');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toContainText('2026-09-10T09:09:00');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toContainText('09:00');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toContainText('租户 7');
+
+  current = freshZeroPlatformDashboard;
+  await page.reload();
+  await expect(status).toHaveAttribute('data-state', 'FRESH');
+  await expect(status).toContainText('数据已刷新');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveText('0');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-success-rate-value')).toHaveText('0.00%');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-comparison-value')).toHaveText('0');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-today-send-value')).toHaveText('0');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-success-rate-value')).toHaveText('0%');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-revenue-value')).toHaveText('0');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toContainText('今日暂无趋势明细');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toContainText('今日暂无机构排行数据');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-aggregation-business-date')).toContainText('Asia/Shanghai');
+});
+
+test('pw-issue-119-refresh C-119-REFRESH OBL-ISSUE-119-REFRESH', async ({ page }) => {
+  let requestCount = 0;
+  await page.unroute('**/api/v1/console/operational-dashboards/platform');
+  await page.route('**/api/v1/console/operational-dashboards/platform', async (route) => {
+    requestCount += 1;
+    if (requestCount === 1) {
+      await route.fulfill({ json: response(stalePlatformDashboard) });
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    if (requestCount === 2) {
+      await route.fulfill({ status: 503, json: { code: 503, message: 'temporary unavailable' } });
+      return;
+    }
+    await route.fulfill({ json: response({
+      ...platformDashboard,
+      todayAggregation: {
+        ...platformDashboard.todayAggregation,
+        state: 'FRESH',
+        refreshedAt: '2026-09-10T10:05:00',
+        sourceChangedAt: '2026-09-10T10:04:30',
+      },
+    }) });
+  });
+  await page.addInitScript((value) => {
+    window.sessionStorage.setItem('ycsopen.console.auth-session', JSON.stringify(value));
+  }, { accessToken: token('119-refresh'), userType: 'ADMIN', tenantId: null });
+
+  await page.goto('/admin/dashboard');
+  const status = page.getByTestId('admin-operational-dashboards-dashboard-data-status');
+  await expect(status).toHaveAttribute('data-state', 'STALE');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveText('216');
+  const refresh = page.getByTestId('admin-operational-dashboards-dashboard-realtime-refresh');
+  await refresh.click();
+  await expect(refresh).toBeDisabled();
+  await expect(page.getByRole('alert')).toContainText('刷新失败，当前仍显示上一次加载的数据');
+  await expect(status).toHaveAttribute('data-state', 'STALE');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveText('216');
+  await expect(refresh).toBeEnabled();
+
+  await refresh.click();
+  await expect(refresh).toBeDisabled();
+  await expect(status).toHaveAttribute('data-state', 'FRESH');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveText('150');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-comparison-value')).toHaveText('150');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toContainText('2026-09-10T10:05:00');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toContainText('09:00');
+  await expect(page.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toContainText('租户 7');
+  await expect(refresh).toBeEnabled();
+  expect(requestCount).toBe(3);
 });

@@ -25,6 +25,13 @@ server:
   port: 8080
 
 ycsopen:
+  statistics:
+    refresh:
+      fixed-delay: ${YCSOPEN_STATISTICS_REFRESH_FIXED_DELAY:PT5S}
+      max-age: ${YCSOPEN_STATISTICS_REFRESH_MAX_AGE:PT5M}
+  message:
+    submit-claim-lease: ${YCSOPEN_MESSAGE_SUBMIT_CLAIM_LEASE:PT2M}
+    submit-transaction-timeout: ${YCSOPEN_MESSAGE_SUBMIT_TRANSACTION_TIMEOUT:PT60S}
   tenant-qualification:
     trial-quota: ${YCSOPEN_TENANT_TRIAL_QUOTA:500}
     trial-days: ${YCSOPEN_TENANT_TRIAL_DAYS:14}

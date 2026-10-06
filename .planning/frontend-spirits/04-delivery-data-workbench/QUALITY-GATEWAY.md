@@ -31,3 +31,21 @@
 - Gate item: Commands disclose target and snapshot.
 - Gate item: Bulk actions cannot submit partial or incomplete targets.
 - Gate item: Exports disclose included datasets and excluded filters.
+
+## Issue #119 Gate
+
+| Gate | Command | Status | Evidence boundary |
+|---|---|---|---|
+| Dependency install | `npm --prefix web ci` | PASS | Node `v22.23.2` satisfies Node 20+; committed lockfile installed without mutation. Existing audit report: 10 advisories (5 moderate, 3 high, 2 critical), outside Issue 119 scope. |
+| Targeted backend | `mvn -o -f core/pom.xml -Dtest=StatisticsAggregationServiceTest,StatisticsAggregationRefreshSchedulerTest,StatisticsRefreshMigrationTest,OperationalDashboardServiceTest,OperationalDashboardControllerTest,MessageAcceptanceIdempotencyServiceTest,MessageSubmitServiceTest,MessageSubmitTransactionIntegrationTest,BillingServiceTest test` | PASS | 42 tests; proves scheduler, rollback, time, rejection, checkpoint, dashboard states, billing touch, and migration shape. |
+| Targeted frontend | `npm --prefix web test -- test/unit/operational-dashboards.test.tsx test/unit/dashboard-page.test.tsx` | PASS | 11/11 tests; proves all four states, stale-after-empty, legitimate zero, initial and retained-data errors, explicit retry, response replacement, and the release selector. |
+| Full frontend | `npm --prefix web test` | LOCAL FLAKE BOUNDARY; CI REQUIRED | One exact run passed 50 files/234 tests. The final post-review rerun passed all Issue 119 cases but the unrelated identity permission-save test timed out under suite load (233/234); that exact old test passed 1/1 alone. PR CI is authoritative. |
+| Production build | `npm --prefix web run build` | PASS | TypeScript and Vite production build completed; existing chunk-size advisory only. |
+| Google Chrome | `npm --prefix web run test:e2e -- operational-dashboards.spec.ts --project=local-google-chrome --workers=1 --grep pw-issue-119` | LOCAL RUNTIME BLOCKED; CI REQUIRED | Playwright listed exactly both Issue 119 cases. Execution cannot launch the repository's default macOS Chrome path and no local Chrome exists; CI now runs the exact command with `/usr/bin/google-chrome`. |
+| Full backend | `mvn -f core/pom.xml test` | LOCAL RUNTIME BLOCKED; CI REQUIRED | 567 tests started; failures were runtime-owned Ruby absence, process-tree reaping, `/home` ownership mapping, plus the then-open Issue 119 TODO. Focused Issue 119 tests pass; the TODO is closed before pre-push and CI is authoritative for the portable full suite. |
+| Phase 34 entry validator | `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 34 --package statistics-aggregation-pipeline --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/34-statistics-aggregation-pipeline/ENTRY-REVIEW.md` | LOCAL RUBY/LEGACY-ARTIFACT BOUNDARY; CI REQUIRED | Runtime lacks Ruby and the completed Phase 34 package predates the current validator; Issue 119 review is the amendment gate and PR portable-contract is authoritative. |
+| Phase 44 entry validator | `/usr/bin/env ruby .planning/tools/validate-phase-entry.rb --phase 44 --package operational-dashboards --obligations .planning/PRD-OBLIGATIONS.md --entry-review .planning/phases/44-operational-dashboards/ENTRY-REVIEW.md --ui` | LOCAL RUBY BOUNDARY; CI REQUIRED | Runtime lacks Ruby; PR portable-contract is authoritative. |
+| Phase 44 UI design validator | `/usr/bin/env ruby .planning/tools/validate-ui-contract.rb --phase 44 --package operational-dashboards --stage design` | LOCAL RUBY BOUNDARY; CI REQUIRED | Runtime lacks Ruby; PR portable-contract is authoritative. |
+| Phase 44 UI production validator | `/usr/bin/env ruby .planning/tools/validate-ui-contract.rb --phase 44 --package operational-dashboards --stage production` | LOCAL RUBY BOUNDARY; CI REQUIRED | Runtime lacks Ruby; PR portable-contract and Chrome checks are authoritative. |
+| Diff hygiene | `git diff --check` | PASS | Complete Issue 119 diff after independent review closure. |
+| Docker release | `npm --prefix web run test:docker-release` through PR CI | CI REQUIRED | Schema and dashboard behavior require fresh/upgrade/restart plus installed Chrome. |

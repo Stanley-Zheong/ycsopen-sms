@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 /**
  * F-8.1 预付费扣费：验证"余额不足拒绝提交"与"预扣/确认/冲正"三段式的账户余额变化，
@@ -29,12 +31,13 @@ class BillingServiceTest {
 
     @Mock TenantAccountRepository tenantAccountRepository;
     @Mock BillingRecordRepository billingRecordRepository;
+    @Mock JdbcTemplate jdbc;
 
     private BillingService billingService;
 
     @BeforeEach
     void setUp() {
-        billingService = new BillingService(tenantAccountRepository, billingRecordRepository);
+        billingService = new BillingService(tenantAccountRepository, billingRecordRepository, jdbc);
     }
 
     private TenantAccount accountWithBalance(long balanceInMil) {
@@ -77,6 +80,7 @@ class BillingServiceTest {
         BillingRecord reserved = new BillingRecord();
         reserved.setId(9L);
         reserved.setTenantId(100L);
+        reserved.setTaskRefId(71L);
         reserved.setAmount(50L);
         reserved.setBillingStatus(BillingRecord.BillingStatus.RESERVED);
 
@@ -90,6 +94,7 @@ class BillingServiceTest {
         assertThat(account.getBalance()).isEqualTo(950L);   // 1000 - 50
         assertThat(account.getFrozenAmount()).isEqualTo(0L); // 50 - 50
         assertThat(savedRecord.getValue().getBillingStatus()).isEqualTo(BillingRecord.BillingStatus.CONFIRMED);
+        verify(jdbc).update("UPDATE message_tasks SET updated_at=CURRENT_TIMESTAMP WHERE id=?", 71L);
     }
 
     @Test
@@ -100,6 +105,7 @@ class BillingServiceTest {
         BillingRecord reserved = new BillingRecord();
         reserved.setId(9L);
         reserved.setTenantId(100L);
+        reserved.setTaskRefId(72L);
         reserved.setAmount(50L);
         reserved.setBillingStatus(BillingRecord.BillingStatus.RESERVED);
 
@@ -111,6 +117,7 @@ class BillingServiceTest {
 
         assertThat(account.getBalance()).isEqualTo(1000L);   // 余额不受影响 —— 关键断言
         assertThat(account.getFrozenAmount()).isEqualTo(0L);
+        verify(jdbc).update("UPDATE message_tasks SET updated_at=CURRENT_TIMESTAMP WHERE id=?", 72L);
     }
 
     @Test
