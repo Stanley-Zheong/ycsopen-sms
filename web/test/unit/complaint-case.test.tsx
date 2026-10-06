@@ -209,7 +209,10 @@ describe('Issue 124 complaint case context UI', () => {
     opener.focus();
     fireEvent.click(opener);
     expect(screen.getByTestId('admin-complaint-case-complaints-action-dialog')).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('admin-complaint-case-complaints-action-backdrop'));
+    const backdrop = screen.getByTestId('admin-complaint-case-complaints-action-backdrop');
+    expect(backdrop).toHaveClass('modal-backdrop');
+    expect(backdrop.querySelector('.modal-backdrop')).not.toBeInTheDocument();
+    fireEvent.click(backdrop);
 
     await waitFor(() => expect(screen.queryByTestId('admin-complaint-case-complaints-action-dialog')).not.toBeInTheDocument());
     expect(opener).toHaveFocus();

@@ -31,3 +31,12 @@ Chrome-only/desktop-only scope is preserved. No secret or credential value is
 included in evidence. Browser validation uses the installed local Google Chrome
 at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`; no browser
 download or browser matrix is part of Phase09.
+
+## Issue 121 incremental verification
+
+The follow-up is covered by tenant-isolation, method-security, response-shape,
+audit-ordering, React state, and five focused browser cases. The browser cases
+cover the canonical route, create-only handoff, masked list, revoke, redacted
+audit, permissions, error/retry states, unknown create outcomes, and desktop
+overflow. Exact commands and environment boundaries are recorded in
+`.planning/frontend-spirits/06-tenant-onboarding-access/QUALITY-GATEWAY.md`.

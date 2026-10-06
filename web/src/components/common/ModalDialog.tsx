@@ -1,11 +1,22 @@
 import { type KeyboardEvent, type ReactNode, useEffect, useRef } from 'react';
+import '@/styles/modal-dialog.css';
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
 
 /** Accessible desktop modal with focus entry, trapping, Escape handling, and focus restoration. */
-export default function ModalDialog({ labelledBy, onRequestClose, children }: {
+export default function ModalDialog({
+  labelledBy,
+  onRequestClose,
+  dismissible = true,
+  backdropTestId = 'modal-backdrop',
+  backdropClassName = '',
+  children,
+}: {
   labelledBy: string;
   onRequestClose: () => void;
+  dismissible?: boolean;
+  backdropTestId?: string;
+  backdropClassName?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -34,7 +45,7 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Escape') {
       event.preventDefault();
-      onRequestClose();
+      if (dismissible) onRequestClose();
       return;
     }
     if (event.key !== 'Tab') return;
@@ -56,8 +67,16 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   }
 
   return (
-    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} data-testid="modal" tabIndex={-1} onKeyDown={onKeyDown}>
-      {children}
+    <div
+      className={`modal-backdrop${backdropClassName ? ` ${backdropClassName}` : ''}`}
+      data-testid={backdropTestId}
+      onClick={(event) => {
+        if (dismissible && event.target === event.currentTarget) onRequestClose();
+      }}
+    >
+      <div ref={ref} className="card modal-dialog" role="dialog" aria-modal="true" aria-labelledby={labelledBy} data-testid="modal" tabIndex={-1} onKeyDown={onKeyDown}>
+        {children}
+      </div>
     </div>
   );
 }

@@ -2,8 +2,10 @@ package com.ycsopen.sms.core.repository;
 
 import com.ycsopen.sms.core.domain.entity.TenantApiKey;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -44,6 +46,21 @@ public interface TenantApiKeyRepository extends JpaRepository<TenantApiKey, Long
                and (apiKey.expireTime is null or apiKey.expireTime > CURRENT_TIMESTAMP)
             """)
     Optional<SignatureAuthenticationProjection> findSignatureAuthenticationByAppKey(@Param("appKey") String appKey);
+
+    /**
+     * Records recent successful use without writing on every authenticated request. Both the
+     * stored value and throttle cutoff use the database UTC clock, keeping the atomic comparison
+     * independent of the connection session time zone.
+     */
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE tenant_api_keys
+               SET last_used_time = UTC_TIMESTAMP
+             WHERE id = :id
+               AND (last_used_time IS NULL OR last_used_time < UTC_TIMESTAMP - INTERVAL 1 MINUTE)
+            """, nativeQuery = true)
+    int touchLastUsedTime(@Param("id") Long id);
 
     interface AuthenticationProjection {
         Long getId();

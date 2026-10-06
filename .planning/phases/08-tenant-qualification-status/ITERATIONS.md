@@ -13,3 +13,12 @@
 - Production UI is limited to `/tenant/register`, `/tenant/qualification`, and `/admin/tenants`, with 105 selectors reconciled against the documented inventory.
 - Installed Chrome acceptance passed all 18 direct UI blocks. Backend policy, real MySQL lifecycle/concurrency, frontend unit/build, PRD trace, and production UI validators pass.
 - Added the three previously missing evidence records for `OBL-F-2-2-C`, `OBL-F-2-4-B`, and `OBL-DATA-10-2-TENANT`; no implementation expansion was needed.
+
+## Issue 121 follow-up
+
+- Extended the existing review result projection with the already-persisted
+  tenant ID, tenant number, trial quota, and trial validity fields.
+- Rendered those fields only after a verified decision and kept passwords and
+  credential secrets outside the response and UI contract.
+- Added focused Java, Vitest, and Chrome coverage without reopening the closed
+  registration, evidence, inspection, or status workflows.

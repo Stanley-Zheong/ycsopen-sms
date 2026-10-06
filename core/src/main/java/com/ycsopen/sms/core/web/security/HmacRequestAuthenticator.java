@@ -1,12 +1,15 @@
 package com.ycsopen.sms.core.web.security;
 
 import com.ycsopen.sms.core.common.security.HmacSignatureVerifier;
+import com.ycsopen.sms.core.common.security.IpAllowList;
 import com.ycsopen.sms.core.repository.TenantApiKeyRepository;
 import com.ycsopen.sms.core.repository.TenantApiKeyRepository.SignatureAuthenticationProjection;
 import com.ycsopen.sms.core.service.routing.ApiKeyRateLimitService.RatePolicy;
 import com.ycsopen.sms.core.service.tenant.TenantCredentialSecretProtectionService;
 import com.ycsopen.sms.core.web.interceptor.HmacAuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -18,6 +21,7 @@ import java.util.Locale;
 /** Complete F-6.4 HTTP API request authentication: key, timestamp, nonce, IP, secret and body HMAC. */
 @Service
 public class HmacRequestAuthenticator {
+    private static final Logger log = LoggerFactory.getLogger(HmacRequestAuthenticator.class);
     private final TenantApiKeyRepository apiKeys;
     private final HmacSignatureVerifier signatures;
     private final TenantCredentialSecretProtectionService secrets;
@@ -48,7 +52,7 @@ public class HmacRequestAuthenticator {
         if (!signatures.verifyTimestamp(epochSeconds)) {
             throw new HmacAuthenticationException("时间戳超出 5 分钟有效期");
         }
-        if (!ipAllowed(apiKey.getIpWhitelist(), request.getRemoteAddr())) {
+        if (!IpAllowList.contains(apiKey.getIpWhitelist(), request.getRemoteAddr())) {
             throw new HmacAuthenticationException("来源 IP 不在白名单内");
         }
         if (!signatures.checkAndRecordNonce("%d:%s:%s".formatted(apiKey.getId(), timestamp, nonce))) {
@@ -68,11 +72,24 @@ public class HmacRequestAuthenticator {
             Arrays.fill(secret, '\0');
         }
 
+        recordSuccessfulUse(apiKey.getId());
+
         request.setAttribute(HmacAuthInterceptor.ATTR_TENANT_ID, apiKey.getTenantId());
         request.setAttribute(HmacAuthInterceptor.ATTR_API_KEY_ID, apiKey.getId());
         request.setAttribute(HmacAuthInterceptor.ATTR_RATE_POLICY, new RatePolicy(apiKey.getRateLimitPerSec(),
                 apiKey.getRateLimitPerMin(), apiKey.getRateLimitPerHour(), apiKey.getRateLimitPerDay()));
         request.setAttribute("ycsopen.requestBodySha256", sha256Hex(body == null ? new byte[0] : body));
+    }
+
+    private void recordSuccessfulUse(Long apiKeyId) {
+        try {
+            apiKeys.touchLastUsedTime(apiKeyId);
+        } catch (RuntimeException failure) {
+            // Usage telemetry must not turn an otherwise valid, nonce-consumed request into a
+            // client-visible authentication failure. The repository update is intentionally
+            // throttled and best-effort; a later successful request repairs the timestamp.
+            log.warn("Unable to update last-used time for API key id={}", apiKeyId, failure);
+        }
     }
 
     public static String canonicalHeaders(String appKey, String timestamp, String nonce) {
@@ -89,46 +106,6 @@ public class HmacRequestAuthenticator {
 
     private static String canonicalQuery(String queryString) {
         return queryString == null ? "" : queryString;
-    }
-
-    private static boolean ipAllowed(String whitelist, String remoteAddr) {
-        if (whitelist == null || whitelist.isBlank()) {
-            return true;
-        }
-        String normalized = whitelist.replace("[", "").replace("]", "").replace("\"", "");
-        for (String entry : normalized.split(",")) {
-            String rule = entry.trim();
-            if (rule.isEmpty()) continue;
-            if (rule.equals(remoteAddr)) return true;
-            if (rule.endsWith("/32") && rule.substring(0, rule.length() - 3).equals(remoteAddr)) return true;
-            if (rule.contains("/") && ipv4CidrContains(rule, remoteAddr)) return true;
-        }
-        return false;
-    }
-
-    private static boolean ipv4CidrContains(String cidr, String remoteAddr) {
-        String[] parts = cidr.split("/", 2);
-        if (parts.length != 2) return false;
-        try {
-            int prefix = Integer.parseInt(parts[1]);
-            if (prefix < 0 || prefix > 32) return false;
-            int mask = prefix == 0 ? 0 : -1 << (32 - prefix);
-            return (ipv4(parts[0]) & mask) == (ipv4(remoteAddr) & mask);
-        } catch (IllegalArgumentException ignored) {
-            return false;
-        }
-    }
-
-    private static int ipv4(String value) {
-        String[] octets = value.split("\\.");
-        if (octets.length != 4) throw new IllegalArgumentException("invalid ipv4");
-        int result = 0;
-        for (String octet : octets) {
-            int parsed = Integer.parseInt(octet);
-            if (parsed < 0 || parsed > 255) throw new IllegalArgumentException("invalid ipv4");
-            result = (result << 8) | parsed;
-        }
-        return result;
     }
 
     private static String sha256Hex(byte[] value) {

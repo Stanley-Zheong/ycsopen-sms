@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import TenantLayout from '@/components/layout/TenantLayout';
-import PlaceholderPage from '@/components/common/PlaceholderPage';
 import LoginPage from '@/pages/LoginPage';
 import DashboardPage from '@/pages/admin/dashboard/DashboardPage';
 import ApiStatusPage from '@/pages/admin/dashboard/ApiStatusPage';
@@ -76,8 +75,7 @@ import TenantHelpCenterPage from '@/pages/tenant/help/TenantHelpCenterPage';
 
 /**
  * 路由树严格对齐 ycsansms.md 第 8 章 Web 管理端信息架构。
- * 已有真实页面实现的挂对应组件；其余按 F-x 编号挂 PlaceholderPage，
- * 保证"导航结构完整、可点击"，同时不假装未实现的页面已经完成——见 web/docs/ROADMAP.md。
+ * 真实页面直接挂载对应组件，兼容入口显式重定向到唯一 owner。
  */
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
@@ -181,7 +179,7 @@ export const router = createBrowserRouter([
       { path: '/tenant/invoices', element: <TenantStatementsInvoicesPage /> },
       { path: 'account', element: <Navigate to="/tenant/recharge" replace /> },
       { path: '/tenant/consumption-ledger', element: <TenantConsumptionLedgerPage /> },
-      { path: 'config', element: <PlaceholderPage title="配置管理（黑名单/回调/API Key）" prdRef="F-2.6/F-5.2/F-6.6" /> },
+      { path: '/tenant/config', element: <Navigate to="/tenant/api/keys" replace /> },
       { path: '/tenant/uplink', element: <TenantUplinksPage /> },
       { path: '/tenant/unsubscribes', element: <TenantUnsubscribesPage /> },
       { path: '/tenant/shortlink', element: <TenantShortLinkPage /> },

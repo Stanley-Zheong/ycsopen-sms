@@ -31,3 +31,10 @@ Use one contact-challenge table and one immutable qualification-event ledger. Do
 ## DR-08-008 — Configured platform-message adapter
 
 Contact codes require a working Phase 04 SPI implementation. Add one small HTTP adapter configured from deployment secrets and exercise it against a local provider sandbox. Do not build SMS routing, billing, or retry orchestration into registration.
+
+## DR-08-009 — Issue 121 approval handoff is an allowlisted result
+
+The successful review projection may expose tenant ID, tenant number, trial
+quota, trial start, and trial end to the existing authorized review operator.
+It must not add an initial password, App Secret, credential recovery value, or
+other authentication material. Credential creation remains owned by Phase 09.

@@ -145,6 +145,10 @@ jobs:
           ruby .planning/tools/test-planning-validators.rb
           ruby .planning/tools/test-phase-03-protected-inventory.rb
           ruby scripts/lib/phase-03/test_service_checks.rb
+      - name: Verify Issue 121 production UI evidence
+        run: >-
+          ruby .planning/tools/validate-change-ui-contract.rb
+          --change issue-121-tenant-onboarding-access
       - name: Verify complaint management planning contracts
         run: |
           ruby .planning/tools/validate-prd-obligations.rb \
@@ -184,11 +188,20 @@ jobs:
           java-version: "21"
           cache: maven
           cache-dependency-path: core/pom.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
       - name: Install real-integration system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             build-essential cmake default-mysql-client libssl-dev
+      - name: Install real-browser dependencies
+        run: |
+          npm --prefix web ci
+          /usr/bin/google-chrome --version
       - name: Prepare real-integration service images
         run: |
           docker pull --platform "$PHASE03_SERVICE_PLATFORM" "$PHASE03_MYSQL_IMAGE"
@@ -214,6 +227,14 @@ jobs:
           mvn -f core/pom.xml -Dphase03.integration.enabled=true
           -Dtest=Phase03FixturePreflightTest,Phase03ProtectedPersistenceIntegrationTest,Phase03Pkcs11IntegrationTest,Phase03MigrationIntegrationTest,Phase03ObjectStorageIntegrationTest,Phase03LeakScanIntegrationTest,Phase03RotationRecoveryIntegrationTest
           test
+      - name: Run Issue 121 MySQL and real-service Chrome acceptance
+        env:
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true \
+            -Dtest=Phase08RealServicePlaywrightTest test
+          mvn -f core/pom.xml -Pphase01-integration -Dphase01.integration.enabled=true \
+            -Dtest=Phase09TenantCredentialMySqlTest test
       - name: Prove every named real-integration suite executed
         run: |
           python3 - <<'PY'
@@ -228,6 +249,8 @@ jobs:
               "Phase03ObjectStorageIntegrationTest",
               "Phase03LeakScanIntegrationTest",
               "Phase03RotationRecoveryIntegrationTest",
+              "Phase09TenantCredentialMySqlTest",
+              "Phase08RealServicePlaywrightTest",
           )
           report_root = Path("core/target/surefire-reports")
           failures = []
@@ -320,6 +343,16 @@ jobs:
           npm --prefix web run test:e2e --
           operational-dashboards.spec.ts --project=local-google-chrome
           --workers=1 --grep pw-issue-119
+      - name: Verify Issue 121 tenant onboarding and API access in Google Chrome
+        env:
+          YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
+          PLAYWRIGHT_JSON_OUTPUT_NAME: issue-121-evidence/playwright-report.json
+        run: >-
+          npm --prefix web run test:e2e --
+          issue-121-tenant-onboarding-access.spec.ts
+          --project=local-google-chrome --workers=1 --reporter=line,json
+      - name: Verify Issue 121 Chrome evidence
+        run: test -s web/issue-121-evidence/playwright-report.json
       - name: Verify complaint management in Google Chrome
         env:
           YCSOPEN_CHROME_PATH: /usr/bin/google-chrome
@@ -342,6 +375,7 @@ jobs:
           name: docker-release-${{ github.run_id }}
           path: |
             web/complaint-case-evidence/
+            web/issue-121-evidence/
             web/playwright-report/
             web/test-results/
           if-no-files-found: warn

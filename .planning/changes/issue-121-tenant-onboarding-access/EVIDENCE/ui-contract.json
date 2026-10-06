@@ -1,0 +1,109 @@
+{
+  "mode": "production",
+  "scope": "change-package-addendum",
+  "manifest": {
+    "routes": [
+      "/admin/tenants",
+      "/tenant/config",
+      "/tenant/api/keys"
+    ],
+    "test_ids": [
+      "admin-tenant-qualification-tenants-approval-result",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-table",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-api-keys-audits-section"
+    ],
+    "sources": [
+      {
+        "path": ".planning/changes/issue-121-tenant-onboarding-access/UI-ELEMENTS.md",
+        "sha256": "7c1b3f9a66cf29cd2536256d9c71fc70d886cd14185225a7c991f84fb0aa4d73"
+      },
+      {
+        "path": ".planning/changes/issue-121-tenant-onboarding-access/TEST-MATRIX.md",
+        "sha256": "2bd39d6265bcc1be3664a1ad65ca188b3d7afefca58e1292ac8f18d80be0c1ab"
+      }
+    ]
+  },
+  "implementation": {
+    "routes": [
+      "/admin/tenants",
+      "/tenant/config",
+      "/tenant/api/keys"
+    ],
+    "test_ids": [
+      "admin-tenant-qualification-tenants-approval-result",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-table",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-api-keys-audits-section"
+    ],
+    "sources": [
+      {
+        "path": "web/src/router/routes.tsx",
+        "sha256": "450f0298dbb6b473aeb37893ec85a73178fefd7c0c837586fa1436f8e5740a17"
+      },
+      {
+        "path": "web/src/components/layout/TenantLayout.tsx",
+        "sha256": "cfe4d393ce778ffb6ae0db0f912a8bf0579458ec796f0cbb2026ad48c67a1ce8"
+      },
+      {
+        "path": "web/src/pages/admin/tenants/TenantListPage.tsx",
+        "sha256": "8bb0a90e993c39b80f3a0cc623453251c449cb4c985390fb1eb7cb8041fb0e09"
+      },
+      {
+        "path": "web/src/pages/tenant/TenantApiKeysPage.tsx",
+        "sha256": "341ac4a7d51bae701720c66ac8dcf886077afcba076024e5855d6e3fee34740d"
+      },
+      {
+        "path": "web/src/api/tenantAccessApi.ts",
+        "sha256": "6b75705cb98cc0d37f1c48d0f9b36d86367fc8381c23148e70117c742fd17508"
+      },
+      {
+        "path": "web/src/api/tenantQualificationApi.ts",
+        "sha256": "8fa241521f62db3ef6a318fdb82462c095ba626152073c615140d45ac800e803"
+      },
+      {
+        "path": "web/src/components/common/ModalDialog.tsx",
+        "sha256": "c7cfc0d46b7f71aee7a77f898fe30b261ad032b0f5d39624bf5c4c0e223dafb9"
+      },
+      {
+        "path": "web/src/components/common/ActionReasonDialog.tsx",
+        "sha256": "51481f1aece1a3f705584132166ed516f031504d88c29668c97a57f6f74b0f5a"
+      }
+    ]
+  },
+  "playwright": {
+    "evidence_kind": "production",
+    "test_ids": [
+      "admin-tenant-qualification-tenants-approval-result",
+      "tenant-tenant-access-api-keys-page",
+      "tenant-tenant-access-api-keys-secret-once",
+      "tenant-tenant-access-api-keys-audits-section",
+      "tenant-tenant-access-api-keys-table"
+    ],
+    "case_ids": [
+      "C-ISSUE-121-APPROVAL-RESULT",
+      "C-ISSUE-121-API-KEY-LIFECYCLE",
+      "C-ISSUE-121-SECRET-SAFETY",
+      "C-ISSUE-121-TENANT-AUDIT",
+      "C-ISSUE-121-PAGE-STATES"
+    ],
+    "sources": [
+      {
+        "path": "web/test/scripts/issue-121-tenant-onboarding-access.spec.ts",
+        "sha256": "a43b8e36f8bf413449de4807f2bd4ff2babca2a1d66df8107803bf9b1fded297"
+      }
+    ]
+  },
+  "execution": {
+    "command": "YCSOPEN_CHROME_PATH=/usr/bin/google-chrome PLAYWRIGHT_JSON_OUTPUT_NAME=issue-121-evidence/playwright-report.json npm --prefix web run test:e2e -- issue-121-tenant-onboarding-access.spec.ts --project=local-google-chrome --workers=1 --reporter=line,json",
+    "commit": "6128e6fd9cd1588966d16da88f22be7ceb69543a",
+    "config": "web/playwright.config.ts; Ubuntu 24.04.5 LTS; Google Chrome 154.0.8037.57",
+    "result": "PASS",
+    "report": {
+      "path": ".planning/changes/issue-121-tenant-onboarding-access/EVIDENCE/playwright-issue-121-report.json",
+      "sha256": "088f10ad5b041b894ebd8b6bca391dea06897e831bb1eabbe260173a5bf19c93"
+    }
+  }
+}

@@ -777,7 +777,7 @@ tr.over-threshold td:first-child {
 
 /* ---- Dialogs -------------------------------------------------------- */
 
-[role="dialog"].card {
+[role="dialog"].card:not(.modal-dialog) {
   position: fixed;
   inset: 50% auto auto 50%;
   z-index: 900;
@@ -787,17 +787,6 @@ tr.over-threshold td:first-child {
   overflow: auto;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 0 100vmax rgb(15 17 21 / 35%), var(--shadow-3);
-}
-
-.action-reason-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  background: rgb(15 17 21 / 35%);
-}
-
-.action-reason-dialog-backdrop > [role="dialog"].card {
-  box-shadow: var(--shadow-3);
 }
 
 .action-reason-dialog {
@@ -845,6 +834,7 @@ tr.over-threshold td:first-child {
 }
 
 [role="dialog"].card:has([data-testid="admin-privileged-data-system-logs-detail-drawer"]) {
+  position: fixed;
   inset: 0 0 0 auto;
   width: min(560px, calc(100vw - 48px));
   max-height: 100vh;
