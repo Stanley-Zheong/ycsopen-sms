@@ -50,3 +50,22 @@ Accepted
 The complaint analytics trend groups stored complaint cases by calendar date
 of `created_at`. The API returns an ordered daily series; the page renders an
 explicit empty state when no cases exist.
+
+## DR-FE02-004: Complaint Evidence Is Case-Local
+
+### Status
+Accepted
+
+### Context
+
+Issue `#124` identified that page-level handling and remediation drafts could be submitted by clicking an unrelated complaint row.
+
+### Decision
+
+Complaint stage inputs exist only inside a contextual action dialog opened for one case. The dialog displays the case identity, current state, and expected result. The selected-case workspace reads the complete persisted timeline.
+
+### Consequences
+
+- Row actions no longer consume shared page inputs.
+- Cancelling an action discards its draft and sends no request.
+- Stale server state refreshes the selected case before another action.

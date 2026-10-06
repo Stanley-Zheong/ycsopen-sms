@@ -12,9 +12,18 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    ref.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    const dialog = ref.current;
+    (dialog?.querySelector<HTMLElement>(FOCUSABLE) ?? dialog)?.focus();
     return () => opener?.focus();
   }, []);
+
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    const focusable = dialog.querySelector<HTMLElement>(FOCUSABLE);
+    const active = document.activeElement;
+    if (!focusable && (!(active instanceof HTMLElement) || active !== dialog)) dialog.focus();
+  });
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Escape') {
@@ -24,7 +33,11 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
     }
     if (event.key !== 'Tab') return;
     const focusable = Array.from(ref.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []);
-    if (!focusable.length) return;
+    if (!focusable.length) {
+      event.preventDefault();
+      ref.current?.focus();
+      return;
+    }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) {
@@ -37,7 +50,7 @@ export default function ModalDialog({ labelledBy, onRequestClose, children }: {
   }
 
   return (
-    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} data-testid="modal" onKeyDown={onKeyDown}>
+    <div ref={ref} className="card" role="dialog" aria-modal="true" aria-labelledby={labelledBy} data-testid="modal" tabIndex={-1} onKeyDown={onKeyDown}>
       {children}
     </div>
   );

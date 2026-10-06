@@ -37,6 +37,8 @@
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |
 | POST | `/api/v1/console/channels/{id}/resume` | 恢复通道 | F-4.7 |
 | GET/POST | `/api/v1/console/complaints` | 查询或登记投诉工单，保留可用归因和显式未知状态 | F-9.1 |
+| GET | `/api/v1/console/complaints/{id}` | 查询单个投诉快照、完整事件时间线与该案件全部处置记录 | F-9.2/F-9.3 |
+| GET | `/api/v1/console/complaint-reference-options` | 查询登记投诉所需的机构、通道、签名和模板最小选项；仅 ADMIN/OPERATOR 可用 | F-9.1 |
 | POST | `/api/v1/console/complaints/{id}/{accept,handle,close}` | 按状态机受理、处理或关闭投诉并记录服务端操作人证据 | F-9.2 |
 | POST | `/api/v1/console/complaints/{id}/remediations` | 对投诉归因的确切号码、机构、签名、模板或通道执行幂等处置 | F-9.3 |
 | GET | `/api/v1/console/complaint-remediations` | 查询最近 200 个可见投诉各自的最新处置与最新失败状态，供补偿入口读回 | F-9.3 |
@@ -55,6 +57,25 @@
 `tenant-options` 只返回上述四个机构身份字段；`query` 最多取前 100 个字符参与包含匹配，响应按简称、
 机构编号和内部 ID 排序并限制为 20 条。上行列表和推送监控的正式筛选参数始终是 `tenantId`，名称和编号
 只用于选择该稳定 ID。
+
+投诉详情 `data` 固定为 `{complaint, timeline, remediations}`。`timeline` 按
+`occurredAt ASC, id ASC` 排序，每项包含 `id`、`complaintId`、`eventType`、`actor`、
+`occurredAt`、`fromStatus`、`toStatus`、`evidenceText`、`targetRef`、`result`、
+`reviewId`、`failureReason` 和 `relatedDisposalId`。旧数据只回填仍可由案件或处置快照证明的事实；
+已被后续动作覆盖的历史意见或复核编号保持 `null`，不得解释为完整证据。`remediations` 按
+`disposedAt DESC, id DESC` 投影，其中首条 `status=FAILED` 的记录是恢复动作重新校验的最新失败记录。
+
+投诉引用选项 `data` 固定为 `{tenants, channels, signatures, templates}`，每项仅返回
+`{id, label, tenantId}`，每类最多 500 条。机构和通道的 `tenantId` 为 `null`；签名和模板返回其真实
+所属机构。登记前服务端校验所有非空引用存在；选定机构时，签名和模板必须属于该机构，未选机构但同时
+选择签名和模板时，二者已知的所属机构必须一致。拒绝码分别为 `COMPLAINT_REFERENCE_NOT_FOUND` 和
+`COMPLAINT_REFERENCE_TENANT_MISMATCH`。服务端只根据验证通过的稳定引用推导归因质量，不接受客户端
+声明的归因质量。受理意见必填；处置原因最长 255 个字符。下游处置失败只持久化固定、安全的失败说明；
+V6600 回填和所有处置读模型也会将旧的非空失败字符串投影为同一安全说明。原始异常文本不会进入新案件记录、
+事件时间线或 API 响应；
+受理、处理、关闭、处置和恢复都由服务端校验当前状态。并发状态变化返回 HTTP 409，稳定机器码位于
+`data.errorCode`，其中刷新后重试使用 `COMPLAINT_STATE_STALE`。FINANCE 可读取案件、详情、时间线和
+处置记录，但不能读取登记选项或调用变更接口。
 
 其余控制台 API（详单查询、审核中心、财务、告警、工具管理等）的真实边界见 ROADMAP.md。
 

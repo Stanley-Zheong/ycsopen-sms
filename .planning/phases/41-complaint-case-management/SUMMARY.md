@@ -1,6 +1,6 @@
 # Phase 41 Summary
 
-Status: scoped implementation and complaint-management quality gates complete; pull request has one unrelated external-registry check failure before test execution.
+Status: original Phase 41 delivery is complete. Issue `#124` is an active amendment for single-case context, append-only history, and concurrency feedback; its fresh quality-gate evidence supersedes the original complaint-page evidence only after implementation.
 
 Implemented:
 

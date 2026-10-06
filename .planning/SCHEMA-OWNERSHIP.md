@@ -76,6 +76,7 @@ Every record has exactly nine ` | ` separated fields:
 | SCHEMA-P54 | Observability evidence | ycs.sms.observability-assurance.* | observability-assurance | V6300-V6399 | engineering-verification-foundation | expand-migrate-contract | rollback=forward-compatible-expand-or-restored-snapshot | Cross-owner changes require owning-package approval recorded in DECISIONS.md. |
 | SCHEMA-P55 | Extension conformance evidence | ycs.sms.extension-conformance-assurance.* | extension-conformance-assurance | V6400-V6499 | engineering-verification-foundation | expand-migrate-contract | rollback=forward-compatible-expand-or-restored-snapshot | Cross-owner changes require owning-package approval recorded in DECISIONS.md. |
 | SCHEMA-P56 | Final acceptance evidence | ycs.sms.final-release-acceptance.* | final-release-acceptance | V6500-V6599 | extension-conformance-assurance | expand-migrate-contract | rollback=forward-compatible-expand-or-restored-snapshot | Cross-owner changes require owning-package approval recorded in DECISIONS.md. |
+| SCHEMA-C124 | Complaint case event history | ycs.sms.complaint-case-management.complaint_case_events | issue-124-complaint-case-context | V6600-V6699 | complaint-case-management | expand-migrate-contract | rollback=downgrade-keeps-additive-table-and-disables-complaint-mutations-until-event-writer-restored-or-export-and-drop-after-reader-removal | Issue #124 owns additive event history; Phase 41 tables remain under `complaint-case-management`. |
 
 ## Phase schema claim contract
 
