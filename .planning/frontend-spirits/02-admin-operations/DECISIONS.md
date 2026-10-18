@@ -50,3 +50,18 @@ Accepted
 The complaint analytics trend groups stored complaint cases by calendar date
 of `created_at`. The API returns an ordered daily series; the page renders an
 explicit empty state when no cases exist.
+
+## DR-FE02-004: Alert History Scope Tabs Expose One Selected State
+
+### Status
+Accepted
+
+### Context
+Issue `#92`: the `全部 / 活跃 / 严重` alert-history buttons filter the list on click but render identically, so users cannot tell which scope is active or what a click will change. PRD F-11.7 and Phase 35 `UI-ELEMENTS.md` both define them as an "Alert tabs" control that must show `tab state`.
+
+### Decision
+The three scope buttons become an ARIA tablist: `role=tablist` on the container, `role=tab` + `aria-selected` + a bold/underline selected style on each button, a hint line describing what each scope filters (`全部=完整告警历史；活跃=仍处于 ACTIVE 状态的告警；严重=级别为 HIGH 或 CRITICAL 的告警`), and a stable `data-testid="admin-alert-engine-scope-tab-<scope>"` per tab. Clicking a tab applies the existing client-side filter immediately. No API contract changes.
+
+### Consequences
+- Playwright asserts initial selection, selection change, row-set narrowing per scope, and `aria-selected` state.
+- The duplicate "历史确认 / 历史静音" buttons stay but are out of scope for this decision; DR-FE02-001 verb-first labels still apply to row actions.

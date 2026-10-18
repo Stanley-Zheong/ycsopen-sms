@@ -65,6 +65,43 @@ test.describe('Phase 35 alert engine console', () => {
     await expect(page.getByTestId('admin-alert-engine-dashboard-alert-tabs')).toContainText('活跃');
   });
 
+  test('pw-issue-92 C-ISSUE-92 OBL-F-11-7-B: scope tabs expose selected state, scope description, and narrowed rows', async ({ page }) => {
+    await mockAlertApis(page);
+    await loginAs(page, 'OPERATOR');
+    await page.goto('/admin/alerts');
+
+    const tabs = page.getByTestId('admin-alert-engine-dashboard-alert-tabs');
+    const allTab = page.getByTestId('admin-alert-engine-scope-tab-ALL');
+    const activeTab = page.getByTestId('admin-alert-engine-scope-tab-ACTIVE');
+    const severeTab = page.getByTestId('admin-alert-engine-scope-tab-SEVERE');
+
+    // Exactly one selected tab at a time; ALL is initially selected.
+    await expect(tabs).toHaveAttribute('role', 'tablist');
+    await expect(allTab).toHaveAttribute('role', 'tab');
+    await expect(allTab).toHaveAttribute('aria-selected', 'true');
+    await expect(activeTab).toHaveAttribute('aria-selected', 'false');
+    await expect(severeTab).toHaveAttribute('aria-selected', 'false');
+
+    // The hint names what the currently selected tab filters so clicks are predictable.
+    await expect(tabs).toContainText('完整告警历史');
+
+    // Scope narrows rows: SEVERE keeps the CRITICAL row visible.
+    await activeTab.click();
+    await expect(activeTab).toHaveAttribute('aria-selected', 'true');
+    await expect(allTab).toHaveAttribute('aria-selected', 'false');
+    await expect(tabs).toContainText('只显示仍处于 ACTIVE 状态');
+
+    // LIVE row: click SEVERE, HIGH/CRITICAL-only filter keeps the CRITICAL row.
+    await severeTab.click();
+    await expect(severeTab).toHaveAttribute('aria-selected', 'true');
+    await expect(activeTab).toHaveAttribute('aria-selected', 'false');
+    await expect(tabs).toContainText('级别为 HIGH 或 CRITICAL');
+    await expect(page.getByTestId('admin-alert-engine-alert-row').first()).toContainText('通道失败率过高');
+
+    // Selected tab is visually distinct (class bound to selected style).
+    await expect(severeTab).toHaveClass(/is-selected|selected/, { timeout: 2000 });
+  });
+
   test('pw-p35-rules C-P35-RULES OBL-F-12-1-A pw-p35-targets C-P35-TARGETS OBL-F-12-2-A', async ({ page }) => {
     await mockAlertApis(page);
     await loginAs(page, 'OPERATOR');
