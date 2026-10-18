@@ -188,10 +188,45 @@ export default function AdminAlertsPage() {
         <div className="alert-engine-toolbar">
           <h2>告警历史</h2>
         </div>
-        <div className="alert-engine-tabs" data-testid="admin-alert-engine-dashboard-alert-tabs">
-          <button type="button" onClick={() => setActiveTab('ALL')}>全部</button>
-          <button type="button" onClick={() => setActiveTab('ACTIVE')}>活跃</button>
-          <button type="button" onClick={() => setActiveTab('SEVERE')}>严重</button>
+        <div className="alert-engine-tabs" data-testid="admin-alert-engine-dashboard-alert-tabs" role="tablist" aria-label="告警历史范围筛选">
+          <button
+            type="button"
+            role="tab"
+            data-testid="admin-alert-engine-scope-tab-ALL"
+            title="查看完整告警历史（不过滤状态与级别）"
+            aria-selected={activeTab === 'ALL'}
+            className={activeTab === 'ALL' ? 'is-selected' : undefined}
+            onClick={() => setActiveTab('ALL')}
+          >
+            全部
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-testid="admin-alert-engine-scope-tab-ACTIVE"
+            title="只保留仍处于 ACTIVE 状态的告警"
+            aria-selected={activeTab === 'ACTIVE'}
+            className={activeTab === 'ACTIVE' ? 'is-selected' : undefined}
+            onClick={() => setActiveTab('ACTIVE')}
+          >
+            活跃
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-testid="admin-alert-engine-scope-tab-SEVERE"
+            title="只保留级别为 HIGH 或 CRITICAL 的告警"
+            aria-selected={activeTab === 'SEVERE'}
+            className={activeTab === 'SEVERE' ? 'is-selected' : undefined}
+            onClick={() => setActiveTab('SEVERE')}
+          >
+            严重
+          </button>
+          <span className="alert-engine-tabs-hint">
+            {activeTab === 'ALL' && '全部：完整告警历史'}
+            {activeTab === 'ACTIVE' && '活跃：只显示仍处于 ACTIVE 状态的告警'}
+            {activeTab === 'SEVERE' && '严重：只显示级别为 HIGH 或 CRITICAL 的告警'}
+          </span>
         </div>
         <QueryPanel
           onSubmit={() => setHistoryFilter({ ...historyFilterDraft })}

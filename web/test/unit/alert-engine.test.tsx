@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -119,5 +119,46 @@ describe('Phase 35 alert engine console UI', () => {
     expect(await screen.findByTestId('admin-alert-engine-message')).toHaveTextContent('告警评估完成');
     expect(screen.getByTestId('admin-alert-engine-action-dialog')).toBeVisible();
     expect(screen.getByTestId('admin-alert-engine-resolve-reason')).toHaveValue('保留这份复核依据');
+  });
+
+  it('issue #92: renders alert scope tabs as a tablist with one selected state and narrows rows per scope', async () => {
+    const inactiveRow = { ...alertRow, id: 502, status: 'RESOLVED', severity: 'LOW', title: '余额不足提醒' };
+    vi.mocked(api.listAlertHistory).mockResolvedValue([alertRow, inactiveRow]);
+    renderWithQuery(<AdminAlertsPage />);
+
+    const tabs = await screen.findByTestId('admin-alert-engine-dashboard-alert-tabs');
+    expect(tabs).toHaveAttribute('role', 'tablist');
+    const allTab = screen.getByTestId('admin-alert-engine-scope-tab-ALL');
+    const activeTab = screen.getByTestId('admin-alert-engine-scope-tab-ACTIVE');
+    const severeTab = screen.getByTestId('admin-alert-engine-scope-tab-SEVERE');
+
+    // Initial selection: ALL, exactly one selected.
+    expect(allTab).toHaveAttribute('role', 'tab');
+    expect(allTab).toHaveAttribute('aria-selected', 'true');
+    expect(activeTab).toHaveAttribute('aria-selected', 'false');
+    expect(severeTab).toHaveAttribute('aria-selected', 'false');
+
+    // Scope description: the hint names what the currently selected tab filters.
+    expect(tabs).toHaveTextContent('完整告警历史');
+
+    // Two visible rows under ALL.
+    expect(await screen.findAllByTestId('admin-alert-engine-alert-row')).toHaveLength(2);
+
+    // ACTIVE keeps only status-ACTIVE rows and updates selection.
+    await act(async () => fireEvent.click(activeTab));
+    expect(activeTab).toHaveAttribute('aria-selected', 'true');
+    expect(allTab).toHaveAttribute('aria-selected', 'false');
+    expect(tabs).toHaveTextContent('只显示仍处于 ACTIVE 状态');
+    expect(await screen.findAllByTestId('admin-alert-engine-alert-row')).toHaveLength(1);
+    expect(screen.getByTestId('admin-alert-engine-alert-row')).toHaveTextContent('通道失败率过高');
+
+    // SEVERE keeps only HIGH/CRITICAL rows.
+    await act(async () => fireEvent.click(severeTab));
+    expect(severeTab).toHaveAttribute('aria-selected', 'true');
+    expect(activeTab).toHaveAttribute('aria-selected', 'false');
+    expect(tabs).toHaveTextContent('级别为 HIGH 或 CRITICAL');
+    expect(await screen.findAllByTestId('admin-alert-engine-alert-row')).toHaveLength(1);
+    expect(screen.getByTestId('admin-alert-engine-alert-row')).toHaveTextContent('通道失败率过高');
+    expect(severeTab.className).toMatch(/is-selected|selected/);
   });
 });
