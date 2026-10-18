@@ -28,6 +28,16 @@ const platformDashboard = {
     permissionScope: 'PLATFORM',
     formulaVersion: 'v1',
   },
+  todayAggregation: {
+    state: 'FRESH' as const,
+    businessDate: '2026-10-04',
+    businessTimeZone: 'Asia/Shanghai',
+    sourceRegistry: 'statistics_aggregates',
+    refreshedAt: '2026-10-04T03:40:00',
+    sourceChangedAt: '2026-10-04T03:39:00',
+    sourceRecordCount: 320,
+    aggregateRowCount: 4,
+  },
 };
 
 describe('admin dashboard release boundary', () => {

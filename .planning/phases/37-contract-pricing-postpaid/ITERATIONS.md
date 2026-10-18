@@ -22,3 +22,13 @@
 - Ran final PRD/UI validators, backend suite, frontend install/test/build, and local Chrome Playwright.
 - Recorded Claude review timeout boundary after Phase37-only diff submission.
 - Cleared scoped TODO and ROADMAP state for Phase37.
+
+## Iteration 5 — Issue #122
+
+- Replaced free-form tenant and price entry with a source-backed conversion
+  workbench and selected-row dialogs.
+- Added trial-window analysis, provenance/quality, active price options,
+  account-aware eligibility, approval-time trial provisioning, and atomic
+  locked transition.
+- Added focused Java, React, and Chromium coverage for success, rejection,
+  error, no-data, compatibility, authorization, and audit outcomes.

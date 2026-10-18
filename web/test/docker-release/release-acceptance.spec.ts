@@ -229,7 +229,16 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
       && new URL(response.url()).search === ''
   ));
   await page.goto('/admin/uplink');
-  expect((await uplinksLoaded).status()).toBe(200);
+  const uplinksResponse = await uplinksLoaded;
+  expect(uplinksResponse.status()).toBe(200);
+  const uplinksPayload = await uplinksResponse.json() as {
+    data: Array<{
+      tenantId: number;
+      tenantNo: string | null;
+      tenantShortName: string | null;
+      contentKeyword: string | null;
+    }>;
+  };
 
   const uplinkPanel = page.getByTestId('query-panel').first();
   const uplinkFields = ['tenant-id', 'phone-number', 'keyword', 'carrier', 'push-state', 'start-time', 'end-time'];
@@ -242,7 +251,15 @@ test('pw-issue-58-docker-real-service C-ISSUE-58-REAL-SERVICE OBL-ISSUE-58-REAL-
   await expect(uplinkResult).toContainText('Issue58查询目标');
   await expect(uplinkResult).toContainText('Issue58基线');
   const targetRow = page.getByTestId('admin-uplink-normalization-uplinks-row').filter({ hasText: 'Issue58查询目标' });
-  const tenantId = (await targetRow.locator('td').first().innerText()).trim();
+  const targetUplink = uplinksPayload.data.find((row) => row.contentKeyword === 'Issue58查询目标');
+  expect(targetUplink).toBeDefined();
+  if (!targetUplink) throw new Error('Issue58 target uplink is missing from the initial API response');
+  expect(targetUplink.tenantNo).toBe('DEV-TENANT');
+  expect(targetUplink.tenantShortName).toBe('发布验收');
+  const tenantId = String(targetUplink.tenantId);
+  const targetTenant = targetRow.getByTestId('admin-uplink-normalization-uplinks-tenant-cell');
+  await expect(targetTenant).toContainText('发布验收');
+  await expect(targetTenant).toContainText('DEV-TENANT');
 
   await uplinkPanel.getByTestId('query-input-tenant-id').locator('input').fill(tenantId);
   await uplinkPanel.getByTestId('query-input-phone-number').locator('input').fill('13800138058');

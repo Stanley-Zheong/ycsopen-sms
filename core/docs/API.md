@@ -32,11 +32,17 @@
 | POST | `/api/v1/console/tenants/register` | 旧机构注册路径，仅返回迁移提示；请使用 public tenant registration | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/approve-and-activate-trial` | 旧审核路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
 | POST | `/api/v1/console/tenants/{id}/reject` | 旧驳回路径，仅返回迁移提示；请使用 admin tenant decision | 兼容 |
+| POST | `/api/v1/console/admin/tenants/{tenantId}/decision` | 审核机构；通过时返回机构编号、试用额度与带 UTC 偏移的试用有效期，不返回密码或 App Secret | F-2.2/F-2.8 |
+| GET/POST | `/api/v1/console/tenant/api-keys` | 当前机构 API Key 列表（仅掩码）与创建（`appSecret` 仅本次响应） | F-2.6 |
+| POST | `/api/v1/console/tenant/api-keys/{keyId}/revoke` | 撤销当前机构的活动 API Key | F-2.6 |
+| GET | `/api/v1/console/tenant/api-keys/audits` | 当前机构 API Key 创建/撤销审计，最多返回最新 100 条 | F-2.6/F-14.1 |
 | GET | `/api/v1/console/channels` | 通道列表 | F-4.1 |
 | POST | `/api/v1/console/channels` | 新建通道 | F-4.1 |
 | POST | `/api/v1/console/channels/{id}/pause` | 暂停通道 | F-4.7 |
 | POST | `/api/v1/console/channels/{id}/resume` | 恢复通道 | F-4.7 |
 | GET/POST | `/api/v1/console/complaints` | 查询或登记投诉工单，保留可用归因和显式未知状态 | F-9.1 |
+| GET | `/api/v1/console/complaints/{id}` | 查询单个投诉快照、完整事件时间线与该案件全部处置记录 | F-9.2/F-9.3 |
+| GET | `/api/v1/console/complaint-reference-options` | 查询登记投诉所需的机构、通道、签名和模板最小选项；仅 ADMIN/OPERATOR 可用 | F-9.1 |
 | POST | `/api/v1/console/complaints/{id}/{accept,handle,close}` | 按状态机受理、处理或关闭投诉并记录服务端操作人证据 | F-9.2 |
 | POST | `/api/v1/console/complaints/{id}/remediations` | 对投诉归因的确切号码、机构、签名、模板或通道执行幂等处置 | F-9.3 |
 | GET | `/api/v1/console/complaint-remediations` | 查询最近 200 个可见投诉各自的最新处置与最新失败状态，供补偿入口读回 | F-9.3 |
@@ -44,6 +50,52 @@
 | GET | `/api/v1/console/complaint-analytics` | 查询按创建日期的投诉趋势、归因质量及机构/签名/内容类型分布 | F-9.4 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/channel` | **通道投诉占比排行（本次新增需求）** | F-11.9 |
 | GET | `/api/v1/console/dashboard/complaint-ratio/tenant` | **机构投诉占比排行（本次新增需求）** | F-11.9 |
+| GET | `/api/v1/console/operational-dashboards/platform` | 平台仪表盘及当日聚合状态 | F-11.1/F-11.2 |
+| GET | `/api/v1/console/uplinks` | 按稳定 `tenantId`、号码、关键词、运营商、推送状态和时间查询上行记录 | F-7.5/F-10.1 |
+| GET | `/api/v1/console/uplinks/{id}` | 查询一条上行详情 | F-7.5 |
+| GET | `/api/v1/console/uplinks/push-monitor` | 按稳定 `tenantId`、状态和目的地查询上行推送证据 | F-10.4 |
+| GET | `/api/v1/console/uplinks/tenant-options` | ADMIN/OPERATOR 按机构编号、简称或全称查询最多 20 个安全机构选项 | F-10.1/F-10.4 |
+
+平台仪表盘以 `Asia/Shanghai` 作为业务日边界。`data.todayAggregation` 返回
+`state`、`businessDate`、`businessTimeZone`、`sourceRegistry`、`refreshedAt`、
+`sourceChangedAt`、`sourceRecordCount` 和 `aggregateRowCount`。`state` 的稳定语义如下：
+
+| `state` | 语义 | 今日派生值 |
+|---|---|---|
+| `NOT_REFRESHED` | 当前业务日尚无成功刷新记录 | 数值为 `null`，趋势与排行为空数组 |
+| `EMPTY` | 刷新成功且源记录数为零 | 数值为 `null`，趋势与排行为空数组 |
+| `STALE` | 源数据晚于刷新点，或刷新时间超过允许的新鲜度 | 仅当检查点含聚合行时返回最近一次值；空检查点仍返回 `null`/空数组，并明确标记过期 |
+| `FRESH` | 刷新记录覆盖当前源数据且未超过新鲜度限制 | 返回当前业务日聚合值 |
+
+系统按配置的 fixed delay 自动扫描任务、回执、计费及拒绝提交变化，并对受影响的业务日做幂等替换。
+默认刷新间隔为 5 秒，最大新鲜度为 5 分钟。API 消费方必须依据 `state` 区分“尚未刷新”“成功空数据”
+和真实数值，不得把缺失聚合解释为零。
+
+上行记录、详情和推送监控响应在原有 `tenantId` 外，附带 `tenantNo`、
+`tenantShortName` 和 `tenantFullName`。这些字段由服务端在列表查询中一次投影，不要求客户端逐行查询。
+历史上行对应的机构资料不存在或不可用时，三个展示字段可以为 `null`，`tenantId` 仍然保留。
+`tenant-options` 只返回上述四个机构身份字段；`query` 最多取前 100 个字符参与包含匹配，响应按简称、
+机构编号和内部 ID 排序并限制为 20 条。上行列表和推送监控的正式筛选参数始终是 `tenantId`，名称和编号
+只用于选择该稳定 ID。
+
+投诉详情 `data` 固定为 `{complaint, timeline, remediations}`。`timeline` 按
+`occurredAt ASC, id ASC` 排序，每项包含 `id`、`complaintId`、`eventType`、`actor`、
+`occurredAt`、`fromStatus`、`toStatus`、`evidenceText`、`targetRef`、`result`、
+`reviewId`、`failureReason` 和 `relatedDisposalId`。旧数据只回填仍可由案件或处置快照证明的事实；
+已被后续动作覆盖的历史意见或复核编号保持 `null`，不得解释为完整证据。`remediations` 按
+`disposedAt DESC, id DESC` 投影，其中首条 `status=FAILED` 的记录是恢复动作重新校验的最新失败记录。
+
+投诉引用选项 `data` 固定为 `{tenants, channels, signatures, templates}`，每项仅返回
+`{id, label, tenantId}`，每类最多 500 条。机构和通道的 `tenantId` 为 `null`；签名和模板返回其真实
+所属机构。登记前服务端校验所有非空引用存在；选定机构时，签名和模板必须属于该机构，未选机构但同时
+选择签名和模板时，二者已知的所属机构必须一致。拒绝码分别为 `COMPLAINT_REFERENCE_NOT_FOUND` 和
+`COMPLAINT_REFERENCE_TENANT_MISMATCH`。服务端只根据验证通过的稳定引用推导归因质量，不接受客户端
+声明的归因质量。受理意见必填；处置原因最长 255 个字符。下游处置失败只持久化固定、安全的失败说明；
+V6600 回填和所有处置读模型也会将旧的非空失败字符串投影为同一安全说明。原始异常文本不会进入新案件记录、
+事件时间线或 API 响应；
+受理、处理、关闭、处置和恢复都由服务端校验当前状态。并发状态变化返回 HTTP 409，稳定机器码位于
+`data.errorCode`，其中刷新后重试使用 `COMPLAINT_STATE_STALE`。FINANCE 可读取案件、详情、时间线和
+处置记录，但不能读取登记选项或调用变更接口。
 
 其余控制台 API（详单查询、审核中心、财务、告警、工具管理等）的真实边界见 ROADMAP.md。
 
@@ -51,6 +103,14 @@
 `STARTED` 表示请求已在进入控制器前持久化，但终态写入中断，需人工调查。安全事件类型限定为
 `UNUSUAL_LOGIN`、`REPEATED_LOGIN_FAILURE`、`BULK_EXPORT`，结果限定为 `DETECTED`、`BLOCKED`、
 `SUCCESS`、`FAILURE`。未知筛选值返回 HTTP 400。
+
+机构 API Key 接口只允许 `TENANT_ADMIN` 与 `TENANT_DEV`。服务端从已认证用户解析机构，任何请求都
+不接收机构 ID。列表使用 `appSecretMask`，且不包含 `appSecret`；创建响应额外返回一次
+`appSecret`。列表的 `lastUsedTime` 显示最近使用时间或 `null`；完整 HTTP HMAC 校验成功后按一分钟
+写入窗口更新该时间，遥测写入失败不会把已消费 nonce 的合法请求改判为鉴权失败。创建只接受字面
+IPv4/IPv6 地址和合法 CIDR 前缀，并与 HTTP HMAC 鉴权共享同一解析/匹配规则。机构审计按当前机构和
+`TENANT_API_KEY` 资源过滤，以审计 ID 倒序返回 `id`、
+`actor`、`operation`、`resourceId`、`result` 与 `occurredAt`，不返回请求正文、IP、追踪号或密钥。
 
 系统配置权限分为 `system:configuration:menu`、`system:configuration:read`、
 `system:configuration:write` 和 `system:configuration:activate`。服务端只接受登记的类型化 key 和

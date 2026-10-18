@@ -27,6 +27,7 @@ interface QueryPanelProps {
   submitDisabled?: boolean;
   resetLegacyTestId?: string;
   refreshLegacyTestId?: string;
+  showStatus?: boolean;
 }
 
 interface QueryFieldProps {
@@ -132,6 +133,7 @@ export function QueryPanel({
   submitDisabled = false,
   resetLegacyTestId,
   refreshLegacyTestId,
+  showStatus = true,
 }: QueryPanelProps) {
   const [columns, setColumns] = useState(queryColumnCount);
   const fieldCount = Children.count(children);
@@ -231,12 +233,12 @@ export function QueryPanel({
           </div>
         </div>
       </form>
-      <QueryResult queryStatus={queryStatus}>{result}</QueryResult>
+      <QueryResult queryStatus={queryStatus} showStatus={showStatus}>{result}</QueryResult>
     </section>
   );
 }
 
-export function QueryResult({ children, queryStatus, className = '' }: QueryResultProps) {
+export function QueryResult({ children, queryStatus, className = '', showStatus = true }: QueryResultProps & { showStatus?: boolean }) {
   const state = queryResultState(queryStatus);
   const isError = state === 'error';
   return (
@@ -246,17 +248,19 @@ export function QueryResult({ children, queryStatus, className = '' }: QueryResu
       aria-label="查询结果"
       aria-busy={queryStatus.isFetching}
     >
-      <div
-        data-testid={queryStatus.testId}
-        data-query-result-state={state}
-        data-state={state}
-        role={isError ? 'alert' : 'status'}
-        aria-live={isError ? 'assertive' : 'polite'}
-        aria-busy={queryStatus.isFetching}
-        aria-describedby={isError ? queryStatus.errorDetailsId : undefined}
-      >
-        {queryResultText(queryStatus, state)}
-      </div>
+      {showStatus && (
+        <div
+          data-testid={queryStatus.testId}
+          data-query-result-state={state}
+          data-state={state}
+          role={isError ? 'alert' : 'status'}
+          aria-live={isError ? 'assertive' : 'polite'}
+          aria-busy={queryStatus.isFetching}
+          aria-describedby={isError ? queryStatus.errorDetailsId : undefined}
+        >
+          {queryResultText(queryStatus, state)}
+        </div>
+      )}
       {children}
     </div>
   );

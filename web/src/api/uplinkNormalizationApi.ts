@@ -4,6 +4,9 @@ import type { ApiResponse } from '@/types/api';
 export interface UplinkRecord {
   id: number;
   tenantId: number;
+  tenantNo: string | null;
+  tenantShortName: string | null;
+  tenantFullName: string | null;
   sourceProtocol: string;
   sourceConnector: string;
   sourceEventId: string;
@@ -29,6 +32,9 @@ export interface UplinkRecord {
 export interface UplinkPushMonitorRow {
   eventId: number;
   tenantId: number;
+  tenantNo: string | null;
+  tenantShortName: string | null;
+  tenantFullName: string | null;
   sourceId: string;
   logicalId: string;
   destinationUrl: string;
@@ -39,6 +45,13 @@ export interface UplinkPushMonitorRow {
   nextAttemptAt: string | null;
   updatedAt: string | null;
   latencyMs: number;
+}
+
+export interface UplinkTenantOption {
+  tenantId: number;
+  tenantNo: string;
+  tenantShortName: string | null;
+  tenantFullName: string | null;
 }
 
 export interface UplinkAutoReplyConfig {
@@ -75,6 +88,12 @@ export async function listAdminUplinks(filter: Record<string, unknown>): Promise
 
 export async function getAdminUplink(id: number): Promise<UplinkRecord> {
   return data(await apiClient.get<ApiResponse<UplinkRecord>>(`/console/uplinks/${id}`));
+}
+
+export async function listUplinkTenantOptions(query: string): Promise<UplinkTenantOption[]> {
+  return data(await apiClient.get<ApiResponse<UplinkTenantOption[]>>('/console/uplinks/tenant-options', {
+    params: query.trim() ? { query: query.trim() } : undefined,
+  }));
 }
 
 export async function replayAdminUplink(id: number, reason: string): Promise<UplinkDeliveryResult> {

@@ -96,6 +96,22 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.data.guidance").value("稍后重试，不会创建任务或扣费"));
     }
 
+    @Test
+    void complaintNotFoundAndStaleFailuresUseTypedGlobalContract() throws Exception {
+        var mvc = MockMvcBuilders.standaloneSetup(new FailureController())
+                .setControllerAdvice(new GlobalExceptionHandler(mock(SecurityEventLogger.class)))
+                .build();
+
+        mvc.perform(get("/phase41/complaint-not-found"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(404))
+                .andExpect(jsonPath("$.data.errorCode").value("COMPLAINT_NOT_FOUND"));
+        mvc.perform(get("/phase41/complaint-stale"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value(409))
+                .andExpect(jsonPath("$.data.errorCode").value("COMPLAINT_STATE_STALE"));
+    }
+
     @RestController
     static class FailureController {
         @GetMapping("/phase5/failure")
@@ -116,6 +132,16 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/phase18/rate-limit")
         void rateLimit() {
             throw new RateLimitExceededException("api-key-SECOND", 1);
+        }
+
+        @GetMapping("/phase41/complaint-not-found")
+        void complaintNotFound() {
+            throw new BusinessException("COMPLAINT_NOT_FOUND", "投诉案件不存在");
+        }
+
+        @GetMapping("/phase41/complaint-stale")
+        void complaintStale() {
+            throw new BusinessException("COMPLAINT_STATE_STALE", "投诉状态已变化");
         }
 
         @PostMapping("/phase5/validate")

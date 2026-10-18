@@ -20,7 +20,7 @@
     "sources": [
       {
         "path": ".planning/phases/41-complaint-case-management/UI-ELEMENTS.md",
-        "sha256": "8e7abf470f3a95e6f14dc56b1c1c2da332a2f013890e66cfcd89aa71e24dd4dd"
+        "sha256": "98a04424595f0521164a2616e102cf557b83bb36c0b813a98d95199b1df1bd69"
       }
     ]
   },
@@ -97,7 +97,7 @@
     "sources": [
       {
         "path": "web/src/router/routes.tsx",
-        "sha256": "f4fb16ee9f94406e650b6f605469b41795d99d4ea0c0062c530809f2e3186a12"
+        "sha256": "450f0298dbb6b473aeb37893ec85a73178fefd7c0c837586fa1436f8e5740a17"
       },
       {
         "path": "web/src/components/layout/AdminLayout.tsx",
@@ -105,7 +105,7 @@
       },
       {
         "path": "web/src/pages/admin/complaints/AdminComplaintsPage.tsx",
-        "sha256": "332693cc8081c7ff8fe3b9a469c681cdcdf5a8f46029c7e9f0060598ced1e01e"
+        "sha256": "6ac2fb18bd67a3f02f638aa607acc46b6d6946a30ed1915eed70c7b9a60dae76"
       },
       {
         "path": "web/src/pages/admin/complaints/AdminComplaintAnalyticsPage.tsx",
@@ -113,7 +113,11 @@
       },
       {
         "path": "web/src/api/complaintCaseApi.ts",
-        "sha256": "321cb6d43434260b2db331ecb04de63128ddd5b32b30ec88314babcce5767e62"
+        "sha256": "b1aee78898cfa9b8fbeca8dd6dd7a4999ea1670a6c0fd29185fae18a5cb2f006"
+      },
+      {
+        "path": "web/src/components/common/ModalDialog.tsx",
+        "sha256": "c7cfc0d46b7f71aee7a77f898fe30b261ad032b0f5d39624bf5c4c0e223dafb9"
       }
     ]
   },
@@ -134,18 +138,18 @@
     "sources": [
       {
         "path": "web/test/scripts/complaint-case.spec.ts",
-        "sha256": "26dd67bf1a7cd8572852ee9c2829e1cc074b7ee5a52bd9127e727ff4dc1c1c37"
+        "sha256": "f117ba43fe7914629cadf79c253c74e457ada02a4f3f052f573a42b9a2c08fc1"
       }
     ]
   },
   "execution": {
     "command": "npm --prefix web exec -- playwright test complaint-case.spec.ts --config web/playwright.config.ts --project=local-google-chrome --reporter=line,json",
-    "commit": "693317912641342261f6b7a790cb1d2086104f61",
+    "commit": "b402642ce5dcf0c129988091fc6e6074f93f42f5",
     "config": "web/playwright.config.ts project=local-google-chrome executable=/usr/bin/google-chrome",
     "result": "PASS",
     "report": {
       "path": ".planning/phases/41-complaint-case-management/EVIDENCE/playwright-complaint-case-report.json",
-      "sha256": "83fbbcafc3df37b8c342b7665389e8f074c378c2cda259f956a613f58fb261d9"
+      "sha256": "98d446732375eb9e2f936589d6417cc4f1c24182a3668a28370792d7a0cfbd20"
     }
   }
 }

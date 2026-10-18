@@ -23,6 +23,5 @@ Closed work:
 
 No scoped product TODO remains for Phase 41. Complaint-management backend,
 frontend, Docker-release, and real-Google-Chrome gates pass in PR CI. The PR's
-remaining failed check is an external `quay.io` authorization error while
-pulling the repository's existing Phase 03 MinIO image, before those unrelated
-integration tests execute.
+current verification receipts are summarized in `SUMMARY.md` and in the
+owning issue change package.

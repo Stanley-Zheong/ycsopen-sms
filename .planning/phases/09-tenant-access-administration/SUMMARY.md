@@ -36,3 +36,13 @@ Phase09 delivers tenant-scoped access administration:
 - Subject: `feat(phase09): deliver tenant access administration`
 
 The scoped TODO set is empty.
+
+## Issue 121 follow-up
+
+Issue 121 completes the tenant-facing API Key handoff and audit surface on the
+existing Phase 09 owner. The list contract is mask-only, plaintext is returned
+only by a successful create response and held only for the mounted UI handoff,
+revoke uses an explicit controlled confirmation, and audit readback is fixed to
+redacted own-tenant records. Incremental evidence is recorded in the Issue 121
+change package and Frontend Spirit 06; the original Phase 09 verdict remains
+PASS.

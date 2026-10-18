@@ -193,6 +193,8 @@ async function openEditableQualification(page: Page) {
 async function openAdminRow(page: Page) {
   await login(page, accounts.admin);
   await page.goto('/admin/tenants');
+  await page.getByTestId('admin-tenant-qualification-tenants-keyword').fill(company.shortName);
+  await page.getByTestId('admin-tenant-qualification-tenants-query').click();
   await expect(page.getByTestId('admin-tenant-qualification-tenants-row')).toHaveCount(1);
 }
 
@@ -236,7 +238,6 @@ test('pw-p8-register C-P8-REGISTER OBL-FLOW-12-1-REGISTER', async ({ page, reque
 
 test('pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   await expect(page.getByTestId('admin-tenant-qualification-tenants-page')).toBeVisible();
   await page.getByTestId('admin-tenant-qualification-tenants-keyword').fill(company.shortName);
   await page.getByTestId('admin-tenant-qualification-tenants-verification-status').selectOption('PENDING');
@@ -273,7 +274,6 @@ test('pw-p8-review-workspace C-P8-REVIEW-WORKSPACE OBL-F-2-2-A', async ({ page, 
 
 test('pw-p8-review-decision C-P8-REVIEW-DECISION OBL-F-2-2-B', async ({ page }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   await page.getByTestId('admin-tenant-qualification-tenants-review-open').click();
   await page.getByTestId('admin-tenant-qualification-tenants-review-human-confirmed').check();
   await page.getByTestId('admin-tenant-qualification-tenants-review-approve-open').click();
@@ -282,9 +282,35 @@ test('pw-p8-review-decision C-P8-REVIEW-DECISION OBL-F-2-2-B', async ({ page }) 
   await page.getByTestId('admin-tenant-qualification-tenants-review-decision-reason').fill('真实证明与登记信息一致');
   await page.getByTestId('admin-tenant-qualification-tenants-review-decision-confirm').click();
   await expect(page.locator('.qualification-success')).toContainText('审核决定已保存');
+  const approval = page.getByTestId('admin-tenant-qualification-tenants-approval-result');
+  await expect(approval.getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-id')).not.toHaveText('—');
+  await expect(approval.getByTestId('admin-tenant-qualification-tenants-approval-result-tenant-no')).not.toHaveText('—');
+  await expect(approval.getByTestId('admin-tenant-qualification-tenants-approval-result-trial-quota')).toHaveText('500');
+  await expect(approval.getByTestId('admin-tenant-qualification-tenants-approval-result-trial-start-at')).not.toHaveText('—');
+  await expect(approval.getByTestId('admin-tenant-qualification-tenants-approval-result-trial-end-at')).not.toHaveText('—');
+  await expect(approval).not.toContainText(/password|App Secret|密码|密钥/i);
 
   await login(page, accounts.tenant);
   await expect(page).toHaveURL(/\/tenant\/overview$/);
+  await page.goto('/tenant/config');
+  await expect(page).toHaveURL(/\/tenant\/api\/keys$/);
+  await page.getByTestId('tenant-tenant-access-api-keys-create-dialog').click();
+  const keyName = `issue-121-real-${Date.now()}`;
+  await page.getByTestId('tenant-tenant-access-api-keys-name').fill(keyName);
+  await page.getByTestId('tenant-tenant-access-api-keys-ip-allow-list').fill('2001:db8::/32');
+  await page.getByTestId('form-submit').click();
+  const secret = await page.getByTestId('tenant-tenant-access-api-keys-secret-once').textContent();
+  expect(secret).toBeTruthy();
+  await page.getByTestId('tenant-tenant-access-api-keys-secret-acknowledge').click();
+  const keyRow = page.getByTestId('tenant-tenant-access-api-keys-row').filter({ hasText: keyName });
+  await expect(keyRow.getByTestId('tenant-tenant-access-api-keys-secret-mask')).toHaveText('******');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-audits-section')).toContainText('TENANT_API_KEY_CREATE');
+  await keyRow.getByTestId('tenant-tenant-access-api-keys-revoke').click();
+  await page.getByTestId('tenant-tenant-access-api-keys-revoke-confirm').click();
+  await expect(keyRow).toContainText('DISABLED');
+  await expect(page.getByTestId('tenant-tenant-access-api-keys-audits-section')).toContainText('TENANT_API_KEY_REVOKE');
+  await expect(page.locator('body')).not.toContainText(secret ?? 'missing-secret');
+
   await page.goto('/tenant/qualification');
   await expect(page.getByTestId('tenant-tenant-qualification-qualification-status')).toContainText('认证通过');
   await expect(page.getByTestId('tenant-tenant-qualification-qualification-recertify')).toBeEnabled();
@@ -468,7 +494,6 @@ test('pw-p8-qualification-submit C-P8-QUALIFICATION-SUBMIT OBL-F-2-1-B', async (
 
 test('pw-p8-tenant-edit C-P8-TENANT-EDIT OBL-F-2-3-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   const competingContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const competing = await competingContext.newPage();
   try {
@@ -496,7 +521,6 @@ test('pw-p8-tenant-edit C-P8-TENANT-EDIT OBL-F-2-3-A', async ({ page, browser })
 
 test('pw-p8-status-action C-P8-STATUS-ACTION OBL-F-2-4-A', async ({ page, browser }) => {
   await openAdminRow(page);
-  await page.goto('/admin/tenants');
   const competingContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const competing = await competingContext.newPage();
   try {

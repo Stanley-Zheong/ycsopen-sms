@@ -30,9 +30,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException ex) {
+    public ResponseEntity<ApiResponse<?>> handleBusiness(BusinessException ex) {
         security.warn(Event.BUSINESS_REJECTION, Category.BUSINESS,
                 SafeLogValue.correlation(MDC.get("traceId")));
+        if (ex.getErrorCode().startsWith("COMPLAINT_")) {
+            HttpStatus status = switch (ex.getErrorCode()) {
+                case "COMPLAINT_NOT_FOUND", "COMPLAINT_REMEDIATION_NOT_FOUND" -> HttpStatus.NOT_FOUND;
+                case "COMPLAINT_STATE_STALE" -> HttpStatus.CONFLICT;
+                default -> HttpStatus.BAD_REQUEST;
+            };
+            return ResponseEntity.status(status).body(ApiResponse.error(
+                    status.value(), ex.getMessage(), new BusinessFailureView(ex.getErrorCode())));
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getErrorCode(), ex.getMessage()));
     }
@@ -75,4 +84,6 @@ public class GlobalExceptionHandler {
     }
 
     public record RateLimitView(String limitKey, int retryAfterSeconds, String guidance) { }
+
+    public record BusinessFailureView(String errorCode) { }
 }

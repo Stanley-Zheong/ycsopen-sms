@@ -130,6 +130,9 @@ export interface AdminTenantReview {
   inspectionConfidence: number | null;
   inspectionRequestId: string | null;
   inspectionCompletedAt: string | null;
+  trialQuota: number | null;
+  trialStartAt: string | null;
+  trialEndAt: string | null;
 }
 
 export interface QualificationEvent {

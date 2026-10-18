@@ -29,6 +29,17 @@ public class ComplaintCaseController {
         return ApiResponse.ok(service.cases());
     }
 
+    @GetMapping("/complaints/{id}")
+    public ApiResponse<ComplaintCaseService.CaseDetail> detail(@PathVariable long id) {
+        return ApiResponse.ok(service.caseDetail(id));
+    }
+
+    @GetMapping("/complaint-reference-options")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public ApiResponse<ComplaintCaseService.ReferenceOptions> referenceOptions() {
+        return ApiResponse.ok(service.referenceOptions());
+    }
+
     @GetMapping("/complaint-remediations")
     public ApiResponse<List<ComplaintCaseService.RemediationRow>> remediations() {
         return ApiResponse.ok(service.remediations());

@@ -15,6 +15,8 @@ public class TenantApiKeyController {
     public TenantApiKeyController(TenantApiKeyService service) { this.service = service; }
     @GetMapping @PreAuthorize("hasRole('TENANT_ADMIN') or hasRole('TENANT_DEV')")
     public ApiResponse<List<TenantApiKeyResponse>> list(Authentication a) { return ApiResponse.ok(service.list(id(a))); }
+    @GetMapping("/audits") @PreAuthorize("hasRole('TENANT_ADMIN') or hasRole('TENANT_DEV')")
+    public ApiResponse<List<TenantApiKeyAuditResponse>> audits(Authentication a) { return ApiResponse.ok(service.auditTrail(id(a))); }
     @PostMapping @PreAuthorize("hasRole('TENANT_ADMIN') or hasRole('TENANT_DEV')")
     public ApiResponse<TenantApiKeyResponse> create(@Valid @RequestBody TenantApiKeyCreateRequest r, Authentication a) { return ApiResponse.ok(service.create(id(a),r)); }
     @PostMapping("/{keyId}/revoke") @PreAuthorize("hasRole('TENANT_ADMIN') or hasRole('TENANT_DEV')")

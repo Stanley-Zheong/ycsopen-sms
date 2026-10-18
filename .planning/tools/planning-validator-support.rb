@@ -10,7 +10,8 @@ require "set"
 require "yaml"
 
 module PlanningValidatorSupport
-  ELEMENT_TEST_ID = /\A(?:admin|tenant|shared|public)-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*\z/
+  SHARED_ELEMENT_TEST_IDS = %w[data-table table-empty entity-form form-submit form-cancel].freeze
+  ELEMENT_TEST_ID = /\A(?:(?:admin|tenant|shared|public)-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*|#{Regexp.union(SHARED_ELEMENT_TEST_IDS).source})\z/
   OBLIGATION_ID = /\bOBL-[A-Z0-9-]+\b/
   REQUIREMENT_ID = /\b(?:REQ-(?:F|NFR)-[A-Z0-9-]+|PROJECT-[A-Z0-9-]+)\b/
   ENTRY_HEADERS = ["Criterion ID", "Verdict", "Evidence", "Command or inspection rule"].freeze

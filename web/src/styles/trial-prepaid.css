@@ -84,3 +84,41 @@
   color: #b42318;
   background: #fef3f2;
 }
+
+.trial-workbench-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.trial-workbench-table {
+  min-width: 1180px;
+}
+
+.trial-workbench-table td,
+.trial-workbench-table th {
+  vertical-align: top;
+}
+
+.trial-workbench-table code {
+  overflow-wrap: anywhere;
+}
+
+.trial-workbench-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 112px;
+}
+
+.trial-workbench-dialog {
+  display: grid;
+  gap: 16px;
+  width: min(960px, calc(100vw - 64px));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+}
+
+.trial-workbench-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

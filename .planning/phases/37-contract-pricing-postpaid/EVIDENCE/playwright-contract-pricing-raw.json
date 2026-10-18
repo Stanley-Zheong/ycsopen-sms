@@ -1,17 +1,18 @@
 {
   "config": {
     "argv": [
-      "/opt/homebrew/Cellar/node/24.2.0/bin/node",
-      "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/node_modules/.bin/playwright",
+      "/usr/local/bin/node",
+      "/workspace/ycsopen-sms-task-99d98f695153eeba3c47f4f0/web/node_modules/.bin/playwright",
       "test",
       "contract-pricing.spec.ts",
       "--config",
       "web/playwright.config.ts",
-      "--project=local-google-chrome",
+      "--project=bundled-chromium",
+      "--workers=1",
       "--reporter=json"
     ],
-    "configFile": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/playwright.config.ts",
-    "rootDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+    "configFile": "/workspace/ycsopen-sms-task-99d98f695153eeba3c47f4f0/web/playwright.config.ts",
+    "rootDir": "/workspace/ycsopen-sms-task-99d98f695153eeba3c47f4f0/web/test/scripts",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": true,
@@ -22,20 +23,20 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 3
+      "actualWorkers": 1
     },
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test-results",
+        "outputDir": "/workspace/ycsopen-sms-task-99d98f695153eeba3c47f4f0/web/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 3
+          "actualWorkers": 1
         },
-        "id": "local-google-chrome",
-        "name": "local-google-chrome",
-        "testDir": "/Users/laosanzheong/Documents/codebases/ycsopen-sms/web/test/scripts",
+        "id": "bundled-chromium",
+        "name": "bundled-chromium",
+        "testDir": "/workspace/ycsopen-sms-task-99d98f695153eeba3c47f4f0/web/test/scripts",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -58,7 +59,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.62.1",
-    "workers": 5,
+    "workers": 1,
     "webServer": {
       "command": "npm run dev -- --host 127.0.0.1 --port 4173",
       "url": "http://127.0.0.1:4173/login",
@@ -73,7 +74,7 @@
       "line": 0,
       "specs": [
         {
-          "title": "pw-p37-admin-contract C-P37-ADMIN-CONTRACT OBL-F-2-9-A pw-p37-billing-mode C-P37-BILLING-MODE OBL-F-2-5-A pw-p37-flow-contract C-P37-FLOW-CONTRACT OBL-FLOW-12-1-CONTRACT",
+          "title": "pw-p37-admin-contract C-P37-ADMIN-CONTRACT OBL-F-2-9-A pw-p37-billing-mode C-P37-BILLING-MODE OBL-F-2-5-A pw-p37-postpaid-fields C-P37-POSTPAID-FIELDS OBL-F-2-9-B pw-p37-flow-contract C-P37-FLOW-CONTRACT OBL-FLOW-12-1-CONTRACT",
           "ok": true,
           "tags": [],
           "tests": [
@@ -81,19 +82,19 @@
               "timeout": 30000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "local-google-chrome",
-              "projectName": "local-google-chrome",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
               "results": [
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1988,
+                  "duration": 4123,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-10T03:01:38.280Z",
+                  "startTime": "2026-10-06T01:46:24.900Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -101,13 +102,13 @@
               "status": "expected"
             }
           ],
-          "id": "a8fb9a02f7c6737d5d42-7ebc820740e783da5614",
+          "id": "a8fb9a02f7c6737d5d42-7df7ce9ecc17509c2eb1",
           "file": "contract-pricing.spec.ts",
-          "line": 72,
+          "line": 95,
           "column": 1
         },
         {
-          "title": "pw-p37-credit-period C-P37-CREDIT-PERIOD OBL-F-2-5-B pw-p37-postpaid-fields C-P37-POSTPAID-FIELDS OBL-F-2-9-B",
+          "title": "pw-p37-credit-period C-P37-CREDIT-PERIOD OBL-F-2-5-B preserves rejected selected-tenant form",
           "ok": true,
           "tags": [],
           "tests": [
@@ -115,19 +116,19 @@
               "timeout": 30000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "local-google-chrome",
-              "projectName": "local-google-chrome",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1999,
+                  "duration": 1740,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-10T03:01:38.290Z",
+                  "startTime": "2026-10-06T01:46:30.015Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -135,9 +136,145 @@
               "status": "expected"
             }
           ],
-          "id": "a8fb9a02f7c6737d5d42-e099a3e89db1eb156670",
+          "id": "a8fb9a02f7c6737d5d42-f700997fdb58669bf981",
           "file": "contract-pricing.spec.ts",
-          "line": 87,
+          "line": 132,
+          "column": 1
+        },
+        {
+          "title": "selected-row trial adjustment keeps tenant identity immutable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1450,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T01:46:31.811Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a8fb9a02f7c6737d5d42-21fe6826ca3eee6528e6",
+          "file": "contract-pricing.spec.ts",
+          "line": 151,
+          "column": 1
+        },
+        {
+          "title": "workbench hides stale rows on error and retry restores the exact table contract",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1665,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T01:46:33.304Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a8fb9a02f7c6737d5d42-81490ec9543b8b0a2610",
+          "file": "contract-pricing.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "analysis exposes loading, error, then no-data readback",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1526,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T01:46:34.989Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a8fb9a02f7c6737d5d42-c190726c211438d2028c",
+          "file": "contract-pricing.spec.ts",
+          "line": 188,
+          "column": 1
+        },
+        {
+          "title": "active price error retries inside the selected-tenant dialog",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1202,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T01:46:36.537Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a8fb9a02f7c6737d5d42-17a174967ee3d058e62e",
+          "file": "contract-pricing.spec.ts",
+          "line": 210,
           "column": 1
         },
         {
@@ -149,19 +286,19 @@
               "timeout": 30000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "local-google-chrome",
-              "projectName": "local-google-chrome",
+              "projectId": "bundled-chromium",
+              "projectName": "bundled-chromium",
               "results": [
                 {
-                  "workerIndex": 2,
-                  "parallelIndex": 2,
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1919,
+                  "duration": 844,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-10T03:01:38.261Z",
+                  "startTime": "2026-10-06T01:46:37.763Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -169,9 +306,9 @@
               "status": "expected"
             }
           ],
-          "id": "a8fb9a02f7c6737d5d42-920398aefa902a0a24cb",
+          "id": "a8fb9a02f7c6737d5d42-06e50e187768332073e9",
           "file": "contract-pricing.spec.ts",
-          "line": 98,
+          "line": 230,
           "column": 1
         }
       ]
@@ -179,9 +316,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-10T03:01:35.744Z",
-    "duration": 8988.359,
-    "expected": 3,
+    "startTime": "2026-10-06T01:46:22.729Z",
+    "duration": 16014.337,
+    "expected": 7,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

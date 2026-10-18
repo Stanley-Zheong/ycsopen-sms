@@ -23,11 +23,14 @@ import com.ycsopen.sms.core.web.dto.SmsSendRequest;
 import com.ycsopen.sms.core.web.dto.SmsSendResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.UUID;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,6 +56,8 @@ public class MessageSubmitService {
     private final NumberAttributionService numberAttributionService;
     private final ChannelRepository channelRepository;
     private final TrialPrepaidLedgerService trialLedger;
+    private MessageRejectionRecorder rejectionRecorder;
+    private TransactionTemplate transactionTemplate;
 
     @Autowired
     public MessageSubmitService(TemplateSendComplianceService templateCompliance,
@@ -75,6 +80,23 @@ public class MessageSubmitService {
         this.numberAttributionService = numberAttributionService;
         this.channelRepository = channelRepository;
         this.trialLedger = trialLedger;
+        this.rejectionRecorder = new MessageRejectionRecorder(idempotency);
+    }
+
+    @Autowired
+    void configureTransactions(
+            PlatformTransactionManager transactionManager,
+            MessageRejectionRecorder rejectionRecorder,
+            @Value("${ycsopen.message.submit-transaction-timeout:PT60S}") Duration transactionTimeout,
+            @Value("${ycsopen.message.submit-claim-lease:PT2M}") Duration claimLease) {
+        if (transactionTimeout == null || transactionTimeout.compareTo(Duration.ofSeconds(1)) < 0
+                || claimLease == null || transactionTimeout.compareTo(claimLease) >= 0) {
+            throw new IllegalArgumentException(
+                    "submit transaction timeout must be at least one second and shorter than claim lease");
+        }
+        this.rejectionRecorder = rejectionRecorder;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.transactionTemplate.setTimeout(Math.toIntExact(transactionTimeout.toSeconds()));
     }
 
     /** Backward-compatible constructor for focused unit tests that do not exercise attribution. */
@@ -88,12 +110,10 @@ public class MessageSubmitService {
                 messageTaskProtectionAdapter, tenantEligibilityPolicy, idempotency, null, null, null);
     }
 
-    @Transactional
     public SmsSendResponse submit(Long tenantId, SmsSendRequest request, String clientIp) {
         return submit(tenantId, null, request, clientIp);
     }
 
-    @Transactional
     public SmsSendResponse submit(Long tenantId, Long apiKeyId, SmsSendRequest request, String clientIp) {
         tenantEligibilityPolicy.requireNewWorkAllowed(tenantId);
         MessageAcceptanceIdempotencyService.Claim claim = idempotency.claim(
@@ -102,13 +122,37 @@ public class MessageSubmitService {
             return claim.existingResponse().get();
         }
 
+        RejectionContext rejection = new RejectionContext();
+        try {
+            if (transactionTemplate == null) {
+                rejection.claimLocked = true;
+                return submitAccepted(tenantId, apiKeyId, request, clientIp, claim, rejection);
+            }
+            return transactionTemplate.execute(status -> {
+                idempotency.lockClaim(claim.submissionId(), claim.processingToken());
+                rejection.claimLocked = true;
+                return submitAccepted(tenantId, apiKeyId, request, clientIp, claim, rejection);
+            });
+        } catch (BusinessException rejected) {
+            if (rejection.claimLocked) {
+                rejectionRecorder.record(claim, rejection.templateId, rejection.signatureId,
+                        rejected.getErrorCode());
+            }
+            throw rejected;
+        }
+    }
+
+    private SmsSendResponse submitAccepted(Long tenantId, Long apiKeyId, SmsSendRequest request, String clientIp,
+                                           MessageAcceptanceIdempotencyService.Claim claim,
+                                           RejectionContext rejection) {
         TemplateSendComplianceService.Result compliance = templateCompliance.validateDomesticSend(
                 tenantId, request.templateId(), request.signId(), request.templateParams());
         Template template = compliance.template();
         Signature signature = compliance.signature();
+        rejection.templateId = template.getId();
+        rejection.signatureId = signature.getId();
         NumberAttributionService.AttributionResult attribution = numberAttributionService == null
                 ? null : numberAttributionService.lookup(request.phoneNumber(), false);
-        idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
 
         String messageId = "MSG_" + System.currentTimeMillis() + "_"
                 + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -166,10 +210,17 @@ public class MessageSubmitService {
         if (!trial) {
             billingService.reserve(tenantId, savedTask.getId(), estimatedPrice(decision.getSelectedChannelId()));
         }
+        idempotency.attachResources(claim.submissionId(), template.getId(), signature.getId());
         idempotency.enqueueSendIntent(tenantId, savedTask.getId(), messageId, decision.getSelectedChannelId());
         idempotency.markAccepted(claim.submissionId());
 
         return new SmsSendResponse(messageId, task.getSendStatus().name());
+    }
+
+    private static final class RejectionContext {
+        private boolean claimLocked;
+        private Long templateId;
+        private Long signatureId;
     }
 
     private long estimatedCostMil(Long channelId) {

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -32,7 +32,14 @@ vi.mock('@/api/trialPrepaidApi', async (importOriginal) => {
 
 vi.mock('@/api/contractPricingApi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/contractPricingApi')>();
-  return { ...actual, getContractOverview: vi.fn() };
+  return {
+    ...actual,
+    getContractOverview: vi.fn(),
+    listTrialCandidates: vi.fn(),
+    listActivePriceBooks: vi.fn(),
+    getTrialAnalysis: vi.fn(),
+    approveContract: vi.fn(),
+  };
 });
 
 vi.mock('@/api/operationalDashboardApi', async (importOriginal) => {
@@ -51,6 +58,33 @@ function renderWithProviders(ui: ReactElement) {
 
 describe('Phase 22 trial prepaid ledger UI', () => {
   beforeEach(() => {
+    vi.mocked(contractApi.listTrialCandidates).mockResolvedValue([{
+      tenantId: 42,
+      tenantNo: 'TENANT-042',
+      shortName: 'Acme 短信',
+      fullName: 'Acme Messaging Ltd',
+      salesOwner: 'Alice',
+      industry: 'SaaS',
+      configurationSnapshotVersion: 'TRIAL-SNAPSHOT-V1-1234567890ABCDEF',
+      lifecycleStatus: 'TRIAL',
+      trialStatus: 'TRIAL',
+      trialStartAt: '2026-09-09T00:00:00',
+      trialEndAt: '2026-09-23T00:00:00',
+      remainingDays: 14,
+      quotaUsed: 0,
+      quotaTotal: 500,
+      messageCount: 0,
+      successCount: 0,
+      successRate: null,
+      complaintCount: 0,
+      complaintRate: null,
+      statisticsAt: '2026-09-09T00:00:00',
+      dataQuality: 'NO_DATA',
+      sourceRegistry: 'tenants:trial_accounts:message_tasks:complaints',
+      conversionEligible: true,
+      ineligibilityReasons: [],
+    }]);
+    vi.mocked(contractApi.listActivePriceBooks).mockResolvedValue([]);
     vi.mocked(identityApi.getAccountOverview).mockResolvedValue({
       id: 22,
       username: 'operator-22',
@@ -271,24 +305,24 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
     renderWithProviders(<TrialPrepaidAdminPage />);
 
+    fireEvent.click(await screen.findByTestId('admin-trial-conversion-workbench-row-adjust'));
     expect(await screen.findByTestId('admin-trial-prepaid-tenant-trial-quota')).toHaveValue(500);
+    expect(screen.getByTestId('admin-trial-conversion-workbench-adjust-dialog')).toHaveTextContent('TENANT-042');
     expect(screen.getByTestId('admin-trial-prepaid-tenant-trial-validity')).toHaveTextContent('有效期结束');
     expect(await screen.findByTestId('admin-trial-prepaid-balance-audit-row')).toHaveTextContent('DOC-22');
     const queryTenant = screen.getByTestId('admin-trial-prepaid-balance-audit-tenant-filter');
-    const queryPanel = screen.getByTestId('query-panel');
+    const queryPanel = screen.getByTestId('admin-balance-audit-query-panel');
     expect(queryPanel).toContainElement(queryTenant);
     expect(queryPanel.querySelectorAll('input, select, textarea')).toHaveLength(1);
-    expect(queryPanel).not.toContainElement(screen.getByTestId('admin-trial-prepaid-tenant-id'));
     expect(queryPanel).not.toContainElement(screen.getByTestId('admin-trial-prepaid-activate-trial'));
     expect(queryPanel).not.toContainElement(screen.getByTestId('admin-secure-async-balance-audit-export'));
     expect(screen.getByTestId('query-label-balance-audit-tenant')).toHaveTextContent('机构 ID');
     fireEvent.change(queryTenant, { target: { value: '99' } });
     expect(trialPrepaidApi.listBalanceAudits).not.toHaveBeenCalledWith(99);
-    fireEvent.click(screen.getByTestId('query-submit'));
+    fireEvent.click(within(queryPanel).getByTestId('query-submit'));
     await waitFor(() => expect(trialPrepaidApi.listBalanceAudits).toHaveBeenCalledWith(99));
     fireEvent.click(screen.getByTestId('admin-trial-prepaid-activate-trial'));
     await waitFor(() => expect(trialPrepaidApi.activateTrial).toHaveBeenCalledWith(42, 500, '2026-09-09T00:00:00', '2026-09-23T00:00:00'));
-    expect(screen.getByTestId('admin-trial-prepaid-tenant-id')).toHaveValue('42');
   });
 
   it('does not load balance audits through refresh while read access is loading', () => {
@@ -296,9 +330,9 @@ describe('Phase 22 trial prepaid ledger UI', () => {
     useAuthStore.setState({ userType: 'OPERATOR', tenantId: null });
     renderWithProviders(<TrialPrepaidAdminPage />);
 
-    expect(screen.getByTestId('query-submit')).toBeDisabled();
-    expect(screen.getByTestId('query-refresh')).toBeDisabled();
-    fireEvent.click(screen.getByTestId('query-refresh'));
+    screen.getAllByTestId('query-submit').forEach((button) => expect(button).toBeDisabled());
+    screen.getAllByTestId('query-refresh').forEach((button) => expect(button).toBeDisabled());
+    fireEvent.click(screen.getAllByTestId('query-refresh')[0]);
 
     expect(trialPrepaidApi.listBalanceAudits).not.toHaveBeenCalled();
   });

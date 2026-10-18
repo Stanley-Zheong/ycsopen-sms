@@ -22,3 +22,13 @@ All 21 owned obligations have PASS evidence. Independent review is clean and Cla
 ## Boundaries
 
 Chrome is the only browser target. No mobile/cross-browser support, generic workflow engine, future signature/template/channel implementation, or browser/API interception was added. The Phase 02 protected PNG remains user-owned and unstaged.
+
+## Issue 121 incremental verification
+
+The approval-result extension is covered by `TenantReviewServiceTest`,
+`tenant-qualification.test.tsx`, and the
+`pw-issue-121-approval-result` Chrome case. The incremental contract permits
+only tenant ID, tenant number, trial quota, trial start, and trial end; it
+asserts the absence of password and App Secret fields. Exact commands and the
+current execution environment are recorded in
+`.planning/frontend-spirits/06-tenant-onboarding-access/QUALITY-GATEWAY.md`.

@@ -41,7 +41,14 @@ public class TrialPrepaidLedgerService {
         if (effectiveQuota <= 0) throw failure("TRIAL_QUOTA_INVALID", "试用额度必须为正整数");
         LocalDateTime start = startAt == null ? LocalDateTime.now() : startAt;
         LocalDateTime end = endAt == null ? start.plusDays(14) : endAt;
-        if (start.isAfter(end)) throw failure("TRIAL_VALIDITY_INVALID", "试用开始时间不能晚于结束时间");
+        if (!start.isBefore(end)) throw failure("TRIAL_VALIDITY_INVALID", "试用开始时间必须早于结束时间");
+        List<String> lifecycles = jdbc.query("""
+                SELECT lifecycle_status FROM tenants WHERE id=? FOR UPDATE
+                """, (row, index) -> row.getString("lifecycle_status"), tenantId);
+        if (lifecycles.isEmpty()) throw failure("TENANT_NOT_FOUND", "机构不存在");
+        if (!List.of("TRIAL", "TRIAL_FROZEN").contains(lifecycles.getFirst())) {
+            throw failure("TENANT_TRIAL_STATE_INVALID", "机构生命周期不允许调整试用");
+        }
         Integer existing = jdbc.queryForObject("SELECT COUNT(*) FROM trial_accounts WHERE tenant_id=?", Integer.class, tenantId);
         if (existing != null && existing > 0) {
             jdbc.update("""
@@ -56,6 +63,13 @@ public class TrialPrepaidLedgerService {
                     VALUES (?,'TRIAL',?,?,?,?,0)
                     """, tenantId, effectiveQuota, effectiveQuota, start, end);
         }
+        int tenantUpdated = jdbc.update("""
+                UPDATE tenants
+                   SET lifecycle_status='TRIAL', trial_quota=?, trial_quota_used=0,
+                       trial_start_at=?, trial_end_at=?
+                 WHERE id=? AND lifecycle_status IN ('TRIAL','TRIAL_FROZEN')
+                """, effectiveQuota, start, end, tenantId);
+        if (tenantUpdated != 1) throw failure("TENANT_TRIAL_STATE_INVALID", "机构生命周期已变化，请刷新后重试");
         return overview(tenantId);
     }
 

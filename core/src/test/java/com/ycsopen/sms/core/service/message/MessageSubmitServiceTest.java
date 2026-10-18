@@ -31,10 +31,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.HexFormat;
@@ -109,6 +111,22 @@ class MessageSubmitServiceTest {
         verify(eligibilityPolicy).requireNewWorkAllowed(TENANT_ID);
         verifyNoInteractions(templateRepository, signatureRepository, routingEngine,
                 billingService, messageTaskProtectionAdapter, legacyMessageTaskRepository);
+    }
+
+    @Test
+    void rejectsTransactionTimeoutThatCanOutliveClaimLease() {
+        assertThatThrownBy(() -> service.configureTransactions(
+                org.mockito.Mockito.mock(PlatformTransactionManager.class),
+                new MessageRejectionRecorder(idempotency),
+                Duration.ofMinutes(2), Duration.ofMinutes(2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("shorter than claim lease");
+        assertThatThrownBy(() -> service.configureTransactions(
+                org.mockito.Mockito.mock(PlatformTransactionManager.class),
+                new MessageRejectionRecorder(idempotency),
+                Duration.ofMillis(900), Duration.ofMillis(950)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("at least one second");
     }
 
     @Test
@@ -200,6 +218,10 @@ class MessageSubmitServiceTest {
                     .isEqualTo(FrequencyChecker.MOBILE_IDENTITY_NOT_READY);
         }
 
+        verify(idempotency).recordRejected(any(), eq(8L), eq(9L),
+                eq(rejectStage == RoutingDecision.RejectStage.FREQUENCY_LIMIT
+                        ? FrequencyChecker.MOBILE_IDENTITY_NOT_READY : "ROUTING_REJECTED"));
+        verify(idempotency, never()).attachResources(anyLong(), anyLong(), anyLong());
         verifyNoInteractions(feeWarningCreditService);
         verify(messageTaskProtectionAdapter, never()).protectForPersistence(any(), anyString());
         verify(messageTaskProtectionAdapter, never()).save(any(), any());

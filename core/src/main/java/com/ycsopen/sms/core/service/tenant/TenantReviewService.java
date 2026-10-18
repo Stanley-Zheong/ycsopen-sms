@@ -6,13 +6,16 @@ import com.ycsopen.sms.core.domain.entity.User;
 import com.ycsopen.sms.core.repository.TenantAccountRepository;
 import com.ycsopen.sms.core.repository.TenantRepository;
 import com.ycsopen.sms.core.repository.UserRepository;
+import com.ycsopen.sms.core.service.billing.TrialPrepaidLedgerService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -33,23 +36,26 @@ public class TenantReviewService {
     private final TenantRepository tenants;
     private final TenantAccountRepository accounts;
     private final UserRepository users;
+    private final TrialPrepaidLedgerService trials;
     private final Clock clock;
     private final int trialQuota;
     private final int trialDays;
 
     @Autowired
     public TenantReviewService(TenantRepository tenants, TenantAccountRepository accounts,
-                               UserRepository users,
+                               UserRepository users, TrialPrepaidLedgerService trials,
                                @Value("${ycsopen.tenant-qualification.trial-quota:500}") int trialQuota,
                                @Value("${ycsopen.tenant-qualification.trial-days:14}") int trialDays) {
-        this(tenants, accounts, users, Clock.systemUTC(), trialQuota, trialDays);
+        this(tenants, accounts, users, trials, Clock.systemUTC(), trialQuota, trialDays);
     }
 
     TenantReviewService(TenantRepository tenants, TenantAccountRepository accounts,
-                        UserRepository users, Clock clock, int trialQuota, int trialDays) {
+                        UserRepository users, TrialPrepaidLedgerService trials,
+                        Clock clock, int trialQuota, int trialDays) {
         this.tenants = Objects.requireNonNull(tenants);
         this.accounts = Objects.requireNonNull(accounts);
         this.users = Objects.requireNonNull(users);
+        this.trials = Objects.requireNonNull(trials);
         this.clock = Objects.requireNonNull(clock);
         if (trialQuota < 1 || trialDays < 1) throw new IllegalArgumentException("invalid trial policy");
         this.trialQuota = trialQuota;
@@ -92,6 +98,8 @@ public class TenantReviewService {
         String beforeVerification = tenant.getVerificationStatus().name();
         String beforeLifecycle = tenant.getLifecycleStatus().name();
         LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), java.time.ZoneOffset.UTC);
+        boolean startsTrial = decision == Decision.APPROVE
+                && tenant.getLifecycleStatus() == Tenant.LifecycleStatus.SUBMITTED;
         switch (decision) {
             case APPROVE -> approve(tenant, now);
             case REJECT -> tenant.setVerificationStatus(Tenant.VerificationStatus.REJECTED);
@@ -100,6 +108,9 @@ public class TenantReviewService {
         tenant.setQualificationReason(reason.trim());
         tenant.setVerificationUpdatedAt(now);
         Tenant saved = tenants.saveAndFlush(tenant);
+        if (startsTrial) {
+            trials.activateTrial(saved.getId(), trialQuota, saved.getTrialStartAt(), saved.getTrialEndAt(), actor);
+        }
         tenants.appendReviewEvent(tenantId, decision.eventAction(), beforeVerification,
                 saved.getVerificationStatus().name(), beforeLifecycle, saved.getLifecycleStatus().name(),
                 reason.trim(), actor);
@@ -147,7 +158,12 @@ public class TenantReviewService {
                 tenant.getQualificationSubmittedAt(), tenant.getQualificationReason(),
                 tenant.getInspectionStatus(), tenant.getInspectionCompanyName(),
                 tenant.getInspectionCreditCode(), tenant.getInspectionConfidence() == null ? null : tenant.getInspectionConfidence().doubleValue(),
-                tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt());
+                tenant.getInspectionProviderRequestId(), tenant.getInspectionCompletedAt(),
+                tenant.getTrialQuota(), asUtcInstant(tenant.getTrialStartAt()), asUtcInstant(tenant.getTrialEndAt()));
+    }
+
+    private static Instant asUtcInstant(LocalDateTime value) {
+        return value == null ? null : value.toInstant(ZoneOffset.UTC);
     }
 
     private static void requireReason(String reason) {
@@ -189,7 +205,9 @@ public class TenantReviewService {
                              LocalDateTime submittedAt, String reason,
                              Tenant.InspectionStatus inspectionStatus, String inspectedCompanyName,
                              String inspectedCreditCode, Double inspectionConfidence,
-                             String inspectionRequestId, LocalDateTime inspectionCompletedAt) { }
+                             String inspectionRequestId, LocalDateTime inspectionCompletedAt,
+                             Integer trialQuota, Instant trialStartAt,
+                             Instant trialEndAt) { }
 
     public static final class ReviewFailure extends RuntimeException {
         ReviewFailure(String code) { super(code, null, false, false); }

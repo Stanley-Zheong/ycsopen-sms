@@ -29,6 +29,7 @@ class UplinkNormalizationServiceTest {
                 "jdbc:h2:mem:phase32-" + System.nanoTime()
                         + ";MODE=MySQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1", "sa", "");
         jdbc = new JdbcTemplate(dataSource);
+        createTenantTable();
         createWebhookTables();
         createUplinkTables();
         client = new RecordingClient();
@@ -81,9 +82,20 @@ class UplinkNormalizationServiceTest {
                 null, "13900002222", null, null, null, null, null));
 
         assertThat(tenantRows).extracting(UplinkNormalizationService.UplinkRecord::tenantId).containsOnly(7L);
+        assertThat(tenantRows.get(0).tenantNo()).isEqualTo("TENANT-0007");
+        assertThat(tenantRows.get(0).tenantShortName()).isEqualTo("北斗短信");
+        assertThat(tenantRows.get(0).tenantFullName()).isEqualTo("北斗短信服务有限公司");
         assertThat(adminRows).hasSize(1);
         assertThat(adminRows.get(0).tenantId()).isEqualTo(8L);
+        assertThat(adminRows.get(0).tenantNo()).isNull();
+        assertThat(adminRows.get(0).tenantShortName()).isNull();
+        assertThat(adminRows.get(0).tenantFullName()).isNull();
         assertThat(adminRows.get(0).phoneMasked()).isEqualTo("139****2222");
+
+        assertThat(service.tenantOptions("北斗"))
+                .containsExactly(new UplinkNormalizationService.TenantOption(
+                        7L, "TENANT-0007", "北斗短信", "北斗短信服务有限公司"));
+        assertThat(service.tenantOptions("TENANT-0007")).hasSize(1);
     }
 
     @Test
@@ -144,6 +156,9 @@ class UplinkNormalizationServiceTest {
 
         var failures = service.pushMonitor(new UplinkNormalizationService.PushMonitorFilter(7L, "PUSH_FAILED", "uplink"));
         assertThat(failures).hasSize(1);
+        assertThat(failures.get(0).tenantNo()).isEqualTo("TENANT-0007");
+        assertThat(failures.get(0).tenantShortName()).isEqualTo("北斗短信");
+        assertThat(failures.get(0).tenantFullName()).isEqualTo("北斗短信服务有限公司");
         assertThat(failures.get(0).attemptRows()).isEqualTo(5);
 
         var paused = service.pausePushEvent(normalized.pushEventId(), "operator", "目的地持续失败");
@@ -175,6 +190,21 @@ class UplinkNormalizationServiceTest {
                 tenantId, protocol, connector, sourceEventId, "MSG-" + sourceEventId, "13800138000",
                 "回复帮助", "帮助", "CMCC", "北京", "北京", "10690000", 1L, 2L,
                 "STANDARD", pushRequested, LocalDateTime.now());
+    }
+
+    private void createTenantTable() {
+        jdbc.execute("""
+                CREATE TABLE tenants(
+                  id BIGINT PRIMARY KEY,
+                  tenant_no VARCHAR(32) NOT NULL,
+                  short_name VARCHAR(20),
+                  full_name VARCHAR(100)
+                )
+                """);
+        jdbc.update("""
+                INSERT INTO tenants(id, tenant_no, short_name, full_name)
+                VALUES (7, 'TENANT-0007', '北斗短信', '北斗短信服务有限公司')
+                """);
     }
 
     private void createWebhookTables() {

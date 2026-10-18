@@ -42,6 +42,12 @@ vi.mock('@/api/contractPricingApi', async (importOriginal) => {
   return { ...actual, getContractOverview: vi.fn() };
 });
 
+vi.mock('@/api/dashboard', () => ({
+  fetchComplaintRatio: vi.fn().mockResolvedValue([]),
+  fetchComplaintRatioCases: vi.fn().mockResolvedValue([]),
+  pauseComplaintRatioTarget: vi.fn(),
+}));
+
 function renderWithProviders(ui: ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -68,6 +74,16 @@ describe('Phase 44 operational dashboards UI', () => {
       channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
       financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
       source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T09:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+      todayAggregation: {
+        state: 'FRESH',
+        businessDate: '2026-09-10',
+        businessTimeZone: 'Asia/Shanghai',
+        sourceRegistry: 'statistics_aggregates',
+        refreshedAt: '2026-09-10T09:05:00',
+        sourceChangedAt: '2026-09-10T09:04:30',
+        sourceRecordCount: 150,
+        aggregateRowCount: 2,
+      },
     });
     vi.mocked(operationalApi.getTenantOperationalOverview).mockResolvedValue({
       tenantId: 7,
@@ -181,13 +197,200 @@ describe('Phase 44 operational dashboards UI', () => {
         channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
         financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
         source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T09:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+        todayAggregation: {
+          state: 'FRESH',
+          businessDate: '2026-09-10',
+          businessTimeZone: 'Asia/Shanghai',
+          sourceRegistry: 'statistics_aggregates',
+          refreshedAt: '2026-09-10T09:05:00',
+          sourceChangedAt: '2026-09-10T09:04:30',
+          sourceRecordCount: 150,
+          aggregateRowCount: 2,
+        },
       });
     renderWithProviders(<DashboardPage />);
 
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-data-status')).toHaveAttribute('data-state', 'LOADING');
     expect(await screen.findByText('运营仪表盘加载失败，可重试。')).toBeInTheDocument();
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-data-status')).toHaveAttribute('data-state', 'ERROR');
     fireEvent.click(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-refresh'));
 
     await waitFor(() => expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-page')).toHaveTextContent('150'));
+  });
+
+  it.each([
+    ['NOT_REFRESHED', '统计尚未刷新', '尚无成功刷新'],
+    ['EMPTY', '今日无消息数据', '2026-09-10T09:05:00'],
+    ['STALE', '数据已过期', '2026-09-10T09:05:00'],
+  ] as const)('renders %s without turning absent aggregate values into zero', async (state, guidance, freshness) => {
+    vi.mocked(operationalApi.getPlatformDashboard).mockResolvedValue({
+      realtime: { totalUsers: 3, todayMessages: null, successRate: null, activeTenants: 1, comparisonMessages: null },
+      kpi: { todaySend: null, activeTenants: 1, successRate: null, todayRevenue: null, formula: 'success_count/send_count' },
+      hourlyTrend: [],
+      tenantRank: [],
+      channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
+      financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
+      source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: null, permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+      todayAggregation: {
+        state,
+        businessDate: '2026-09-10',
+        businessTimeZone: 'Asia/Shanghai',
+        sourceRegistry: 'statistics_aggregates',
+        refreshedAt: state === 'NOT_REFRESHED' ? null : '2026-09-10T09:05:00',
+        sourceChangedAt: state === 'STALE' ? '2026-09-10T09:05:30' : null,
+        sourceRecordCount: 0,
+        aggregateRowCount: 0,
+      },
+    });
+
+    renderWithProviders(<DashboardPage />);
+
+    const status = screen.getByTestId('admin-operational-dashboards-dashboard-data-status');
+    await waitFor(() => expect(status).toHaveAttribute('data-state', state));
+    expect(status).toHaveTextContent(guidance);
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-business-date')).toHaveTextContent('2026-09-10');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-business-date')).toHaveTextContent('Asia/Shanghai');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toHaveTextContent(freshness);
+    for (const testId of [
+      'admin-operational-dashboards-dashboard-realtime-today-messages-value',
+      'admin-operational-dashboards-dashboard-realtime-success-rate-value',
+      'admin-operational-dashboards-dashboard-realtime-comparison-value',
+      'admin-operational-dashboards-dashboard-kpi-today-send-value',
+      'admin-operational-dashboards-dashboard-kpi-success-rate-value',
+      'admin-operational-dashboards-dashboard-kpi-revenue-value',
+    ]) {
+      expect(screen.getByTestId(testId)).toHaveTextContent('—');
+      expect(screen.getByTestId(testId)).not.toHaveTextContent('0');
+    }
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toHaveTextContent('今日趋势暂不可用');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toHaveTextContent('机构排行暂不可用');
+    if (state === 'STALE') expect(status).toHaveTextContent('当前不展示消息统计值');
+  });
+
+  it('keeps stale last-known aggregate values visible with both freshness timestamps', async () => {
+    vi.mocked(operationalApi.getPlatformDashboard).mockResolvedValue({
+      realtime: { totalUsers: 3, todayMessages: 216, successRate: 0.875, activeTenants: 1, comparisonMessages: 200 },
+      kpi: { todaySend: 216, activeTenants: 1, successRate: 0.875, todayRevenue: 9.5, formula: 'success_count/send_count' },
+      hourlyTrend: [{ bucketStart: '2026-09-10T09:00:00', sendCount: 216, successCount: 189, successRate: 0.875 }],
+      tenantRank: [{ tenantId: 7, sendCount: 216, successCount: 189, successRate: 0.875 }],
+      channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
+      financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
+      source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T09:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+      todayAggregation: {
+        state: 'STALE',
+        businessDate: '2026-09-10',
+        businessTimeZone: 'Asia/Shanghai',
+        sourceRegistry: 'statistics_aggregates',
+        refreshedAt: '2026-09-10T09:05:00',
+        sourceChangedAt: '2026-09-10T09:09:00',
+        sourceRecordCount: 216,
+        aggregateRowCount: 2,
+      },
+    });
+
+    renderWithProviders(<DashboardPage />);
+
+    const status = screen.getByTestId('admin-operational-dashboards-dashboard-data-status');
+    await waitFor(() => expect(status).toHaveAttribute('data-state', 'STALE'));
+    expect(status).toHaveTextContent('数据已过期');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveTextContent('216');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-success-rate-value')).toHaveTextContent('87.50%');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-comparison-value')).toHaveTextContent('200');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-today-send-value')).toHaveTextContent('216');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-success-rate-value')).toHaveTextContent('88%');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-revenue-value')).toHaveTextContent('9.5');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toHaveTextContent('2026-09-10T09:05:00');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toHaveTextContent('2026-09-10T09:09:00');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-send-trend')).toHaveTextContent('09:00');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-tenant-rank')).toHaveTextContent('租户 7');
+  });
+
+  it('renders legitimate zero aggregate values when the server marks them fresh', async () => {
+    vi.mocked(operationalApi.getPlatformDashboard).mockResolvedValue({
+      realtime: { totalUsers: 3, todayMessages: 0, successRate: 0, activeTenants: 1, comparisonMessages: 0 },
+      kpi: { todaySend: 0, activeTenants: 1, successRate: 0, todayRevenue: 0, formula: 'success_count/send_count' },
+      hourlyTrend: [],
+      tenantRank: [],
+      channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
+      financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:06:00' },
+      source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T09:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+      todayAggregation: {
+        state: 'FRESH',
+        businessDate: '2026-09-10',
+        businessTimeZone: 'Asia/Shanghai',
+        sourceRegistry: 'statistics_aggregates',
+        refreshedAt: '2026-09-10T09:05:00',
+        sourceChangedAt: '2026-09-10T09:04:30',
+        sourceRecordCount: 1,
+        aggregateRowCount: 1,
+      },
+    });
+
+    renderWithProviders(<DashboardPage />);
+
+    await waitFor(() => expect(screen.getByTestId('admin-operational-dashboards-dashboard-data-status')).toHaveAttribute('data-state', 'FRESH'));
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-success-rate-value')).toHaveTextContent('0.00%');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-comparison-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-today-send-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-success-rate-value')).toHaveTextContent('0%');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-kpi-revenue-value')).toHaveTextContent('0');
+  });
+
+  it('keeps stale data after a refresh failure and replaces it after an explicit retry', async () => {
+    type PlatformResponse = Awaited<ReturnType<typeof operationalApi.getPlatformDashboard>>;
+    let rejectRefresh: ((reason?: unknown) => void) | undefined;
+    const failedRefresh = new Promise<PlatformResponse>((_resolve, reject) => {
+      rejectRefresh = reject;
+    });
+    let resolveRetry: ((value: PlatformResponse) => void) | undefined;
+    const retried = new Promise<PlatformResponse>((resolve) => {
+      resolveRetry = resolve;
+    });
+    vi.mocked(operationalApi.getPlatformDashboard)
+      .mockResolvedValueOnce({
+        realtime: { totalUsers: 3, todayMessages: 150, successRate: 0.9, activeTenants: 1, comparisonMessages: 140 },
+        kpi: { todaySend: 150, activeTenants: 1, successRate: 0.9, todayRevenue: 10, formula: 'success_count/send_count' },
+        hourlyTrend: [{ bucketStart: '2026-09-10T09:00:00', sendCount: 150, successCount: 135, successRate: 0.9 }],
+        tenantRank: [{ tenantId: 7, sendCount: 150, successCount: 135, successRate: 0.9 }],
+        channelHealth: { normal: 1, maintenance: 1, abnormal: 1 },
+        financeWarning: { warningCount: 1, freshnessAt: '2026-09-10T09:05:00' },
+        source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T09:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+        todayAggregation: { state: 'STALE', businessDate: '2026-09-10', businessTimeZone: 'Asia/Shanghai', sourceRegistry: 'statistics_aggregates', refreshedAt: '2026-09-10T09:05:00', sourceChangedAt: '2026-09-10T09:09:00', sourceRecordCount: 150, aggregateRowCount: 2 },
+      })
+      .mockReturnValueOnce(failedRefresh)
+      .mockReturnValueOnce(retried);
+    renderWithProviders(<DashboardPage />);
+
+    const status = screen.getByTestId('admin-operational-dashboards-dashboard-data-status');
+    await waitFor(() => expect(status).toHaveAttribute('data-state', 'STALE'));
+    const refresh = screen.getByTestId('admin-operational-dashboards-dashboard-realtime-refresh');
+    fireEvent.click(refresh);
+    await waitFor(() => expect(refresh).toBeDisabled());
+    rejectRefresh?.(new Error('temporary unavailable'));
+
+    expect(await screen.findByText('刷新失败，当前仍显示上一次加载的数据。')).toBeInTheDocument();
+    expect(status).toHaveAttribute('data-state', 'STALE');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveTextContent('150');
+    expect(refresh).toBeEnabled();
+
+    fireEvent.click(refresh);
+    await waitFor(() => expect(refresh).toBeDisabled());
+
+    resolveRetry?.({
+      realtime: { totalUsers: 3, todayMessages: 216, successRate: 1, activeTenants: 1, comparisonMessages: 200 },
+      kpi: { todaySend: 216, activeTenants: 1, successRate: 1, todayRevenue: 12, formula: 'success_count/send_count' },
+      hourlyTrend: [{ bucketStart: '2026-09-10T10:00:00', sendCount: 216, successCount: 216, successRate: 1 }],
+      tenantRank: [{ tenantId: 7, sendCount: 216, successCount: 216, successRate: 1 }],
+      channelHealth: { normal: 1, maintenance: 1, abnormal: 1 }, financeWarning: { warningCount: 1, freshnessAt: null },
+      source: { registry: 'statistics_aggregates', formula: 'success_count/send_count', freshnessAt: '2026-09-10T10:05:00', permissionScope: 'PLATFORM', formulaVersion: 'v1' },
+      todayAggregation: { state: 'FRESH', businessDate: '2026-09-10', businessTimeZone: 'Asia/Shanghai', sourceRegistry: 'statistics_aggregates', refreshedAt: '2026-09-10T10:05:00', sourceChangedAt: '2026-09-10T10:04:30', sourceRecordCount: 216, aggregateRowCount: 2 },
+    });
+
+    await waitFor(() => expect(status).toHaveAttribute('data-state', 'FRESH'));
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-realtime-today-messages-value')).toHaveTextContent('216');
+    expect(screen.getByTestId('admin-operational-dashboards-dashboard-aggregation-freshness')).toHaveTextContent('2026-09-10T10:05:00');
+    expect(refresh).toBeEnabled();
   });
 
   it('renders tenant overview and tenant template statistics without cross-tenant controls', async () => {

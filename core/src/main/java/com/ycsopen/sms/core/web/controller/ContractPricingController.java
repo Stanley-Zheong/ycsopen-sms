@@ -9,6 +9,10 @@ import com.ycsopen.sms.core.service.billing.ContractPricingService.ContractOverv
 import com.ycsopen.sms.core.service.billing.ContractPricingService.ContractRow;
 import com.ycsopen.sms.core.service.billing.ContractPricingService.PostpaidUsageCommand;
 import com.ycsopen.sms.core.service.billing.ContractPricingService.PostpaidUsageRow;
+import com.ycsopen.sms.core.service.billing.ContractPricingService.PriceBookOption;
+import com.ycsopen.sms.core.service.billing.ContractPricingService.TrialAnalysis;
+import com.ycsopen.sms.core.service.billing.ContractPricingService.TrialCandidate;
+import com.ycsopen.sms.core.service.billing.ContractPricingService.WorkbenchQuery;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,7 +21,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/console/contracts")
@@ -34,6 +41,32 @@ public class ContractPricingController {
     @PreAuthorize("hasAuthority('trial-prepaid:read')")
     public ApiResponse<ContractOverview> overview(@PathVariable long tenantId, Authentication authentication) {
         return ApiResponse.ok(service.overview(scopedTenantId(authentication, tenantId)));
+    }
+
+    @GetMapping("/workbench")
+    @PreAuthorize("hasAuthority('trial-prepaid:read')")
+    public ApiResponse<List<TrialCandidate>> workbench(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "salesOwner", required = false) String salesOwner,
+            @RequestParam(name = "industry", required = false) String industry,
+            @RequestParam(name = "trialStatus", required = false) String trialStatus,
+            Authentication authentication) {
+        requirePlatform(authentication);
+        return ApiResponse.ok(service.workbench(new WorkbenchQuery(keyword, salesOwner, industry, trialStatus)));
+    }
+
+    @GetMapping("/workbench/tenants/{tenantId}/analysis")
+    @PreAuthorize("hasAuthority('trial-prepaid:read')")
+    public ApiResponse<TrialAnalysis> analysis(@PathVariable long tenantId, Authentication authentication) {
+        requirePlatform(authentication);
+        return ApiResponse.ok(service.analysis(tenantId));
+    }
+
+    @GetMapping("/price-books")
+    @PreAuthorize("hasAuthority('trial-prepaid:read')")
+    public ApiResponse<List<PriceBookOption>> priceBooks(Authentication authentication) {
+        requirePlatform(authentication);
+        return ApiResponse.ok(service.activePriceBooks());
     }
 
     @PostMapping("/tenants/{tenantId}")

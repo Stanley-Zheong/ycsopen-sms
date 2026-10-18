@@ -52,7 +52,6 @@ const NAV_GROUPS: TenantNavGroup[] = [
   },
   {
     id: 'configuration', label: '配置管理', items: [
-      { to: '/tenant/config', label: '配置总览', roles: ['TENANT_ADMIN', 'TENANT_DEV'] },
       { to: '/tenant/webhooks', label: 'Webhook 回调', roles: ['TENANT_ADMIN', 'TENANT_DEV'], testId: 'tenant-webhook-delivery-webhooks-nav-menu' },
       { to: '/tenant/api/keys', label: 'API 密钥', roles: ['TENANT_ADMIN', 'TENANT_DEV'], testId: 'tenant-tenant-access-api-keys-nav-menu' },
       { to: '/tenant/cmpp/access', label: 'CMPP 接入', roles: ['TENANT_ADMIN', 'TENANT_DEV'], testId: 'tenant-tenant-access-cmpp-access-nav-menu' },

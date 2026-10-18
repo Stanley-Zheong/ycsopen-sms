@@ -15,14 +15,28 @@ export interface MetricSource {
   formulaVersion: string;
 }
 
+export type TodayAggregationState = 'NOT_REFRESHED' | 'EMPTY' | 'STALE' | 'FRESH';
+
+export interface TodayAggregation {
+  state: TodayAggregationState;
+  businessDate: string;
+  businessTimeZone: string;
+  sourceRegistry: string;
+  refreshedAt: string | null;
+  sourceChangedAt: string | null;
+  sourceRecordCount: number;
+  aggregateRowCount: number;
+}
+
 export interface PlatformDashboard {
-  realtime: { totalUsers: number; todayMessages: number; successRate: number; activeTenants: number; comparisonMessages: number };
-  kpi: { todaySend: number; activeTenants: number; successRate: number; todayRevenue: number; formula: string };
+  realtime: { totalUsers: number; todayMessages: number | null; successRate: number | null; activeTenants: number; comparisonMessages: number | null };
+  kpi: { todaySend: number | null; activeTenants: number; successRate: number | null; todayRevenue: number | null; formula: string };
   hourlyTrend: Array<{ bucketStart: string; sendCount: number; successCount: number; successRate: number }>;
   tenantRank: Array<{ tenantId: number; sendCount: number; successCount: number; successRate: number }>;
   channelHealth: { normal: number; maintenance: number; abnormal: number };
   financeWarning: { warningCount: number; freshnessAt: string | null };
   source: MetricSource;
+  todayAggregation: TodayAggregation;
 }
 
 export interface TenantOperationalOverview {

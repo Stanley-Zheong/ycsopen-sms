@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { apiClient } from './client';
 import type { ApiResponse } from '@/types/api';
 
@@ -23,9 +24,11 @@ export interface ComplaintCaseRow {
   handledAt: string | null;
   closedAt: string | null;
   closedNote: string | null;
-  acceptedBy?: string | null;
-  handledBy?: string | null;
-  closedBy?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+  acceptedBy: string | null;
+  handledBy: string | null;
+  closedBy: string | null;
 }
 
 export interface ComplaintCaseCreateInput {
@@ -38,7 +41,6 @@ export interface ComplaintCaseCreateInput {
   messageId: string;
   contentType: string;
   complainedMobile: string;
-  attributionQuality: string;
   requirement: string;
 }
 
@@ -47,13 +49,13 @@ export interface ComplaintCaseStateInput {
   opinion: string;
   remediation: string;
   requirement: string;
-  actor: string;
+  actor?: string;
 }
 
 export interface ComplaintRemediationInput {
   disposalType: string;
   targetRef: string;
-  actor: string;
+  actor?: string;
   authorizedReviewId: string;
   reason: string;
 }
@@ -61,7 +63,7 @@ export interface ComplaintRemediationInput {
 export interface ComplaintRecoveryInput {
   disposalRecordId: number;
   authorizedReviewId: string;
-  actor: string;
+  actor?: string;
   resumeCondition: string;
 }
 
@@ -74,6 +76,41 @@ export interface ComplaintRemediationRow {
   authorizedReviewId: string | null;
   failureReason: string | null;
   originalComplaintId: number | null;
+}
+
+export interface ComplaintCaseEvent {
+  id: number;
+  complaintId: number;
+  eventType: string;
+  actor: string | null;
+  occurredAt: string;
+  fromStatus: string | null;
+  toStatus: string | null;
+  evidenceText: string | null;
+  targetRef: string | null;
+  result: string;
+  reviewId: string | null;
+  failureReason: string | null;
+  relatedDisposalId: number | null;
+}
+
+export interface ComplaintCaseDetail {
+  complaint: ComplaintCaseRow;
+  timeline: ComplaintCaseEvent[];
+  remediations: ComplaintRemediationRow[];
+}
+
+export interface ComplaintReferenceOption {
+  id: number;
+  label: string;
+  tenantId: number | null;
+}
+
+export interface ComplaintReferenceOptions {
+  tenants: ComplaintReferenceOption[];
+  channels: ComplaintReferenceOption[];
+  signatures: ComplaintReferenceOption[];
+  templates: ComplaintReferenceOption[];
 }
 
 export interface ComplaintAnalyticsDimension {
@@ -101,6 +138,14 @@ function data<T>(res: { data: ApiResponse<T> }): T {
 
 export async function listComplaintCases(): Promise<ComplaintCaseRow[]> {
   return data(await apiClient.get<ApiResponse<ComplaintCaseRow[]>>('/console/complaints'));
+}
+
+export async function getComplaintCaseDetail(id: number): Promise<ComplaintCaseDetail> {
+  return data(await apiClient.get<ApiResponse<ComplaintCaseDetail>>(`/console/complaints/${id}`));
+}
+
+export async function getComplaintReferenceOptions(): Promise<ComplaintReferenceOptions> {
+  return data(await apiClient.get<ApiResponse<ComplaintReferenceOptions>>('/console/complaint-reference-options'));
 }
 
 export async function listComplaintRemediations(): Promise<ComplaintRemediationRow[]> {
@@ -133,4 +178,10 @@ export async function recoverComplaintRemediation(id: number, input: ComplaintRe
 
 export async function getComplaintAnalytics(): Promise<ComplaintAnalytics> {
   return data(await apiClient.get<ApiResponse<ComplaintAnalytics>>('/console/complaint-analytics'));
+}
+
+export function complaintFailureCode(error: unknown): string | null {
+  if (!axios.isAxiosError(error)) return null;
+  const code = error.response?.data?.data?.errorCode;
+  return typeof code === 'string' ? code : null;
 }

@@ -122,6 +122,25 @@ public class OperationAuditService {
         return new AuditPage(items, page, size, total);
     }
 
+    /** Returns only redacted lifecycle evidence owned by one tenant and resource type. */
+    @Transactional(readOnly = true)
+    public List<TenantResourceAuditEntry> searchTenantResource(long tenantId,
+                                                                String resourceType,
+                                                                int requestedSize) {
+        int size = Math.min(100, Math.max(1, requestedSize));
+        return jdbc.query("""
+                        SELECT id, actor_username, operation, resource_id, result_code, occurred_at
+                          FROM privileged_operation_audits
+                         WHERE tenant_id = ? AND resource_type = ?
+                         ORDER BY id DESC LIMIT ?
+                        """,
+                (row, index) -> new TenantResourceAuditEntry(
+                        row.getLong("id"), row.getString("actor_username"),
+                        row.getString("operation"), row.getString("resource_id"),
+                        row.getString("result_code"), row.getTimestamp("occurred_at").toInstant()),
+                tenantId, bounded(resourceType, 64, "UNKNOWN"), size);
+    }
+
     private Actor actor(Long userId) {
         if (userId == null) {
             return new Actor("system", null, null);
@@ -207,4 +226,8 @@ public class OperationAuditService {
                              long latencyMs, String requestSummary, Instant occurredAt) { }
 
     public record AuditPage(List<AuditEntry> items, int page, int size, long totalElements) { }
+
+    public record TenantResourceAuditEntry(long id, String actor, String operation,
+                                           String resourceId, String result,
+                                           Instant occurredAt) { }
 }

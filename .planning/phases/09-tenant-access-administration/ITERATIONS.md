@@ -19,3 +19,14 @@
 - The real MySQL harness exposed a stale Phase 08 test assertion that froze
   Flyway at `1701`; it was updated to assert the latest Phase 09 migration
   `1801`, preserving the intended latest-schema regression check.
+
+## Issue 121 follow-up
+
+- Replaced the ambiguous credential projection with create-only `appSecret`
+  and list-only `appSecretMask` contracts.
+- Added exact, tenant-derived API Key audit readback and a controlled revoke
+  confirmation; no tenant selector or secret enters the audit response.
+- Added loading, empty, error/retry, denied, mutation, unknown-outcome, success,
+  and overflow coverage under stable selectors.
+- Routed `/tenant/config` to `/tenant/api/keys` instead of maintaining a second
+  placeholder surface.

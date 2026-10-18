@@ -81,10 +81,10 @@ test.describe('Phase 09 tenant access administration', () => {
     await expect(page.getByTestId('tenant-tenant-access-api-keys-secret-once')).toBeVisible();
     await page.getByRole('button', { name: '我已保存', exact: true }).click();
     const row = page.getByTestId('tenant-tenant-access-api-keys-row').filter({ hasText: keyName });
-    await page.once('dialog', (browserDialog) => browserDialog.accept());
     const revokeResponse = page.waitForResponse((response) => response.url().includes('/revoke')
       && response.request().method() === 'POST');
     await row.getByTestId('tenant-tenant-access-api-keys-revoke').click();
+    await page.getByTestId('tenant-tenant-access-api-keys-revoke-confirm').click();
     const apiRevoke = await revokeResponse;
     await expect(apiRevoke.status(), await apiRevoke.text()).toBe(200);
     await expect(row).toContainText('DISABLED');

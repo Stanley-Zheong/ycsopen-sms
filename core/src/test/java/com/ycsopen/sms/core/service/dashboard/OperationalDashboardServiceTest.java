@@ -8,6 +8,10 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,7 +28,8 @@ class OperationalDashboardServiceTest {
         jdbc = new JdbcTemplate(dataSource);
         createSchema();
         seedData();
-        service = new OperationalDashboardService(jdbc);
+        service = new OperationalDashboardService(jdbc,
+                Clock.fixed(Instant.parse("2026-09-10T01:06:00Z"), ZoneOffset.UTC), Duration.ofMinutes(5));
     }
 
     @Test
@@ -46,6 +51,51 @@ class OperationalDashboardServiceTest {
         assertThat(dashboard.source().formula()).contains("success_count/send_count");
         assertThat(dashboard.source().freshnessAt()).isEqualTo(LocalDateTime.of(2026, 9, 10, 9, 5));
         assertThat(dashboard.source().permissionScope()).isEqualTo("PLATFORM");
+        assertThat(dashboard.todayAggregation().state()).isEqualTo("FRESH");
+        assertThat(dashboard.todayAggregation().businessDate()).isEqualTo(LocalDate.of(2026, 9, 10));
+        assertThat(dashboard.todayAggregation().businessTimeZone()).isEqualTo("Asia/Shanghai");
+    }
+
+    @Test
+    void distinguishesNotRefreshedEmptyAndStaleWithoutInventingTodayValues() {
+        jdbc.update("DELETE FROM statistics_refresh_checkpoints");
+        var notRefreshed = service.platformDashboard();
+        assertThat(notRefreshed.todayAggregation().state()).isEqualTo("NOT_REFRESHED");
+        assertThat(notRefreshed.realtime().todayMessages()).isNull();
+        assertThat(notRefreshed.realtime().successRate()).isNull();
+        assertThat(notRefreshed.kpi().todayRevenue()).isNull();
+        assertThat(notRefreshed.hourlyTrend()).isEmpty();
+        assertThat(notRefreshed.tenantRank()).isEmpty();
+
+        jdbc.update("""
+                INSERT INTO statistics_refresh_checkpoints(
+                    business_date, source_window_start, source_window_end, source_changed_at,
+                    refreshed_at, source_record_count, aggregate_row_count, refresh_status)
+                VALUES (?,?,?,?,?,?,?,'SUCCESS')
+                """, LocalDate.of(2026, 9, 10), LocalDateTime.of(2026, 9, 9, 16, 0),
+                LocalDateTime.of(2026, 9, 10, 16, 0), null,
+                LocalDateTime.of(2026, 9, 10, 1, 5), 0, 0);
+        var empty = service.platformDashboard();
+        assertThat(empty.todayAggregation().state()).isEqualTo("EMPTY");
+        assertThat(empty.realtime().todayMessages()).isNull();
+
+        jdbc.update("UPDATE statistics_refresh_checkpoints SET source_changed_at=?",
+                LocalDateTime.of(2026, 9, 10, 1, 5, 30));
+        var staleAfterEmpty = service.platformDashboard();
+        assertThat(staleAfterEmpty.todayAggregation().state()).isEqualTo("STALE");
+        assertThat(staleAfterEmpty.todayAggregation().aggregateRowCount()).isZero();
+        assertThat(staleAfterEmpty.realtime().todayMessages()).isNull();
+        assertThat(staleAfterEmpty.realtime().successRate()).isNull();
+        assertThat(staleAfterEmpty.kpi().todayRevenue()).isNull();
+        assertThat(staleAfterEmpty.hourlyTrend()).isEmpty();
+        assertThat(staleAfterEmpty.tenantRank()).isEmpty();
+
+        jdbc.update("UPDATE statistics_refresh_checkpoints SET source_record_count=2, aggregate_row_count=4, refreshed_at=?",
+                LocalDateTime.of(2026, 9, 10, 0, 0));
+        var stale = service.platformDashboard();
+        assertThat(stale.todayAggregation().state()).isEqualTo("STALE");
+        assertThat(stale.realtime().todayMessages()).isEqualTo(150);
+        assertThat(stale.hourlyTrend()).hasSize(2);
     }
 
     @Test
@@ -169,10 +219,27 @@ class OperationalDashboardServiceTest {
                   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
                 """);
+        jdbc.execute("""
+                CREATE TABLE statistics_refresh_checkpoints(
+                  business_date DATE PRIMARY KEY,
+                  source_window_start TIMESTAMP NOT NULL,
+                  source_window_end TIMESTAMP NOT NULL,
+                  source_changed_at TIMESTAMP,
+                  refreshed_at TIMESTAMP NOT NULL,
+                  source_record_count INT NOT NULL,
+                  aggregate_row_count INT NOT NULL,
+                  refresh_status VARCHAR(16) NOT NULL,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """);
+        jdbc.execute("CREATE TABLE message_tasks(id BIGINT PRIMARY KEY, message_id VARCHAR(64), created_at TIMESTAMP, updated_at TIMESTAMP)");
+        jdbc.execute("CREATE TABLE delivery_reports(id BIGINT PRIMARY KEY, message_id VARCHAR(64), report_time TIMESTAMP)");
+        jdbc.execute("CREATE TABLE billing_records(id BIGINT PRIMARY KEY, task_ref_id BIGINT, created_at TIMESTAMP)");
+        jdbc.execute("CREATE TABLE message_submits(id BIGINT PRIMARY KEY, status VARCHAR(16), created_at TIMESTAMP, updated_at TIMESTAMP)");
     }
 
     private void seedData() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.of(2026, 9, 10);
         jdbc.update("INSERT INTO users VALUES (1,'ADMIN','ACTIVE'),(2,'TENANT_ADMIN','ACTIVE'),(3,'OPERATOR','DISABLED')");
         jdbc.update("INSERT INTO tenants VALUES (7,'TRIAL'),(8,'FROZEN')");
         jdbc.update("INSERT INTO prepaid_accounts VALUES (7,120000,0,'NORMAL',1,?)", LocalDateTime.of(2026, 9, 10, 9, 2));
@@ -206,5 +273,12 @@ class OperationalDashboardServiceTest {
                 LocalDateTime.of(2026, 9, 10, 9, 4),
                 LocalDateTime.of(2026, 9, 10, 9, 0), today,
                 LocalDateTime.of(2026, 9, 10, 9, 4));
+        jdbc.update("""
+                INSERT INTO statistics_refresh_checkpoints(
+                    business_date, source_window_start, source_window_end, source_changed_at,
+                    refreshed_at, source_record_count, aggregate_row_count, refresh_status)
+                VALUES (?,?,?,?,?,?,?,'SUCCESS')
+                """, today, LocalDateTime.of(2026, 9, 9, 16, 0), LocalDateTime.of(2026, 9, 10, 16, 0),
+                LocalDateTime.of(2026, 9, 10, 1, 4), LocalDateTime.of(2026, 9, 10, 1, 5), 150, 4);
     }
 }

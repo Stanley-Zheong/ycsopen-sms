@@ -9,6 +9,7 @@ import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.AutoReplyC
 import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.PushMonitorFilter;
 import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.PushMonitorRow;
 import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.SearchFilter;
+import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.TenantOption;
 import com.ycsopen.sms.core.service.uplink.UplinkNormalizationService.UplinkRecord;
 import com.ycsopen.sms.core.service.webhook.WebhookDeliveryTransportService.DeliveryResult;
 import com.ycsopen.sms.core.web.dto.ApiResponse;
@@ -51,6 +52,12 @@ public class UplinkNormalizationController {
                                                        LocalDateTime endTime) {
         return ApiResponse.ok(service.adminSearch(new SearchFilter(tenantId, phoneNumber, keyword, carrier,
                 pushState, startTime, endTime)));
+    }
+
+    @GetMapping("/api/v1/console/uplinks/tenant-options")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public ApiResponse<List<TenantOption>> tenantOptions(@RequestParam(required = false) String query) {
+        return ApiResponse.ok(service.tenantOptions(query));
     }
 
     @GetMapping("/api/v1/console/uplinks/{id}")
